@@ -1,5 +1,0 @@
-services:
-  frontend:
-    image: front-end
-    ports: 
-      - 80:80

@@ -9,9 +9,11 @@ tasks:
   deploy-frontend-local:
     cmds:
       - docker context use default
+      - docker build -t frontend-image ./frontend
       - docker compose run -d --service-ports frontend
 
   deploy-frontend-dev:
     cmds:
       - docker context use remote
+      - docker build -t frontend-image ./frontend
       - docker compose run -d --service-ports frontend

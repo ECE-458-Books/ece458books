@@ -2,6 +2,4 @@ services:
   frontend:
     image: front-end
     ports: 
-      - 6000:3000
-    expose:
-      - 3000
+      - 80:80

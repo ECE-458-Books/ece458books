@@ -6,4 +6,6 @@ Setting up/deploying with Docker: https://www.notion.so/Docker-dc44e0b9ae6e4e439
 
 ## Deployment Commands
 
+To deploy the frontend locally: `task deploy-frontend-local`deploy-frontend-dev
+To deploy the frontend to the dev environment: `task deploy-frontend-dev`
 

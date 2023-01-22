@@ -33,3 +33,4 @@ Django based Web Application for Hypothetical Books
    - `task deploy-backend-local-dev` to deploy backend server locally
    - `task deploy-backend-local-docker` to deploy backend server locally using docker
 4. Use <http://127.0.0.1:8000> for the main application.
+4. Use <http://[hostname]:8000> for the main application.

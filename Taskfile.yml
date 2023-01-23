@@ -15,3 +15,7 @@ tasks:
     cmds:
       - docker context use remote
       - docker-compose up -d --build frontend
+      
+  deploy-backend-local-docker:
+    cmds:
+      - docker compose up -d --build backend

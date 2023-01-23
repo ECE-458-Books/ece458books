@@ -9,8 +9,6 @@ tasks:
   deploy-frontend-local:
     cmds:
       - docker context use default
-      #- docker build -t frontend-image ./frontend
-      #- docker-compose pull
       - docker-compose up -d --build frontend
 
   deploy-frontend-dev:

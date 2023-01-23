@@ -1,0 +1,17 @@
+version: '3'
+
+tasks:
+
+  test:
+    cmds:
+      - echo 'hello'
+
+  deploy-frontend-local:
+    cmds:
+      - docker context use default
+      - docker-compose up -d --build frontend
+
+  deploy-frontend-dev:
+    cmds:
+      - docker context use remote
+      - docker-compose up -d --build frontend

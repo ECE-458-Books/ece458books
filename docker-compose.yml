@@ -1,0 +1,6 @@
+services:
+  frontend:
+    image: frontend-image
+    build: ./frontend
+    ports: 
+      - 80:3000

@@ -1,11 +1,9 @@
 import React from 'react';
 import { FormEvent } from 'react';
-import './App.css';
 
 interface LoginState {
   value: string
 }
-
 
 class LoginPage extends React.Component<{}, LoginState> {
   constructor(props = {}) {
@@ -22,6 +20,9 @@ class LoginPage extends React.Component<{}, LoginState> {
 
   onSubmit = (event: FormEvent<HTMLFormElement>): void => {
     alert('A password was submitted: ' + this.state.value);
+
+    
+
     event.preventDefault();
   }
 

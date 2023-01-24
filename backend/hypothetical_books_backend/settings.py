@@ -37,7 +37,8 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
+
+    # 'django.contrib.admin',
 
     # Contains the core of the authentication framework, and its default models
     'django.contrib.auth', 
@@ -56,7 +57,10 @@ INSTALLED_APPS = [
     # add REST Framework
     'corsheaders',
     'rest_framework',
-    'rest_framework.authtoken'
+    'rest_framework_simplejwt',
+
+    # Django Extensions (shell_plus)
+    'django_extensions',
 ]
 
 MIDDLEWARE = [
@@ -147,11 +151,17 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ORIGIN_WHITELIST = [
-     'http://localhost:3000'
-]
+# Django REST Framework
+# https://www.django-rest-framework.org/
 
 REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
 }
+
+# Tell Django about the custom `User` model we created. The string
+# `authentication.User` tells Django we are referring to the `User` model in
+# the `authapp` module. This module is registered above in a setting
+# called `INSTALLED_APPS`.
+AUTH_USER_MODEL = 'authapp.User'

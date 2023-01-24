@@ -3,13 +3,14 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import LoginPage from './pages/loginPage';
 import reportWebVitals from './reportWebVitals';
+import BaseTemplate from './components/basetemplate';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
   <React.StrictMode>
-    <LoginPage />
+    <BaseTemplate />
   </React.StrictMode>
 );
 

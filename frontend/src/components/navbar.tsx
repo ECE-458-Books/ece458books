@@ -1,16 +1,32 @@
-import React from 'react';
-import {  Link } from "react-router-dom";
+import Container from 'react-bootstrap/Container';
+import Nav from 'react-bootstrap/Nav';
+import Navbar from 'react-bootstrap/Navbar';
+import {LinkContainer} from 'react-router-bootstrap'
 
-const Navbar= () =>{
+function NavigationBar() {
   return (
-  <div>
-    <li>
-      <Link to="/books">Books</Link>
-    </li>
-    <li>
-      <Link to="/genres">Genres</Link>
-    </li>
-  </div>
+    <>
+      <Navbar bg="primary" variant="dark">
+        <Container>
+        <LinkContainer to="/">
+          <Navbar.Brand>Hypothetical Books</Navbar.Brand>
+          </LinkContainer>
+          <Nav>
+            <LinkContainer to="/books">
+              <Nav.Link>Books</Nav.Link>
+              </LinkContainer>
+            <LinkContainer to="/genres">
+              <Nav.Link>Genres</Nav.Link>
+              </LinkContainer>
+            <LinkContainer to="/orders">
+              <Nav.Link>Orders</Nav.Link>
+              </LinkContainer>
+          </Nav>
+        </Container>
+      </Navbar>
+    </>
   );
 }
-export default Navbar;
+
+export default NavigationBar;
+

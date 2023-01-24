@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import LoginPage from './pages/loginPage';
 import reportWebVitals from './reportWebVitals';
-import BaseTemplate from './components/basetemplate';
+import BaseTemplate from './components/router';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement

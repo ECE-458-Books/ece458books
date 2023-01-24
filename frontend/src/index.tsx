@@ -4,6 +4,7 @@ import './index.css';
 import LoginPage from './pages/loginPage';
 import reportWebVitals from './reportWebVitals';
 import BaseTemplate from './components/router';
+import 'bootstrap/dist/css/bootstrap.css';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement

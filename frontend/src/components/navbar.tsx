@@ -7,11 +7,10 @@ function NavigationBar() {
   return (
     <>
       <Navbar bg="primary" variant="dark">
-        <Container>
         <LinkContainer to="/">
           <Navbar.Brand>Hypothetical Books</Navbar.Brand>
           </LinkContainer>
-          <Nav>
+          <Nav className = "me-auto">
             <LinkContainer to="/books">
               <Nav.Link>Books</Nav.Link>
               </LinkContainer>
@@ -22,7 +21,6 @@ function NavigationBar() {
               <Nav.Link>Orders</Nav.Link>
               </LinkContainer>
           </Nav>
-        </Container>
       </Navbar>
     </>
   );

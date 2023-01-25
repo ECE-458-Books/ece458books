@@ -5,11 +5,12 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
-from .views import RegistrationAPIView
+from .views import RegistrationAPIView, LoginAPIView
 
 app_name = 'authapp'
 urlpatterns = [
     path('token/', TokenObtainPairView.as_view(), name='token-obtain-pair'),
     path('token/refresh', TokenRefreshView.as_view(), name='token-refresh'),
     path('users/', RegistrationAPIView.as_view()),
+    path('users/login/', LoginAPIView.as_view())
 ]

@@ -2,7 +2,11 @@
 
 From this directory, run `npm install` to install the dependencies
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+`npm run lint` to view all errors/warnings
+
+`npm run lint:fix` to fix linting errors that can be fixed automatically
+
+`npm run format` to run the code formatter
 
 ## Available Scripts
 

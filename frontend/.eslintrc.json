@@ -19,14 +19,14 @@
   "rules": {
     "prettier/prettier": ["error"],
     "@typescript-eslint/ban-types": [
-        "error",
-        {
-          "extendDefaults": true,
-          "types": {
-            "{}": false
-          }
+      "error",
+      {
+        "extendDefaults": true,
+        "types": {
+          "{}": false
         }
-      ]
+      }
+    ]
   },
   "settings": {
     "react": {

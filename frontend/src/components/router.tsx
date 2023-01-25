@@ -9,10 +9,9 @@ export default function BaseTemplate() {
     <Router>
       <NavigationBar></NavigationBar>
       <Routes>
-        <Route path="/" element={<BookList />}>
-          <Route path="books" element={<BookList />} />
-          <Route path="genres" element={<GenreList />} />
-        </Route>
+        <Route path="/" element={<BookList />} />
+        <Route path="books" element={<BookList />} />
+        <Route path="genres" element={<GenreList />} />
       </Routes>
     </Router>
   );

@@ -12,7 +12,7 @@ class BookListPage extends React.Component<{}, BookListState> {
 
     render() {
       return (
-        <h1>Dummy Book List Page</h1>
+        <h1>Dummy Book List Page!!</h1>
       );
     }
   }

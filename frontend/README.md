@@ -2,6 +2,8 @@
 
 From this directory, run `npm install` to install the dependencies
 
+`npm install --only=dev` to install dev dependencies
+
 `npm run lint` to view all errors/warnings
 
 `npm run lint:fix` to fix linting errors that can be fixed automatically

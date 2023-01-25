@@ -4,14 +4,19 @@ import './index.css';
 import LoginPage from './pages/loginPage';
 import reportWebVitals from './reportWebVitals';
 import BaseTemplate from './components/router';
+import { BrowserRouter } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.css';
+import NavigationBar from './components/navbar';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
   <React.StrictMode>
-    <BaseTemplate />
+    <BrowserRouter>
+      <NavigationBar/>
+      <BaseTemplate />
+    </BrowserRouter>
   </React.StrictMode>
 );
 

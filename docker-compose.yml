@@ -6,7 +6,6 @@ services:
     ports: 
       - 80:3000
   frontend-hot-reload:
-    container_name: frontend-container
     image: frontend-image
     build: ./frontend
     ports: 

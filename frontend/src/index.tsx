@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 import reportWebVitals from "./reportWebVitals";
-import BaseTemplate from "./components/router";
+import Router from "./components/router";
 import { BrowserRouter } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.css";
 import NavigationBar from "./components/navbar";
@@ -14,7 +14,7 @@ root.render(
   <React.StrictMode>
     <BrowserRouter>
       <NavigationBar />
-      <BaseTemplate />
+      <Router />
     </BrowserRouter>
   </React.StrictMode>
 );

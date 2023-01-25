@@ -2,7 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import BookList from "../pages/bookList";
 import GenreList from "../pages/genreList";
 
-export default function BaseTemplate() {
+export default function Router() {
   return (
     <Routes>
       <Route path="/" element={<BookList />} />

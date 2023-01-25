@@ -62,3 +62,38 @@ class LoginSerializer(serializers.Serializer):
             'username': user.username,
             'token': user.token
         }
+
+class UserSerializer(serializers.ModelSerializer):
+    """Handles serialization and deserialization of User objects."""
+
+    password = serializers.CharField(
+        max_length=128,
+        min_length=8,
+        write_only=True
+    )
+
+    class Meta:
+        model = User
+        fields = ('email', 'username', 'password', 'token',)
+
+        # Same as doing 'read_only = True', just for 'token' we aren't specifying anything else about it like we do with 'password' above
+        read_only_fields = ('token',)
+
+    def update(self, instance, validated_data):
+        """Updates a User."""
+
+        # Passwords shouldn't be handled with `setattr` because Django has function for hashing and salting passwords, so do it separately.
+        password = validated_data.pop('password', None)
+
+        # For keys in the validated data, set them on the current `User`
+        for (key, value) in validated_data.items():
+            setattr(instance, key, value)
+        
+        if password is not None:
+            # `.set_password()` handles all security-related tasks.
+            instance.set_password(password)
+        
+        # After finishing this update, must explicitly save the model.
+        instance.save()
+
+        return instance

@@ -13,9 +13,13 @@ export interface TableProps<T extends object> {
 }
 
 export default function Table<T extends object>(props: TableProps<T>) {
-  const columns = props.columns.map((col, i) => {
+  const dynamicColumns = props.columns.map((col, i) => {
     return <Column key={col.field} field={col.field} header={col.header} />;
   });
 
-  return <DataTable value={props.data}>{columns}</DataTable>;
+  return (
+    <DataTable value={props.data} responsiveLayout="scroll">
+      {dynamicColumns}
+    </DataTable>
+  );
 }

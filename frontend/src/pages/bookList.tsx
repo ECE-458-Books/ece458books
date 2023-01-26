@@ -7,17 +7,40 @@ interface BookListState {
 
 interface BookRow {
   title: string;
+  authors: string;
   isbn: string;
+  publisher: string;
+  pubYear: string;
+  pageCount: string;
+  dimensions: string;
+  retailPrice: string;
+  genre: string;
 }
 
 const data: BookRow[] = [
-  { isbn: "12", title: "name" },
-  { isbn: "4312", title: "name 2" },
+  {
+    title: "blah",
+    authors: "blah",
+    isbn: "blah",
+    publisher: "blah",
+    pubYear: "blah",
+    pageCount: "blah",
+    dimensions: "blah",
+    retailPrice: "blah",
+    genre: "blah",
+  },
 ];
 
 const columns: TableColumn[] = [
-  { field: "isbn", header: "ISBN" },
   { field: "title", header: "Title" },
+  { field: "authors", header: "Authors" },
+  { field: "isbn", header: "ISBN" },
+  { field: "publisher", header: "Publisher" },
+  { field: "pubYear", header: "Publication Year" },
+  { field: "pageCount", header: "Page Count" },
+  { field: "dimensions", header: "Dimensions" },
+  { field: "retailPrice", header: "Retail Price" },
+  { field: "genre", header: "Genre" },
 ];
 
 class BookListPage extends React.Component<{}, BookListState> {

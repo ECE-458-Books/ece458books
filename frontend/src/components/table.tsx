@@ -1,8 +1,10 @@
-import BootstrapTable from "react-bootstrap-table-next";
+import { DataTable } from "primereact/datatable";
+import { Column } from "primereact/column";
+import "primereact/resources/themes/lara-light-indigo/theme.css";
 
 export interface TableColumn {
-  dataField: string;
-  text: string;
+  field: string;
+  header: string;
 }
 
 export interface TableProps<T extends object> {
@@ -11,7 +13,9 @@ export interface TableProps<T extends object> {
 }
 
 export default function Table<T extends object>(props: TableProps<T>) {
-  return (
-    <BootstrapTable keyField="isbn" data={props.data} columns={props.columns} />
-  );
+  const columns = props.columns.map((col, i) => {
+    return <Column key={col.field} field={col.field} header={col.header} />;
+  });
+
+  return <DataTable value={props.data}>{columns}</DataTable>;
 }

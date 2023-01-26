@@ -11,13 +11,13 @@ interface BookRow {
 }
 
 const data: BookRow[] = [
-  { isbn: "1234", title: "name" },
+  { isbn: "12", title: "name" },
   { isbn: "4312", title: "name 2" },
 ];
 
 const columns: TableColumn[] = [
-  { dataField: "isbn", text: "ISBN" },
-  { dataField: "title", text: "Title" },
+  { field: "isbn", header: "ISBN" },
+  { field: "title", header: "Title" },
 ];
 
 class BookListPage extends React.Component<{}, BookListState> {

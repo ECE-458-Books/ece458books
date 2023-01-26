@@ -15,13 +15,5 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
-from rest_framework import routers
 
-router_api_v1 = routers.DefaultRouter(trailing_slash=False)
-# router_api_v1.register(r'api')
-
-urlpatterns = [
-    path('api/v1/auth/', include('authapp.urls', namespace='authentication')),
-    # path('admin/', admin.site.urls),
-    # path('api/v1/', include(router_api_v1.urls))
-]
+urlpatterns = [path('api/v1/auth/', include('authapp.urls', namespace='authentication'))]

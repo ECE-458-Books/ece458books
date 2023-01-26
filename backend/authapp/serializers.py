@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
-
 from .models import User
 
 
@@ -9,11 +8,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
     # Ensure passwords are at least 8 characters long, no longer than 128
     # characters, and can not be read by the client.
-    password = serializers.CharField(
-        max_length=128,
-        min_length=8,
-        write_only=True
-    )
+    password = serializers.CharField(max_length=128, min_length=8, write_only=True)
 
     # The client should not be able to send a token along with a registration
     # request. Making `token` read-only handles that for us.
@@ -28,6 +23,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         # Use the `create_user` method we wrote earlier to create a new user.
         return User.objects.create_user(**validated_data)
+
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.CharField(max_length=255)
@@ -56,25 +52,23 @@ class LoginSerializer(serializers.Serializer):
         # Django has a flag on user that says if it has been banned or deactivated, which will almost never be the case, but doesn't hurt to check.
         if not user.is_active:
             raise serializers.ValidationError('This user has been deactivated.')
-        
-        return {
-            'email': user.email,
-            'username': user.username,
-            'token': user.token
-        }
+
+        return {'email': user.email, 'username': user.username, 'token': user.token}
+
 
 class UserSerializer(serializers.ModelSerializer):
     """Handles serialization and deserialization of User objects."""
 
-    password = serializers.CharField(
-        max_length=128,
-        min_length=8,
-        write_only=True
-    )
+    password = serializers.CharField(max_length=128, min_length=8, write_only=True)
 
     class Meta:
         model = User
-        fields = ('email', 'username', 'password', 'token',)
+        fields = (
+            'email',
+            'username',
+            'password',
+            'token',
+        )
 
         # Same as doing 'read_only = True', just for 'token' we aren't specifying anything else about it like we do with 'password' above
         read_only_fields = ('token',)
@@ -88,11 +82,11 @@ class UserSerializer(serializers.ModelSerializer):
         # For keys in the validated data, set them on the current `User`
         for (key, value) in validated_data.items():
             setattr(instance, key, value)
-        
+
         if password is not None:
             # `.set_password()` handles all security-related tasks.
             instance.set_password(password)
-        
+
         # After finishing this update, must explicitly save the model.
         instance.save()
 

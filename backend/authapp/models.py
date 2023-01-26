@@ -3,10 +3,9 @@ import jwt
 from datetime import datetime, timedelta
 
 from django.conf import settings
-from django.contrib.auth.models import (
-    AbstractBaseUser, BaseUserManager, PermissionsMixin
-)
+from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager, PermissionsMixin)
 from django.db import models
+
 
 class UserManager(BaseUserManager):
     """
@@ -45,6 +44,7 @@ class UserManager(BaseUserManager):
         user.save()
 
         return user
+
 
 class User(AbstractBaseUser, PermissionsMixin):
     # Each `User` needs a human-readable unique identifier that we can use to
@@ -130,9 +130,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         """
         dt = datetime.now() + timedelta(days=60)
 
-        token = jwt.encode({
-            'id': self.pk,
-            'exp': int(dt.strftime('%s'))
-        }, settings.SECRET_KEY, algorithm='HS256')
+        token = jwt.encode({'id': self.pk, 'exp': int(dt.strftime('%s'))}, settings.SECRET_KEY, algorithm='HS256')
 
         return token

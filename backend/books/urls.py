@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import TestView, ISBNSearchView
+from .views import ISBNSearchView
 
 app_name='books'
 

@@ -1,5 +1,7 @@
 import React from "react";
 import Table, { TableColumn } from "../components/table";
+import { Button } from "primereact/button";
+//import { useNavigate } from "react-router-dom";
 
 interface BookListState {
   value: string;
@@ -47,10 +49,23 @@ class BookListPage extends React.Component<{}, BookListState> {
   constructor(props = {}) {
     super(props);
     this.state = { value: "" };
+    this.handleClick = this.handleClick.bind(this);
   }
 
+  //navigate = useNavigate();
+
+  handleClick = () => {
+    console.log("button clicked");
+    //return this.navigate("/modifyBook");
+  };
+
   render() {
-    return <Table<BookRow> columns={columns} data={data} />;
+    return (
+      <div>
+        <Button label="Modify" onClick={this.handleClick} />
+        <Table<BookRow> columns={columns} data={data} />
+      </div>
+    );
   }
 }
 

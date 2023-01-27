@@ -1,10 +1,10 @@
 import { Routes, Route } from "react-router-dom";
-import BookListPage from "../pages/BookList";
-import GenreListPage from "../pages/GenreList";
+import BookListPage from "../pages/bookList";
+import GenreListPage from "../pages/genreList";
 import PurchaseOrderListPage from "../pages/PurchaseOrderList";
 import SalesReconciliationListPage from "../pages/SalesReconciliationList";
 import VendorListPage from "../pages/VendorList";
-import ModifyBook from "../pages/ModfiyBook";
+import ModifyBook from "../pages/modfiyBook";
 
 export default function Router() {
   return (

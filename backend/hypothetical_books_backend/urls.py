@@ -15,14 +15,5 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
-from rest_framework import routers
-from polls import views
 
-router = routers.DefaultRouter()
-router.register(r'todos', views.TodoView, 'todo')
-
-urlpatterns = [
-    path('polls/', include('polls.urls')),
-    path('admin/', admin.site.urls),
-    path('api/', include(router.urls)),
-]
+urlpatterns = [path('api/v1/auth/', include('authapp.urls', namespace='authentication'))]

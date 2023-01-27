@@ -33,23 +33,33 @@ DEBUG = env('DEBUG')
 # ALLOWED_HOSTS = ['books.colab.duke.edu']
 ALLOWED_HOSTS = ['*']
 
-
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
+
+    # 'django.contrib.admin',
+
+    # Contains the core of the authentication framework, and its default models
     'django.contrib.auth',
+
+    # The Django content type system, which allows permissions to be associated with models you create.
     'django.contrib.contenttypes',
+
+    # Session management
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # Register the App
-    'polls',
+    # Authentication App
+    'authapp',
 
     # add REST Framework
     'corsheaders',
     'rest_framework',
+    'rest_framework_simplejwt',
+
+    # Django Extensions (shell_plus)
+    'django_extensions',
 ]
 
 MIDDLEWARE = [
@@ -83,7 +93,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'hypothetical_books_backend.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
@@ -97,7 +106,6 @@ DATABASES = {
         'PORT': env('DB_PORT'),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -117,7 +125,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
@@ -129,7 +136,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
@@ -140,6 +146,17 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ORIGIN_WHITELIST = [
-     'http://localhost:3000'
-]
+# Django REST Framework
+# https://www.django-rest-framework.org/
+# THIS IS USED TO OVERRIDE SETTINGS IN THE DJANGO REST FRAMEWORK (DRF)
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework_simplejwt.authentication.JWTAuthentication',),
+    'EXCEPTION_HANDLER': 'core.exceptions.core_exception_handler',
+    'NON_FIELD_ERRORS_KEY': 'error',
+}
+
+# Tell Django about the custom `User` model we created. The string
+# `authentication.User` tells Django we are referring to the `User` model in
+# the `authapp` module. This module is registered above in a setting
+# called `INSTALLED_APPS`.
+AUTH_USER_MODEL = 'authapp.User'

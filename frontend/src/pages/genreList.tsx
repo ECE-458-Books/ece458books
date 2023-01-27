@@ -1,6 +1,5 @@
 import React from "react";
-import internal from "stream";
-import Table, { TableColumn } from "../components/table";
+import Table, { TableColumn } from "../components/Table";
 
 interface GenreListState {
   value: string;
@@ -8,43 +7,29 @@ interface GenreListState {
 
 interface GenreRow {
   genre: string;
-  numBooks: int;
+  numBooks: number;
 }
 
-const data: BookRow[] = [
+const data: GenreRow[] = [
   {
-    title: "blah",
-    authors: "blah",
-    isbn: "blah",
-    publisher: "blah",
-    pubYear: "blah",
-    pageCount: "blah",
-    dimensions: "blah",
-    retailPrice: "blah",
     genre: "blah",
+    numBooks: 5,
   },
 ];
 
 const columns: TableColumn[] = [
-  { field: "title", header: "Title" },
-  { field: "authors", header: "Authors" },
-  { field: "isbn", header: "ISBN" },
-  { field: "publisher", header: "Publisher" },
-  { field: "pubYear", header: "Publication Year" },
-  { field: "pageCount", header: "Page Count" },
-  { field: "dimensions", header: "Dimensions" },
-  { field: "retailPrice", header: "Retail Price" },
   { field: "genre", header: "Genre" },
+  { field: "numBooks", header: "Number of Books" },
 ];
 
-class BookListPage extends React.Component<{}, BookListState> {
+class BookListPage extends React.Component<{}, GenreListState> {
   constructor(props = {}) {
     super(props);
     this.state = { value: "" };
   }
 
   render() {
-    return <Table<BookRow> columns={columns} data={data} />;
+    return <Table<GenreRow> columns={columns} data={data} />;
   }
 }
 

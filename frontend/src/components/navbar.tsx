@@ -31,7 +31,12 @@ function NavigationBar() {
         <Nav className="me-auto">
           <NavigationBarButton urlExtension="/books" buttonText="Books" />
           <NavigationBarButton urlExtension="/genres" buttonText="Genres" />
-          <NavigationBarButton urlExtension="/orders" buttonText="Orders" />
+          <NavigationBarButton urlExtension="/vendors" buttonText="Vendors" />
+          <NavigationBarButton
+            urlExtension="/purchases"
+            buttonText="Purchases"
+          />
+          <NavigationBarButton urlExtension="/sales" buttonText="Sales" />
         </Nav>
       </Navbar>
     </>

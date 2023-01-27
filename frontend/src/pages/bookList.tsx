@@ -1,5 +1,5 @@
 import React from "react";
-import Table, { TableColumn } from "../components/table";
+import Table, { TableColumn } from "../components/Table";
 
 interface BookListState {
   value: string;

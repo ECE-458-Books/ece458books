@@ -1,13 +1,19 @@
 import { Routes, Route } from "react-router-dom";
-import BookList from "../pages/bookList";
-import GenreList from "../pages/genreList";
+import BookListPage from "../pages/BookList";
+import GenreListPage from "../pages/GenreList";
+import PurchaseOrderListPage from "../pages/PurchaseOrderList";
+import SalesReconciliationListPage from "../pages/SalesReconciliationList";
+import VendorListPage from "../pages/VendorList";
 
 export default function Router() {
   return (
     <Routes>
-      <Route path="/" element={<BookList />} />
-      <Route path="books" element={<BookList />} />
-      <Route path="genres" element={<GenreList />} />
+      <Route path="/" element={<BookListPage />} />
+      <Route path="books" element={<BookListPage />} />
+      <Route path="genres" element={<GenreListPage />} />
+      <Route path="vendors" element={<VendorListPage />} />
+      <Route path="purchases" element={<PurchaseOrderListPage />} />
+      <Route path="sales" element={<SalesReconciliationListPage />} />
     </Routes>
   );
 }

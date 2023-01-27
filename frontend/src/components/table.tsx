@@ -9,8 +9,9 @@ const genreFilter = (options: ColumnFilterElementTemplateOptions) => {
     <Dropdown
       value={options.value}
       options={GENRE_DATA.map((genreRow) => genreRow.genre)}
+      appendTo={"self"}
       onChange={(e) => options.filterApplyCallback(e.value)}
-      placeholder={"Select Genre"}
+      //placeholder={"Select Genre"}
     />
   );
 };
@@ -35,8 +36,11 @@ export default function Table<T extends object>(props: TableProps<T>) {
         field={col.field}
         header={col.header}
         filter
-        filterPlaceholder={col.filterPlaceholder}
-        style={{ minWidth: "10rem" }}
+        filterElement={genreFilter}
+        //filterPlaceholder={col.filterPlaceholder}
+        style={{ minWidth: "16rem" }}
+        showFilterMenu={false}
+        showClearButton={false}
       />
     );
   });

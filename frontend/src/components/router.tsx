@@ -1,9 +1,10 @@
 import { Routes, Route } from "react-router-dom";
-import BookListPage from "../pages/BookList";
-import GenreListPage from "../pages/GenreList";
+import BookListPage from "../pages/bookList";
+import GenreListPage from "../pages/genreList";
 import PurchaseOrderListPage from "../pages/PurchaseOrderList";
 import SalesReconciliationListPage from "../pages/SalesReconciliationList";
 import VendorListPage from "../pages/VendorList";
+import ModifyBook from "../pages/modfiyBook";
 
 export default function Router() {
   return (
@@ -14,6 +15,7 @@ export default function Router() {
       <Route path="vendors" element={<VendorListPage />} />
       <Route path="purchases" element={<PurchaseOrderListPage />} />
       <Route path="sales" element={<SalesReconciliationListPage />} />
+      <Route path="modifybook" element={<ModifyBook />} />
     </Routes>
   );
 }

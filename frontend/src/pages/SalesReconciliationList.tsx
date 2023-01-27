@@ -1,5 +1,5 @@
 import React from "react";
-import Table, { TableColumn } from "../components/Table";
+import Table, { TableColumn } from "../components/table";
 
 interface SalesReconciliationListState {
   value: string;

@@ -1,5 +1,8 @@
+import { ColumnFilterElementTemplateOptions } from "primereact/column";
 import React from "react";
 import Table, { TableColumn } from "../components/Table";
+import { Dropdown } from "primereact/dropdown";
+import { GENRE_DATA } from "./GenreList";
 
 interface BookListState {
   value: string;
@@ -17,7 +20,7 @@ interface BookRow {
   genre: string;
 }
 
-const data: BookRow[] = [
+const DATA: BookRow[] = [
   {
     title: "blah",
     authors: "blah",
@@ -31,16 +34,44 @@ const data: BookRow[] = [
   },
 ];
 
-const columns: TableColumn[] = [
-  { field: "title", header: "Title" },
-  { field: "authors", header: "Authors" },
-  { field: "isbn", header: "ISBN" },
-  { field: "publisher", header: "Publisher" },
-  { field: "pubYear", header: "Publication Year" },
-  { field: "pageCount", header: "Page Count" },
-  { field: "dimensions", header: "Dimensions" },
-  { field: "retailPrice", header: "Retail Price" },
-  { field: "genre", header: "Genre" },
+const COLUMNS: TableColumn[] = [
+  { field: "title", header: "Title", filterPlaceholder: "Search by Title" },
+  {
+    field: "authors",
+    header: "Authors",
+    filterPlaceholder: "Search by Authors",
+  },
+  { field: "isbn", header: "ISBN", filterPlaceholder: "Search by ISBN" },
+  {
+    field: "publisher",
+    header: "Publisher",
+    filterPlaceholder: "Search by Publisher",
+  },
+  {
+    field: "pubYear",
+    header: "Publication Year",
+    filterPlaceholder: "Search by Publication Year",
+  },
+  {
+    field: "pageCount",
+    header: "Page Count",
+    filterPlaceholder: "Page Count",
+  },
+  {
+    field: "dimensions",
+    header: "Dimensions",
+    filterPlaceholder: "Dimensions",
+  },
+  {
+    field: "retailPrice",
+    header: "Retail Price",
+    filterPlaceholder: "Search by Price",
+  },
+  {
+    field: "genre",
+    header: "Genre",
+    filterPlaceholder: "Search by Genre",
+  },
 ];
 
 class BookListPage extends React.Component<{}, BookListState> {
@@ -50,7 +81,7 @@ class BookListPage extends React.Component<{}, BookListState> {
   }
 
   render() {
-    return <Table<BookRow> columns={columns} data={data} />;
+    return <Table<BookRow> columns={COLUMNS} data={DATA} />;
   }
 }
 

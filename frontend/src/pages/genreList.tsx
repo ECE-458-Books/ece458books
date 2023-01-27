@@ -10,16 +10,21 @@ interface GenreRow {
   numBooks: number;
 }
 
-const data: GenreRow[] = [
+// Currently being used for filtering in booklist, will have to change
+export const GENRE_DATA: GenreRow[] = [
   {
     genre: "blah",
     numBooks: 5,
   },
 ];
 
-const columns: TableColumn[] = [
-  { field: "genre", header: "Genre" },
-  { field: "numBooks", header: "Number of Books" },
+const COLUMNS: TableColumn[] = [
+  { field: "genre", header: "Genre", filterPlaceholder: "Search by Genre" },
+  {
+    field: "numBooks",
+    header: "Number of Books",
+    filterPlaceholder: "Search by Number of Books",
+  },
 ];
 
 class BookListPage extends React.Component<{}, GenreListState> {
@@ -29,7 +34,7 @@ class BookListPage extends React.Component<{}, GenreListState> {
   }
 
   render() {
-    return <Table<GenreRow> columns={columns} data={data} />;
+    return <Table<GenreRow> columns={COLUMNS} data={GENRE_DATA} />;
   }
 }
 

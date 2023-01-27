@@ -13,7 +13,7 @@ interface PurchaseOrderRow {
   totalCost: number;
 }
 
-const data: PurchaseOrderRow[] = [
+const DATA: PurchaseOrderRow[] = [
   {
     date: "today",
     vendorName: "blah",
@@ -23,12 +23,28 @@ const data: PurchaseOrderRow[] = [
   },
 ];
 
-const columns: TableColumn[] = [
-  { field: "date", header: "Date" },
-  { field: "vendorName", header: "Vendor Name" },
-  { field: "uniqueBooks", header: "Unique Books" },
-  { field: "totalBooks", header: "Total Books" },
-  { field: "totalCost", header: "TotalCost" },
+const COLUMNS: TableColumn[] = [
+  { field: "date", header: "Date", filterPlaceholder: "Search by Date" },
+  {
+    field: "vendorName",
+    header: "Vendor Name",
+    filterPlaceholder: "Search by Name",
+  },
+  {
+    field: "uniqueBooks",
+    header: "Unique Books",
+    filterPlaceholder: "Search by Unique Books",
+  },
+  {
+    field: "totalBooks",
+    header: "Total Books",
+    filterPlaceholder: "Search by Total Books",
+  },
+  {
+    field: "totalCost",
+    header: "TotalCost",
+    filterPlaceholder: "Search by Total Cost",
+  },
 ];
 
 class PurchaseOrderPage extends React.Component<{}, PurchaseOrderListState> {
@@ -38,7 +54,7 @@ class PurchaseOrderPage extends React.Component<{}, PurchaseOrderListState> {
   }
 
   render() {
-    return <Table<PurchaseOrderRow> columns={columns} data={data} />;
+    return <Table<PurchaseOrderRow> columns={COLUMNS} data={DATA} />;
   }
 }
 

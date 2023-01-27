@@ -9,13 +9,19 @@ interface VendorRow {
   name: string;
 }
 
-const data: VendorRow[] = [
+const DATA: VendorRow[] = [
   {
     name: "blah",
   },
 ];
 
-const columns: TableColumn[] = [{ field: "name", header: "Vendor Name" }];
+const COLUMNS: TableColumn[] = [
+  {
+    field: "name",
+    header: "Vendor Name",
+    filterPlaceholder: "Search by Name",
+  },
+];
 
 class VendorListPage extends React.Component<{}, VendorListState> {
   constructor(props = {}) {
@@ -24,7 +30,7 @@ class VendorListPage extends React.Component<{}, VendorListState> {
   }
 
   render() {
-    return <Table<VendorRow> columns={columns} data={data} />;
+    return <Table<VendorRow> columns={COLUMNS} data={DATA} />;
   }
 }
 

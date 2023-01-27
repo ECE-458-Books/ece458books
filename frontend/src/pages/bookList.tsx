@@ -34,6 +34,18 @@ const DATA: BookRow[] = [
   },
 ];
 
+const genreFilter = (options: ColumnFilterElementTemplateOptions) => {
+  return (
+    <Dropdown
+      value={options.value}
+      options={GENRE_DATA.map((genreRow) => genreRow.genre)}
+      appendTo={"self"}
+      onChange={(e) => options.filterApplyCallback(e.value)}
+      placeholder={"Select Genre"}
+    />
+  );
+};
+
 const COLUMNS: TableColumn[] = [
   { field: "title", header: "Title", filterPlaceholder: "Search by Title" },
   {
@@ -71,6 +83,7 @@ const COLUMNS: TableColumn[] = [
     field: "genre",
     header: "Genre",
     filterPlaceholder: "Search by Genre",
+    customFilter: genreFilter,
   },
 ];
 

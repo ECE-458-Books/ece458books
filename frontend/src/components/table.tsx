@@ -1,20 +1,6 @@
 import { DataTable } from "primereact/datatable";
-import { Column, ColumnFilterElementTemplateOptions } from "primereact/column";
+import { Column } from "primereact/column";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
-import { Dropdown } from "primereact/dropdown";
-import { GENRE_DATA } from "../pages/GenreList";
-
-const genreFilter = (options: ColumnFilterElementTemplateOptions) => {
-  return (
-    <Dropdown
-      value={options.value}
-      options={GENRE_DATA.map((genreRow) => genreRow.genre)}
-      appendTo={"self"}
-      onChange={(e) => options.filterApplyCallback(e.value)}
-      //placeholder={"Select Genre"}
-    />
-  );
-};
 
 export interface TableColumn {
   field: string;
@@ -36,9 +22,9 @@ export default function Table<T extends object>(props: TableProps<T>) {
         field={col.field}
         header={col.header}
         filter
-        filterElement={genreFilter}
-        //filterPlaceholder={col.filterPlaceholder}
-        style={{ minWidth: "16rem" }}
+        filterElement={col.customFilter}
+        filterPlaceholder={col.filterPlaceholder}
+        style={{ minWidth: "12rem" }}
         showFilterMenu={false}
         showClearButton={false}
       />

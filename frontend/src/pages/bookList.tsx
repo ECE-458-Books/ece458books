@@ -32,6 +32,17 @@ const DATA: BookRow[] = [
     retailPrice: "blah",
     genre: "blah",
   },
+  {
+    title: "clah",
+    authors: "clah",
+    isbn: "clah",
+    publisher: "clah",
+    pubYear: "clah",
+    pageCount: "clah",
+    dimensions: "clah",
+    retailPrice: "clah",
+    genre: "clah",
+  },
 ];
 
 const genreFilter = (options: ColumnFilterElementTemplateOptions) => {
@@ -67,12 +78,12 @@ const COLUMNS: TableColumn[] = [
   {
     field: "pageCount",
     header: "Page Count",
-    filterPlaceholder: "Page Count",
+    filterPlaceholder: "Search by Page Count",
   },
   {
     field: "dimensions",
     header: "Dimensions",
-    filterPlaceholder: "Dimensions",
+    filterPlaceholder: "Search by Dimensions",
   },
   {
     field: "retailPrice",

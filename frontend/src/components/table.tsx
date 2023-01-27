@@ -25,8 +25,8 @@ export default function Table<T extends object>(props: TableProps<T>) {
         filterElement={col.customFilter}
         filterPlaceholder={col.filterPlaceholder}
         style={{ minWidth: "12rem" }}
-        showFilterMenu={false}
         showClearButton={false}
+        sortable
       />
     );
   });

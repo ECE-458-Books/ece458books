@@ -1,8 +1,9 @@
 import { ColumnFilterElementTemplateOptions } from "primereact/column";
-import React from "react";
+import React, { useState } from "react";
 import Table, { TableColumn } from "../components/Table";
 import { Dropdown } from "primereact/dropdown";
 import { GENRE_DATA } from "./GenreList";
+import axios from "axios";
 
 interface BookListState {
   value: string;
@@ -102,6 +103,18 @@ class BookListPage extends React.Component<{}, BookListState> {
   constructor(props = {}) {
     super(props);
     this.state = { value: "" };
+  }
+
+  componentDidMount() {
+    const reqOpts = {
+      url: "http://books-dev.colab.duke.edu:8000/api/v1/books/isbns",
+      method: "GET",
+      body: JSON.stringify({
+        isbns: "9780425132159, 978-0131103627, 9780192797353",
+      }),
+    };
+
+    axios.request(reqOpts).then((response) => console.log(response.data));
   }
 
   render() {

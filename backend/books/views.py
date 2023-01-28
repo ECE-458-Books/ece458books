@@ -7,7 +7,7 @@ from .isbn import ISBNSearch
 class ISBNSearchView(APIView):
     search = ISBNSearch()
 
-    def get(self, request):
+    def post(self, request):
         req_dict = request.data
         if "isbns" in req_dict:
             isbns = re.split("\s?[, ]\s?", req_dict['isbns'].strip())
@@ -20,4 +20,3 @@ class ISBNSearchView(APIView):
             response_list.append(self.search.fecth_isbn_data(isbn))
         
         return Response(response_list)
-

@@ -108,8 +108,9 @@ class BookListPage extends React.Component<{}, BookListState> {
   componentDidMount() {
     const reqOpts = {
       url: "http://books-dev.colab.duke.edu:8000/api/v1/books/isbns",
-      method: "GET",
-      body: JSON.stringify({
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+      data: JSON.stringify({
         isbns: "9780425132159, 978-0131103627, 9780192797353",
       }),
     };

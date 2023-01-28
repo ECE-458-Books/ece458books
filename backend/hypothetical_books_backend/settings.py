@@ -37,7 +37,7 @@ ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
 
-    # # 'django.contrib.admin',
+    # 'django.contrib.admin',
 
     # Contains the core of the authentication framework, and its default models
     'django.contrib.auth',
@@ -148,6 +148,21 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Django REST Framework
+# https://www.django-rest-framework.org/
+# THIS IS USED TO OVERRIDE SETTINGS IN THE DJANGO REST FRAMEWORK (DRF)
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework_simplejwt.authentication.JWTAuthentication',),
+    'EXCEPTION_HANDLER': 'core.exceptions.core_exception_handler',
+    'NON_FIELD_ERRORS_KEY': 'error',
+}
+
+# Tell Django about the custom `User` model we created. The string
+# `authentication.User` tells Django we are referring to the `User` model in
+# the `authapp` module. This module is registered above in a setting
+# called `INSTALLED_APPS`.
+AUTH_USER_MODEL = 'authapp.User'
 
 CORS_ORIGIN_ALLOW_ALL = False
 CORS_ORIGIN_WHITELIST = [

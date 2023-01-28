@@ -33,13 +33,19 @@ DEBUG = env('DEBUG')
 # ALLOWED_HOSTS = ['books.colab.duke.edu']
 ALLOWED_HOSTS = ['*']
 
-
 # Application definition
 
 INSTALLED_APPS = [
-    # 'django.contrib.admin',
+
+    # # 'django.contrib.admin',
+
+    # Contains the core of the authentication framework, and its default models
     'django.contrib.auth',
+
+    # The Django content type system, which allows permissions to be associated with models you create.
     'django.contrib.contenttypes',
+
+    # Session management
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
@@ -47,9 +53,16 @@ INSTALLED_APPS = [
     # Register the App
     'books',
 
+    # Authentication App
+    'authapp',
+
     # add REST Framework
     'corsheaders',
     'rest_framework',
+    'rest_framework_simplejwt',
+
+    # Django Extensions (shell_plus)
+    'django_extensions',
 ]
 
 MIDDLEWARE = [
@@ -83,7 +96,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'hypothetical_books_backend.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
@@ -97,7 +109,6 @@ DATABASES = {
         'PORT': env('DB_PORT'),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -117,7 +128,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
@@ -128,7 +138,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/

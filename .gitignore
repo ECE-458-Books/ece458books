@@ -131,3 +131,7 @@ dmypy.json
 # Additions
 /frontend/node_modules
 .DS_Store
+
+# VSCODE
+*.vscode
+

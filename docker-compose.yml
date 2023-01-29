@@ -5,6 +5,13 @@ services:
     build: ./frontend
     ports: 
       - 80:3000
+  frontend-hot-reload:
+    image: frontend-image
+    build: ./frontend
+    ports: 
+      - 80:3000
+    volumes:
+      - ./frontend/src:/app/src
   backend:
     image: backend-image
     build: ./backend

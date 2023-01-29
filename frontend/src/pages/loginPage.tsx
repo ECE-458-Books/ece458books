@@ -1,6 +1,7 @@
-import React from "react";
-import { FormEvent } from "react";
+import React, { FormEvent } from "react";
 import axios from "axios";
+import { InputText } from "primereact/inputtext";
+import { Button } from "primereact/button"
 
 interface LoginState {
   value: string;
@@ -20,24 +21,17 @@ class LoginPage extends React.Component<{}, LoginState> {
   };
 
   onSubmit = (event: FormEvent<HTMLFormElement>): void => {
-    const loginPayload = {
-      email: "eve.holt@reqres.in",
-      password: "cityslicka",
+    const reqOpts = {
+      url: "http://books-front.colab.duke.edu:8000/api/v1/auth/token",
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+      data: JSON.stringify({
+        email: "crs79@duke.edu",
+        password: this.state.value,
+      }),
     };
 
-    axios.post("API LINK", loginPayload).then((response) => {
-      //get token from response
-      const token = response.data.token;
-      console.log(token)
-
-      //set JWT token to local
-      localStorage.setItem("token", token);
-
-      //set token to axios common header
-      this.setAuthToken(token);
-    });
-
-    alert("A password was submitted: " + this.state.value);
+    axios.request(reqOpts).then((response) => console.log(response.data));
 
     event.preventDefault();
   };
@@ -50,19 +44,11 @@ class LoginPage extends React.Component<{}, LoginState> {
 
   render() {
     return (
-      <form onSubmit={(e: FormEvent<HTMLFormElement>) => this.onSubmit(e)}>
-        <label>
-          Password:
-          <input
-            type="text"
-            value={this.state.value}
-            onChange={(e: FormEvent<HTMLInputElement>) => this.onChange(e)}
-          />
-        </label>
-        <input type="submit" value="Submit" />
+      <form onSubmit = {this.onSubmit}>
+        <InputText value={this.state.value} onChange={(this.onChange)} />
+        <Button type="submit" label="Submit" aria-label="Submit" />
       </form>
-    );
-  }
+  )}
 }
 
 export default LoginPage;

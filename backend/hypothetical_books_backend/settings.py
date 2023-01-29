@@ -162,5 +162,5 @@ REST_FRAMEWORK = {
 AUTH_USER_MODEL = 'authapp.User'
 
 CORS_ORIGIN_WHITELIST = [
-     'http://localhost'
+     'http://localhost',
 ]

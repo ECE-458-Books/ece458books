@@ -1,5 +1,5 @@
+import React from "react";
 import { ColumnFilterElementTemplateOptions } from "primereact/column";
-import React, { useState } from "react";
 import Table, { TableColumn } from "../components/Table";
 import { Dropdown } from "primereact/dropdown";
 import { GENRE_DATA } from "./GenreList";
@@ -99,7 +99,7 @@ const COLUMNS: TableColumn[] = [
   },
 ];
 
-class BookListPage extends React.Component<{}, BookListState> {
+class BookList extends React.Component<{}, BookListState> {
   constructor(props = {}) {
     super(props);
     this.state = { value: "" };
@@ -123,4 +123,4 @@ class BookListPage extends React.Component<{}, BookListState> {
   }
 }
 
-export default BookListPage;
+export default BookList;

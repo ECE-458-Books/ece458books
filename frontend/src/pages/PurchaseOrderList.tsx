@@ -47,7 +47,7 @@ const COLUMNS: TableColumn[] = [
   },
 ];
 
-class PurchaseOrderPage extends React.Component<{}, PurchaseOrderListState> {
+class PurchaseOrderList extends React.Component<{}, PurchaseOrderListState> {
   constructor(props = {}) {
     super(props);
     this.state = { value: "" };
@@ -58,4 +58,4 @@ class PurchaseOrderPage extends React.Component<{}, PurchaseOrderListState> {
   }
 }
 
-export default PurchaseOrderPage;
+export default PurchaseOrderList;

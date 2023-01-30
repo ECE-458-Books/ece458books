@@ -40,7 +40,7 @@ const COLUMNS: TableColumn[] = [
   },
 ];
 
-class SalesReconciliationPage extends React.Component<
+class SalesReconciliationList extends React.Component<
   {},
   SalesReconciliationListState
 > {
@@ -54,4 +54,4 @@ class SalesReconciliationPage extends React.Component<
   }
 }
 
-export default SalesReconciliationPage;
+export default SalesReconciliationList;

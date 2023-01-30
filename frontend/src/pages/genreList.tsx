@@ -27,7 +27,7 @@ const COLUMNS: TableColumn[] = [
   },
 ];
 
-class BookListPage extends React.Component<{}, GenreListState> {
+class GenreList extends React.Component<{}, GenreListState> {
   constructor(props = {}) {
     super(props);
     this.state = { value: "" };
@@ -38,4 +38,4 @@ class BookListPage extends React.Component<{}, GenreListState> {
   }
 }
 
-export default BookListPage;
+export default GenreList;

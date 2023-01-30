@@ -23,7 +23,7 @@ const COLUMNS: TableColumn[] = [
   },
 ];
 
-class VendorListPage extends React.Component<{}, VendorListState> {
+class VendorList extends React.Component<{}, VendorListState> {
   constructor(props = {}) {
     super(props);
     this.state = { value: "" };
@@ -34,4 +34,4 @@ class VendorListPage extends React.Component<{}, VendorListState> {
   }
 }
 
-export default VendorListPage;
+export default VendorList;

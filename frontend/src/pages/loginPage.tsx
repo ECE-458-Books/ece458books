@@ -20,9 +20,8 @@ class LoginPage extends React.Component<{}, LoginState> {
     this.setState({ password: event.currentTarget.value });
   };
 
+  // Hits the token endpoint, and stores the token in local storage
   onSubmit = (event: FormEvent<HTMLFormElement>): void => {
-  console.log(process.env.REACT_APP_API_ENDPOINT_TOKEN)
-  
     const reqOpts = {
       url: process.env.REACT_APP_API_ENDPOINT_TOKEN,
       headers: { "Content-Type": "application/json" },

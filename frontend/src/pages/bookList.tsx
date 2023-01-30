@@ -1,10 +1,12 @@
-import React from "react";
+import React, { FormEvent } from "react";
 import Table, { TableColumn } from "../components/table";
 import { Button } from "primereact/button";
-//import { useNavigate } from "react-router-dom";
+import ModifyButton from "../components/modifybutton";
+import { InputTextarea } from "primereact/inputtextarea";
 
 interface BookListState {
   value: string;
+  addIsbns: string;
 }
 
 interface BookRow {
@@ -48,21 +50,36 @@ const columns: TableColumn[] = [
 class BookListPage extends React.Component<{}, BookListState> {
   constructor(props = {}) {
     super(props);
-    this.state = { value: "" };
-    this.handleClick = this.handleClick.bind(this);
+    this.state = { value: "", addIsbns: "" };
   }
 
-  //navigate = useNavigate();
+  onSubmit = (event: FormEvent<HTMLFormElement>): void => {
+    alert("A form was submitted: \n" + this.state.addIsbns);
 
-  handleClick = () => {
-    console.log("button clicked");
-    //return this.navigate("/modifyBook");
+    event.preventDefault();
   };
 
   render() {
     return (
       <div>
-        <Button label="Modify" onClick={this.handleClick} />
+        <ModifyButton path="/modifybook" />
+        <form onSubmit={this.onSubmit}>
+          <span className="p-float-label">
+            <InputTextarea
+              autoResize
+              id="addIsbn"
+              name="addIsbn"
+              value={this.state.addIsbns}
+              onChange={(event: FormEvent<HTMLTextAreaElement>): void =>
+                this.setState({ addIsbns: event.currentTarget.value })
+              }
+              rows={2}
+              cols={30}
+            />
+            <label htmlFor="addBooks">Add Books (ISBN's)</label>
+          </span>
+          <Button label="submit" type="submit" />
+        </form>
         <Table<BookRow> columns={columns} data={data} />
       </div>
     );

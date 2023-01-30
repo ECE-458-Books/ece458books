@@ -6,6 +6,9 @@ import Router from "./components/router";
 import { BrowserRouter } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.css";
 import NavigationBar from "./components/navbar";
+import "primereact/resources/themes/lara-light-indigo/theme.css";
+import "primereact/resources/primereact.min.css";
+import "primeicons/primeicons.css";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement

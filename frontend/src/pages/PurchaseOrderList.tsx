@@ -1,5 +1,6 @@
 import React from "react";
 import Table, { TableColumn } from "../components/table";
+import ModifyButton from "../components/modifybutton";
 
 interface PurchaseOrderListState {
   value: string;
@@ -38,7 +39,12 @@ class PurchaseOrderPage extends React.Component<{}, PurchaseOrderListState> {
   }
 
   render() {
-    return <Table<PurchaseOrderRow> columns={columns} data={data} />;
+    return (
+      <div>
+        <ModifyButton path="/modifypurchaseorder" />
+        <Table<PurchaseOrderRow> columns={columns} data={data} />
+      </div>
+    );
   }
 }
 

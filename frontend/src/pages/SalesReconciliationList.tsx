@@ -1,5 +1,6 @@
 import React from "react";
 import Table, { TableColumn } from "../components/table";
+import ModifyButton from "../components/modifybutton";
 
 interface SalesReconciliationListState {
   value: string;
@@ -38,7 +39,12 @@ class SalesReconciliationPage extends React.Component<
   }
 
   render() {
-    return <Table<SalesReconciliationRow> columns={columns} data={data} />;
+    return (
+      <div>
+        <ModifyButton path="/modifysalesreconciliation" />
+        <Table<SalesReconciliationRow> columns={columns} data={data} />
+      </div>
+    );
   }
 }
 

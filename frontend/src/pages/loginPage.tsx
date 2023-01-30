@@ -3,14 +3,19 @@ import axios from "axios";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button"
 import { Messages } from 'primereact/messages';
+import NavigateFunction from "react-router-dom";
+
+interface LoginProps {
+  navigator: NavigateFunction.NavigateFunction
+}
 
 interface LoginState {
   password: string;
 }
 
-class LoginPage extends React.Component<{}, LoginState> {
+class LoginPage extends React.Component<LoginProps, LoginState> {
   private wrongPasswordRef: React.RefObject<Messages>
-  constructor(props = {}) {
+  constructor(props: LoginProps) {
     super(props);
     this.state = { password: ""};
     this.wrongPasswordRef = createRef<Messages>()
@@ -39,6 +44,7 @@ class LoginPage extends React.Component<{}, LoginState> {
     axios.request(reqOpts).then((response) => {
       if(response.data.access) {
         this.setAuthToken(response.data.access)
+        this.props.navigator("/books")
       } else {
         delete axios.defaults.headers.common["Authorization"];
         console.log("Error")

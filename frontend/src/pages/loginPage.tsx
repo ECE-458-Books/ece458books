@@ -41,7 +41,6 @@ class LoginPage extends React.Component<{}, LoginState> {
         this.setAuthToken(response.data.access)
       } else {
         delete axios.defaults.headers.common["Authorization"];
-        console.log("Error")
       }
     }).catch((error) => {
       this.wrongPasswordRef.current?.show([
@@ -54,7 +53,6 @@ class LoginPage extends React.Component<{}, LoginState> {
 
   // Sets the default auth token used by axios
   setAuthToken(token: string) {
-    console.log(token)
     if (token) {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     } else delete axios.defaults.headers.common["Authorization"]; 

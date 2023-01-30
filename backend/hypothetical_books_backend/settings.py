@@ -160,7 +160,3 @@ REST_FRAMEWORK = {
 # the `authapp` module. This module is registered above in a setting
 # called `INSTALLED_APPS`.
 AUTH_USER_MODEL = 'authapp.User'
-
-CORS_ORIGIN_WHITELIST = [
-     'http://localhost',
-]

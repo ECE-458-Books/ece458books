@@ -40,13 +40,37 @@ class ISBNSearch:
             return ret
         selfLink = response['items'][0]['selfLink']
         j = json.load(urlopen(selfLink))
+        info = j['volumeInfo']
+        pprint(info)
 
-        relevant_keys = ['title', 'authors', 'pageCount', 'publishedDate', 'industryIdentifiers', 'dimensions']
+        relevant_keys = ['title', 'authors', 'publisher', 'pageCount', 'publishedDate', 'industryIdentifiers', 'dimensions']
 
         for key in relevant_keys:
-            ret[key] = j['volumeInfo'][key]
+            if(key == 'dimensions'):
+                # convert dimensions
+                for dimension in info['dimensions'].keys():
+                    ret[dimension] = self.centiToInches(info['dimensions'][dimension])
+            elif (key == 'industryIdentifiers'):
+                # convert to isbn
+                ret['isbn_10'] = info[key][0]['identifier']
+                ret['isbn_13'] = info[key][1]['identifier']
+            else:
+                ret[key] = info[key]
 
         return ret
+
+    def centiToInches(
+        self, 
+        centi
+    ):
+        # remove unit
+        unit = 'cm'
+
+        centi_reformatted = float(centi.replace(unit, "").strip())
+
+        inch = '{0:.2f}'.format(centi_reformatted/2.54)
+        return float(inch)
+
     
 if __name__ == "__main__":
     search = ISBNSearch()

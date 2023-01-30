@@ -1,46 +1,94 @@
-import Nav from "react-bootstrap/Nav";
-import Navbar from "react-bootstrap/Navbar";
-import { LinkContainer } from "react-router-bootstrap";
-
-interface NavigationBarButtonProps {
-  urlExtension: string;
-  buttonText: string;
-}
-
-function NavigationBarButton(props: NavigationBarButtonProps) {
-  return (
-    <LinkContainer to={props.urlExtension}>
-      <Nav.Link>{props.buttonText}</Nav.Link>
-    </LinkContainer>
-  );
-}
-
-function NavigationBarBrand(props: NavigationBarButtonProps) {
-  return (
-    <LinkContainer to={props.urlExtension}>
-      <Navbar.Brand>{props.buttonText}</Navbar.Brand>
-    </LinkContainer>
-  );
-}
+import { Menubar } from "primereact/menubar";
+import { MenuItem } from "primereact/menuitem";
+import { useNavigate } from "react-router-dom";
 
 function NavigationBar() {
-  return (
-    <>
-      <Navbar bg="primary" variant="dark">
-        <NavigationBarBrand urlExtension="/" buttonText="Hypothetical" />
-        <Nav className="me-auto">
-          <NavigationBarButton urlExtension="/books" buttonText="Books" />
-          <NavigationBarButton urlExtension="/genres" buttonText="Genres" />
-          <NavigationBarButton urlExtension="/vendors" buttonText="Vendors" />
-          <NavigationBarButton
-            urlExtension="/purchases"
-            buttonText="Purchases"
-          />
-          <NavigationBarButton urlExtension="/sales" buttonText="Sales" />
-        </Nav>
-      </Navbar>
-    </>
-  );
+  const navigate = useNavigate();
+
+  const items: MenuItem[] = [
+    {
+      label: "Books",
+      icon: "pi pi-fw pi-book",
+      items: [
+        {
+          label: "List",
+          icon: "pi pi-fw pi-list",
+          command: () => navigate("/books"),
+        },
+        {
+          label: "Add",
+          icon: "pi pi-fw pi-plus",
+          command: () => navigate("/books/add"),
+        },
+      ],
+    },
+    {
+      label: "Genres",
+      icon: "pi pi-fw pi-palette",
+      items: [
+        {
+          label: "List",
+          icon: "pi pi-fw pi-list",
+          command: () => navigate("/genres"),
+        },
+        {
+          label: "Add",
+          icon: "pi pi-fw pi-plus",
+          command: () => navigate("/genres/add"),
+        },
+      ],
+    },
+    {
+      label: "Vendors",
+      icon: "pi pi-fw pi-building",
+      items: [
+        {
+          label: "List",
+          icon: "pi pi-fw pi-list",
+          command: () => navigate("/vendors"),
+        },
+        {
+          label: "Add",
+          icon: "pi pi-fw pi-plus",
+          command: () => navigate("/vendors/add"),
+        },
+      ],
+    },
+    {
+      label: "Purchase Orders",
+      icon: "pi pi-fw pi-credit-card",
+      items: [
+        {
+          label: "List",
+          icon: "pi pi-fw pi-list",
+          command: () => navigate("/purchase-orders"),
+        },
+        {
+          label: "Add",
+          icon: "pi pi-fw pi-plus",
+          command: () => navigate("/purchase-orders/add"),
+        },
+      ],
+    },
+    {
+      label: "Sales Reconciliations",
+      icon: "pi pi-fw pi-chart-bar",
+      items: [
+        {
+          label: "List",
+          icon: "pi pi-fw pi-list",
+          command: () => navigate("/sales-reconciliations"),
+        },
+        {
+          label: "Add",
+          icon: "pi pi-fw pi-plus",
+          command: () => navigate("/sales-reconciliations/add"),
+        },
+      ],
+    },
+  ];
+
+  return <Menubar model={items} />;
 }
 
 export default NavigationBar;

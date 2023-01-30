@@ -1,19 +1,38 @@
-import { Routes, Route } from "react-router-dom";
-import BookListPage from "../pages/BookList";
-import GenreListPage from "../pages/GenreList";
-import PurchaseOrderListPage from "../pages/PurchaseOrderList";
-import SalesReconciliationListPage from "../pages/SalesReconciliationList";
-import VendorListPage from "../pages/VendorList";
+import { Routes, Route, useNavigate } from "react-router-dom";
+import BookList from "../pages/BookList";
+import GenreList from "../pages/GenreList";
+import LoginPage from "../pages/loginPage";
+import NavigationBar from "./navbar";
+import { Outlet } from "react-router";
 
+const WithNavBar = () => {
+  return (
+    <>
+      <NavigationBar />
+      <Outlet />
+    </>
+  );
+};
+
+const WithoutNavBar = () => {
+  return (
+    <>
+      <Outlet />
+    </>
+  );
+};
+
+// Don't want the navigation bar on the login page
 export default function Router() {
   return (
     <Routes>
-      <Route path="/" element={<BookListPage />} />
-      <Route path="books" element={<BookListPage />} />
-      <Route path="genres" element={<GenreListPage />} />
-      <Route path="vendors" element={<VendorListPage />} />
-      <Route path="purchases" element={<PurchaseOrderListPage />} />
-      <Route path="sales" element={<SalesReconciliationListPage />} />
+      <Route element={<WithoutNavBar />}>
+        <Route path="/" element={<LoginPage navigator={useNavigate()} />} />
+      </Route>
+      <Route element={<WithNavBar />}>
+        <Route path="books" element={<BookList />} />
+        <Route path="genres" element={<GenreList />} />
+      </Route>
     </Routes>
   );
 }

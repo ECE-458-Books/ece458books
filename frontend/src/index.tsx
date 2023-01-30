@@ -3,7 +3,6 @@ import ReactDOM from "react-dom/client";
 import reportWebVitals from "./reportWebVitals";
 import Router from "./components/router";
 import { BrowserRouter } from "react-router-dom";
-import NavigationBar from "./components/navbar";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";

@@ -1,11 +1,14 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import "./index.css";
 import reportWebVitals from "./reportWebVitals";
 import Router from "./components/router";
 import { BrowserRouter } from "react-router-dom";
-import "bootstrap/dist/css/bootstrap.css";
 import NavigationBar from "./components/navbar";
+import LoginPage from './pages/loginPage'
+import "bootstrap/dist/css/bootstrap.css";
+import "primereact/resources/themes/lara-light-indigo/theme.css";
+import "primereact/resources/primereact.min.css"
+import "primeicons/primeicons.css"
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement

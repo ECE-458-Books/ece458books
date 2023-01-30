@@ -1,4 +1,4 @@
-import React, { createRef, FormEvent, useRef } from "react";
+import React, { createRef, FormEvent, } from "react";
 import axios from "axios";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button"
@@ -6,14 +6,13 @@ import { Messages } from 'primereact/messages';
 
 interface LoginState {
   password: string;
-  incorrectPassword: boolean;
 }
 
 class LoginPage extends React.Component<{}, LoginState> {
   private wrongPasswordRef: React.RefObject<Messages>
   constructor(props = {}) {
     super(props);
-    this.state = { password: "", incorrectPassword: false };
+    this.state = { password: ""};
     this.wrongPasswordRef = createRef<Messages>()
 
     this.onChange = this.onChange.bind(this);
@@ -31,11 +30,12 @@ class LoginPage extends React.Component<{}, LoginState> {
       headers: { "Content-Type": "application/json" },
       method: "POST",
       data: JSON.stringify({
-        email: "crs79@duke.edu",
+        email: "admin",
         password: this.state.password,
       }),
     };
-
+    
+    // Make the request, and show error message if password is wrong
     axios.request(reqOpts).then((response) => {
       if(response.data.access) {
         this.setAuthToken(response.data.access)
@@ -44,7 +44,6 @@ class LoginPage extends React.Component<{}, LoginState> {
         console.log("Error")
       }
     }).catch((error) => {
-      console.log("wrong")
       this.wrongPasswordRef.current?.show([
         { sticky: false, severity: 'error', summary: 'Error: Incorrect Password', closable: false, life: 3000}
       ])

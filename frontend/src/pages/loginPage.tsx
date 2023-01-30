@@ -49,7 +49,6 @@ class LoginPage extends React.Component<LoginProps, LoginState> {
           this.props.navigator("/books");
         } else {
           delete axios.defaults.headers.common["Authorization"];
-          console.log("Error");
         }
       })
       .catch(() => {
@@ -69,7 +68,6 @@ class LoginPage extends React.Component<LoginProps, LoginState> {
 
   // Sets the default auth token used by axios
   setAuthToken(token: string) {
-    console.log(token);
     if (token) {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     } else delete axios.defaults.headers.common["Authorization"];

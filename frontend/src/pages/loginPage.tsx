@@ -21,8 +21,10 @@ class LoginPage extends React.Component<{}, LoginState> {
   };
 
   onSubmit = (event: FormEvent<HTMLFormElement>): void => {
+  console.log(process.env.REACT_APP_API_ENDPOINT_TOKEN)
+  
     const reqOpts = {
-      url: "http://books-front.colab.duke.edu:8000/api/v1/auth/token/",
+      url: process.env.REACT_APP_API_ENDPOINT_TOKEN,
       headers: { "Content-Type": "application/json" },
       method: "POST",
       data: JSON.stringify({

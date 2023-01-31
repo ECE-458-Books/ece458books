@@ -6,13 +6,12 @@
 Welcome to Imaginary Software's documentation!
 ==============================================
 
-Contents:
-
 .. toctree::
-   :caption: Django Backend API Documentation
+   :caption: Backend API Documentation
    :maxdepth: 2
 
-   api/authentication
+   api/auth
+   api/books
 
 Indices and tables
 ==================

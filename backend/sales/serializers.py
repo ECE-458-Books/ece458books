@@ -1,5 +1,4 @@
 from rest_framework import serializers
-
 from books.models import Book
 from .models import Sale, SalesReconciliation
 
@@ -7,11 +6,9 @@ from .models import Sale, SalesReconciliation
 class SaleSerializer(serializers.ModelSerializer):
     book = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all())
 
-    # book = serializers.SlugRelatedField(queryset=Book.objects.all(), slug_field='isbn_13')
-
     class Meta:
         model = Sale
-        fields = '__all__'
+        fields = ['book', 'quantity', 'unit_retail_price']
 
 
 class SalesReconciliationSerializer(serializers.ModelSerializer):
@@ -19,11 +16,11 @@ class SalesReconciliationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SalesReconciliation
-        fields = '__all__'
+        fields = ['date', 'sales']
 
     def create(self, validated_data):
-        sales = validated_data.pop('sales')
+        sales_data = validated_data.pop('sales')
         sales_reconciliation = SalesReconciliation.objects.create(**validated_data)
-        for sale in sales:
-            Sale.objects.create(**sale)
+        for sale_data in sales_data:
+            Sale.objects.create(sales_reconciliation=sales_reconciliation, **sale_data)
         return sales_reconciliation

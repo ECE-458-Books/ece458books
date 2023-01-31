@@ -22,9 +22,6 @@ User Registration
    
     :requestheader Authorization: `token`
    
-.. important::
-   The author name must be in URL encoded format.
-
     **Example request**:
 
     .. tabs::

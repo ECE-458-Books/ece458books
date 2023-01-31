@@ -14,7 +14,7 @@ front-remote:
 
 front-local:
 	docker context use default
-	docker compose up -d --build frontend
+	docker compose up -d --build frontend-hot-reload
 
 back-remote:
 	docker context use remote

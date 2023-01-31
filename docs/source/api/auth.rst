@@ -62,3 +62,7 @@ User Registration
     **Example response**:
 
         .. sourcecode:: json
+        {
+            "email": "<email>",
+            "username": "<username>"
+        }

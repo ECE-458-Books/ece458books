@@ -4,39 +4,126 @@ import { InputText } from "primereact/inputtext";
 import { ToggleButton } from "primereact/togglebutton";
 import { Calendar, CalendarProps } from "primereact/calendar";
 
+import { DataTable } from "primereact/datatable";
+import { Column, ColumnEditorOptions } from "primereact/column";
+import { InputNumber } from "primereact/inputnumber";
+import { TableColumn } from "../components/table";
+
 interface modifyPOState {
   date: any;
-  book: string;
-  quantity: string;
-  unitRetailPrice: string;
+  data: SRlineRow[];
   checked: boolean;
 }
+
+interface SRlineRow {
+  books: string;
+  quantity: string;
+  unitRetailPrice: string;
+}
+
+const data: SRlineRow[] = [
+  {
+    books: "blah",
+    quantity: "blah",
+    unitRetailPrice: "blah",
+  },
+];
+
+const columns: TableColumn[] = [
+  { field: "books", header: "Books" },
+  { field: "quantity", header: "Quantity" },
+  { field: "unit retail price", header: "Unit Retail Price" },
+];
 
 class ModifyPOPage extends React.Component<{}, modifyPOState> {
   constructor(props = {}) {
     super(props);
     this.state = {
       date: new Date(),
-      book: "fasasfm",
-      quantity: "fasasfm",
-      unitRetailPrice: "fasasfm",
+      data: data,
       checked: false,
     };
   }
 
+  isPositiveInteger = (val: any) => {
+    let str = String(val);
+
+    str = str.trim();
+
+    if (!str) {
+      return false;
+    }
+
+    str = str.replace(/^0+/, "") || "0";
+    const n = Math.floor(Number(str));
+
+    return n !== Infinity && String(n) === str && n >= 0;
+  };
+
+  onCellEditComplete = (e: {
+    rowData: any;
+    newValue: any;
+    field: any;
+    originalEvent: any;
+  }) => {
+    const { rowData, newValue, field, originalEvent: event } = e;
+
+    switch (field) {
+      case "quantity":
+      case "price":
+        if (this.isPositiveInteger(newValue)) rowData[field] = newValue;
+        else event.preventDefault();
+        break;
+
+      default:
+        if (newValue.trim().length > 0) rowData[field] = newValue;
+        else event.preventDefault();
+        break;
+    }
+  };
+
+  cellEditor = (options: ColumnEditorOptions) => {
+    if (options.field === "unit retail price") return this.priceEditor(options);
+    else return this.textEditor(options);
+  };
+
+  onRowEditComplete = (e: any) => {
+    this.setState({ data: e.currentTarget.value });
+  };
+
+  textEditor = (options: any) => {
+    return (
+      <InputText
+        type="text"
+        value={options.value}
+        onChange={(e) => options.editorCallback(e.target.value)}
+      />
+    );
+  };
+
+  priceEditor = (options: any) => {
+    return (
+      <InputNumber
+        value={options.value}
+        onValueChange={(e) => options.editorCallback(e.value)}
+        mode="currency"
+        currency="USD"
+        locale="en-US"
+      />
+    );
+  };
+
+  priceBodyTemplate = (rowData: { price: number | bigint }) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(rowData.price);
+  };
+
   onSubmit = (event: FormEvent<HTMLFormElement>): void => {
     this.setState({ checked: false });
     alert(
-      "A form was submitted: \n" +
-        this.state.date +
-        "\n" +
-        this.state.book +
-        "\n" +
-        this.state.quantity +
-        "\n" +
-        this.state.unitRetailPrice +
-        "\n" +
-        this.state.checked
+      "A form was submitted: \n" + this.state.date + "\n" + this.state.checked
     );
 
     event.preventDefault();
@@ -63,12 +150,68 @@ class ModifyPOPage extends React.Component<{}, modifyPOState> {
             id="date"
             disabled={!this.state.checked}
             value={this.state.date}
+            showButtonBar
             onChange={(event: CalendarProps): void => {
               this.setState({ date: event.value });
             }}
           />
 
-          <label htmlFor="book">Book</label>
+          <DataTable
+            value={data}
+            editMode="row"
+            dataKey="id"
+            onRowEditComplete={this.onRowEditComplete}
+            responsiveLayout="scroll"
+          >
+            <Column
+              field="book"
+              header="Books"
+              editor={(options) => this.textEditor(options)}
+              style={{ width: "20%" }}
+            ></Column>
+            <Column
+              field="quantity"
+              header="Quantity"
+              editor={(options) => this.textEditor(options)}
+              style={{ width: "20%" }}
+            ></Column>
+            <Column
+              field="unit retail price"
+              header="Unit Retail Price"
+              body={this.priceBodyTemplate}
+              editor={(options) => this.priceEditor(options)}
+              style={{ width: "20%" }}
+            ></Column>
+            <Column
+              rowEditor={this.state.checked}
+              headerStyle={{ width: "10%", minWidth: "8rem" }}
+              bodyStyle={{ textAlign: "center" }}
+            ></Column>
+          </DataTable>
+
+          {/* <DataTable
+            value={data}
+            editMode="cell"
+            disabled={!this.state.checked}
+            className="editable-cells-table"
+            responsiveLayout="scroll"
+          >
+            {columns.map(({ field, header }) => {
+              return (
+                <Column
+                  key={field}
+                  field={field}
+                  header={header}
+                  style={{ width: "25%" }}
+                  body={field === "unit retail price" && this.priceBodyTemplate}
+                  editor={(options) => this.cellEditor(options)}
+                  onCellEditComplete={this.onCellEditComplete}
+                />
+              );
+            })}
+          </DataTable> */}
+
+          {/* <label htmlFor="book">Book</label>
           <InputText
             id="book"
             className="p-inputtext-sm"
@@ -102,7 +245,7 @@ class ModifyPOPage extends React.Component<{}, modifyPOState> {
             onChange={(event: FormEvent<HTMLInputElement>): void => {
               this.setState({ unitRetailPrice: event.currentTarget.value });
             }}
-          />
+          /> */}
 
           <Button label="submit" type="submit" />
         </form>

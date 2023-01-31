@@ -81,6 +81,7 @@ class ModifyPOPage extends React.Component<{}, modifyPOState> {
             id="date"
             disabled={!this.state.checked}
             value={this.state.date}
+            showButtonBar
             onChange={(event: CalendarProps): void => {
               this.setState({ date: event.value });
             }}

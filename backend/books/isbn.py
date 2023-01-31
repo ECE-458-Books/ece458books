@@ -2,6 +2,7 @@ from urllib.request import urlopen
 import json
 from pprint import pprint
 from isbnlib import *
+from dateutil import parser
 
 class ISBNSearch:
     def __init__(
@@ -22,7 +23,7 @@ class ISBNSearch:
         resp = urlopen(end_url)
         json_resp = json.load(resp)
 
-        return self.parse_response(json_resp)
+        return self.parse_response(json_resp, parsed_isbn)
     
     def parse_isbn(
         self,
@@ -32,7 +33,8 @@ class ISBNSearch:
 
     def parse_response(
         self,
-        response: dict = {},
+        response: dict,
+        isbn: str,
     ):
         ret = {}
 
@@ -52,7 +54,9 @@ class ISBNSearch:
             elif (key == 'industryIdentifiers'):
                 # convert to isbn
                 ret['isbn_10'] = info[key][0]['identifier']
-                ret['isbn_13'] = info[key][1]['identifier']
+                ret['isbn_13'] = isbn
+            elif (key == 'publishedDate'):
+                ret[key] = parser.parse(info[key]).year
             else:
                 ret[key] = info[key]
         

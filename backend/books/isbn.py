@@ -41,7 +41,6 @@ class ISBNSearch:
         selfLink = response['items'][0]['selfLink']
         j = json.load(urlopen(selfLink))
         info = j['volumeInfo']
-        pprint(info)
 
         relevant_keys = ['title', 'authors', 'publisher', 'pageCount', 'publishedDate', 'industryIdentifiers', 'dimensions']
 

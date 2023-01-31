@@ -5,6 +5,17 @@ services:
     build: ./frontend
     ports: 
       - 80:3000
+    environment:
+      env_file: ./frontend/.env.development
+  frontend-hot-reload:
+    image: frontend-image
+    build: ./frontend
+    ports: 
+      - 80:3000
+    volumes:
+      - ./frontend/src:/app/src
+    environment:
+      env_file: ./frontend/.env.development
   backend:
     image: backend-image
     build: ./backend

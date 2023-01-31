@@ -5,6 +5,8 @@ import "primereact/resources/themes/lara-light-indigo/theme.css";
 export interface TableColumn {
   field: string;
   header: string;
+  filterPlaceholder: string;
+  customFilter?: any;
 }
 
 export interface TableProps<T extends object> {
@@ -14,11 +16,23 @@ export interface TableProps<T extends object> {
 
 export default function Table<T extends object>(props: TableProps<T>) {
   const dynamicColumns = props.columns.map((col, i) => {
-    return <Column key={col.field} field={col.field} header={col.header} />;
+    return (
+      <Column
+        key={col.field}
+        field={col.field}
+        header={col.header}
+        filter
+        filterElement={col.customFilter}
+        filterPlaceholder={col.filterPlaceholder}
+        style={{ minWidth: "12rem" }}
+        showClearButton={false}
+        sortable
+      />
+    );
   });
 
   return (
-    <DataTable value={props.data} responsiveLayout="scroll">
+    <DataTable value={props.data} responsiveLayout="scroll" filterDisplay="row">
       {dynamicColumns}
     </DataTable>
   );

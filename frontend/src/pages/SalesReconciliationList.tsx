@@ -1,5 +1,5 @@
 import React from "react";
-import Table, { TableColumn } from "../components/table";
+import Table, { TableColumn } from "../components/Table";
 import ModifyButton from "../components/modifybutton";
 
 interface SalesReconciliationListState {
@@ -13,7 +13,7 @@ interface SalesReconciliationRow {
   totalRevenue: number;
 }
 
-const data: SalesReconciliationRow[] = [
+const DATA: SalesReconciliationRow[] = [
   {
     date: "today",
     uniqueBooks: 2,
@@ -22,14 +22,26 @@ const data: SalesReconciliationRow[] = [
   },
 ];
 
-const columns: TableColumn[] = [
-  { field: "date", header: "Date" },
-  { field: "uniqueBooks", header: "Unique Books" },
-  { field: "totalBooks", header: "Total Books" },
-  { field: "totalRevenue", header: "TotalCost" },
+const COLUMNS: TableColumn[] = [
+  { field: "date", header: "Date", filterPlaceholder: "Search by Total Date" },
+  {
+    field: "uniqueBooks",
+    header: "Unique Books",
+    filterPlaceholder: "Search by Unique Books",
+  },
+  {
+    field: "totalBooks",
+    header: "Total Books",
+    filterPlaceholder: "Search by Total Books",
+  },
+  {
+    field: "totalRevenue",
+    header: "TotalCost",
+    filterPlaceholder: "Search by Total Revenue",
+  },
 ];
 
-class SalesReconciliationPage extends React.Component<
+class SalesReconciliationList extends React.Component<
   {},
   SalesReconciliationListState
 > {
@@ -39,13 +51,8 @@ class SalesReconciliationPage extends React.Component<
   }
 
   render() {
-    return (
-      <div>
-        <ModifyButton path="/modifysalesreconciliation" />
-        <Table<SalesReconciliationRow> columns={columns} data={data} />
-      </div>
-    );
+    return <Table<SalesReconciliationRow> columns={COLUMNS} data={DATA} />;
   }
 }
 
-export default SalesReconciliationPage;
+export default SalesReconciliationList;

@@ -1,5 +1,5 @@
 import React from "react";
-import Table, { TableColumn } from "../components/table";
+import Table, { TableColumn } from "../components/Table";
 import ModifyButton from "../components/modifybutton";
 
 interface PurchaseOrderListState {
@@ -14,7 +14,7 @@ interface PurchaseOrderRow {
   totalCost: number;
 }
 
-const data: PurchaseOrderRow[] = [
+const DATA: PurchaseOrderRow[] = [
   {
     date: "today",
     vendorName: "blah",
@@ -24,28 +24,39 @@ const data: PurchaseOrderRow[] = [
   },
 ];
 
-const columns: TableColumn[] = [
-  { field: "date", header: "Date" },
-  { field: "vendorName", header: "Vendor Name" },
-  { field: "uniqueBooks", header: "Unique Books" },
-  { field: "totalBooks", header: "Total Books" },
-  { field: "totalCost", header: "TotalCost" },
+const COLUMNS: TableColumn[] = [
+  { field: "date", header: "Date", filterPlaceholder: "Search by Date" },
+  {
+    field: "vendorName",
+    header: "Vendor Name",
+    filterPlaceholder: "Search by Name",
+  },
+  {
+    field: "uniqueBooks",
+    header: "Unique Books",
+    filterPlaceholder: "Search by Unique Books",
+  },
+  {
+    field: "totalBooks",
+    header: "Total Books",
+    filterPlaceholder: "Search by Total Books",
+  },
+  {
+    field: "totalCost",
+    header: "TotalCost",
+    filterPlaceholder: "Search by Total Cost",
+  },
 ];
 
-class PurchaseOrderPage extends React.Component<{}, PurchaseOrderListState> {
+class PurchaseOrderList extends React.Component<{}, PurchaseOrderListState> {
   constructor(props = {}) {
     super(props);
     this.state = { value: "" };
   }
 
   render() {
-    return (
-      <div>
-        <ModifyButton path="/modifypurchaseorder" />
-        <Table<PurchaseOrderRow> columns={columns} data={data} />
-      </div>
-    );
+    return <Table<PurchaseOrderRow> columns={COLUMNS} data={DATA} />;
   }
 }
 
-export default PurchaseOrderPage;
+export default PurchaseOrderList;

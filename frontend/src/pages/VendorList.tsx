@@ -1,5 +1,5 @@
 import React, { FormEvent } from "react";
-import Table, { TableColumn } from "../components/table";
+import Table, { TableColumn } from "../components/Table";
 import ModifyButton from "../components/modifybutton";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Button } from "primereact/button";
@@ -13,15 +13,21 @@ interface VendorRow {
   name: string;
 }
 
-const data: VendorRow[] = [
+const DATA: VendorRow[] = [
   {
     name: "blah",
   },
 ];
 
-const columns: TableColumn[] = [{ field: "name", header: "Vendor Name" }];
+const COLUMNS: TableColumn[] = [
+  {
+    field: "name",
+    header: "Vendor Name",
+    filterPlaceholder: "Search by Name",
+  },
+];
 
-class VendorListPage extends React.Component<{}, VendorListState> {
+class VendorList extends React.Component<{}, VendorListState> {
   constructor(props = {}) {
     super(props);
     this.state = { value: "", addVendors: "" };
@@ -34,30 +40,8 @@ class VendorListPage extends React.Component<{}, VendorListState> {
   };
 
   render() {
-    return (
-      <div>
-        <ModifyButton path="/modifyvendor" />
-        <form onSubmit={this.onSubmit}>
-          <span className="p-float-label">
-            <InputTextarea
-              autoResize
-              id="addVendors"
-              name="addVendors"
-              value={this.state.addVendors}
-              onChange={(event: FormEvent<HTMLTextAreaElement>): void =>
-                this.setState({ addVendors: event.currentTarget.value })
-              }
-              rows={2}
-              cols={30}
-            />
-            <label htmlFor="addVendors">Add Vendors</label>
-          </span>
-          <Button label="submit" type="submit" />
-        </form>
-        <Table<VendorRow> columns={columns} data={data} />
-      </div>
-    );
+    return <Table<VendorRow> columns={COLUMNS} data={DATA} />;
   }
 }
 
-export default VendorListPage;
+export default VendorList;

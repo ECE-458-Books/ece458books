@@ -28,7 +28,7 @@ class ISBNSearchView(APIView):
             query_set = Book.objects.filter(isbn_13=parsed_isbn)
             # If ISBN exist in DB get from DB
             if(len(query_set) == 0):
-                response_list.append(self.search.fecth_isbn_data(isbn))
+                response_list.append(self.search.fetch_isbn_data(isbn))
             else:
                 # get if from DB
                 response_list.append(self.parseDBBookModel(query_set[0]))

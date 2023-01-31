@@ -30,7 +30,7 @@ class LoginPage extends React.Component<{}, LoginState> {
       headers: { "Content-Type": "application/json" },
       method: "POST",
       data: JSON.stringify({
-        email: "hk196@duke.edu",
+        email: "hosung.kim@duke.edu",
         password: this.state.password,
       }),
     };

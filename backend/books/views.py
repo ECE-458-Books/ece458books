@@ -1,3 +1,4 @@
+from django.core import serializers
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
@@ -7,6 +8,7 @@ import re
 from .isbn import ISBNSearch
 from .serializers import BookSerializer
 from .models import Book, Author, Genre
+from pprint import pprint
 
 class ISBNSearchView(APIView):
     search = ISBNSearch()
@@ -21,9 +23,37 @@ class ISBNSearchView(APIView):
         response_list = []
 
         for isbn in isbns:
-            response_list.append(self.search.fecth_isbn_data(isbn))
-        
+            parsed_isbn = self.search.parse_isbn(isbn)
+            query_set = Book.objects.filter(isbn_13=parsed_isbn)
+            # If ISBN exist in DB get from DB
+            if(len(query_set) == 0):
+                response_list.append(self.search.fecth_isbn_data(isbn))
+            else:
+                # get if from DB
+                response_list.append(self.parseDBBookModel(query_set[0]))
+
         return Response(response_list)
+    
+    def parseDBBookModel(self, book):
+        # Returns a parsed Book json from Book Model
+        ret = dict()
+
+        for field in book._meta.fields:
+            ret[field.name] = getattr(book, field.name)
+
+        # Deal with many-to-many fields
+        # Get Authors
+        for author in book.authors.all():
+            ret.setdefault("authors", []).append(author.name)
+
+        # Get Genres
+        for genre in book.genres.all():
+            ret.setdefault("genres", []).append(genre.name)
+
+        ret["fromDB"] = True
+
+        return ret
+
 
 class ListCreateBookAPIView(ListCreateAPIView):
     serializer_class = BookSerializer

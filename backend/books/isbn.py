@@ -28,7 +28,7 @@ class ISBNSearch:
         self,
         isbn: str = None,
     ):
-        return canonical(isbn)
+        return canonical(to_isbn13(isbn)) if is_isbn10(isbn) else canonical(isbn)
 
     def parse_response(
         self,
@@ -55,6 +55,9 @@ class ISBNSearch:
                 ret['isbn_13'] = info[key][1]['identifier']
             else:
                 ret[key] = info[key]
+        
+        # Set from DB to False
+        ret["fromDB"] = False
 
         return ret
 

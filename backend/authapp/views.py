@@ -1,64 +1,48 @@
 from rest_framework import status
-from rest_framework.generics import RetrieveUpdateAPIView
+from rest_framework.generics import RetrieveAPIView, CreateAPIView, UpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
-from .serializers import RegistrationSerializer, LoginSerializer, UserSerializer
-from .renderers import UserJSONRenderer
+from .serializers import RegistrationSerializer, UserSerializer, ChangePasswordSerializer
+from .models import User
 
 
-class RegistrationAPIView(APIView):
-    # Allow any user (authenticated or not) to hit this endpoint.
+class RegistrationAPIView(CreateAPIView):
     permission_classes = (AllowAny,)
-    renderer_classes = (UserJSONRenderer,)
     serializer_class = RegistrationSerializer
 
-    def post(self, request):
-        user = request.data.get('user-registration', {})
-        print(user)
-
-        # The create serializer, validate serializer, save serializer pattern
-        # below is common and you will see it a lot throughout this course and
-        # your own work later on. Get familiar with it.
-        serializer = self.serializer_class(data=user)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
-class LoginAPIView(APIView):
-    permission_classes = (AllowAny,)
-    renderer_classes = (UserJSONRenderer,)
-    serializer_class = LoginSerializer
-
-    def post(self, request):
-        user = request.data.get('user', {})
-
-        serializer = self.serializer_class(data=user)
-        serializer.is_valid(raise_exception=True)
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
+class UserRetrieveUpdateAPIView(RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
-    renderer_classes = (UserJSONRenderer,)
     serializer_class = UserSerializer
+    lookup_field = 'email'
 
-    def retrieve(self, request, *args, **kwargs):
-        # Nothing to validate or save here. Just want to serialize the `User` object so that we can put it into JSON and send to client.
-        serializer = self.serializer_class(request.user)
+    def get_queryset(self):
+        return User.objects.all()
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+class ChangePasswordView(UpdateAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = ChangePasswordSerializer
+    queryset = User.objects.all()
+    lookup_field = 'username'
 
+    # Override Update for default behavior
     def update(self, request, *args, **kwargs):
-        serializer_data = request.data.get('user', {})
-
-        # Serialize, validate, save pattern
-        serializer = self.serializer_class(request.user, data=serializer_data, partial=True)
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        return Response({"status":"success"}, status=status.HTTP_200_OK)
+
+    def perform_update(self, serializer):
         serializer.save()
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def partial_update(self, request, *args, **kwargs):
+        kwargs['partial'] = True
+        return self.update(request, *args, **kwargs)

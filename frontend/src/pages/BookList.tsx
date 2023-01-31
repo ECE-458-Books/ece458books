@@ -70,21 +70,25 @@ const COLUMNS: TableColumn[] = [
     field: "publisher",
     header: "Publisher",
     filterPlaceholder: "Search by Publisher",
+    hidden: true,
   },
   {
     field: "pubYear",
     header: "Publication Year",
     filterPlaceholder: "Search by Publication Year",
+    hidden: true,
   },
   {
     field: "pageCount",
     header: "Page Count",
     filterPlaceholder: "Search by Page Count",
+    hidden: true,
   },
   {
     field: "dimensions",
     header: "Dimensions",
     filterPlaceholder: "Search by Dimensions",
+    hidden: true,
   },
   {
     field: "retailPrice",

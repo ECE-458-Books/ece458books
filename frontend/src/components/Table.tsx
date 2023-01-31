@@ -7,6 +7,7 @@ export interface TableColumn {
   header: string;
   filterPlaceholder: string;
   customFilter?: any;
+  hidden?: boolean;
 }
 
 export interface TableProps<T extends object> {
@@ -24,9 +25,10 @@ export default function Table<T extends object>(props: TableProps<T>) {
         filter
         filterElement={col.customFilter}
         filterPlaceholder={col.filterPlaceholder}
-        style={{ minWidth: "12rem" }}
+        style={{ minWidth: "16rem" }}
         showClearButton={false}
         sortable
+        hidden={col.hidden}
       />
     );
   });

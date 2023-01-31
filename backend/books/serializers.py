@@ -11,6 +11,7 @@ class BookSerializer(serializers.ModelSerializer):
         model = Book
         # List all fields that could be included in the request
         fields = '__all__'
+        read_only_fields = ['title', 'authors', 'isbn_13', 'isbn_10', 'publisher', 'publishedDate']
 
 class AuthorSerializer(serializers.ModelSerializer):
     book_list = BookSerializer(many=True, read_only=True)

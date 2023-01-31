@@ -11,6 +11,7 @@ from .models import Book, Author, Genre
 from pprint import pprint
 
 class ISBNSearchView(APIView):
+    permissions_classes = [IsAuthenticated]
     search = ISBNSearch()
 
     def post(self, request):
@@ -58,8 +59,7 @@ class ISBNSearchView(APIView):
 class ListCreateBookAPIView(ListCreateAPIView):
     serializer_class = BookSerializer
     queryset = Book.objects.all()
-    # permissions_classes = [IsAdminUser, IsAuthenticated]
-    permissions_classes = [AllowAny,]
+    permissions_classes = [IsAuthenticated]
 
     # Override default create method
     def create(self, request, *args, **kwargs):

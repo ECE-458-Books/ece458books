@@ -11,5 +11,7 @@ isbnlib==3.10.12
 isbntools==4.3.28
 psycopg2-binary==2.9.5
 PyJWT==2.6.0
+python-dateutil==2.8.2
 pytz==2022.7.1
+six==1.16.0
 sqlparse==0.4.3

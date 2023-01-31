@@ -10,7 +10,7 @@ class ISBNSearch:
     ):
         self._base_url = "https://www.googleapis.com/books/v1/volumes?q=isbn:"
 
-    def fecth_isbn_data(
+    def fetch_isbn_data(
         self,
         isbn: str = None,
         ):
@@ -81,4 +81,4 @@ class ISBNSearch:
 if __name__ == "__main__":
     search = ISBNSearch()
     isbn = "978-0131103627"
-    pprint(search.fecth_isbn_data(isbn))
+    pprint(search.fetch_isbn_data(isbn))

@@ -19,11 +19,11 @@ master_doc = 'index'
 
 extensions = [
     'sphinx_rtd_theme',
+    'sphinxcontrib-httpdomain'
 ]
 
 templates_path = ['_templates']
 exclude_patterns = []
-
 
 
 # -- Options for HTML output -------------------------------------------------

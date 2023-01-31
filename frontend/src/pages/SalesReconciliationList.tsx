@@ -35,7 +35,7 @@ const COLUMNS: TableColumn[] = [
   },
   {
     field: "totalRevenue",
-    header: "TotalCost",
+    header: "Total Cost",
     filterPlaceholder: "Search by Total Revenue",
   },
 ];

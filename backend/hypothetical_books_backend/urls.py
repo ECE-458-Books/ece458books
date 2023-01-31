@@ -15,9 +15,13 @@ Including another URLconf
 """
 from django.urls import include, path
 
+api_version = 1
+api_prefix = f'api/v{api_version}/'
+
 urlpatterns = [
-    path('api/v1/books/', include('books.urls')),
-    path('api/v1/genres/', include('genres.urls')),
-    path('api/v1/vendors/', include('vendors.urls')),
-    path('api/v1/auth/', include('authapp.urls', namespace='authentication')),
+    path(f'{api_prefix}books/', include('books.urls')),
+    path(f'{api_prefix}genres/', include('genres.urls')),
+    path(f'{api_prefix}vendors/', include('vendors.urls')),
+    path(f'{api_prefix}sales/', include('sales.urls')),
+    path(f'{api_prefix}auth/', include('authapp.urls', namespace='authentication')),
 ]

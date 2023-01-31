@@ -58,6 +58,9 @@ INSTALLED_APPS = [
     # Authentication App
     'authapp',
 
+    # Sales App
+    'sales',
+
     # add REST Framework
     'corsheaders',
     'rest_framework',
@@ -65,6 +68,7 @@ INSTALLED_APPS = [
 
     # Django Extensions (shell_plus)
     'django_extensions',
+    'drf_multiple_model',
 ]
 
 MIDDLEWARE = [
@@ -168,5 +172,5 @@ AUTH_USER_MODEL = 'authapp.User'
 
 CORS_ORIGIN_ALLOW_ALL = False
 CORS_ORIGIN_WHITELIST = [
-  'http://localhost',
+    'http://localhost',
 ]

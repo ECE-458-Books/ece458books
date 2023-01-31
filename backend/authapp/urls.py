@@ -1,17 +1,14 @@
 from django.urls import path
 
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-)
+from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView
 
-from .views import RegistrationAPIView, LoginAPIView, UserRetrieveUpdateAPIView
+from .views import RegistrationAPIView, UserRetrieveUpdateAPIView, ChangePasswordView
 
 app_name = 'authapp'
 urlpatterns = [
-    path('token/', TokenObtainPairView.as_view(), name='token-obtain-pair'),
-    path('token/refresh/', TokenRefreshView.as_view(), name='token-refresh'),
-    path('users/', RegistrationAPIView.as_view()),
-    path('users/login/', LoginAPIView.as_view()),
-    path('user/', UserRetrieveUpdateAPIView.as_view()),
+    path('users/register/', RegistrationAPIView.as_view()),
+    path('users/login/', TokenObtainPairView.as_view()),
+    path('token/refresh/', TokenRefreshView.as_view()),
+    path('user/<email>/', UserRetrieveUpdateAPIView.as_view()),
+    path('change_password/<username>/', ChangePasswordView.as_view()),
 ]

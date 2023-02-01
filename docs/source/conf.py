@@ -31,5 +31,7 @@ exclude_patterns = []
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
+pygments_stype = 'sphinx'
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
+html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]

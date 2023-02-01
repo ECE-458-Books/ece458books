@@ -15,11 +15,9 @@ User Registration
 
     Register a new user to the BookStore User DB.
 
-    :query sort: one of ``hit``, ``created-at``
-    :query offset: offset number. default is 0
-    :query limit: limit number. default is 30
-   
-    :requestheader Authorization: `token`
+    :query string email: email of registering user
+    :query string username: username of registering user
+    :query string password: password of registering user
    
     **Example request**
 

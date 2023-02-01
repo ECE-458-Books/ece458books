@@ -16,7 +16,7 @@ class ISBNSearchView(APIView):
 
     * Input data is a string of ISBNs separated by spaces and/or commas
     """
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     isbn_toolbox = ISBNTools()
 
     def post(self, request):

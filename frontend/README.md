@@ -1,6 +1,14 @@
-# Getting Started with Create React App
+# Setup
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+From this directory, run `npm install` to install the dependencies
+
+`npm install --only=dev` to install dev dependencies
+
+`npm run lint` to view all errors/warnings
+
+`npm run lint:fix` to fix linting errors that can be fixed automatically
+
+`npm run format` to run the code formatter
 
 ## Available Scripts
 

@@ -1,19 +1,24 @@
-import React, { createRef, FormEvent, } from "react";
+import React, { createRef, FormEvent } from "react";
 import axios from "axios";
 import { InputText } from "primereact/inputtext";
-import { Button } from "primereact/button"
-import { Messages } from 'primereact/messages';
+import { Button } from "primereact/button";
+import { Messages } from "primereact/messages";
+import NavigateFunction from "react-router-dom";
+
+interface LoginProps {
+  navigator: NavigateFunction.NavigateFunction;
+}
 
 interface LoginState {
   password: string;
 }
 
-class LoginPage extends React.Component<{}, LoginState> {
-  private wrongPasswordRef: React.RefObject<Messages>
-  constructor(props = {}) {
+class LoginPage extends React.Component<LoginProps, LoginState> {
+  private wrongPasswordRef: React.RefObject<Messages>;
+  constructor(props: LoginProps) {
     super(props);
-    this.state = { password: ""};
-    this.wrongPasswordRef = createRef<Messages>()
+    this.state = { password: "" };
+    this.wrongPasswordRef = createRef<Messages>();
 
     this.onChange = this.onChange.bind(this);
     this.onSubmit = this.onSubmit.bind(this);
@@ -34,19 +39,29 @@ class LoginPage extends React.Component<{}, LoginState> {
         password: this.state.password,
       }),
     };
-    
+
     // Make the request, and show error message if password is wrong
-    axios.request(reqOpts).then((response) => {
-      if(response.data.access) {
-        this.setAuthToken(response.data.access)
-      } else {
-        delete axios.defaults.headers.common["Authorization"];
-      }
-    }).catch((error) => {
-      this.wrongPasswordRef.current?.show([
-        { sticky: false, severity: 'error', summary: 'Error: Incorrect Password', closable: false, life: 3000}
-      ])
-    });
+    axios
+      .request(reqOpts)
+      .then((response) => {
+        if (response.data.access) {
+          this.setAuthToken(response.data.access);
+          this.props.navigator("/books");
+        } else {
+          delete axios.defaults.headers.common["Authorization"];
+        }
+      })
+      .catch(() => {
+        this.wrongPasswordRef.current?.show([
+          {
+            sticky: false,
+            severity: "error",
+            summary: "Error: Incorrect Password",
+            closable: false,
+            life: 3000,
+          },
+        ]);
+      });
 
     event.preventDefault();
   };
@@ -55,17 +70,18 @@ class LoginPage extends React.Component<{}, LoginState> {
   setAuthToken(token: string) {
     if (token) {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    } else delete axios.defaults.headers.common["Authorization"]; 
+    } else delete axios.defaults.headers.common["Authorization"];
   }
 
   render() {
     return (
-      <form onSubmit = {this.onSubmit}>
-        <InputText value={this.state.password} onChange={(this.onChange)} />
+      <form onSubmit={this.onSubmit}>
+        <InputText value={this.state.password} onChange={this.onChange} />
         <Button type="submit" label="Submit" aria-label="Submit" />
-        <Messages ref={this.wrongPasswordRef}/>
+        <Messages ref={this.wrongPasswordRef} />
       </form>
-  )}
+    );
+  }
 }
 
 export default LoginPage;

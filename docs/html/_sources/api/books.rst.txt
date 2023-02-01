@@ -45,7 +45,7 @@ ISBN Search
 
          print(response.text)
 
-      .. code-tab:: javascript
+      .. code-tab:: nodejsrepl
 
          var axios = require('axios');
          var FormData = require('form-data');
@@ -90,7 +90,7 @@ ISBN Search
             "height": 9.84,
             "width": 7.24,
             "thickness": 0.94,
-            "fromDB": false
+            "fromDB": true
          },
          {
             "title": "C Primer Plus",
@@ -105,7 +105,7 @@ ISBN Search
             "height": 9.06,
             "width": 7.09,
             "thickness": 2.28,
-            "fromDB": false
+            "fromDB": true
          },
          {
             "title": "Linear Algebra Done Right",

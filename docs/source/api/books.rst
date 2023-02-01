@@ -45,7 +45,7 @@ ISBN Search
 
          print(response.text)
 
-      .. code-tab:: javascript
+      .. code-tab:: nodejsrepl
 
          var axios = require('axios');
          var FormData = require('form-data');

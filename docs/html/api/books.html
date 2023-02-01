@@ -105,7 +105,7 @@
 </dl>
 <p><strong>Example request</strong></p>
 <div class="sphinx-tabs docutils container">
-<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-0-QmFzaA==" aria-selected="true" class="sphinx-tabs-tab code-tab group-tab" id="tab-0-QmFzaA==" name="QmFzaA==" role="tab" tabindex="0">Bash</button><button aria-controls="panel-0-UHl0aG9u" aria-selected="false" class="sphinx-tabs-tab code-tab group-tab" id="tab-0-UHl0aG9u" name="UHl0aG9u" role="tab" tabindex="-1">Python</button><button aria-controls="panel-0-SmF2YVNjcmlwdA==" aria-selected="false" class="sphinx-tabs-tab code-tab group-tab" id="tab-0-SmF2YVNjcmlwdA==" name="SmF2YVNjcmlwdA==" role="tab" tabindex="-1">JavaScript</button></div><div aria-labelledby="tab-0-QmFzaA==" class="sphinx-tabs-panel code-tab group-tab" id="panel-0-QmFzaA==" name="QmFzaA==" role="tabpanel" tabindex="0"><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>--location<span class="w"> </span>--request<span class="w"> </span>POST<span class="w"> </span><span class="s1">&#39;https://books.colab.duke.edu:8000/api/v1/books/isbns/&#39;</span><span class="w"> </span><span class="se">\</span>
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-0-QmFzaA==" aria-selected="true" class="sphinx-tabs-tab code-tab group-tab" id="tab-0-QmFzaA==" name="QmFzaA==" role="tab" tabindex="0">Bash</button><button aria-controls="panel-0-UHl0aG9u" aria-selected="false" class="sphinx-tabs-tab code-tab group-tab" id="tab-0-UHl0aG9u" name="UHl0aG9u" role="tab" tabindex="-1">Python</button><button aria-controls="panel-0-Tm9kZS5qcyBSRVBMIGNvbnNvbGUgc2Vzc2lvbg==" aria-selected="false" class="sphinx-tabs-tab code-tab group-tab" id="tab-0-Tm9kZS5qcyBSRVBMIGNvbnNvbGUgc2Vzc2lvbg==" name="Tm9kZS5qcyBSRVBMIGNvbnNvbGUgc2Vzc2lvbg==" role="tab" tabindex="-1">Node.js REPL console session</button></div><div aria-labelledby="tab-0-QmFzaA==" class="sphinx-tabs-panel code-tab group-tab" id="panel-0-QmFzaA==" name="QmFzaA==" role="tabpanel" tabindex="0"><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>--location<span class="w"> </span>--request<span class="w"> </span>POST<span class="w"> </span><span class="s1">&#39;https://books.colab.duke.edu:8000/api/v1/books/isbns/&#39;</span><span class="w"> </span><span class="se">\</span>
 --form<span class="w"> </span><span class="s1">&#39;isbns=&quot;9780131103627, 978-0321928429, 978-3319110790, 1492052590&quot;&#39;</span>
 </pre></div>
 </div>
@@ -126,7 +126,7 @@
 <span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
 </pre></div>
 </div>
-</div><div aria-labelledby="tab-0-SmF2YVNjcmlwdA==" class="sphinx-tabs-panel code-tab group-tab" hidden="true" id="panel-0-SmF2YVNjcmlwdA==" name="SmF2YVNjcmlwdA==" role="tabpanel" tabindex="0"><div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="kd">var</span><span class="w"> </span><span class="nx">axios</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">require</span><span class="p">(</span><span class="s1">&#39;axios&#39;</span><span class="p">);</span>
+</div><div aria-labelledby="tab-0-Tm9kZS5qcyBSRVBMIGNvbnNvbGUgc2Vzc2lvbg==" class="sphinx-tabs-panel code-tab group-tab" hidden="true" id="panel-0-Tm9kZS5qcyBSRVBMIGNvbnNvbGUgc2Vzc2lvbg==" name="Tm9kZS5qcyBSRVBMIGNvbnNvbGUgc2Vzc2lvbg==" role="tabpanel" tabindex="0"><div class="highlight-nodejsrepl notranslate"><div class="highlight"><pre><span></span><span class="kd">var</span><span class="w"> </span><span class="nx">axios</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">require</span><span class="p">(</span><span class="s1">&#39;axios&#39;</span><span class="p">);</span>
 <span class="kd">var</span><span class="w"> </span><span class="nx">FormData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">require</span><span class="p">(</span><span class="s1">&#39;form-data&#39;</span><span class="p">);</span>
 <span class="kd">var</span><span class="w"> </span><span class="nx">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">FormData</span><span class="p">();</span>
 <span class="nx">data</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="s1">&#39;isbns&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;9780131103627, 978-0321928429, 978-3319110790, 1492052590&#39;</span><span class="p">);</span>
@@ -166,7 +166,7 @@
 <span class="w">      </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">9.84</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">7.24</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;thickness&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.94</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;fromDB&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+<span class="w">      </span><span class="nt">&quot;fromDB&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
 <span class="w">   </span><span class="p">},</span>
 <span class="w">   </span><span class="p">{</span>
 <span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;C Primer Plus&quot;</span><span class="p">,</span>
@@ -181,7 +181,7 @@
 <span class="w">      </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">9.06</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">7.09</span><span class="p">,</span>
 <span class="w">      </span><span class="nt">&quot;thickness&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">2.28</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;fromDB&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+<span class="w">      </span><span class="nt">&quot;fromDB&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
 <span class="w">   </span><span class="p">},</span>
 <span class="w">   </span><span class="p">{</span>
 <span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Linear Algebra Done Right&quot;</span><span class="p">,</span>

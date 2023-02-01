@@ -2,14 +2,20 @@ from rest_framework import serializers
 
 from .models import Book, Author, Genre
 
-class BookSerializer(serializers.ModelSerializer):
-    """Serializes Book Creation and Details"""
+class BookAddSerializer(serializers.ModelSerializer):
     authors = serializers.SlugRelatedField(queryset=Author.objects.all(), many=True, slug_field='name')
     genres = serializers.SlugRelatedField(queryset=Genre.objects.all(), many=True, slug_field='name')
 
     class Meta:
         model = Book
-        # List all fields that could be included in the request
+        fields = '__all__'
+
+class BookSerializer(serializers.ModelSerializer):
+    authors = serializers.SlugRelatedField(queryset=Author.objects.all(), many=True, slug_field='name')
+    genres = serializers.SlugRelatedField(queryset=Genre.objects.all(), many=True, slug_field='name')
+
+    class Meta:
+        model = Book
         fields = '__all__'
         read_only_fields = ['title', 'authors', 'isbn_13', 'isbn_10', 'publisher', 'publishedDate']
 
@@ -19,3 +25,6 @@ class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Author 
         fields = '__all__'
+
+class ISBNSerializer(serializers.Serializer):
+    isbns = serializers.CharField()

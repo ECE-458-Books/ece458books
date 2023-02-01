@@ -11,7 +11,7 @@ class Book(models.Model):
     # Intrinsic, Acquired from external databse, not editable
     title = models.CharField(max_length=200)
     authors = models.ManyToManyField(Author)
-    isbn_13 = models.CharField(max_length=13, unique=True, primary_key=True)
+    isbn_13 = models.CharField(max_length=13)
     isbn_10 = models.CharField(max_length=10)
     publisher = models.CharField(max_length=50)
     publishedDate = models.IntegerField(

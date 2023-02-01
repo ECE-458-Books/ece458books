@@ -4,7 +4,7 @@ from pprint import pprint
 from isbnlib import *
 from dateutil import parser
 
-class ISBNSearch:
+class ISBNTools:
     def __init__(
         self,
     ):
@@ -41,6 +41,8 @@ class ISBNSearch:
         if (response['totalItems'] == 0):
             return ret
         selfLink = response['items'][0]['selfLink']
+
+        # Google Books are represented differently and for more data need to make a second request
         j = json.load(urlopen(selfLink))
         info = j['volumeInfo']
 
@@ -67,8 +69,21 @@ class ISBNSearch:
 
     def centiToInches(
         self, 
-        centi
-    ):
+        centi: str
+    ) -> float:
+        """Convert Google Books cm to Inches
+
+        Args:
+            centi: string formated as {size} cm
+
+        Returns:
+            inch: Converted cm value to inches in float format
+
+        *Note
+            Google Books gives us the size in cm(str) thus, conversion is needed
+
+        """
+
         # remove unit
         unit = 'cm'
 
@@ -77,8 +92,17 @@ class ISBNSearch:
         inch = '{0:.2f}'.format(centi_reformatted/2.54)
         return float(inch)
 
-    
-if __name__ == "__main__":
-    search = ISBNSearch()
-    isbn = "978-0131103627"
-    pprint(search.fetch_isbn_data(isbn))
+    def parse_raw_isbn_list(
+        self, 
+        isbn_list
+    ):
+        """Return parsed ISBN list 
+
+        Args:
+            isbn_list: List of raw isbns
+
+        Returns:
+            list: The parsed ISBN list formatted to ISBN13.
+
+        """
+        return [self.parse_isbn(raw_isbn) for raw_isbn in isbn_list]

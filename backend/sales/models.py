@@ -8,7 +8,7 @@ class SalesReconciliation(models.Model):
 
 
 class Sale(models.Model):
-    book = models.ForeignKey(Book, models.CASCADE)
+    book = models.ForeignKey(Book, related_name='books', on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField()
     unit_retail_price = models.FloatField(validators=[MinValueValidator(0)])
     sales_reconciliation = models.ForeignKey(SalesReconciliation, related_name='sales', on_delete=models.CASCADE)

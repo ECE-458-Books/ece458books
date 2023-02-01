@@ -3,7 +3,8 @@ from .serializers import SalesReconciliationSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from .models import SalesReconciliation
-from rest_framework.generics import ListCreateAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from .sales_reconciliation import SalesReconciliationFieldsCalculator
 
 
 class SalesReconciliationAPIView(ListCreateAPIView):
@@ -18,25 +19,22 @@ class SalesReconciliationAPIView(ListCreateAPIView):
 
         response_data = serializer.data
         response_data['id'] = saved_sales_reconciliation.id
-        response_data = self.add_calculated_fields(response_data)
+        response_data = SalesReconciliationFieldsCalculator.add_calculated_fields(response_data)
         return Response(response_data, status=status.HTTP_201_CREATED)
 
-    def add_calculated_fields(self, data):
-        total_revenue = 0
-        books = set()
-        num_books = 0
-        for sale in data['sales']:
-            sale_revenue = sale['quantity'] * sale['unit_retail_price']
-            total_revenue += sale_revenue
-            books.add(sale['book'])
-            num_books += sale['quantity']
-        data['total_revenue'] = total_revenue
-        data['num_unique_books'] = len(books)
-        data['num_books'] = num_books
-        return data
 
+class RetrieveUpdateDestroySalesReconciliationAPIView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = SalesReconciliationSerializer
+    lookup_field = 'id'
 
-# class RetrieveUpdateDestroySalesReconciliationAPIView(RetrieveUpdateDestroyAPIView):
-#     permission_classes = [IsAuthenticated]
-#     serializer_class = SalesReconciliationSerializer
-#     queryset = SalesReconciliation.objects.all()
+    def get_queryset(self):
+        return SalesReconciliation.objects.filter(id=self.kwargs['id'])
+
+    def retrieve(self, request, *args, **kwargs):
+        if (len(self.get_queryset()) == 0):
+            return Response({"id": "No sales reconciliation with queried id."}, status=status.HTTP_400_BAD_REQUEST)
+        (sales_reconciliation,) = self.get_queryset()
+        serializer = self.get_serializer(sales_reconciliation)
+        sales_reconciliation_data = SalesReconciliationFieldsCalculator.add_calculated_fields(serializer.data)
+        return Response(sales_reconciliation_data, status=status.HTTP_200_OK)

@@ -21,38 +21,38 @@ User Registration
    
     **Example request**
 
-        .. tabs::
+    .. tabs::
 
-            .. code-tab:: bash
+        .. code-tab:: bash
 
-                $ curl --location --request POST 'https://books.colab.duke.edu:8000/api/v1/auth/users/register/' \
-                --header 'Content-Type: application/json' \
-                --data-raw '{
-                    "email": "<email>",
-                    "username": "<username>",
-                    "password": "<password>"
-                }'
+            $ curl --location --request POST 'https://books.colab.duke.edu:8000/api/v1/auth/users/register/' \
+            --header 'Content-Type: application/json' \
+            --data-raw '{
+                "email": "<email>",
+                "username": "<username>",
+                "password": "<password>"
+            }'
 
-            .. code-tab:: python
+        .. code-tab:: python
 
-                import requests
-                import json
+            import requests
+            import json
 
-                url = "https://books.colab.duke.edu:8000/api/v1/auth/users/register/"
+            url = "https://books.colab.duke.edu:8000/api/v1/auth/users/register/"
 
-                payload = json.dumps({
-                    "email": "<email>", 
-                    "username": "<username>", 
-                    "password": "<password>"
-                })
-                
-                headers = {
-                'Content-Type': 'application/json'
-                }
+            payload = json.dumps({
+                "email": "<email>", 
+                "username": "<username>", 
+                "password": "<password>"
+            })
+            
+            headers = {
+            'Content-Type': 'application/json'
+            }
 
-                response = requests.request("POST", url, headers=headers, data=payload)
+            response = requests.request("POST", url, headers=headers, data=payload)
 
-                print(response.text)
+            print(response.text)
 
     **Example response**
 

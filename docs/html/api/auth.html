@@ -96,28 +96,21 @@
 <dl class="http post">
 <dt class="sig sig-object http" id="post--api-v1-auth-users-register-">
 <span class="sig-name descname"><span class="pre">POST</span> </span><span class="sig-name descname"><span class="pre">/api/v1/auth/users/register/</span></span><a class="headerlink" href="#post--api-v1-auth-users-register-" title="Permalink to this definition"></a></dt>
-<dd><blockquote>
-<div><p>Register a new user to the BookStore User DB.</p>
-</div></blockquote>
+<dd><p>Register a new user to the BookStore User DB.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Query Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>string</strong> – <p>author_name (<em>required</em>) – The name the of the particular author
-.. :query string email:: (<em>required</em>) E-mail of registering user
-.. :query string username:: (<em>required</em>) Username of registering user
-.. :query string password:: (<em>required</em>) Password of registering user
-:form string: testing… – hi</p>
-<dl class="field-list simple">
-<dt class="field-odd">requestheader Authorization<span class="colon">:</span></dt>
-<dd class="field-odd"><p><cite>token</cite></p>
+<li><p><strong>sort</strong> – one of <code class="docutils literal notranslate"><span class="pre">hit</span></code>, <code class="docutils literal notranslate"><span class="pre">created-at</span></code></p></li>
+<li><p><strong>offset</strong> – offset number. default is 0</p></li>
+<li><p><strong>limit</strong> – limit number. default is 30</p></li>
+</ul>
 </dd>
-</dl>
-</p></li>
+<dt class="field-even">Request Headers<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><span><a class="reference external" href="https://www.rfc-editor.org/rfc/rfc7235#section-4.2">Authorization</a></span> – <cite>token</cite></p></li>
 </ul>
 </dd>
 </dl>
-</dd></dl>
-
 <p><strong>Example request</strong></p>
 <blockquote>
 <div><div class="sphinx-tabs docutils container">
@@ -159,6 +152,8 @@
 <span class="p">}</span>
 </pre></div>
 </div>
+</dd></dl>
+
 </section>
 </section>
 </section>

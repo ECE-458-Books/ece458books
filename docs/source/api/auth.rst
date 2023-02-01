@@ -15,54 +15,52 @@ User Registration
 
     Register a new user to the BookStore User DB.
 
-   :query string:  author_name (*required*) -- The name the of the particular author
-    .. :query string email:: (*required*) E-mail of registering user
-    .. :query string username:: (*required*) Username of registering user
-    .. :query string password:: (*required*) Password of registering user
-    :form string: testing... -- hi
+    :query sort: one of ``hit``, ``created-at``
+    :query offset: offset number. default is 0
+    :query limit: limit number. default is 30
    
     :requestheader Authorization: `token`
    
-**Example request**
+    **Example request**
 
-    .. tabs::
+        .. tabs::
 
-        .. code-tab:: bash
+            .. code-tab:: bash
 
-            $ curl --location --request POST 'https://books.colab.duke.edu:8000/api/v1/auth/users/register/' \
-            --header 'Content-Type: application/json' \
-            --data-raw '{
-                "email": "<email>",
-                "username": "<username>",
-                "password": "<password>"
-            }'
+                $ curl --location --request POST 'https://books.colab.duke.edu:8000/api/v1/auth/users/register/' \
+                --header 'Content-Type: application/json' \
+                --data-raw '{
+                    "email": "<email>",
+                    "username": "<username>",
+                    "password": "<password>"
+                }'
 
-        .. code-tab:: python
+            .. code-tab:: python
 
-            import requests
-            import json
+                import requests
+                import json
 
-            url = "https://books.colab.duke.edu:8000/api/v1/auth/users/register/"
+                url = "https://books.colab.duke.edu:8000/api/v1/auth/users/register/"
 
-            payload = json.dumps({
-                "email": "<email>", 
-                "username": "<username>", 
-                "password": "<password>"
-            })
-            
-            headers = {
-            'Content-Type': 'application/json'
-            }
+                payload = json.dumps({
+                    "email": "<email>", 
+                    "username": "<username>", 
+                    "password": "<password>"
+                })
+                
+                headers = {
+                'Content-Type': 'application/json'
+                }
 
-            response = requests.request("POST", url, headers=headers, data=payload)
+                response = requests.request("POST", url, headers=headers, data=payload)
 
-            print(response.text)
+                print(response.text)
 
-**Example response**
+    **Example response**
 
-.. sourcecode:: json
+    .. sourcecode:: json
 
-    {
-        "email": "<email>",
-        "username": "<username>"
-    }
+        {
+            "email": "<email>",
+            "username": "<username>"
+        }

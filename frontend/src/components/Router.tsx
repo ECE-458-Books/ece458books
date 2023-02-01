@@ -1,9 +1,11 @@
 import { Routes, Route, useNavigate } from "react-router-dom";
-import BookList from "../pages/bookList";
-import GenreList from "../pages/genreList";
-import LoginPage from "../pages/loginPage";
-import NavigationBar from "./navbar";
 import { Outlet } from "react-router";
+import NavigationBar from "./Navbar";
+import BookList from "../pages/BookList";
+import GenreList from "../pages/GenreList";
+import LoginPage from "../pages/LoginPage";
+import VendorList from "../pages/VendorList";
+import SalesReconciliationList from "../pages/SalesReconciliationList";
 
 const WithNavBar = () => {
   return (
@@ -32,6 +34,12 @@ export default function Router() {
       <Route element={<WithNavBar />}>
         <Route path="books" element={<BookList />} />
         <Route path="genres" element={<GenreList />} />
+        <Route path="purchase-orders" element={<GenreList />} />
+        <Route
+          path="sales-reconciliations"
+          element={<SalesReconciliationList />}
+        />
+        <Route path="vendors" element={<VendorList />} />
       </Route>
     </Routes>
   );

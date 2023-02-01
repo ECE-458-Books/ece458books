@@ -1,9 +1,9 @@
 import { Routes, Route, useNavigate } from "react-router-dom";
 import { Outlet } from "react-router";
-import NavigationBar from "./navbar";
+import NavigationBar from "./Navbar";
 import BookList from "../pages/BookList";
 import GenreList from "../pages/GenreList";
-import LoginPage from "../pages/loginPage";
+import LoginPage from "../pages/LoginPage";
 import VendorList from "../pages/VendorList";
 import SalesReconciliationList from "../pages/SalesReconciliationList";
 

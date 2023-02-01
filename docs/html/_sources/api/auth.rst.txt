@@ -56,13 +56,10 @@ User Registration
             print(response.text)
 
     **Example response**:
-        .. code-block:: python
 
-            extensions = ['sphinx_tabs.tabs']
+    .. sourcecode:: json
 
-        .. sourcecode:: json
-
-        {
-            "email": "<email>",
-            "username": "<username>"
-        }
+    {
+        "email": "<email>",
+        "username": "<username>"
+    }

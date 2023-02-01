@@ -21,9 +21,10 @@ User Registration
    
     :requestheader Authorization: `token`
    
-    **Example request**:
+**Example request**
 
     .. tabs::
+
         .. code-tab:: bash
 
             $ curl --location --request POST 'https://books.colab.duke.edu:8000/api/v1/auth/users/register/' \
@@ -55,9 +56,9 @@ User Registration
 
             print(response.text)
 
-    **Example response**:
+**Example response**
 
-    .. sourcecode:: json
+.. sourcecode:: json
 
     {
         "email": "<email>",

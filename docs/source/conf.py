@@ -18,6 +18,7 @@ master_doc = 'index'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
+    'sphinx.ext.autodoc',
     'sphinx_rtd_theme',
     'sphinxcontrib.httpdomain',
     'sphinx_tabs.tabs',

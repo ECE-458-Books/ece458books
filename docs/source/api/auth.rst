@@ -1,7 +1,6 @@
 Authentication and Authorization
 ================================
-Requests to the Imaginary Books Backend API are for public and private information.
-All endpoints require authentication.
+
 .. contents:: Table of contents
    :local:
    :backlinks: none
@@ -25,7 +24,6 @@ User Registration
     **Example request**:
 
     .. tabs::
-
         .. code-tab:: bash
 
             $ curl --location --request POST 'https://books.colab.duke.edu:8000/api/v1/auth/users/register/' \
@@ -44,10 +42,11 @@ User Registration
             url = "https://books.colab.duke.edu:8000/api/v1/auth/users/register/"
 
             payload = json.dumps({
-            "email": "<email>",
-            "username": "<username>",
-            "password": "<password>"
+                "email": "<email>", 
+                "username": "<username>", 
+                "password": "<password>"
             })
+            
             headers = {
             'Content-Type': 'application/json'
             }

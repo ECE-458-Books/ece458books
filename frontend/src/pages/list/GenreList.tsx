@@ -1,5 +1,5 @@
 import React, { FormEvent } from "react";
-import Table, { TableColumn } from "../components/Table";
+import Table, { TableColumn } from "../../components/Table";
 
 interface GenreListState {
   value: string;

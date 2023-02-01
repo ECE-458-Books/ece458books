@@ -7,7 +7,7 @@ import { Calendar, CalendarProps } from "primereact/calendar";
 import { DataTable } from "primereact/datatable";
 import { Column, ColumnEditorOptions } from "primereact/column";
 import { InputNumber } from "primereact/inputnumber";
-import { TableColumn } from "../components/Table";
+import { TableColumn } from "../../components/Table";
 
 interface modifyPOState {
   date: any;

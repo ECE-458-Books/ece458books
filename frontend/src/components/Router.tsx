@@ -1,16 +1,16 @@
 import { Routes, Route, useNavigate } from "react-router-dom";
 import { Outlet } from "react-router";
 import NavigationBar from "./Navbar";
-import BookList from "../pages/BookList";
-import GenreList from "../pages/GenreList";
+import BookList from "../pages/list/BookList";
+import GenreList from "../pages/list/GenreList";
 import LoginPage from "../pages/LoginPage";
-import VendorList from "../pages/VendorList";
-import SalesReconciliationList from "../pages/SalesReconciliationList";
-import ModifyBook from "../pages/ModfiyBook";
-import ModifyGenre from "../pages/ModifyGenre";
-import ModifySR from "../pages/ModifySR";
-import ModifyPO from "../pages/ModifyPO";
-import ModifyVendor from "../pages/ModifyVendor";
+import VendorList from "../pages/list/VendorList";
+import SalesReconciliationList from "../pages/list/SRList";
+import ModifyBook from "../pages/detail/ModfiyBook";
+import ModifyGenre from "../pages/detail/GenreDetail";
+import ModifySR from "../pages/detail/SRDetail";
+import ModifyPO from "../pages/detail/PODetail";
+import ModifyVendor from "../pages/detail/VendorDetail";
 
 const WithNavBar = () => {
   return (

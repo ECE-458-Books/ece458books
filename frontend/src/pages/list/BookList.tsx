@@ -1,5 +1,5 @@
 import React, { FormEvent } from "react";
-import Table, { TableColumn } from "../components/Table";
+import Table, { TableColumn } from "../../components/Table";
 import { ColumnFilterElementTemplateOptions } from "primereact/column";
 import { Dropdown } from "primereact/dropdown";
 import { GENRE_DATA } from "./GenreList";

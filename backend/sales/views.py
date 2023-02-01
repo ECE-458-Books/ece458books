@@ -14,22 +14,29 @@ class SalesReconciliationAPIView(ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = SalesReconciliationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        headers = self.get_success_headers(serializer.data)
-        response_data = self.add_calculated_fields(serializer)
-        return Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
+        saved_sales_reconciliation = serializer.save()
 
-    def add_calculated_fields(self, serializer):
+        response_data = serializer.data
+        response_data['id'] = saved_sales_reconciliation.id
+        response_data = self.add_calculated_fields(response_data)
+        return Response(response_data, status=status.HTTP_201_CREATED)
+
+    def add_calculated_fields(self, data):
         total_revenue = 0
         books = set()
         num_books = 0
-        for sale in serializer.data['sales']:
+        for sale in data['sales']:
             sale_revenue = sale['quantity'] * sale['unit_retail_price']
             total_revenue += sale_revenue
             books.add(sale['book'])
             num_books += sale['quantity']
-        response_data = serializer.data
-        response_data['total_revenue'] = total_revenue
-        response_data['num_unique_books'] = len(books)
-        response_data['num_books'] = num_books
-        return response_data
+        data['total_revenue'] = total_revenue
+        data['num_unique_books'] = len(books)
+        data['num_books'] = num_books
+        return data
+
+
+# class RetrieveUpdateDestroySalesReconciliationAPIView(RetrieveUpdateDestroyAPIView):
+#     permission_classes = [IsAuthenticated]
+#     serializer_class = SalesReconciliationSerializer
+#     queryset = SalesReconciliation.objects.all()

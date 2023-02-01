@@ -16,7 +16,8 @@ class SalesReconciliationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SalesReconciliation
-        fields = ['date', 'sales']
+        fields = ['id', 'date', 'sales']
+        read_only_fields = ['id']
 
     def create(self, validated_data):
         sales_data = validated_data.pop('sales')

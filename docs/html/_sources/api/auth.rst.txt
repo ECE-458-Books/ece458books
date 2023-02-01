@@ -15,9 +15,11 @@ User Registration
 
     Register a new user to the BookStore User DB.
 
-    :query string email: (*required*) -- E-mail of registering user
-    :query string username: (*required*) -- Username of registering user
-    :query string password: (*required*) -- Password of registering user
+   :query string:  author_name (*required*) -- The name the of the particular author
+    .. :query string email:: (*required*) E-mail of registering user
+    .. :query string username:: (*required*) Username of registering user
+    .. :query string password:: (*required*) Password of registering user
+    :form string: testing... -- hi
    
     :requestheader Authorization: `token`
    

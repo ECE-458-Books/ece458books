@@ -1,5 +1,5 @@
-Authentication and Authorization
-================================
+Authentication and Authorization API
+=====================================
 
 .. contents:: Table of contents
    :local:

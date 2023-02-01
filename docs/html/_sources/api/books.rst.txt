@@ -1,51 +1,142 @@
-Retrieve Book Titles by Author
-------------------------------
+Books API
+==========
 
-.. http:get:: /libapi/author/(author_name)
-   :noindex:
+.. contents:: Table of contents
+   :local:
+   :backlinks: none
+   :depth: 2
+
+ISBN
+-----
+
+ISBN Search
+~~~~~~~~~~~~
+
+.. http:post:: /api/v1/books/isbns/
    
-     Retrieves a list of books written by a specified author.
-	 
-   :query string:  author_name (*required*) -- The name the of the particular author
+   Get a list of initial book data to populate on frontend
+
+   :query string isbns: String of ISBNs separated by spaces and/or commas
    
-   :requestheader Authorization: `token`
-   
-.. important::
-   The author name must be in URL encoded format.
+   **Example request**
 
-**Example Request**
+   .. tabs::
 
-.. sourcecode:: bash
-  
-   curl -s -H "Authorization: e52858e3-529a-40da-99d2-3bffd80a7a9b" curl -X GET https://fictionallibrary.com/libapi/author/Crichton%20Michael 
+      .. code-tab:: bash
 
-**Example Response**
+         curl --location --request POST 'https://books.colab.duke.edu:8000/api/v1/books/isbns/' \
+         --form 'isbns="9780131103627, 978-0321928429, 978-3319110790, 1492052590"'
 
-.. sourcecode:: json
+      .. code-tab:: python
 
-   {
-      "count": 17,
-      "results": [
+         import requests
+
+         url = "https://books.colab.duke.edu:8000/api/v1/books/isbns/"
+
+         payload={'isbns': '9780131103627, 978-0321928429, 978-3319110790, 1492052590'}
+
+         files=[
+
+         ]
+
+         headers = {}
+
+         response = requests.request("POST", url, headers=headers, data=payload, files=files)
+
+         print(response.text)
+
+      .. code-tab:: javascript
+
+         var axios = require('axios');
+         var FormData = require('form-data');
+         var data = new FormData();
+         data.append('isbns', '9780131103627, 978-0321928429, 978-3319110790, 1492052590');
+
+         var config = {
+            method: 'post',
+            url: 'https://books.colab.duke.edu:8000/api/v1/books/isbns/',
+            headers: { 
+               ...data.getHeaders()
+            },
+            data : data
+         };
+
+         axios(config)
+         .then(function (response) {
+            console.log(JSON.stringify(response.data));
+         })
+         .catch(function (error) {
+            console.log(error);
+         });
+
+
+
+   **Example response**
+
+   .. sourcecode:: json
+
+      [
          {
-             "author": "Crichton, Michael",
-             "title": "The Andromeda Strain",
-             "publisher": "Vintage", 
-             "latest_publication_date": "January 24, 2017",
-             "language": "en",
-             "isbn10": "1101974494",
-             "isbn13": "9781101974490"
+            "title": "The C Programming Language",
+            "authors": [
+                  "Brian W. Kernighan",
+                  "Dennis M. Ritchie"
+            ],
+            "publisher": "Prentice Hall",
+            "pageCount": 272,
+            "publishedDate": 1988,
+            "isbn_10": "0131103709",
+            "isbn_13": "9780131103627",
+            "height": 9.84,
+            "width": 7.24,
+            "thickness": 0.94,
+            "fromDB": false
          },
          {
-             "author": "Crichton, Michael",
-             "title": "Jurassic Park",
-             "publisher": "Vintage", 
-             "latest_publication_date": "May 14, 2012",
-             "language": "en",
-             "isbn10": "1501216902",
-             "isbn13": "9781501216909"
+            "title": "C Primer Plus",
+            "authors": [
+                  "Stephen Prata"
+            ],
+            "publisher": "Pearson Education",
+            "pageCount": 1037,
+            "publishedDate": 2014,
+            "isbn_10": "0321928423",
+            "isbn_13": "9780321928429",
+            "height": 9.06,
+            "width": 7.09,
+            "thickness": 2.28,
+            "fromDB": false
          },
          {
-             "author": "..."
+            "title": "Linear Algebra Done Right",
+            "authors": [
+                  "Sheldon Axler"
+            ],
+            "publisher": "Springer International Publishing",
+            "pageCount": 340,
+            "publishedDate": 2014,
+            "isbn_10": "3319110799",
+            "isbn_13": "9783319110790",
+            "height": 9.84,
+            "width": 6.1,
+            "thickness": 0.79,
+            "fromDB": false
          },
+         {
+            "title": "Programming Rust",
+            "authors": [
+                  "Jim Blandy",
+                  "Jason Orendorff",
+                  "Leonora Tindall"
+            ],
+            "publisher": "O'Reilly Media",
+            "pageCount": 711,
+            "publishedDate": 2021,
+            "isbn_10": "1492052590",
+            "isbn_13": "9781492052593",
+            "height": 9.45,
+            "width": 7.13,
+            "thickness": 1.46,
+            "fromDB": false
+         }
       ]
-   }

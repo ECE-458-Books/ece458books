@@ -11,6 +11,7 @@ import ModifyGenre from "../pages/detail/GenreDetail";
 import ModifySR from "../pages/detail/SRDetail";
 import ModifyPO from "../pages/detail/PODetail";
 import ModifyVendor from "../pages/detail/VendorDetail";
+import BookAdd from "../pages/add/BookAdd";
 
 const WithNavBar = () => {
   return (
@@ -45,7 +46,7 @@ export default function Router() {
           element={<SalesReconciliationList />}
         />
         <Route path="vendors" element={<VendorList />} />
-        <Route path="books/add" element={<ModifyBook />} />
+        <Route path="books/add" element={<BookAdd />} />
         <Route path="genres/add" element={<ModifyGenre />} />
         <Route path="purchase-orders/add" element={<ModifyPO />} />
         <Route path="sales-reconciliations/add" element={<ModifySR />} />

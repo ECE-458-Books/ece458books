@@ -16,7 +16,7 @@ class ISBNSearchView(APIView):
 
     * Input data is a string of ISBNs separated by spaces and/or commas
     """
-    permissions_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     isbn_toolbox = ISBNTools()
 
     def post(self, request):
@@ -69,7 +69,7 @@ class ISBNSearchView(APIView):
 class ListCreateBookAPIView(ListCreateAPIView):
     serializer_class = BookAddSerializer
     queryset = Book.objects.all()
-    permissions_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     # Override default create method
     def create(self, request, *args, **kwargs):

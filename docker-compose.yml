@@ -32,7 +32,7 @@ services:
     volumes:
       - ./nginx/conf/:/etc/nginx/conf.d/:ro
       - ./certbot/www:/var/www/certbot/:ro
-      - ./certbot/conf/:/etc/nginx/ssl/:ro
+      - ./certbot/conf:/etc/letsencrypt
   certbot:
     image: certbot/certbot:latest
     volumes:

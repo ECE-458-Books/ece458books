@@ -95,8 +95,7 @@ class ListCreateBookAPIView(ListCreateAPIView):
             )
     
     def get_queryset(self):
-        if self.request.query_params.get('genre'):
-            genre = self.request.query_params.get('genre')
+        if genre := self.request.query_params.get('genre'):
             return Book.objects.filter(genres__name=genre)
 
         return Book.objects.all()

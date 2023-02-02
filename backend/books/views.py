@@ -69,15 +69,12 @@ class ISBNSearchView(APIView):
 
 class ListCreateBookAPIView(ListCreateAPIView):
     serializer_class = BookAddSerializer
-    queryset = Book.objects.all()
     permission_classes = [IsAuthenticated]
     pagination_class = BookPagination
     filter_backends = [filters.OrderingFilter, filters.SearchFilter]
-    # ordering_fields = ['title', 'authors', 'isbn_13', 'isbn_10', 'retail_price', 'genres', 'publisher', 'publishedDate', 'pageCount', 'width', 'height', 'thickness']
     ordering_fields = '__all__'
     ordering = ['id']
     search_fields = ['authors__name', 'title', '=publisher', '=isbn_10', '=isbn_13']
-
 
     # Override default create method
     def create(self, request, *args, **kwargs):
@@ -96,6 +93,13 @@ class ListCreateBookAPIView(ListCreateAPIView):
             obj, created = model.objects.get_or_create(
                 name=item.strip(),
             )
+    
+    def get_queryset(self):
+        if self.request.query_params.get('genre'):
+            genre = self.request.query_params.get('genre')
+            return Book.objects.filter(genres__name=genre)
+
+        return Book.objects.all()
 
 class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = BookSerializer 

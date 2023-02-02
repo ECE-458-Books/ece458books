@@ -32,9 +32,22 @@ class RetrieveUpdateDestroySalesReconciliationAPIView(RetrieveUpdateDestroyAPIVi
         return SalesReconciliation.objects.filter(id=self.kwargs['id'])
 
     def retrieve(self, request, *args, **kwargs):
-        if (len(self.get_queryset()) == 0):
-            return Response({"id": "No sales reconciliation with queried id."}, status=status.HTTP_400_BAD_REQUEST)
+        self.verify_existance()
         (sales_reconciliation,) = self.get_queryset()
         serializer = self.get_serializer(sales_reconciliation)
         sales_reconciliation_data = SalesReconciliationFieldsCalculator.add_calculated_fields(serializer.data)
         return Response(sales_reconciliation_data, status=status.HTTP_200_OK)
+
+    def update(self, request, *args, **kwargs):
+        self.verify_existance()
+        partial = kwargs.pop('partial', False)
+        (sales_reconciliation,) = self.get_queryset()
+        serializer = self.get_serializer(sales_reconciliation, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        sales_reconciliation_data = SalesReconciliationFieldsCalculator.add_calculated_fields(serializer.data)
+        return Response(sales_reconciliation_data, status=status.HTTP_200_OK)
+
+    def verify_existance(self):
+        if (len(self.get_queryset()) == 0):
+            return Response({"id": "No sales reconciliation with queried id."}, status=status.HTTP_400_BAD_REQUEST)

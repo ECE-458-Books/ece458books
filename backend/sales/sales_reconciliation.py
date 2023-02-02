@@ -12,5 +12,5 @@ class SalesReconciliationFieldsCalculator:
             num_books += sale['quantity']
         data['total_revenue'] = total_revenue
         data['num_unique_books'] = len(books)
-        data['num_books'] = num_books
+        data['num_books'] = round(num_books, 2)  # Remove inaccuracies from floating point multiplication
         return data

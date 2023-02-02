@@ -1,5 +1,7 @@
 import re
 
+from django.db.models import Max
+
 from rest_framework import status, filters
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
@@ -95,10 +97,14 @@ class ListCreateBookAPIView(ListCreateAPIView):
             )
     
     def get_queryset(self):
-        if genre := self.request.query_params.get('genre'):
-            return Book.objects.filter(genres__name=genre)
+        default_query_set = Book.objects.all()
+        default_query_set = default_query_set.annotate(author=Max('authors__name'))
+        default_query_set = default_query_set.annotate(genre=Max('genres__name'))
 
-        return Book.objects.all()
+        if genre := self.request.query_params.get('genre'):
+            return default_query_set.filter(genres__name=genre)
+
+        return default_query_set
 
 class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = BookSerializer 

@@ -9,6 +9,7 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from .serializers import BookAddSerializer, BookSerializer, ISBNSerializer
 from .isbn import ISBNTools
 from .models import Book, Author, Genre
+from .paginations import BookPagination
 
 class ISBNSearchView(APIView):
     """
@@ -70,6 +71,7 @@ class ListCreateBookAPIView(ListCreateAPIView):
     serializer_class = BookAddSerializer
     queryset = Book.objects.all()
     permission_classes = [IsAuthenticated]
+    pagination_class = BookPagination
 
     # Override default create method
     def create(self, request, *args, **kwargs):

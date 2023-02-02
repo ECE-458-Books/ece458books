@@ -1,6 +1,6 @@
 import re
 
-from rest_framework import status
+from rest_framework import status, filters
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.response import Response
@@ -72,6 +72,12 @@ class ListCreateBookAPIView(ListCreateAPIView):
     queryset = Book.objects.all()
     permission_classes = [IsAuthenticated]
     pagination_class = BookPagination
+    filter_backends = [filters.OrderingFilter, filters.SearchFilter]
+    # ordering_fields = ['title', 'authors', 'isbn_13', 'isbn_10', 'retail_price', 'genres', 'publisher', 'publishedDate', 'pageCount', 'width', 'height', 'thickness']
+    ordering_fields = '__all__'
+    ordering = ['id']
+    search_fields = ['authors__name', 'title', '=publisher', '=isbn_10', '=isbn_13']
+
 
     # Override default create method
     def create(self, request, *args, **kwargs):

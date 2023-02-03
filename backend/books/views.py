@@ -4,11 +4,11 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
+from rest_framework.permissions import IsAuthenticated
 
 from .serializers import BookAddSerializer, BookSerializer, ISBNSerializer
 from .isbn import ISBNTools
-from .models import Book, Author, Genre
+from .models import Book, Author
 
 class ISBNSearchView(APIView):
     """
@@ -75,7 +75,7 @@ class ListCreateBookAPIView(ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         # Need to handle creating authors and genres if not present in DB
         self.getOrCreateModel(request.data['authors'], Author)
-        self.getOrCreateModel(request.data['genres'], Genre)
+        self.getOrCreateModel(request.data['genres'], 'genres.Genre')
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)

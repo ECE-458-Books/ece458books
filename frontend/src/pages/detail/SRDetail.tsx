@@ -82,6 +82,9 @@ class ModifyPOPage extends React.Component<{}, modifyPOState> {
 
     switch (field) {
       case "quantity":
+        if (this.isPositiveInteger(newValue)) rowData[field] = newValue;
+        else event.preventDefault();
+        break;
       case "unitRetailPrice":
         if (this.isPositiveInteger(newValue)) rowData[field] = newValue;
         else event.preventDefault();
@@ -96,7 +99,18 @@ class ModifyPOPage extends React.Component<{}, modifyPOState> {
 
   cellEditor = (options: ColumnEditorOptions) => {
     if (options.field === "unitRetailPrice") return this.priceEditor(options);
+    if (options.field === "quantity") return this.numberEditor(options);
     else return this.textEditor(options);
+  };
+
+  numberEditor = (options: any) => {
+    return (
+      <InputNumber
+        value={options.value}
+        onValueChange={(e) => options.editorCallback(e.target.value)}
+        mode="decimal"
+      />
+    );
   };
 
   textEditor = (options: any) => {

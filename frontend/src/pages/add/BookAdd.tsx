@@ -1,19 +1,16 @@
 import React, { FormEvent } from "react";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Button } from "primereact/button";
-import { NavigateFunction } from "react-router-dom";
 import FormData from "form-data";
 import { DataTable } from "primereact/datatable";
-import { Column } from "primereact/column";
+import { Column, ColumnEditorOptions } from "primereact/column";
 import { InputText } from "primereact/inputtext";
 import { TableColumn } from "../../components/Table";
-
-interface BookAddProps {
-  navigator: NavigateFunction;
-}
+import { InputNumber } from "primereact/inputnumber";
 
 interface BookAddState {
   value: string;
+  data: BookRow[];
 }
 
 interface BookRow {
@@ -21,10 +18,10 @@ interface BookRow {
   authors: string;
   isbn: string;
   publisher: string;
-  pubYear: string;
-  pageCount: string;
+  pubYear: number;
+  pageCount: number;
   dimensions: string;
-  retailPrice: string;
+  retailPrice: number;
   genre: string;
 }
 
@@ -34,10 +31,10 @@ const DATA: BookRow[] = [
     authors: "blah",
     isbn: "blah",
     publisher: "blah",
-    pubYear: "blah",
-    pageCount: "blah",
+    pubYear: 2000,
+    pageCount: 3029,
     dimensions: "blah",
-    retailPrice: "blah",
+    retailPrice: 11.99,
     genre: "blah",
   },
   {
@@ -45,10 +42,10 @@ const DATA: BookRow[] = [
     authors: "clah",
     isbn: "clah",
     publisher: "clah",
-    pubYear: "clah",
-    pageCount: "clah",
+    pubYear: 2000,
+    pageCount: 3029,
     dimensions: "clah",
-    retailPrice: "clah",
+    retailPrice: 11.9,
     genre: "clah",
   },
 ];
@@ -97,10 +94,10 @@ const COLUMNS: TableColumn[] = [
   },
 ];
 
-class BookAdd extends React.Component<BookAddProps, BookAddState> {
-  constructor(props: BookAddProps) {
+class BookAdd extends React.Component<{}, BookAddState> {
+  constructor(props = {}) {
     super(props);
-    this.state = { value: "" };
+    this.state = { value: "", data: DATA };
   }
 
   isPositiveInteger = (val: any) => {
@@ -127,17 +124,46 @@ class BookAdd extends React.Component<BookAddProps, BookAddState> {
     const { rowData, newValue, field, originalEvent: event } = e;
 
     switch (field) {
-      case "quantity":
-      case "price":
+      case "pubYear":
         if (this.isPositiveInteger(newValue)) rowData[field] = newValue;
         else event.preventDefault();
         break;
-
+      case "pageCount":
+        if (this.isPositiveInteger(newValue)) rowData[field] = newValue;
+        else event.preventDefault();
+        break;
+      case "retailPrice":
+        if (this.isPositiveInteger(newValue)) rowData[field] = newValue;
+        else event.preventDefault();
+        break;
       default:
         if (newValue.trim().length > 0) rowData[field] = newValue;
         else event.preventDefault();
         break;
     }
+  };
+
+  cellEditor = (options: ColumnEditorOptions) => {
+    switch (options.field) {
+      case "pubYear":
+        return this.numberEditor(options);
+      case "pageCount":
+        return this.numberEditor(options);
+      case "retailPrice":
+        return this.priceEditor(options);
+      default:
+        return this.textEditor(options);
+    }
+  };
+
+  numberEditor = (options: any) => {
+    return (
+      <InputNumber
+        value={options.value}
+        onValueChange={(e) => options.editorCallback(e.target.value)}
+        mode="decimal"
+      />
+    );
   };
 
   textEditor = (options: any) => {
@@ -148,6 +174,25 @@ class BookAdd extends React.Component<BookAddProps, BookAddState> {
         onChange={(e) => options.editorCallback(e.target.value)}
       />
     );
+  };
+
+  priceEditor = (options: any) => {
+    return (
+      <InputNumber
+        value={options.value}
+        onValueChange={(e) => options.editorCallback(e.target.value)}
+        mode="currency"
+        currency="USD"
+        locale="en-US"
+      />
+    );
+  };
+
+  priceBodyTemplate = (rowData: { retailPrice: number | bigint }) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(rowData.retailPrice);
   };
 
   onSubmit = (event: FormEvent<HTMLFormElement>): void => {
@@ -195,7 +240,8 @@ class BookAdd extends React.Component<BookAddProps, BookAddState> {
                   field={field}
                   header={header}
                   style={{ width: "25%" }}
-                  editor={(options) => this.textEditor(options)}
+                  body={field === "retailPrice" && this.priceBodyTemplate}
+                  editor={(options) => this.cellEditor(options)}
                   onCellEditComplete={this.onCellEditComplete}
                 />
               );

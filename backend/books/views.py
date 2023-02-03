@@ -121,11 +121,13 @@ class ListCreateBookAPIView(ListCreateAPIView):
                 ).order_by('name').values('name')[:1]
             )
         )
-        print(self.book_to_genre(default_query_set.order_by('genre')))
+        # print(self.book_to_genre(default_query_set.order_by('genre')))
 
         # Filter for a specific genre
         # If a genre exists, the default query_set needs to be filtered by that specific genre
         if genre := self.request.query_params.get('genre'):
+            # The requirements for Evolution 1 requires filtering by genre.
+            # Thus if a query key 'genre' exists, we only consider the query_set having that specific genre
             return default_query_set.filter(genres__name=genre)
 
         return default_query_set

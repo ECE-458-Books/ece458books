@@ -10,15 +10,10 @@ from rest_framework.permissions import IsAuthenticated
 
 from .serializers import BookAddSerializer, BookSerializer, ISBNSerializer
 from .isbn import ISBNTools
-<<<<<<< HEAD
 from .models import Book, Author
 from .paginations import BookPagination
 
 from genres.models import Genre
-=======
-from .models import Book, Author, Genre
-from .paginations import BookPagination
->>>>>>> main
 
 class ISBNSearchView(APIView):
     """

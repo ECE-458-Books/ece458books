@@ -25,7 +25,7 @@ class ListCreateGenreAPIView(ListCreateAPIView):
 
         # Might not scale?
         queryset = queryset.annotate(
-            real_book_cnt=Count('book')
+            book_cnt=Count('book')
         )
 
         page = self.paginate_queryset(queryset)
@@ -48,7 +48,7 @@ class RetrieveUpdateDestroyGenreAPIView(RetrieveUpdateDestroyAPIView):
         # Check to see if the Genre has no books associated
         associated_book_cnt = len(instance.book_set.all())
         if(associated_book_cnt != 0):
-            error_msg = {"error": f"{associated_book_cnt} Books are associated with genre({instance.name})"}
+            error_msg = {"error": f"{associated_book_cnt} book(s) associated with genre:{instance.name}"}
             return Response(error_msg, status=status.HTTP_400_BAD_REQUEST)
 
         self.perform_destroy(instance)

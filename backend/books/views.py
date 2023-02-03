@@ -84,7 +84,7 @@ class ListCreateBookAPIView(ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         # Need to handle creating authors and genres if not present in DB
         self.getOrCreateModel(request.data['authors'], Author)
-        self.getOrCreateModel(request.data['genres'], 'genres.Genre')
+        self.getOrCreateModel(request.data['genres'], Genre)
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)

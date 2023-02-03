@@ -1,20 +1,24 @@
-import React, { FormEvent } from "react";
-import { Button } from "primereact/button";
-import { InputText } from "primereact/inputtext";
+import React from "react";
 import { ToggleButton } from "primereact/togglebutton";
 import { Calendar, CalendarProps } from "primereact/calendar";
 import { Dropdown, DropdownProps } from "primereact/dropdown";
 import { DataTable } from "primereact/datatable";
 import { TableColumn } from "../../components/Table";
 import { Column, ColumnEditorOptions } from "primereact/column";
-import { InputNumber } from "primereact/inputnumber";
 import ConfirmButton from "../../components/ConfirmButton";
+import {
+  isPositiveInteger,
+  numberEditor,
+  priceBodyTemplate,
+  priceEditor,
+  textEditor,
+} from "../../util/TableCellEditFuncs";
 
 interface modifyPOState {
   date: any;
   vendor: string;
-  checked: boolean;
-  confirmationPopup: boolean;
+  isModifiable: boolean;
+  isConfirmationPopVisible: boolean;
 }
 
 interface Vendors {
@@ -22,7 +26,7 @@ interface Vendors {
   code: string;
 }
 
-const dataVendors: Vendors[] = [
+const DATAVENDORS: Vendors[] = [
   { name: "New York", code: "NY" },
   { name: "Rome", code: "RM" },
   { name: "London", code: "LDN" },
@@ -30,13 +34,13 @@ const dataVendors: Vendors[] = [
   { name: "Paris", code: "PRS" },
 ];
 
-interface POlineRow {
+interface POPurchaseRow {
   books: string;
   quantity: number;
   unitRetailPrice: number;
 }
 
-const dataPO: POlineRow[] = [
+const DATAPOROW: POPurchaseRow[] = [
   {
     books: "blah",
     quantity: 20,
@@ -65,41 +69,26 @@ class ModifyPOPage extends React.Component<{}, modifyPOState> {
     this.state = {
       date: new Date(),
       vendor: "asdfa",
-      checked: false,
-      confirmationPopup: false,
+      isModifiable: false,
+      isConfirmationPopVisible: false,
     };
   }
-
-  isPositiveInteger = (val: any) => {
-    let str = String(val);
-
-    str = str.trim();
-
-    if (!str) {
-      return false;
-    }
-
-    str = str.replace(/^0+/, "") || "0";
-    const n = Number(str);
-
-    return n !== Infinity && String(n) === str && n >= 0;
-  };
 
   onCellEditComplete = (e: {
     rowData: any;
     newValue: any;
-    field: any;
-    originalEvent: any;
+    field: string;
+    originalEvent: React.SyntheticEvent;
   }) => {
     const { rowData, newValue, field, originalEvent: event } = e;
 
     switch (field) {
       case "quantity":
-        if (this.isPositiveInteger(newValue)) rowData[field] = newValue;
+        if (isPositiveInteger(newValue)) rowData[field] = newValue;
         else event.preventDefault();
         break;
       case "unitRetailPrice":
-        if (this.isPositiveInteger(newValue)) rowData[field] = newValue;
+        if (isPositiveInteger(newValue)) rowData[field] = newValue;
         else event.preventDefault();
         break;
 
@@ -111,61 +100,22 @@ class ModifyPOPage extends React.Component<{}, modifyPOState> {
   };
 
   cellEditor = (options: ColumnEditorOptions) => {
-    if (options.field === "unitRetailPrice") return this.priceEditor(options);
-    if (options.field === "quantity") return this.numberEditor(options);
-    else return this.textEditor(options);
+    if (options.field === "unitRetailPrice") return priceEditor(options);
+    if (options.field === "quantity") return numberEditor(options);
+    else return textEditor(options);
   };
 
-  textEditor = (options: any) => {
-    return (
-      <InputText
-        type="text"
-        value={options.value}
-        onChange={(e) => options.editorCallback(e.target.value)}
-      />
-    );
-  };
-
-  numberEditor = (options: any) => {
-    return (
-      <InputNumber
-        value={options.value}
-        onValueChange={(e) => options.editorCallback(e.target.value)}
-        mode="decimal"
-      />
-    );
-  };
-
-  priceEditor = (options: any) => {
-    return (
-      <InputNumber
-        value={options.value}
-        onValueChange={(e) => options.editorCallback(e.target.value)}
-        mode="currency"
-        currency="USD"
-        locale="en-US"
-      />
-    );
-  };
-
-  priceBodyTemplate = (rowData: { unitRetailPrice: number | bigint }) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(rowData.unitRetailPrice);
-  };
-
-  onSubmit = (event: FormEvent<HTMLFormElement>): void => {
-    this.setState({ checked: false });
+  onSubmit = (): void => {
+    this.setState({ isModifiable: false });
     alert(
       "A form was submitted: \n" +
         this.state.date +
         "\n" +
         this.state.vendor +
         "\n" +
-        this.state.checked +
+        this.state.isModifiable +
         "\n" +
-        JSON.stringify(dataPO)
+        JSON.stringify(DATAPOROW)
     );
   };
 
@@ -181,16 +131,18 @@ class ModifyPOPage extends React.Component<{}, modifyPOState> {
             offLabel="Modify"
             onIcon="pi pi-check"
             offIcon="pi pi-times"
-            checked={this.state.checked}
-            onChange={(e) => this.setState({ checked: !this.state.checked })}
+            checked={this.state.isModifiable}
+            onChange={() =>
+              this.setState({ isModifiable: !this.state.isModifiable })
+            }
           />
 
           <label htmlFor="date">Date</label>
           <Calendar
             id="date"
-            disabled={!this.state.checked}
+            disabled={!this.state.isModifiable}
             value={this.state.date}
-            showButtonBar
+            readOnlyInput
             onChange={(event: CalendarProps): void => {
               this.setState({ date: event.value });
             }}
@@ -200,8 +152,8 @@ class ModifyPOPage extends React.Component<{}, modifyPOState> {
           <Dropdown
             value={this.state.vendor}
             placeholder={this.state.vendor}
-            options={dataVendors}
-            disabled={!this.state.checked}
+            options={DATAVENDORS}
+            disabled={!this.state.isModifiable}
             onChange={(event: DropdownProps): void => {
               this.setState({ vendor: event.value.name });
             }}
@@ -209,7 +161,7 @@ class ModifyPOPage extends React.Component<{}, modifyPOState> {
           />
 
           <DataTable
-            value={dataPO}
+            value={DATAPOROW}
             className="editable-cells-table"
             responsiveLayout="scroll"
           >
@@ -220,7 +172,7 @@ class ModifyPOPage extends React.Component<{}, modifyPOState> {
                   field={field}
                   header={header}
                   style={{ width: "25%" }}
-                  body={field === "unitRetailPrice" && this.priceBodyTemplate}
+                  body={field === "unitRetailPrice" && priceBodyTemplate}
                   editor={(options) => this.cellEditor(options)}
                   onCellEditComplete={this.onCellEditComplete}
                 />
@@ -229,19 +181,21 @@ class ModifyPOPage extends React.Component<{}, modifyPOState> {
           </DataTable>
 
           <ConfirmButton
-            confirmationPopup={this.state.confirmationPopup}
-            hideFunc={() => this.setState({ confirmationPopup: false })}
+            isVisible={this.state.isConfirmationPopVisible}
+            hideFunc={() => this.setState({ isConfirmationPopVisible: false })}
             acceptFunc={this.onSubmit}
             rejectFunc={() => {
               console.log("reject");
             }}
             buttonClickFunc={() => {
-              this.setState({ confirmationPopup: true });
+              this.setState({ isConfirmationPopVisible: true });
             }}
-            disabled={!this.state.checked}
+            disabled={!this.state.isModifiable}
             label={"Submit"}
           />
-          {/* <Button disabled={!this.state.checked} label="submit" type="submit" /> */}
+
+          {/* Maybe be needed in case the confrim button using the popup breaks */}
+          {/* <Button disabled={!this.state.isModifiable} label="submit" type="submit" /> */}
         </form>
       </div>
     );

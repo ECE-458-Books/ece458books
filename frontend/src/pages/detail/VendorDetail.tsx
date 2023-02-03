@@ -1,13 +1,12 @@
 import React, { FormEvent } from "react";
-import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
 import { ToggleButton } from "primereact/togglebutton";
 import ConfirmButton from "../../components/ConfirmButton";
 
 interface modifyVendorState {
   vendor: string;
-  checked: boolean;
-  confirmationPopup: boolean;
+  isModifiable: boolean;
+  isConfirmationPopVisible: boolean;
 }
 
 class ModifyVendorPage extends React.Component<{}, modifyVendorState> {
@@ -15,16 +14,19 @@ class ModifyVendorPage extends React.Component<{}, modifyVendorState> {
     super(props);
     this.state = {
       vendor: "asdfasv",
-      checked: false,
-      confirmationPopup: false,
+      isModifiable: false,
+      isConfirmationPopVisible: false,
     };
   }
 
-  onSubmit = (event: FormEvent<HTMLFormElement>): void => {
-    this.setState({ checked: false });
+  onSubmit = (): void => {
+    this.setState({ isModifiable: false });
 
     alert(
-      "A form was submitted: \n" + this.state.vendor + "\n" + this.state.checked
+      "A form was submitted: \n" +
+        this.state.vendor +
+        "\n" +
+        this.state.isModifiable
     );
   };
 
@@ -40,8 +42,10 @@ class ModifyVendorPage extends React.Component<{}, modifyVendorState> {
             offLabel="Modify"
             onIcon="pi pi-check"
             offIcon="pi pi-times"
-            checked={this.state.checked}
-            onChange={(e) => this.setState({ checked: !this.state.checked })}
+            checked={this.state.isModifiable}
+            onChange={() =>
+              this.setState({ isModifiable: !this.state.isModifiable })
+            }
           />
 
           <label htmlFor="vendor">Vendor</label>
@@ -50,26 +54,27 @@ class ModifyVendorPage extends React.Component<{}, modifyVendorState> {
             className="p-inputtext-sm"
             name="genre"
             value={this.state.vendor}
-            disabled={!this.state.checked}
+            disabled={!this.state.isModifiable}
             onChange={(event: FormEvent<HTMLInputElement>): void => {
               this.setState({ vendor: event.currentTarget.value });
             }}
           />
 
           <ConfirmButton
-            confirmationPopup={this.state.confirmationPopup}
-            hideFunc={() => this.setState({ confirmationPopup: false })}
+            isVisible={this.state.isConfirmationPopVisible}
+            hideFunc={() => this.setState({ isConfirmationPopVisible: false })}
             acceptFunc={this.onSubmit}
             rejectFunc={() => {
               console.log("reject");
             }}
             buttonClickFunc={() => {
-              this.setState({ confirmationPopup: true });
+              this.setState({ isConfirmationPopVisible: true });
             }}
-            disabled={!this.state.checked}
+            disabled={!this.state.isModifiable}
             label={"Submit"}
           />
-          {/* <Button disabled={!this.state.checked} label="submit" type="submit" /> */}
+          {/* Maybe be needed in case the confrim button using the popup breaks */}
+          {/* <Button disabled={!this.state.isModifiable} label="submit" type="submit" /> */}
         </form>
       </div>
     );

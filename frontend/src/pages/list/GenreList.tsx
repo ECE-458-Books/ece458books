@@ -3,7 +3,6 @@ import Table, { TableColumn } from "../../components/Table";
 
 interface GenreListState {
   value: string;
-  addGenres: string;
 }
 
 interface GenreRow {
@@ -31,11 +30,11 @@ const COLUMNS: TableColumn[] = [
 class GenreList extends React.Component<{}, GenreListState> {
   constructor(props = {}) {
     super(props);
-    this.state = { value: "", addGenres: "" };
+    this.state = { value: "" };
   }
 
   onSubmit = (event: FormEvent<HTMLFormElement>): void => {
-    alert("A form was submitted: \n" + this.state.addGenres);
+    alert("A form was submitted: \n");
 
     event.preventDefault();
   };

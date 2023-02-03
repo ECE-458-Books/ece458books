@@ -2,11 +2,11 @@ import { Button } from "primereact/button";
 import { ConfirmDialog } from "primereact/confirmdialog";
 
 export interface ConfirmButtonProps {
-  confirmationPopup: boolean;
-  hideFunc: any;
-  acceptFunc: any;
-  rejectFunc: any;
-  buttonClickFunc: any;
+  isVisible: boolean;
+  hideFunc: () => void;
+  acceptFunc: () => void;
+  rejectFunc: () => void;
+  buttonClickFunc: () => void;
   disabled: boolean;
   label: string;
 }
@@ -16,7 +16,7 @@ export default function ConfirmButton(props: ConfirmButtonProps) {
     <div>
       <ConfirmDialog
         id="confirmButtonPopup"
-        visible={props.confirmationPopup}
+        visible={props.isVisible}
         onHide={props.hideFunc}
         message="Are you sure you want to proceed?"
         header="Confirmation"

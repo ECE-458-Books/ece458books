@@ -7,10 +7,8 @@ import LoginPage from "../pages/LoginPage";
 import VendorList from "../pages/list/VendorList";
 import SalesReconciliationList from "../pages/list/SRList";
 import ModifyBook from "../pages/detail/ModfiyBook";
-import ModifyGenre from "../pages/detail/GenreDetail";
 import ModifySR from "../pages/detail/SRDetail";
 import ModifyPO from "../pages/detail/PODetail";
-import ModifyVendor from "../pages/detail/VendorDetail";
 import BookAdd from "../pages/add/BookAdd";
 import GenreAdd from "../pages/add/GenreAdd";
 import VendorAdd from "../pages/add/VendorAdd";
@@ -50,10 +48,7 @@ export default function Router() {
           element={<SalesReconciliationList />}
         />
         <Route path="vendors" element={<VendorList />} />
-        <Route
-          path="books/add"
-          element={<BookAdd navigator={useNavigate()} />}
-        />
+        <Route path="books/add" element={<BookAdd />} />
         <Route path="books/detail" element={<ModifyBook />} />
         <Route path="genres/add" element={<GenreAdd />} />
         <Route path="genres/detail" element={<GenreDetail />} />

@@ -3,7 +3,6 @@ import Table, { TableColumn } from "../../components/Table";
 
 interface VendorListState {
   value: string;
-  addVendors: string;
 }
 
 interface VendorRow {
@@ -27,11 +26,11 @@ const COLUMNS: TableColumn[] = [
 class VendorList extends React.Component<{}, VendorListState> {
   constructor(props = {}) {
     super(props);
-    this.state = { value: "", addVendors: "" };
+    this.state = { value: "" };
   }
 
   onSubmit = (event: FormEvent<HTMLFormElement>): void => {
-    alert("A form was submitted: \n" + this.state.addVendors);
+    alert("A form was submitted: \n");
 
     event.preventDefault();
   };

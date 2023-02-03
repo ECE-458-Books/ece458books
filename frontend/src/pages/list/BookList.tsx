@@ -6,10 +6,9 @@ import { GENRE_DATA } from "./GenreList";
 
 interface BookListState {
   value: string;
-  addIsbns: string;
 }
 
-interface BookRow {
+export interface BookRow {
   title: string;
   authors: string;
   isbn: string;
@@ -106,11 +105,11 @@ const COLUMNS: TableColumn[] = [
 class BookList extends React.Component<{}, BookListState> {
   constructor(props = {}) {
     super(props);
-    this.state = { value: "", addIsbns: "" };
+    this.state = { value: "" };
   }
 
   onSubmit = (event: FormEvent<HTMLFormElement>): void => {
-    alert("A form was submitted: \n" + this.state.addIsbns);
+    alert("A form was submitted: \n");
 
     event.preventDefault();
   };

@@ -1,15 +1,19 @@
 import React, { FormEvent } from "react";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Button } from "primereact/button";
-import FormData from "form-data";
 import { DataTable } from "primereact/datatable";
 import { Column, ColumnEditorOptions } from "primereact/column";
-import { InputText } from "primereact/inputtext";
 import { TableColumn } from "../../components/Table";
-import { InputNumber } from "primereact/inputnumber";
+import {
+  isPositiveInteger,
+  numberEditor,
+  priceBodyTemplate,
+  priceEditor,
+  textEditor,
+} from "../../util/TableCellEditFuncs";
 
 interface BookAddState {
-  value: string;
+  inputBoxText: string;
   data: BookRow[];
 }
 
@@ -97,43 +101,28 @@ const COLUMNS: TableColumn[] = [
 class BookAdd extends React.Component<{}, BookAddState> {
   constructor(props = {}) {
     super(props);
-    this.state = { value: "", data: DATA };
+    this.state = { inputBoxText: "", data: DATA };
   }
-
-  isPositiveInteger = (val: any) => {
-    let str = String(val);
-
-    str = str.trim();
-
-    if (!str) {
-      return false;
-    }
-
-    str = str.replace(/^0+/, "") || "0";
-    const n = Math.floor(Number(str));
-
-    return n !== Infinity && String(n) === str && n >= 0;
-  };
 
   onCellEditComplete = (e: {
     rowData: any;
     newValue: any;
-    field: any;
-    originalEvent: any;
+    field: string;
+    originalEvent: React.SyntheticEvent;
   }) => {
     const { rowData, newValue, field, originalEvent: event } = e;
 
     switch (field) {
       case "pubYear":
-        if (this.isPositiveInteger(newValue)) rowData[field] = newValue;
+        if (isPositiveInteger(newValue)) rowData[field] = newValue;
         else event.preventDefault();
         break;
       case "pageCount":
-        if (this.isPositiveInteger(newValue)) rowData[field] = newValue;
+        if (isPositiveInteger(newValue)) rowData[field] = newValue;
         else event.preventDefault();
         break;
       case "retailPrice":
-        if (this.isPositiveInteger(newValue)) rowData[field] = newValue;
+        if (isPositiveInteger(newValue)) rowData[field] = newValue;
         else event.preventDefault();
         break;
       default:
@@ -146,63 +135,27 @@ class BookAdd extends React.Component<{}, BookAddState> {
   cellEditor = (options: ColumnEditorOptions) => {
     switch (options.field) {
       case "pubYear":
-        return this.numberEditor(options);
+        return numberEditor(options);
       case "pageCount":
-        return this.numberEditor(options);
+        return numberEditor(options);
       case "retailPrice":
-        return this.priceEditor(options);
+        return priceEditor(options);
       default:
-        return this.textEditor(options);
+        return textEditor(options);
     }
   };
 
-  numberEditor = (options: any) => {
-    return (
-      <InputNumber
-        value={options.value}
-        onValueChange={(e) => options.editorCallback(e.target.value)}
-        mode="decimal"
-      />
-    );
+  onSubmit = (): void => {
+    alert("A form was submitted: \n" + this.state.inputBoxText);
   };
 
-  textEditor = (options: any) => {
-    return (
-      <InputText
-        type="text"
-        value={options.value}
-        onChange={(e) => options.editorCallback(e.target.value)}
-      />
-    );
-  };
-
-  priceEditor = (options: any) => {
-    return (
-      <InputNumber
-        value={options.value}
-        onValueChange={(e) => options.editorCallback(e.target.value)}
-        mode="currency"
-        currency="USD"
-        locale="en-US"
-      />
-    );
-  };
-
-  priceBodyTemplate = (rowData: { retailPrice: number | bigint }) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(rowData.retailPrice);
-  };
-
-  onSubmit = (event: FormEvent<HTMLFormElement>): void => {
-    alert("A form was submitted: \n" + this.state.value);
-  };
-
-  onCompleteSubmit = (event: FormEvent<HTMLFormElement>): void => {
+  onCompleteSubmit = (): void => {
     alert("Form Data" + JSON.stringify(DATA));
   };
 
+  //Two Forms exist in order for the seperate submission of two seperate types of data.
+  //First one is the submission of ISBNS that need to be added
+  //Second one is the submission of the added books and their modified fields
   render() {
     return (
       <div>
@@ -211,9 +164,9 @@ class BookAdd extends React.Component<{}, BookAddState> {
           <InputTextarea
             id="addbook"
             name="addbook"
-            value={this.state.value}
+            value={this.state.inputBoxText}
             onChange={(e: FormEvent<HTMLTextAreaElement>) =>
-              this.setState({ value: e.currentTarget.value })
+              this.setState({ inputBoxText: e.currentTarget.value })
             }
             rows={5}
             cols={30}
@@ -240,7 +193,7 @@ class BookAdd extends React.Component<{}, BookAddState> {
                   field={field}
                   header={header}
                   style={{ width: "25%" }}
-                  body={field === "retailPrice" && this.priceBodyTemplate}
+                  body={field === "retailPrice" && priceBodyTemplate}
                   editor={(options) => this.cellEditor(options)}
                   onCellEditComplete={this.onCellEditComplete}
                 />

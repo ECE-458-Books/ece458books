@@ -1,27 +1,32 @@
-import React, { FormEvent } from "react";
-import { InputText } from "primereact/inputtext";
+import React from "react";
 import { ToggleButton } from "primereact/togglebutton";
 import { Calendar, CalendarProps } from "primereact/calendar";
 import { DataTable } from "primereact/datatable";
 import { Column, ColumnEditorOptions } from "primereact/column";
-import { InputNumber } from "primereact/inputnumber";
 import { TableColumn } from "../../components/Table";
 import ConfirmButton from "../../components/ConfirmButton";
+import {
+  isPositiveInteger,
+  numberEditor,
+  priceBodyTemplate,
+  priceEditor,
+  textEditor,
+} from "../../util/TableCellEditFuncs";
 
 interface modifyPOState {
   date: any;
-  data: SRlineRow[];
-  checked: boolean;
-  confirmationPopup: boolean;
+  data: SRSaleRow[];
+  isModifiable: boolean;
+  isConfirmationPopVisible: boolean;
 }
 
-interface SRlineRow {
+interface SRSaleRow {
   books: string;
   quantity: number;
   unitRetailPrice: number;
 }
 
-const data: SRlineRow[] = [
+const DATA: SRSaleRow[] = [
   {
     books: "blah",
     quantity: 20,
@@ -34,7 +39,7 @@ const data: SRlineRow[] = [
   },
 ];
 
-const columns: TableColumn[] = [
+const COLUMNS: TableColumn[] = [
   { field: "books", header: "Books", filterPlaceholder: "Books" },
   { field: "quantity", header: "Quantity", filterPlaceholder: "Quantity" },
   {
@@ -49,44 +54,29 @@ class ModifyPOPage extends React.Component<{}, modifyPOState> {
     super(props);
     this.state = {
       date: new Date(),
-      data: data,
-      checked: false,
-      confirmationPopup: false,
+      data: DATA,
+      isModifiable: false,
+      isConfirmationPopVisible: false,
     };
 
     this.onSubmit = this.onSubmit.bind(this);
   }
 
-  isPositiveInteger = (val: any) => {
-    let str = String(val);
-
-    str = str.trim();
-
-    if (!str) {
-      return false;
-    }
-
-    str = str.replace(/^0+/, "") || "0";
-    const n = Number(str);
-
-    return n !== Infinity && String(n) === str && n >= 0;
-  };
-
   onCellEditComplete = (e: {
     rowData: any;
     newValue: any;
-    field: any;
-    originalEvent: any;
+    field: string;
+    originalEvent: React.SyntheticEvent;
   }) => {
     const { rowData, newValue, field, originalEvent: event } = e;
 
     switch (field) {
       case "quantity":
-        if (this.isPositiveInteger(newValue)) rowData[field] = newValue;
+        if (isPositiveInteger(newValue)) rowData[field] = newValue;
         else event.preventDefault();
         break;
       case "unitRetailPrice":
-        if (this.isPositiveInteger(newValue)) rowData[field] = newValue;
+        if (isPositiveInteger(newValue)) rowData[field] = newValue;
         else event.preventDefault();
         break;
 
@@ -98,59 +88,20 @@ class ModifyPOPage extends React.Component<{}, modifyPOState> {
   };
 
   cellEditor = (options: ColumnEditorOptions) => {
-    if (options.field === "unitRetailPrice") return this.priceEditor(options);
-    if (options.field === "quantity") return this.numberEditor(options);
-    else return this.textEditor(options);
+    if (options.field === "unitRetailPrice") return priceEditor(options);
+    if (options.field === "quantity") return numberEditor(options);
+    else return textEditor(options);
   };
 
-  numberEditor = (options: any) => {
-    return (
-      <InputNumber
-        value={options.value}
-        onValueChange={(e) => options.editorCallback(e.target.value)}
-        mode="decimal"
-      />
-    );
-  };
-
-  textEditor = (options: any) => {
-    return (
-      <InputText
-        type="text"
-        value={options.value}
-        onChange={(e) => options.editorCallback(e.target.value)}
-      />
-    );
-  };
-
-  priceEditor = (options: any) => {
-    return (
-      <InputNumber
-        value={options.value}
-        onValueChange={(e) => options.editorCallback(e.target.value)}
-        mode="currency"
-        currency="USD"
-        locale="en-US"
-      />
-    );
-  };
-
-  priceBodyTemplate = (rowData: { unitRetailPrice: number | bigint }) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(rowData.unitRetailPrice);
-  };
-
-  onSubmit = (event: FormEvent<HTMLFormElement>): void => {
-    this.setState({ checked: false });
+  onSubmit = (): void => {
+    this.setState({ isModifiable: false });
     alert(
       "A form was submitted: \n" +
         this.state.date +
         "\n" +
-        this.state.checked +
+        this.state.isModifiable +
         "\n" +
-        JSON.stringify(data)
+        JSON.stringify(DATA)
     );
   };
 
@@ -166,34 +117,36 @@ class ModifyPOPage extends React.Component<{}, modifyPOState> {
             offLabel="Modify"
             onIcon="pi pi-check"
             offIcon="pi pi-times"
-            checked={this.state.checked}
-            onChange={(e) => this.setState({ checked: !this.state.checked })}
+            checked={this.state.isModifiable}
+            onChange={() =>
+              this.setState({ isModifiable: !this.state.isModifiable })
+            }
           />
 
           <label htmlFor="date">Date</label>
           <Calendar
             id="date"
-            disabled={!this.state.checked}
+            disabled={!this.state.isModifiable}
             value={this.state.date}
-            showButtonBar
+            readOnlyInput
             onChange={(event: CalendarProps): void => {
               this.setState({ date: event.value });
             }}
           />
 
           <DataTable
-            value={data}
+            value={DATA}
             className="editable-cells-table"
             responsiveLayout="scroll"
           >
-            {columns.map(({ field, header }) => {
+            {COLUMNS.map(({ field, header }) => {
               return (
                 <Column
                   key={field}
                   field={field}
                   header={header}
                   style={{ width: "25%" }}
-                  body={field === "unitRetailPrice" && this.priceBodyTemplate}
+                  body={field === "unitRetailPrice" && priceBodyTemplate}
                   editor={(options) => this.cellEditor(options)}
                   onCellEditComplete={this.onCellEditComplete}
                 />
@@ -201,42 +154,20 @@ class ModifyPOPage extends React.Component<{}, modifyPOState> {
             })}
           </DataTable>
           <ConfirmButton
-            confirmationPopup={this.state.confirmationPopup}
-            hideFunc={() => this.setState({ confirmationPopup: false })}
+            isVisible={this.state.isConfirmationPopVisible}
+            hideFunc={() => this.setState({ isConfirmationPopVisible: false })}
             acceptFunc={this.onSubmit}
             rejectFunc={() => {
               console.log("reject");
             }}
             buttonClickFunc={() => {
-              this.setState({ confirmationPopup: true });
+              this.setState({ isConfirmationPopVisible: true });
             }}
-            disabled={!this.state.checked}
+            disabled={!this.state.isModifiable}
             label={"Submit"}
           />
-          {/* <ConfirmDialog
-            id={randomUUID()}
-            visible={this.state.confirmationPopup}
-            onHide={() => this.setState({ confirmationPopup: false })}
-            message="Are you sure you want to proceed?"
-            header="Confirmation"
-            icon="pi pi-exclamation-triangle"
-            accept={() => {
-              alert("A form was submitted: \n");
-              this.onSubmitForm;
-            }}
-            reject={() => {
-              console.log("reject");
-            }}
-          />
-          <Button
-            id="submit"
-            type="button"
-            onClick={(e) => {
-              this.setState({ confirmationPopup: true });
-            }}
-            disabled={!this.state.checked}
-            label="submit"
-          /> */}
+
+          {/* Maybe be needed in case the confrim button using the popup breaks */}
           {/* <Button type="submit" onClick={this.onSubmit} /> */}
         </form>
       </div>

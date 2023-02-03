@@ -3,17 +3,17 @@ import { InputTextarea } from "primereact/inputtextarea";
 import { Button } from "primereact/button";
 
 interface VendorAddState {
-  value: string;
+  inputBoxText: string;
 }
 
 class VendorAdd extends React.Component<{}, VendorAddState> {
   constructor(props = {}) {
     super(props);
-    this.state = { value: "" };
+    this.state = { inputBoxText: "" };
   }
 
-  onSubmit = (event: FormEvent<HTMLFormElement>): void => {
-    alert("A form was submitted: \n" + this.state.value);
+  onSubmit = (): void => {
+    alert("A form was submitted: \n" + this.state.inputBoxText);
   };
 
   render() {
@@ -24,9 +24,9 @@ class VendorAdd extends React.Component<{}, VendorAddState> {
           <InputTextarea
             id="addvendor"
             name="addvendor"
-            value={this.state.value}
+            value={this.state.inputBoxText}
             onChange={(e: FormEvent<HTMLTextAreaElement>) =>
-              this.setState({ value: e.currentTarget.value })
+              this.setState({ inputBoxText: e.currentTarget.value })
             }
             rows={5}
             cols={30}

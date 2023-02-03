@@ -1,5 +1,5 @@
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from rest_fraemwork.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 
 from .serializers import GenreSerializer
 from .models import Genre

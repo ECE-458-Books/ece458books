@@ -1,31 +1,36 @@
 import React, { FormEvent } from "react";
-import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
 import { ToggleButton } from "primereact/togglebutton";
 import { Calendar, CalendarProps } from "primereact/calendar";
-
 import { DataTable } from "primereact/datatable";
 import { Column, ColumnEditorOptions } from "primereact/column";
 import { InputNumber } from "primereact/inputnumber";
 import { TableColumn } from "../../components/Table";
+import ConfirmButton from "../../components/ConfirmButton";
 
 interface modifyPOState {
   date: any;
   data: SRlineRow[];
   checked: boolean;
+  confirmationPopup: boolean;
 }
 
 interface SRlineRow {
   books: string;
-  quantity: string;
-  unitRetailPrice: string;
+  quantity: number;
+  unitRetailPrice: number;
 }
 
 const data: SRlineRow[] = [
   {
     books: "blah",
-    quantity: "blah",
-    unitRetailPrice: "blah",
+    quantity: 20,
+    unitRetailPrice: 3.9,
+  },
+  {
+    books: "ohaha",
+    quantity: 200,
+    unitRetailPrice: 4.0,
   },
 ];
 
@@ -33,7 +38,7 @@ const columns: TableColumn[] = [
   { field: "books", header: "Books", filterPlaceholder: "Books" },
   { field: "quantity", header: "Quantity", filterPlaceholder: "Quantity" },
   {
-    field: "unit retail price",
+    field: "unitRetailPrice",
     header: "Unit Retail Price",
     filterPlaceholder: "Price",
   },
@@ -46,7 +51,10 @@ class ModifyPOPage extends React.Component<{}, modifyPOState> {
       date: new Date(),
       data: data,
       checked: false,
+      confirmationPopup: false,
     };
+
+    this.onSubmit = this.onSubmit.bind(this);
   }
 
   isPositiveInteger = (val: any) => {
@@ -59,7 +67,7 @@ class ModifyPOPage extends React.Component<{}, modifyPOState> {
     }
 
     str = str.replace(/^0+/, "") || "0";
-    const n = Math.floor(Number(str));
+    const n = Number(str);
 
     return n !== Infinity && String(n) === str && n >= 0;
   };
@@ -74,7 +82,7 @@ class ModifyPOPage extends React.Component<{}, modifyPOState> {
 
     switch (field) {
       case "quantity":
-      case "price":
+      case "unitRetailPrice":
         if (this.isPositiveInteger(newValue)) rowData[field] = newValue;
         else event.preventDefault();
         break;
@@ -87,12 +95,8 @@ class ModifyPOPage extends React.Component<{}, modifyPOState> {
   };
 
   cellEditor = (options: ColumnEditorOptions) => {
-    if (options.field === "unit retail price") return this.priceEditor(options);
+    if (options.field === "unitRetailPrice") return this.priceEditor(options);
     else return this.textEditor(options);
-  };
-
-  onRowEditComplete = (e: any) => {
-    this.setState({ data: e.currentTarget.value });
   };
 
   textEditor = (options: any) => {
@@ -109,7 +113,7 @@ class ModifyPOPage extends React.Component<{}, modifyPOState> {
     return (
       <InputNumber
         value={options.value}
-        onValueChange={(e) => options.editorCallback(e.value)}
+        onValueChange={(e) => options.editorCallback(e.target.value)}
         mode="currency"
         currency="USD"
         locale="en-US"
@@ -117,17 +121,22 @@ class ModifyPOPage extends React.Component<{}, modifyPOState> {
     );
   };
 
-  priceBodyTemplate = (rowData: { price: number | bigint }) => {
+  priceBodyTemplate = (rowData: { unitRetailPrice: number | bigint }) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
-    }).format(rowData.price);
+    }).format(rowData.unitRetailPrice);
   };
 
   onSubmit = (event: FormEvent<HTMLFormElement>): void => {
     this.setState({ checked: false });
     alert(
-      "A form was submitted: \n" + this.state.date + "\n" + this.state.checked
+      "A form was submitted: \n" +
+        this.state.date +
+        "\n" +
+        this.state.checked +
+        "\n" +
+        JSON.stringify(data)
     );
 
     event.preventDefault();
@@ -137,7 +146,7 @@ class ModifyPOPage extends React.Component<{}, modifyPOState> {
     return (
       <div>
         <h1>Modify Sales Reconciliation</h1>
-        <form onSubmit={this.onSubmit}>
+        <form id="localForm">
           <ToggleButton
             id="modifySRToggle"
             name="modifySRToggle"
@@ -162,41 +171,6 @@ class ModifyPOPage extends React.Component<{}, modifyPOState> {
 
           <DataTable
             value={data}
-            editMode="row"
-            dataKey="id"
-            onRowEditComplete={this.onRowEditComplete}
-            responsiveLayout="scroll"
-          >
-            <Column
-              field="book"
-              header="Books"
-              editor={(options) => this.textEditor(options)}
-              style={{ width: "20%" }}
-            ></Column>
-            <Column
-              field="quantity"
-              header="Quantity"
-              editor={(options) => this.textEditor(options)}
-              style={{ width: "20%" }}
-            ></Column>
-            <Column
-              field="unit retail price"
-              header="Unit Retail Price"
-              body={this.priceBodyTemplate}
-              editor={(options) => this.priceEditor(options)}
-              style={{ width: "20%" }}
-            ></Column>
-            <Column
-              rowEditor={this.state.checked}
-              headerStyle={{ width: "10%", minWidth: "8rem" }}
-              bodyStyle={{ textAlign: "center" }}
-            ></Column>
-          </DataTable>
-
-          {/* <DataTable
-            value={data}
-            editMode="cell"
-            disabled={!this.state.checked}
             className="editable-cells-table"
             responsiveLayout="scroll"
           >
@@ -207,51 +181,51 @@ class ModifyPOPage extends React.Component<{}, modifyPOState> {
                   field={field}
                   header={header}
                   style={{ width: "25%" }}
-                  body={field === "unit retail price" && this.priceBodyTemplate}
+                  body={field === "unitRetailPrice" && this.priceBodyTemplate}
                   editor={(options) => this.cellEditor(options)}
                   onCellEditComplete={this.onCellEditComplete}
                 />
               );
             })}
-          </DataTable> */}
-
-          {/* <label htmlFor="book">Book</label>
-          <InputText
-            id="book"
-            className="p-inputtext-sm"
-            name="book"
-            value={this.state.book}
+          </DataTable>
+          <ConfirmButton
+            confirmationPopup={this.state.confirmationPopup}
+            hideFunc={() => this.setState({ confirmationPopup: false })}
+            acceptFunc={this.onSubmit}
+            rejectFunc={() => {
+              console.log("reject");
+            }}
+            buttonClickFunc={() => {
+              this.setState({ confirmationPopup: true });
+            }}
             disabled={!this.state.checked}
-            onChange={(event: FormEvent<HTMLInputElement>): void => {
-              this.setState({ book: event.currentTarget.value });
+            label={"Submit"}
+          />
+          {/* <ConfirmDialog
+            id={randomUUID()}
+            visible={this.state.confirmationPopup}
+            onHide={() => this.setState({ confirmationPopup: false })}
+            message="Are you sure you want to proceed?"
+            header="Confirmation"
+            icon="pi pi-exclamation-triangle"
+            accept={() => {
+              alert("A form was submitted: \n");
+              this.onSubmitForm;
+            }}
+            reject={() => {
+              console.log("reject");
             }}
           />
-
-          <label htmlFor="quantity">Quantity</label>
-          <InputText
-            id="quantity"
-            className="p-inputtext-sm"
-            name="quantity"
-            value={this.state.quantity}
-            disabled={!this.state.checked}
-            onChange={(event: FormEvent<HTMLInputElement>): void => {
-              this.setState({ quantity: event.currentTarget.value });
+          <Button
+            id="submit"
+            type="button"
+            onClick={(e) => {
+              this.setState({ confirmationPopup: true });
             }}
-          />
-
-          <label htmlFor="unitRetailPrice">Unit Retail Price</label>
-          <InputText
-            id="unitRetailPrice"
-            className="p-inputtext-sm"
-            name="unitRetailPrice"
-            value={this.state.unitRetailPrice}
             disabled={!this.state.checked}
-            onChange={(event: FormEvent<HTMLInputElement>): void => {
-              this.setState({ unitRetailPrice: event.currentTarget.value });
-            }}
+            label="submit"
           /> */}
-
-          <Button label="submit" type="submit" />
+          {/* <Button type="submit" onClick={this.onSubmit} /> */}
         </form>
       </div>
     );

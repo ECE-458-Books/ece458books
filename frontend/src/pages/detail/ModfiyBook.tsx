@@ -2,6 +2,7 @@ import React, { FormEvent } from "react";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
 import { ToggleButton } from "primereact/togglebutton";
+import ConfirmButton from "../../components/ConfirmButton";
 
 interface modifyBookState {
   title: string;
@@ -14,6 +15,7 @@ interface modifyBookState {
   retailPrice: string;
   genre: string;
   checked: boolean;
+  confirmationPopup: boolean;
 }
 
 class ModifyBookPage extends React.Component<{}, modifyBookState> {
@@ -30,6 +32,7 @@ class ModifyBookPage extends React.Component<{}, modifyBookState> {
       retailPrice: "",
       genre: "",
       checked: false,
+      confirmationPopup: false,
     };
   }
 
@@ -186,7 +189,20 @@ class ModifyBookPage extends React.Component<{}, modifyBookState> {
             }}
           />
 
-          <Button label="submit" type="submit" />
+          <ConfirmButton
+            confirmationPopup={this.state.confirmationPopup}
+            hideFunc={() => this.setState({ confirmationPopup: false })}
+            acceptFunc={this.onSubmit}
+            rejectFunc={() => {
+              console.log("reject");
+            }}
+            buttonClickFunc={() => {
+              this.setState({ confirmationPopup: true });
+            }}
+            disabled={!this.state.checked}
+            label={"Submit"}
+          />
+          {/* <Button disabled={!this.state.checked} label="submit" type="submit" /> */}
         </form>
       </div>
     );

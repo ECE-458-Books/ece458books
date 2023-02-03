@@ -2,10 +2,12 @@ import React, { FormEvent } from "react";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
 import { ToggleButton } from "primereact/togglebutton";
+import ConfirmButton from "../../components/ConfirmButton";
 
 interface modifyVendorState {
   vendor: string;
   checked: boolean;
+  confirmationPopup: boolean;
 }
 
 class ModifyVendorPage extends React.Component<{}, modifyVendorState> {
@@ -14,6 +16,7 @@ class ModifyVendorPage extends React.Component<{}, modifyVendorState> {
     this.state = {
       vendor: "asdfasv",
       checked: false,
+      confirmationPopup: false,
     };
   }
 
@@ -55,7 +58,20 @@ class ModifyVendorPage extends React.Component<{}, modifyVendorState> {
             }}
           />
 
-          <Button label="submit" type="submit" />
+          <ConfirmButton
+            confirmationPopup={this.state.confirmationPopup}
+            hideFunc={() => this.setState({ confirmationPopup: false })}
+            acceptFunc={this.onSubmit}
+            rejectFunc={() => {
+              console.log("reject");
+            }}
+            buttonClickFunc={() => {
+              this.setState({ confirmationPopup: true });
+            }}
+            disabled={!this.state.checked}
+            label={"Submit"}
+          />  
+          {/* <Button disabled={!this.state.checked} label="submit" type="submit" /> */}
         </form>
       </div>
     );

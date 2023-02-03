@@ -2,10 +2,12 @@ import React, { FormEvent } from "react";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
 import { ToggleButton } from "primereact/togglebutton";
+import ConfirmButton from "../../components/ConfirmButton";
 
 interface modifyGenreState {
   genre: string;
   checked: boolean;
+  confirmationPopup: boolean;
 }
 
 class ModifyGenrePage extends React.Component<{}, modifyGenreState> {
@@ -14,6 +16,7 @@ class ModifyGenrePage extends React.Component<{}, modifyGenreState> {
     this.state = {
       genre: "asdfasv",
       checked: false,
+      confirmationPopup: false,
     };
   }
 
@@ -55,7 +58,20 @@ class ModifyGenrePage extends React.Component<{}, modifyGenreState> {
             }}
           />
 
-          <Button label="submit" type="submit" />
+          <ConfirmButton
+            confirmationPopup={this.state.confirmationPopup}
+            hideFunc={() => this.setState({ confirmationPopup: false })}
+            acceptFunc={this.onSubmit}
+            rejectFunc={() => {
+              console.log("reject");
+            }}
+            buttonClickFunc={() => {
+              this.setState({ confirmationPopup: true });
+            }}
+            disabled={!this.state.checked}
+            label={"Submit"}
+          />
+          {/* <Button disabled={!this.state.checked} label="submit" type="submit" /> */}
         </form>
       </div>
     );

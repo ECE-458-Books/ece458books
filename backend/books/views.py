@@ -120,11 +120,7 @@ class ListCreateBookAPIView(ListCreateAPIView):
                 ).order_by('name').values('name')[:1] # [:1] is used to avoid index out of bounds error when the filter returns an empty list
             )
         )
-<<<<<<< HEAD
-        # print(self.book_to_author(default_query_set.order_by('author')))
-=======
         
->>>>>>> main
         default_query_set = default_query_set.annotate(
             genre=Subquery(
                 Genre.objects.filter(
@@ -132,10 +128,6 @@ class ListCreateBookAPIView(ListCreateAPIView):
                 ).order_by('name').values('name')[:1]
             )
         )
-<<<<<<< HEAD
-        # print(self.book_to_genre(default_query_set.order_by('genre')))
-=======
->>>>>>> main
 
         # Filter for a specific genre
         # If a genre exists, the default query_set needs to be filtered by that specific genre

@@ -11,4 +11,6 @@ class GenreSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'books', 'book_cnt']
     
     def get_book_cnt(self, obj):
-        return obj.real_book_cnt
+        if hasattr(obj, 'real_book_cnt'):
+            return obj.real_book_cnt
+        return obj.book_set.all().count()

@@ -1,6 +1,8 @@
 import re
 
-from rest_framework import status
+from django.db.models import OuterRef, Subquery
+
+from rest_framework import status, filters
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.response import Response
@@ -9,6 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from .serializers import BookAddSerializer, BookSerializer, ISBNSerializer
 from .isbn import ISBNTools
 from .models import Book, Author
+from .paginations import BookPagination
 
 class ISBNSearchView(APIView):
     """
@@ -68,8 +71,12 @@ class ISBNSearchView(APIView):
 
 class ListCreateBookAPIView(ListCreateAPIView):
     serializer_class = BookAddSerializer
-    queryset = Book.objects.all()
     permission_classes = [IsAuthenticated]
+    pagination_class = BookPagination
+    filter_backends = [filters.OrderingFilter, filters.SearchFilter]
+    ordering_fields = '__all__'
+    ordering = ['id']
+    search_fields = ['authors__name', 'title', '=publisher', '=isbn_10', '=isbn_13']
 
     # Override default create method
     def create(self, request, *args, **kwargs):
@@ -88,6 +95,70 @@ class ListCreateBookAPIView(ListCreateAPIView):
             obj, created = model.objects.get_or_create(
                 name=item.strip(),
             )
+    
+    def get_queryset(self):
+        default_query_set = Book.objects.all()
+        # Books have a ManyToMany relationship with Author & Genre
+        # A book can have many authors and genres.
+        # We need to define sorting behavior for these fields
+        # Annotating creates a single field where we can order the Books by one of the
+        # elements in the ManyToMany relationship
+        default_query_set = default_query_set.annotate(
+            # We create a subquery for getting a query_set of authors which are related to the book in question
+            author=Subquery(
+                Author.objects.filter(
+                    # We filter the authors by the primary key of the book
+                    book=OuterRef('pk')
+                # Here we order by the name in ascending order and get the first author from the list
+                ).order_by('name').values('name')[:1] # [:1] is used to avoid index out of bounds error when the filter returns an empty list
+            )
+        )
+        # print(self.book_to_author(default_query_set.order_by('author')))
+        default_query_set = default_query_set.annotate(
+            genre=Subquery(
+                Genre.objects.filter(
+                    book=OuterRef('pk')
+                ).order_by('name').values('name')[:1]
+            )
+        )
+        # print(self.book_to_genre(default_query_set.order_by('genre')))
+
+        # Filter for a specific genre
+        # If a genre exists, the default query_set needs to be filtered by that specific genre
+        if genre := self.request.query_params.get('genre'):
+            # The requirements for Evolution 1 requires filtering by genre.
+            # Thus if a query key 'genre' exists, we only consider the query_set having that specific genre
+            return default_query_set.filter(genres__name=genre)
+
+        return default_query_set
+    
+    def book_to_author(self, book_query_set):
+        """Test function to debug if authors are ordered as expected
+
+        Args:
+            book_query_set: QuerySet of Book objects
+
+        Returns:
+            author_list: List of First Authors sorted by ('author')
+
+        *Note Assumes that the QuerySet is annotated
+
+        """
+        return [book.authors.all()[0].name for book in book_query_set]
+
+    def book_to_genre(self, book_query_set):
+        """Test function to debug if genres are ordered as expected
+
+        Args:
+            book_query_set: QuerySet of Book objects
+
+        Returns:
+            author_list: List of First Genre sorted by ('genre')
+        
+        *Note Assumes that the QuerySet is annotated
+
+        """
+        return [book.genres.all()[0].name for book in book_query_set]
 
 class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = BookSerializer 

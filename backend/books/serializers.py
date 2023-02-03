@@ -3,6 +3,14 @@ from rest_framework import serializers
 from .models import Book, Author, Genre
 
 class BookAddSerializer(serializers.ModelSerializer):
+    """BookAddSerializer used for ListCreateBookAPIView
+
+    *Note
+    If read_only_fields are set, we cannot create a new book to add to DB.
+    This is a simple work-around to solve this issue by using different serializers 
+    when adding a book and editing a book.
+
+    """
     authors = serializers.SlugRelatedField(queryset=Author.objects.all(), many=True, slug_field='name')
     genres = serializers.SlugRelatedField(queryset=Genre.objects.all(), many=True, slug_field='name')
 

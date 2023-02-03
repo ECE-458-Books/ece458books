@@ -24,7 +24,6 @@ services:
       - "8000:8000"
   
   webserver:
-    #build: ./certbot
     image: nginx:latest
     ports:
       - 80:80

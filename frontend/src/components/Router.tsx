@@ -50,10 +50,7 @@ export default function Router() {
           element={<SalesReconciliationList />}
         />
         <Route path="vendors" element={<VendorList />} />
-        <Route
-          path="books/add"
-          element={<BookAdd navigator={useNavigate()} />}
-        />
+        <Route path="books/add" element={<BookAdd />} />
         <Route path="books/detail" element={<ModifyBook />} />
         <Route path="genres/add" element={<GenreAdd />} />
         <Route path="genres/detail" element={<GenreDetail />} />

@@ -13,6 +13,8 @@ from .isbn import ISBNTools
 from .models import Book, Author
 from .paginations import BookPagination
 
+from genres.models import Genre
+
 class ISBNSearchView(APIView):
     """
     View to Search ISBNs using internal DB or External DB such as Google Books

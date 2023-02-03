@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
-from .models import Book, Author, Genre
+from .models import Book, Author
+from genres.models import Genre
 
 class BookAddSerializer(serializers.ModelSerializer):
     """BookAddSerializer used for ListCreateBookAPIView

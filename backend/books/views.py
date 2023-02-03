@@ -110,7 +110,7 @@ class ListCreateBookAPIView(ListCreateAPIView):
                     # We filter the authors by the primary key of the book
                     book=OuterRef('pk')
                 # Here we order by the name in ascending order and get the first author from the list
-                ).order_by('name').values('name')[:1] 
+                ).order_by('name').values('name')[:1] # [:1] is used to avoid index out of bounds error when the filter returns an empty list
             )
         )
         # print(self.book_to_author(default_query_set.order_by('author')))

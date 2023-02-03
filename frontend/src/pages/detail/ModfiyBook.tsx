@@ -61,8 +61,6 @@ class ModifyBookPage extends React.Component<{}, modifyBookState> {
         "\n" +
         this.state.checked
     );
-
-    event.preventDefault();
   };
 
   render() {

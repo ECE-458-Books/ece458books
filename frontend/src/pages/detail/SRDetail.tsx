@@ -138,8 +138,6 @@ class ModifyPOPage extends React.Component<{}, modifyPOState> {
         "\n" +
         JSON.stringify(data)
     );
-
-    event.preventDefault();
   };
 
   render() {

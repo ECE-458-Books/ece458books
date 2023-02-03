@@ -26,8 +26,6 @@ class ModifyVendorPage extends React.Component<{}, modifyVendorState> {
     alert(
       "A form was submitted: \n" + this.state.vendor + "\n" + this.state.checked
     );
-
-    event.preventDefault();
   };
 
   render() {
@@ -70,7 +68,7 @@ class ModifyVendorPage extends React.Component<{}, modifyVendorState> {
             }}
             disabled={!this.state.checked}
             label={"Submit"}
-          />  
+          />
           {/* <Button disabled={!this.state.checked} label="submit" type="submit" /> */}
         </form>
       </div>

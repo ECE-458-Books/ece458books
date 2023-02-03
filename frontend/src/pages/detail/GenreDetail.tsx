@@ -26,8 +26,6 @@ class ModifyGenrePage extends React.Component<{}, modifyGenreState> {
     alert(
       "A form was submitted: \n" + this.state.genre + "\n" + this.state.checked
     );
-
-    event.preventDefault();
   };
 
   render() {

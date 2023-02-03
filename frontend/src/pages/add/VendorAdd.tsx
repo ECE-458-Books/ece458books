@@ -14,7 +14,6 @@ class VendorAdd extends React.Component<{}, VendorAddState> {
 
   onSubmit = (event: FormEvent<HTMLFormElement>): void => {
     alert("A form was submitted: \n" + this.state.value);
-    event.preventDefault();
   };
 
   render() {

@@ -175,13 +175,10 @@ class BookAdd extends React.Component<BookAddProps, BookAddState> {
         alert("A form was submitted: \n" + this.state.value);
         console.log(error);
       });
-
-    event.preventDefault();
   };
 
   onCompleteSubmit = (event: FormEvent<HTMLFormElement>): void => {
     alert("Form Data" + JSON.stringify(DATA));
-    event.preventDefault();
   };
 
   render() {

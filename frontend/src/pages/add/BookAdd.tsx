@@ -110,7 +110,7 @@ class BookAdd extends React.Component<{}, BookAddState> {
     }
 
     str = str.replace(/^0+/, "") || "0";
-    const n = Math.floor(Number(str));
+    const n = Number(str);
 
     return n !== Infinity && String(n) === str && n >= 0;
   };

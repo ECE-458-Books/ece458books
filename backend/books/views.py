@@ -10,10 +10,15 @@ from rest_framework.permissions import IsAuthenticated
 
 from .serializers import BookAddSerializer, BookSerializer, ISBNSerializer
 from .isbn import ISBNTools
+<<<<<<< HEAD
 from .models import Book, Author
 from .paginations import BookPagination
 
 from genres.models import Genre
+=======
+from .models import Book, Author, Genre
+from .paginations import BookPagination
+>>>>>>> main
 
 class ISBNSearchView(APIView):
     """
@@ -115,7 +120,11 @@ class ListCreateBookAPIView(ListCreateAPIView):
                 ).order_by('name').values('name')[:1] # [:1] is used to avoid index out of bounds error when the filter returns an empty list
             )
         )
+<<<<<<< HEAD
         # print(self.book_to_author(default_query_set.order_by('author')))
+=======
+        
+>>>>>>> main
         default_query_set = default_query_set.annotate(
             genre=Subquery(
                 Genre.objects.filter(
@@ -123,7 +132,10 @@ class ListCreateBookAPIView(ListCreateAPIView):
                 ).order_by('name').values('name')[:1]
             )
         )
+<<<<<<< HEAD
         # print(self.book_to_genre(default_query_set.order_by('genre')))
+=======
+>>>>>>> main
 
         # Filter for a specific genre
         # If a genre exists, the default query_set needs to be filtered by that specific genre
@@ -133,34 +145,6 @@ class ListCreateBookAPIView(ListCreateAPIView):
             return default_query_set.filter(genres__name=genre)
 
         return default_query_set
-    
-    def book_to_author(self, book_query_set):
-        """Test function to debug if authors are ordered as expected
-
-        Args:
-            book_query_set: QuerySet of Book objects
-
-        Returns:
-            author_list: List of First Authors sorted by ('author')
-
-        *Note Assumes that the QuerySet is annotated
-
-        """
-        return [book.authors.all()[0].name for book in book_query_set]
-
-    def book_to_genre(self, book_query_set):
-        """Test function to debug if genres are ordered as expected
-
-        Args:
-            book_query_set: QuerySet of Book objects
-
-        Returns:
-            author_list: List of First Genre sorted by ('genre')
-        
-        *Note Assumes that the QuerySet is annotated
-
-        """
-        return [book.genres.all()[0].name for book in book_query_set]
 
 class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = BookSerializer 

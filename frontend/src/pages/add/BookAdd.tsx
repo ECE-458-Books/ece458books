@@ -1,7 +1,6 @@
 import React, { FormEvent } from "react";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Button } from "primereact/button";
-import axios from "axios";
 import { NavigateFunction } from "react-router-dom";
 import FormData from "form-data";
 import { DataTable } from "primereact/datatable";
@@ -153,28 +152,6 @@ class BookAdd extends React.Component<BookAddProps, BookAddState> {
 
   onSubmit = (event: FormEvent<HTMLFormElement>): void => {
     alert("A form was submitted: \n" + this.state.value);
-    const data = new FormData();
-    data.append("isbns", this.state.value);
-    const reqOpts = {
-      url: process.env.BOOKS_ADD_API_ENDPOINT_TOKEN,
-      headers: {
-        Authorization:
-          "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc1MzQzODIyLCJpYXQiOjE2NzUzNDM1MjIsImp0aSI6ImUzMzVjY2EyYWVjNTRjNTRiMTBjNmI5MTIxYWE4ZGYzIiwidXNlcl9pZCI6MTN9.0WCxt8yIyUV4RXDFNwAK0tpPK5iGJBTUCcEV5J7fazA",
-        ...data.getHeaders(),
-      },
-      method: "POST",
-      data: data,
-    };
-
-    axios
-      .request(reqOpts)
-      .then((response) => {
-        console.log(JSON.stringify(response.data));
-      })
-      .catch((error) => {
-        alert("A form was submitted: \n" + this.state.value);
-        console.log(error);
-      });
   };
 
   onCompleteSubmit = (event: FormEvent<HTMLFormElement>): void => {

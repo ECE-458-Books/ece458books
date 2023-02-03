@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     # Register Custom Apps
     'books',
     "genres",
+    'vendors',
 
     # Authentication App
     'authapp',

@@ -1,5 +1,11 @@
 import { Book } from "../pages/list/BookList";
-import { API, METHOD_GET } from "./Config";
+import {
+  API,
+  METHOD_DELETE,
+  METHOD_GET,
+  METHOD_PATCH,
+  METHOD_POST,
+} from "./Config";
 
 const BOOKS_EXTENSION = "books/";
 
@@ -12,9 +18,7 @@ interface GetBooksReq {
   search: string;
 }
 
-// title, author, publisher, ISBN
-
-interface SingleBook {
+interface APIBook {
   id: number;
   authors: string[];
   genres: string[];
@@ -50,7 +54,7 @@ export const BOOKS_API = {
     });
 
     // Convert response to internal data type (not strictly necessary, but I think good practice)
-    const books = response.data.results.map((book: SingleBook) => {
+    const books = response.data.results.map((book: APIBook) => {
       return {
         id: book.id,
         title: book.title,
@@ -72,5 +76,68 @@ export const BOOKS_API = {
       books: books,
       numberOfBooks: response.data.count,
     };
+  },
+
+  deleteBook: async function (isbn13: string) {
+    await API.request({
+      url: BOOKS_EXTENSION.concat(isbn13),
+      method: METHOD_DELETE,
+    });
+  },
+
+  modifyBook: async function (book: Book) {
+    const bookParams = {
+      id: book.id,
+      title: book.title,
+      authors: book.authors,
+      genres: book.genres,
+      isbn_13: book.isbn13,
+      isbn_10: book.isbn10,
+      publisher: book.publisher,
+      publishedDate: book.publishedYear,
+      pageCount: book.pageCount,
+      width: book.width,
+      height: book.height,
+      thickness: book.thickness,
+      retail_price: book.retailPrice,
+    };
+
+    await API.request({
+      url: BOOKS_EXTENSION.concat(book.isbn13),
+      method: METHOD_PATCH,
+      data: bookParams,
+    });
+  },
+
+  addBookInitialLookup: async function (isbns: string) {
+    await API.request({
+      url: BOOKS_EXTENSION.concat("isbns"),
+      method: METHOD_POST,
+      data: { isbns: isbns },
+    });
+  },
+
+  addBookFinal: async function (book: Book) {
+    const bookParams = {
+      id: book.id,
+      title: book.title,
+      authors: book.authors,
+      genres: book.genres,
+      isbn_13: book.isbn13,
+      isbn_10: book.isbn10,
+      publisher: book.publisher,
+      publishedDate: book.publishedYear,
+      pageCount: book.pageCount,
+      width: book.width,
+      height: book.height,
+      thickness: book.thickness,
+      retail_price: book.retailPrice,
+    };
+
+    await API.request({
+      url: BOOKS_EXTENSION.concat(book.isbn13),
+      method: METHOD_POST,
+      data: bookParams,
+    });
   },
 };

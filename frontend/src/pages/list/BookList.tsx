@@ -11,6 +11,9 @@ import { Column } from "primereact/column";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import { useEffect, useState } from "react";
 import { DataTableFilterMetaData } from "primereact/datatable";
+import { useNavigate } from "react-router-dom";
+import { Button } from "primereact/button";
+import React from "react";
 
 const NUM_ROWS = 3;
 
@@ -54,6 +57,9 @@ interface Filters {
 }
 
 export default function BookList() {
+  const navigate = useNavigate();
+
+  // Custom dropdown selector for Genre
   const [selectedGenre, setSelectedGenre] = useState<string>("");
 
   const genreFilter = () => {
@@ -69,6 +75,7 @@ export default function BookList() {
     );
   };
 
+  // Properties of each column that change, the rest are set below when creating the actual Columns to be rendered
   const COLUMNS: TableColumn[] = [
     { field: "id", header: "ID", filterPlaceholder: "Search by ID" },
     { field: "title", header: "Title", filterPlaceholder: "Search by Title" },
@@ -133,25 +140,52 @@ export default function BookList() {
     },
   ];
 
+  // Callback functions for edit/delete buttons
+  const editBook = (book: Book) => {
+    console.log(book);
+  };
+
+  const deleteBook = (book: Book) => {
+    console.log(book);
+  };
+
+  // Custom body template for edit/delete buttons
+  const actionBodyTemplate = (rowData: Book) => {
+    return (
+      <React.Fragment>
+        <Button
+          icon="pi pi-pencil"
+          className="p-button-rounded p-button-success mr-2"
+          onClick={() => editBook(rowData)}
+        />
+        <Button
+          icon="pi pi-trash"
+          className="p-button-rounded p-button-danger"
+          onClick={() => deleteBook(rowData)}
+        />
+      </React.Fragment>
+    );
+  };
+
   const [loading, setLoading] = useState(false); // Whether we show that the table is loading or not
   const [numberOfBooks, setNumberOfBooks] = useState(0); // The number of books that match the query
   const [books, setBooks] = useState<Book[]>([]); // The book data itself
-  //const [selectAll, setSelectAll] = useState(false);
-  //const [selectedCustomers, setSelectedCustomers] = useState(null);
-  //const [selectedRepresentative, setSelectedRepresentative] = useState(null);
 
+  // The current state of sorting.
   const [sortParams, setSortParams] = useState<DataTableSortEvent>({
     sortField: "",
     sortOrder: null,
-    multiSortMeta: null,
+    multiSortMeta: null, // Not used
   });
 
+  // The current state of the paginator
   const [pageParams, setPageParams] = useState<DataTablePageEvent>({
     first: 0,
     rows: NUM_ROWS,
     page: 0,
   });
 
+  // The current state of the filters
   const [filterParams, setFilterParams] = useState<any>({
     filters: {
       id: { value: "", matchMode: "contains" },
@@ -169,11 +203,8 @@ export default function BookList() {
     } as Filters,
   });
 
+  // Calls the Books API
   const callAPI = () => {
-    //console.log(lazyParams);
-    console.log(sortParams);
-    console.log(filterParams);
-    console.log(pageParams);
     BOOKS_API.getBooks({
       page: pageParams.page ?? 0,
       page_size: pageParams.rows,
@@ -184,32 +215,38 @@ export default function BookList() {
     }).then((response) => onAPIResponse(response));
   };
 
+  // Set state when response to API call is received
   const onAPIResponse = (response: GetBooksResp) => {
     setBooks(response.books);
     setNumberOfBooks(response.numberOfBooks);
     setLoading(false);
   };
 
+  // Called when any of the filters (search boxes) are typed into
   const onFilter = (event: DataTableFilterEvent) => {
     setLoading(true);
     setFilterParams(event);
   };
 
+  // Called when any of the columns are selected to be sorted
   const onSort = (event: DataTableSortEvent) => {
     setLoading(true);
     setSortParams(event);
   };
 
+  // Called when the paginator page is switched
   const onPage = (event: DataTablePageEvent) => {
     setLoading(true);
     setPageParams(event);
   };
 
+  // When any of the list of params are changed, useEffect is called to hit the API endpoint
   useEffect(
     () => callAPI(),
     [pageParams, sortParams, filterParams, selectedGenre]
   );
 
+  // Map column objects to actual columns
   const dynamicColumns = COLUMNS.map((col) => {
     return (
       <Column
@@ -237,10 +274,12 @@ export default function BookList() {
 
   return (
     <DataTable
+      // General Settings
       value={books}
       lazy
       responsiveLayout="scroll"
       filterDisplay="row"
+      loading={loading}
       // Paginator
       paginator
       first={pageParams.first}
@@ -255,9 +294,9 @@ export default function BookList() {
       // Filtering
       onFilter={onFilter}
       filters={filterParams.filters}
-      loading={loading}
     >
       {dynamicColumns}
+      <Column body={actionBodyTemplate} style={{ minWidth: "16rem" }} />
     </DataTable>
   );
 }

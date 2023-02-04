@@ -35,7 +35,7 @@ class LoginPage extends React.Component<LoginProps, LoginState> {
       headers: { "Content-Type": "application/json" },
       method: "POST",
       data: JSON.stringify({
-        email: "crs79@duke.edu",
+        email: "hosung.kim@duke.edu",
         password: this.state.password,
       }),
     };
@@ -69,7 +69,7 @@ class LoginPage extends React.Component<LoginProps, LoginState> {
   // Sets the default auth token used by axios
   setAuthToken(token: string) {
     if (token) {
-      axios.defaults.headers.common = { Authorization: `bearer ${token}` };
+      axios.defaults.headers.common = { Authorization: `Bearer ${token}` };
     } else delete axios.defaults.headers.common["Authorization"];
   }
 

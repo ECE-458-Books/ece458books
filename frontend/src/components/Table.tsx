@@ -60,6 +60,7 @@ export default function Table<T extends object>(props: TableProps<T>) {
       responsiveLayout="scroll"
       filterDisplay="row"
       paginator
+      rows={10}
       paginatorTemplate="PrevPageLink NextPageLink"
       onPage={onTableComponentChange}
       onSort={onTableComponentChange}

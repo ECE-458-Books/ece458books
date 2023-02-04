@@ -41,12 +41,7 @@ const genreFilter = (options: ColumnFilterElementTemplateOptions) => {
 
 const COLUMNS: TableColumn[] = [
   { field: "title", header: "Title", filterPlaceholder: "Search by Title" },
-  {
-    field: "authors",
-    header: "Authors",
-    filterPlaceholder: "Search by Authors",
-  },
-  { field: "isbn", header: "ISBN", filterPlaceholder: "Search by ISBN" },
+  { field: "isbn13", header: "ISBN", filterPlaceholder: "Search by ISBN" },
   {
     field: "publisher",
     header: "Publisher",
@@ -54,7 +49,7 @@ const COLUMNS: TableColumn[] = [
     hidden: true,
   },
   {
-    field: "pubYear",
+    field: "publishedYear",
     header: "Publication Year",
     filterPlaceholder: "Search by Publication Year",
     hidden: true,
@@ -66,21 +61,9 @@ const COLUMNS: TableColumn[] = [
     hidden: true,
   },
   {
-    field: "dimensions",
-    header: "Dimensions",
-    filterPlaceholder: "Search by Dimensions",
-    hidden: true,
-  },
-  {
     field: "retailPrice",
     header: "Retail Price",
     filterPlaceholder: "Search by Price",
-  },
-  {
-    field: "genre",
-    header: "Genre",
-    filterPlaceholder: "Search by Genre",
-    customFilter: genreFilter,
   },
 ];
 
@@ -97,6 +80,7 @@ export class BookList extends React.Component<{}, BookListState> {
   }
 
   render() {
+    console.log(this.state.books);
     return <Table<Book> columns={COLUMNS} data={this.state.books} />;
   }
 }

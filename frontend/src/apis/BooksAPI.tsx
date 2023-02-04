@@ -35,8 +35,6 @@ export const BOOKS_API = {
       }),
     });
 
-    console.log(response);
-
     // Convert response to internal data type (not strictly necessary, but I think good practice)
     return response.data.results.map((book: GetBooksResp) => {
       return {

@@ -68,7 +68,6 @@ INSTALLED_APPS = [
 
     # Django Extensions (shell_plus)
     'django_extensions',
-    'drf_multiple_model',
 ]
 
 MIDDLEWARE = [

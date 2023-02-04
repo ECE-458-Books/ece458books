@@ -12,3 +12,8 @@ class Sale(models.Model):
     quantity = models.PositiveIntegerField()
     unit_retail_price = models.FloatField(validators=[MinValueValidator(0)])
     sales_reconciliation = models.ForeignKey(SalesReconciliation, related_name='sales', on_delete=models.CASCADE)
+    revenue = models.FloatField()
+
+    def save(self, *args, **kwargs):
+        self.revenue = self.quantity*self.unit_retail_price
+        super(Sale, self).save(*args, **kwargs)

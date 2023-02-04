@@ -6,7 +6,7 @@ from .models import SalesReconciliation, Sale
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from .sales_reconciliation import SalesReconciliationFieldsCalculator
 from .paginations import SalesReconciliationPagination
-from django.db.models import OuterRef, Subquery, F, Sum
+from django.db.models import OuterRef, Subquery, F, Sum, Func
 
 
 class ListCreateSalesReconciliationAPIView(ListCreateAPIView):
@@ -31,19 +31,21 @@ class ListCreateSalesReconciliationAPIView(ListCreateAPIView):
 
     def get_queryset(self):
         default_query_set = SalesReconciliation.objects.all()
-        print(
-            default_query_set.annotate(quantity=Subquery(
-                Sale.objects.filter(sales_reconciliation=OuterRef('id')).aggregate(
-                    revenue=Sum(F('quantity') * F('unit_retail_price'))))))
-        # default_query_set = default_query_set.annotate(
-        #     quantity=Subquery(Sale.objects.filter(sales_reconciliation=OuterRef('id'))))
-        # #.aggregate(
-        #revenue=Sum(F('unit_retail_price') * F('quantity')))))
-        print(default_query_set)
-        # default_query_set = default_query_set.annotate(unit_retail_price=Max('sales__unit_retail_price'))
-        # default_query_set = default_query_set.annotate(
-        #     sale_revenue=Max(F('sales__unit_retail_price') * F('sales__quantity')))
-        # print(Sale.objects.order_by('quantity').values('quantity'))
+
+        # Create a subquery to aggregate the 'revenue' value for each sale in SalesReconciliation
+        subquery = Sale.objects.filter(
+            sales_reconciliation=OuterRef('id')
+        ).values_list(
+            Func(
+                'revenue',
+                function='SUM',
+            ),
+        )
+
+        default_query_set = default_query_set.annotate(
+            total_revenue=Subquery(subquery)
+        )
+
         return default_query_set
 
 

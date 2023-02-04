@@ -23,32 +23,38 @@ export default function Table<T extends object>(props: TableProps<T>) {
     page: 1,
     sortField: null,
     sortOrder: null,
-    // These need to be updated, this is copy pasted.
-    // This entire file should probably be copied over into each of the list classes to make things easier.
     filters: {
-      name: { value: "", matchMode: "contains" },
-      "country.name": { value: "", matchMode: "contains" },
-      company: { value: "", matchMode: "contains" },
-      "representative.name": { value: "", matchMode: "contains" },
+      name: { value: "" },
+      "country.name": { value: "" },
+      company: { value: "" },
+      "representative.name": { value: "" },
     },
   });
 
   const onTableComponentChange = (event: any) => {
-    setLazyParams(event);
+    console.log("blah");
   };
 
   const dynamicColumns = props.columns.map((col) => {
     return (
       <Column
+        // Indexing/header
         key={col.field}
         field={col.field}
         header={col.header}
+        // Filtering
         filter
         filterElement={col.customFilter}
+        filterMatchMode={"contains"}
         filterPlaceholder={col.filterPlaceholder}
-        style={{ minWidth: "16rem" }}
-        showClearButton={false}
+        // Sorting
         sortable
+        sortField={col.field}
+        // Hiding Fields
+        showFilterMenuOptions={false}
+        showClearButton={false}
+        // Other
+        style={{ minWidth: "16rem" }}
         hidden={col.hidden}
       />
     );
@@ -62,8 +68,10 @@ export default function Table<T extends object>(props: TableProps<T>) {
       paginator
       rows={10}
       paginatorTemplate="PrevPageLink NextPageLink"
+      // Function is called in order to invoke API request on pagination, sort, or filter
       onPage={onTableComponentChange}
       onSort={onTableComponentChange}
+      onFilter={onTableComponentChange}
     >
       {dynamicColumns}
     </DataTable>

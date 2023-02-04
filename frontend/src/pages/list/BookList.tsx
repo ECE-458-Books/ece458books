@@ -1,14 +1,18 @@
-import React, { FormEvent } from "react";
-import Table, { TableColumn } from "../../components/Table";
 import { ColumnFilterElementTemplateOptions } from "primereact/column";
 import { Dropdown } from "primereact/dropdown";
 import { GENRE_DATA } from "./GenreList";
 import { BOOKS_API } from "../../apis/BooksAPI";
-import DataTableStateEvent from "primereact/datatable";
+import { DataTable } from "primereact/datatable";
+import { Column } from "primereact/column";
+import "primereact/resources/themes/lara-light-indigo/theme.css";
+import { useEffect, useState } from "react";
 
-interface BookListState {
-  selectedGenre: string;
-  books: Book[];
+interface TableColumn {
+  field: string;
+  header: string;
+  filterPlaceholder?: string;
+  customFilter?: any;
+  hidden?: boolean;
 }
 
 export interface Book {
@@ -67,20 +71,73 @@ const COLUMNS: TableColumn[] = [
   },
 ];
 
-export class BookList extends React.Component<{}, BookListState> {
-  constructor(props = {}) {
-    super(props);
-    this.state = { selectedGenre: "", books: [] };
-  }
+export default function BookList() {
+  const [books, setBooks] = useState<Book[]>([]);
+  const [selectedGenre, setSelectedGenre] = useState<string>("");
 
-  componentDidMount(): void {
+  const [lazyParams, setLazyParams] = useState({
+    first: 0,
+    rows: 10,
+    page: 1,
+    sortField: null,
+    sortOrder: null,
+    filters: {
+      name: { value: "" },
+      "country.name": { value: "" },
+      company: { value: "" },
+      "representative.name": { value: "" },
+    },
+  });
+
+  const onTableComponentChange = (event: any) => {
+    console.log("blah");
+  };
+
+  useEffect(() => {
     BOOKS_API.getBooks({ page: 1, page_size: 5 }).then((response) =>
-      this.setState({ books: response })
+      setBooks(response)
     );
-  }
+  });
 
-  render() {
-    console.log(this.state.books);
-    return <Table<Book> columns={COLUMNS} data={this.state.books} />;
-  }
+  const dynamicColumns = COLUMNS.map((col) => {
+    return (
+      <Column
+        // Indexing/header
+        key={col.field}
+        field={col.field}
+        header={col.header}
+        // Filtering
+        filter
+        filterElement={col.customFilter}
+        filterMatchMode={"contains"}
+        filterPlaceholder={col.filterPlaceholder}
+        // Sorting
+        sortable
+        sortField={col.field}
+        // Hiding Fields
+        showFilterMenuOptions={false}
+        showClearButton={false}
+        // Other
+        style={{ minWidth: "16rem" }}
+        hidden={col.hidden}
+      />
+    );
+  });
+
+  return (
+    <DataTable
+      value={books}
+      responsiveLayout="scroll"
+      filterDisplay="row"
+      paginator
+      rows={10}
+      paginatorTemplate="PrevPageLink NextPageLink"
+      // Function is called in order to invoke API request on pagination, sort, or filter
+      //onPage={onTableComponentChange}
+      //onSort={onTableComponentChange}
+      //onFilter={onTableComponentChange}
+    >
+      {dynamicColumns}
+    </DataTable>
+  );
 }

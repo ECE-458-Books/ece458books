@@ -50,7 +50,7 @@ export const BOOKS_API = {
         width: book.width,
         height: book.height,
         thickness: book.thickness,
-        retail_price: book.retail_price,
+        retailPrice: book.retail_price,
       };
     });
   },

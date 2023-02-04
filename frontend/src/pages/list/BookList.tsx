@@ -9,42 +9,21 @@ interface BookListState {
   addIsbns: string;
 }
 
-interface BookRow {
+export interface Book {
+  id: number;
   title: string;
-  authors: string;
-  isbn: string;
+  authors: string[];
+  genres: string[];
+  isbn13: string;
+  isbn10: string;
   publisher: string;
-  pubYear: string;
-  pageCount: string;
-  dimensions: string;
-  retailPrice: string;
-  genre: string;
+  publishedYear: number;
+  pageCount: number;
+  width: number;
+  height: number;
+  thickness: number;
+  retailPrice: number;
 }
-
-const DATA: BookRow[] = [
-  {
-    title: "blah",
-    authors: "blah",
-    isbn: "blah",
-    publisher: "blah",
-    pubYear: "blah",
-    pageCount: "blah",
-    dimensions: "blah",
-    retailPrice: "blah",
-    genre: "blah",
-  },
-  {
-    title: "clah",
-    authors: "clah",
-    isbn: "clah",
-    publisher: "clah",
-    pubYear: "clah",
-    pageCount: "clah",
-    dimensions: "clah",
-    retailPrice: "clah",
-    genre: "clah",
-  },
-];
 
 const genreFilter = (options: ColumnFilterElementTemplateOptions) => {
   return (
@@ -115,7 +94,7 @@ class BookList extends React.Component<{}, BookListState> {
     event.preventDefault();
   };
   render() {
-    return <Table<BookRow> columns={COLUMNS} data={DATA} />;
+    return <Table<Book> columns={COLUMNS} data={DATA} />;
   }
 }
 

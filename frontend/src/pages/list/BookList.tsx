@@ -14,6 +14,7 @@ import { DataTableFilterMetaData } from "primereact/datatable";
 import { useNavigate } from "react-router-dom";
 import { Button } from "primereact/button";
 import React from "react";
+import { Dialog } from "primereact/dialog";
 
 const NUM_ROWS = 3;
 
@@ -57,7 +58,21 @@ interface Filters {
 }
 
 export default function BookList() {
-  const navigate = useNavigate();
+  const emptyBook = {
+    id: 0,
+    title: "",
+    authors: [""],
+    genres: [""],
+    isbn13: "",
+    isbn10: "",
+    publisher: "",
+    publishedYear: 0,
+    pageCount: 0,
+    width: 0,
+    height: 0,
+    thickness: 0,
+    retailPrice: 0,
+  };
 
   // Custom dropdown selector for Genre
   const [selectedGenre, setSelectedGenre] = useState<string>("");
@@ -140,14 +155,8 @@ export default function BookList() {
     },
   ];
 
-  // Callback functions for edit/delete buttons
-  const editBook = (book: Book) => {
-    console.log(book);
-  };
-
-  const deleteBook = (book: Book) => {
-    console.log(book);
-  };
+  // State to track the current book that has been selected to be deleted
+  const [selectedDeleteBook, setSelectedDeleteBook] = useState(emptyBook);
 
   // Custom body template for edit/delete buttons
   const actionBodyTemplate = (rowData: Book) => {
@@ -161,11 +170,70 @@ export default function BookList() {
         <Button
           icon="pi pi-trash"
           className="p-button-rounded p-button-danger"
-          onClick={() => deleteBook(rowData)}
+          onClick={() => deleteBookPopup(rowData)}
         />
       </React.Fragment>
     );
   };
+
+  // Callback functions for edit/delete buttons
+  const editBook = (book: Book) => {
+    console.log(book);
+  };
+
+  const deleteBookPopup = (book: Book) => {
+    setSelectedDeleteBook(book);
+    setDeleteDialogueVisible(true);
+  };
+
+  const deleteBookFinal = () => {
+    setDeleteDialogueVisible(false);
+    setSelectedDeleteBook(emptyBook);
+    console.log(selectedDeleteBook);
+  };
+
+  // Buttons for the delete Dialogue Popup
+  const [deleteDialogueVisible, setDeleteDialogueVisible] = useState(false);
+  const deleteProductDialogFooter = (
+    <React.Fragment>
+      <Button
+        label="No"
+        icon="pi pi-times"
+        className="p-button-text"
+        onClick={() => setDeleteDialogueVisible(false)}
+      />
+      <Button
+        label="Yes"
+        icon="pi pi-check"
+        className="p-button-text"
+        onClick={() => deleteBookFinal()}
+      />
+    </React.Fragment>
+  );
+
+  // Template for the delete dialogue popup
+  const deleteDialogue = (
+    <Dialog
+      visible={deleteDialogueVisible}
+      style={{ width: "450px" }}
+      header="Confirm"
+      modal
+      footer={deleteProductDialogFooter}
+      onHide={() => setDeleteDialogueVisible(false)}
+    >
+      <div className="confirmation-content">
+        <i
+          className="pi pi-exclamation-triangle mr-3"
+          style={{ fontSize: "2rem" }}
+        />
+        {selectedDeleteBook && (
+          <span>
+            Are you sure you want to delete <b>{selectedDeleteBook.title}</b>?
+          </span>
+        )}
+      </div>
+    </Dialog>
+  );
 
   const [loading, setLoading] = useState(false); // Whether we show that the table is loading or not
   const [numberOfBooks, setNumberOfBooks] = useState(0); // The number of books that match the query
@@ -273,30 +341,33 @@ export default function BookList() {
   });
 
   return (
-    <DataTable
-      // General Settings
-      value={books}
-      lazy
-      responsiveLayout="scroll"
-      filterDisplay="row"
-      loading={loading}
-      // Paginator
-      paginator
-      first={pageParams.first}
-      rows={NUM_ROWS}
-      totalRecords={numberOfBooks}
-      paginatorTemplate="PrevPageLink NextPageLink"
-      onPage={onPage}
-      // Sorting
-      onSort={onSort}
-      sortField={sortParams.sortField}
-      sortOrder={sortParams.sortOrder}
-      // Filtering
-      onFilter={onFilter}
-      filters={filterParams.filters}
-    >
-      {dynamicColumns}
-      <Column body={actionBodyTemplate} style={{ minWidth: "16rem" }} />
-    </DataTable>
+    <>
+      <DataTable
+        // General Settings
+        value={books}
+        lazy
+        responsiveLayout="scroll"
+        filterDisplay="row"
+        loading={loading}
+        // Paginator
+        paginator
+        first={pageParams.first}
+        rows={NUM_ROWS}
+        totalRecords={numberOfBooks}
+        paginatorTemplate="PrevPageLink NextPageLink"
+        onPage={onPage}
+        // Sorting
+        onSort={onSort}
+        sortField={sortParams.sortField}
+        sortOrder={sortParams.sortOrder}
+        // Filtering
+        onFilter={onFilter}
+        filters={filterParams.filters}
+      >
+        {dynamicColumns}
+        <Column body={actionBodyTemplate} style={{ minWidth: "16rem" }} />
+      </DataTable>
+      {deleteDialogue}
+    </>
   );
 }

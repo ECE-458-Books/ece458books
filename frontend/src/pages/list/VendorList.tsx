@@ -1,5 +1,5 @@
-import React from "react";
-import Table, { TableColumn } from "../components/Table";
+import React, { FormEvent } from "react";
+import Table, { TableColumn } from "../../components/Table";
 
 interface VendorListState {
   value: string;
@@ -28,6 +28,12 @@ class VendorList extends React.Component<{}, VendorListState> {
     super(props);
     this.state = { value: "" };
   }
+
+  onSubmit = (event: FormEvent<HTMLFormElement>): void => {
+    alert("A form was submitted: \n");
+
+    event.preventDefault();
+  };
 
   render() {
     return <Table<VendorRow> columns={COLUMNS} data={DATA} />;

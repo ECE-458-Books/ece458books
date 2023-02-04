@@ -1,11 +1,19 @@
 import { Routes, Route, useNavigate } from "react-router-dom";
 import { Outlet } from "react-router";
 import NavigationBar from "./Navbar";
-import BookList from "../pages/BookList";
-import GenreList from "../pages/GenreList";
+import BookList from "../pages/list/BookList";
+import GenreList from "../pages/list/GenreList";
 import LoginPage from "../pages/LoginPage";
-import VendorList from "../pages/VendorList";
-import SalesReconciliationList from "../pages/SalesReconciliationList";
+import VendorList from "../pages/list/VendorList";
+import SalesReconciliationList from "../pages/list/SRList";
+import ModifyBook from "../pages/detail/ModfiyBook";
+import ModifySR from "../pages/detail/SRDetail";
+import ModifyPO from "../pages/detail/PODetail";
+import BookAdd from "../pages/add/BookAdd";
+import GenreAdd from "../pages/add/GenreAdd";
+import VendorAdd from "../pages/add/VendorAdd";
+import GenreDetail from "../pages/detail/GenreDetail";
+import VendorDetail from "../pages/detail/VendorDetail";
 
 const WithNavBar = () => {
   return (
@@ -40,6 +48,16 @@ export default function Router() {
           element={<SalesReconciliationList />}
         />
         <Route path="vendors" element={<VendorList />} />
+        <Route path="books/add" element={<BookAdd />} />
+        <Route path="books/detail" element={<ModifyBook />} />
+        <Route path="genres/add" element={<GenreAdd />} />
+        <Route path="genres/detail" element={<GenreDetail />} />
+        <Route path="purchase-orders/add" element={<ModifyPO />} />
+        <Route path="purchase-orders/detail" element={<ModifyPO />} />
+        <Route path="sales-reconciliations/add" element={<ModifySR />} />
+        <Route path="sales-reconciliations/detail" element={<ModifySR />} />
+        <Route path="vendors/add" element={<VendorAdd />} />
+        <Route path="vendors/detail" element={<VendorDetail />} />
       </Route>
     </Routes>
   );

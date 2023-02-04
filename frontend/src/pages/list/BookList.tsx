@@ -1,6 +1,6 @@
-import React from "react";
+import React, { FormEvent } from "react";
+import Table, { TableColumn } from "../../components/Table";
 import { ColumnFilterElementTemplateOptions } from "primereact/column";
-import Table, { TableColumn } from "../components/Table";
 import { Dropdown } from "primereact/dropdown";
 import { GENRE_DATA } from "./GenreList";
 
@@ -8,7 +8,7 @@ interface BookListState {
   value: string;
 }
 
-interface BookRow {
+export interface BookRow {
   title: string;
   authors: string;
   isbn: string;
@@ -108,6 +108,11 @@ class BookList extends React.Component<{}, BookListState> {
     this.state = { value: "" };
   }
 
+  onSubmit = (event: FormEvent<HTMLFormElement>): void => {
+    alert("A form was submitted: \n");
+
+    event.preventDefault();
+  };
   render() {
     return <Table<BookRow> columns={COLUMNS} data={DATA} />;
   }

@@ -34,7 +34,13 @@ export default function Table<T extends object>(props: TableProps<T>) {
   });
 
   return (
-    <DataTable value={props.data} responsiveLayout="scroll" filterDisplay="row">
+    <DataTable
+      value={props.data}
+      responsiveLayout="scroll"
+      filterDisplay="row"
+      paginator
+      paginatorTemplate="PrevPageLink NextPageLink"
+    >
       {dynamicColumns}
     </DataTable>
   );

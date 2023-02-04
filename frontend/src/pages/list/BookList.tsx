@@ -3,6 +3,8 @@ import Table, { TableColumn } from "../../components/Table";
 import { ColumnFilterElementTemplateOptions } from "primereact/column";
 import { Dropdown } from "primereact/dropdown";
 import { GENRE_DATA } from "./GenreList";
+import { BOOKS_API } from "../../apis/BooksAPI";
+import DataTableStateEvent from "primereact/datatable";
 
 interface BookListState {
   selectedGenre: string;
@@ -82,20 +84,19 @@ const COLUMNS: TableColumn[] = [
   },
 ];
 
-class BookList extends React.Component<{}, BookListState> {
+export class BookList extends React.Component<{}, BookListState> {
   constructor(props = {}) {
     super(props);
     this.state = { selectedGenre: "", books: [] };
   }
 
-  onSubmit = (event: FormEvent<HTMLFormElement>): void => {
-    alert("A form was submitted: \n");
+  componentDidMount(): void {
+    BOOKS_API.getBooks({ page: 1, page_size: 5 }).then((response) =>
+      this.setState({ books: response })
+    );
+  }
 
-    event.preventDefault();
-  };
   render() {
     return <Table<Book> columns={COLUMNS} data={this.state.books} />;
   }
 }
-
-export default BookList;

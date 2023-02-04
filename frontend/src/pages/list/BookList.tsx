@@ -2,7 +2,12 @@ import { ColumnFilterElementTemplateOptions } from "primereact/column";
 import { Dropdown } from "primereact/dropdown";
 import { GENRE_DATA } from "./GenreList";
 import { BOOKS_API, GetBooksResp } from "../../apis/BooksAPI";
-import { DataTable } from "primereact/datatable";
+import {
+  DataTable,
+  DataTableFilterEvent,
+  DataTablePageEvent,
+  DataTableSortEvent,
+} from "primereact/datatable";
 import { Column } from "primereact/column";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import { useEffect, useState } from "react";
@@ -34,26 +39,19 @@ export interface Book {
   retailPrice: number;
 }
 
-interface LazyParams {
-  first: number;
-  rows: number;
-  page: number;
-  sortField: string | undefined;
-  sortOrder: 0 | 1 | -1 | null | undefined;
-  filters: {
-    id: DataTableFilterMetaData;
-    title: DataTableFilterMetaData;
-    authors: DataTableFilterMetaData;
-    isbn13: DataTableFilterMetaData;
-    isbn10: DataTableFilterMetaData;
-    publisher: DataTableFilterMetaData;
-    publishedYear: DataTableFilterMetaData;
-    pageCount: DataTableFilterMetaData;
-    width: DataTableFilterMetaData;
-    height: DataTableFilterMetaData;
-    thickness: DataTableFilterMetaData;
-    retailPrice: DataTableFilterMetaData;
-  };
+interface Filters {
+  [id: string]: DataTableFilterMetaData;
+  title: DataTableFilterMetaData;
+  authors: DataTableFilterMetaData;
+  isbn13: DataTableFilterMetaData;
+  isbn10: DataTableFilterMetaData;
+  publisher: DataTableFilterMetaData;
+  publishedYear: DataTableFilterMetaData;
+  pageCount: DataTableFilterMetaData;
+  width: DataTableFilterMetaData;
+  height: DataTableFilterMetaData;
+  thickness: DataTableFilterMetaData;
+  retailPrice: DataTableFilterMetaData;
 }
 
 export default function BookList() {
@@ -142,12 +140,19 @@ export default function BookList() {
   //const [selectedCustomers, setSelectedCustomers] = useState(null);
   //const [selectedRepresentative, setSelectedRepresentative] = useState(null);
 
-  const [lazyParams, setLazyParams] = useState<LazyParams>({
+  const [sortParams, setSortParams] = useState<DataTableSortEvent>({
+    sortField: "",
+    sortOrder: null,
+    multiSortMeta: null,
+  });
+
+  const [pageParams, setPageParams] = useState<DataTablePageEvent>({
     first: 0,
     rows: NUM_ROWS,
-    page: 1,
-    sortField: undefined,
-    sortOrder: null,
+    page: 0,
+  });
+
+  const [filterParams, setFilterParams] = useState<DataTableFilterEvent>({
     filters: {
       id: { value: "", matchMode: "contains" },
       title: { value: "", matchMode: "contains" },
@@ -161,17 +166,21 @@ export default function BookList() {
       height: { value: "", matchMode: "contains" },
       thickness: { value: "", matchMode: "contains" },
       retailPrice: { value: "", matchMode: "contains" },
-    },
+    } as Filters,
   });
 
   const callAPI = () => {
+    //console.log(lazyParams);
+    console.log(sortParams);
+    console.log(filterParams);
+    console.log(pageParams);
     BOOKS_API.getBooks({
-      page: lazyParams.page,
-      page_size: lazyParams.rows,
-      ordering_field: lazyParams.sortField,
-      ordering_ascending: lazyParams.sortOrder,
+      page: pageParams.page,
+      page_size: pageParams.rows,
+      ordering_field: sortParams.sortField,
+      ordering_ascending: sortParams.sortOrder,
       genre: selectedGenre,
-      search: "",
+      search: filterParams.filters.title.value,
     }).then((response) => onAPIResponse(response));
   };
 
@@ -181,25 +190,22 @@ export default function BookList() {
     setLoading(false);
   };
 
-  const onFilter = (event: any) => {
+  const onFilter = (event: DataTableFilterEvent) => {
     setLoading(true);
-    setLazyParams(event);
-    callAPI();
+    setFilterParams(event);
   };
 
-  const onSort = (event: any) => {
+  const onSort = (event: DataTableSortEvent) => {
     setLoading(true);
-    setLazyParams(event);
-    callAPI();
+    setSortParams(event);
   };
 
-  const onPage = (event: any) => {
+  const onPage = (event: DataTablePageEvent) => {
     setLoading(true);
-    setLazyParams(event);
-    callAPI();
+    setPageParams(event);
   };
 
-  useEffect(() => callAPI());
+  useEffect(() => callAPI(), [pageParams, sortParams, filterParams]);
 
   const dynamicColumns = COLUMNS.map((col) => {
     return (
@@ -211,11 +217,11 @@ export default function BookList() {
         // Filtering
         filter
         filterElement={col.customFilter}
-        filterMatchMode={"contains"}
+        //filterMatchMode={"contains"}
         filterPlaceholder={col.filterPlaceholder}
         // Sorting
         sortable
-        sortField={col.field}
+        //sortField={col.field}
         // Hiding Fields
         showFilterMenuOptions={false}
         showClearButton={false}
@@ -232,18 +238,20 @@ export default function BookList() {
       lazy
       responsiveLayout="scroll"
       filterDisplay="row"
+      // Paginator
       paginator
-      first={lazyParams.first}
+      first={pageParams.first}
       rows={NUM_ROWS}
       totalRecords={numberOfBooks}
       paginatorTemplate="PrevPageLink NextPageLink"
-      // Function is called in order to invoke API request on pagination, sort, or filter
       onPage={onPage}
+      // Sorting
       onSort={onSort}
-      sortField={lazyParams.sortField}
-      sortOrder={lazyParams.sortOrder}
+      sortField={sortParams.sortField}
+      sortOrder={sortParams.sortOrder}
+      // Filtering
       onFilter={onFilter}
-      filters={lazyParams.filters}
+      filters={filterParams.filters}
       loading={loading}
     >
       {dynamicColumns}

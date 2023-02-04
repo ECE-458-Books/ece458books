@@ -4,13 +4,15 @@ import { API, METHOD_GET } from "./Config";
 const BOOKS_EXTENSION = "books/";
 
 interface GetBooksReq {
-  page: number;
+  page: number | undefined;
   page_size: number;
   ordering_field: string | undefined;
   ordering_ascending: number | null | undefined;
   genre: string;
   search: string;
 }
+
+// title, author, publisher, ISBN
 
 interface SingleBook {
   id: number;
@@ -41,7 +43,7 @@ export const BOOKS_API = {
       params: {
         page: req.page,
         page_size: req.page_size,
-        //ordering: req.ordering_field,
+        ordering: req.ordering_field,
         genre: req.genre,
         search: req.search,
       },

@@ -6,12 +6,14 @@ from rest_framework import status, filters
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
+from rest_framework.permissions import IsAuthenticated
 
 from .serializers import BookAddSerializer, BookSerializer, ISBNSerializer
 from .isbn import ISBNTools
-from .models import Book, Author, Genre
+from .models import Book, Author
 from .paginations import BookPagination
+
+from genres.models import Genre
 
 class ISBNSearchView(APIView):
     """

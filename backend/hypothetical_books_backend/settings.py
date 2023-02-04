@@ -50,8 +50,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # Register the App
+    # Register Custom Apps
     'books',
+    "genres",
 
     # Authentication App
     'authapp',

@@ -1,9 +1,6 @@
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 
-class Genre(models.Model):
-    name = models.CharField(max_length=30, unique=True)
-
 class Author(models.Model):
     name = models.CharField(max_length=70, unique=True)
 
@@ -32,4 +29,4 @@ class Book(models.Model):
     retail_price = models.FloatField() 
 
     # Extrinsic, required
-    genres = models.ManyToManyField(Genre) 
+    genres = models.ManyToManyField('genres.Genre') 

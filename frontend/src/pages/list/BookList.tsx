@@ -1,4 +1,3 @@
-import { ColumnFilterElementTemplateOptions } from "primereact/column";
 import { Dropdown } from "primereact/dropdown";
 import { GENRE_DATA } from "./GenreList";
 import { BOOKS_API, GetBooksResp } from "../../apis/BooksAPI";
@@ -19,7 +18,7 @@ interface TableColumn {
   field: string;
   header: string;
   filterPlaceholder?: string;
-  customFilter?: any;
+  customFilter?: () => JSX.Element;
   hidden?: boolean;
 }
 
@@ -57,14 +56,15 @@ interface Filters {
 export default function BookList() {
   const [selectedGenre, setSelectedGenre] = useState<string>("");
 
-  const genreFilter = (options: ColumnFilterElementTemplateOptions) => {
+  const genreFilter = () => {
     return (
       <Dropdown
-        value={options.value}
+        value={selectedGenre}
         options={GENRE_DATA.map((genreRow) => genreRow.genre)}
         appendTo={"self"}
-        onChange={(e) => options.filterApplyCallback(e.value)}
+        onChange={(e) => setSelectedGenre(e.value)}
         placeholder={"Select Genre"}
+        showClear
       />
     );
   };
@@ -152,7 +152,7 @@ export default function BookList() {
     page: 0,
   });
 
-  const [filterParams, setFilterParams] = useState<DataTableFilterEvent>({
+  const [filterParams, setFilterParams] = useState<any>({
     filters: {
       id: { value: "", matchMode: "contains" },
       title: { value: "", matchMode: "contains" },
@@ -175,7 +175,7 @@ export default function BookList() {
     console.log(filterParams);
     console.log(pageParams);
     BOOKS_API.getBooks({
-      page: pageParams.page,
+      page: pageParams.page ?? 0,
       page_size: pageParams.rows,
       ordering_field: sortParams.sortField,
       ordering_ascending: sortParams.sortOrder,
@@ -205,7 +205,10 @@ export default function BookList() {
     setPageParams(event);
   };
 
-  useEffect(() => callAPI(), [pageParams, sortParams, filterParams]);
+  useEffect(
+    () => callAPI(),
+    [pageParams, sortParams, filterParams, selectedGenre]
+  );
 
   const dynamicColumns = COLUMNS.map((col) => {
     return (

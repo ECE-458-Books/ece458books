@@ -4,7 +4,7 @@ import { API, METHOD_GET } from "./Config";
 const BOOKS_EXTENSION = "books/";
 
 interface GetBooksReq {
-  page: number | undefined;
+  page: number;
   page_size: number;
   ordering_field: string | undefined;
   ordering_ascending: number | null | undefined;
@@ -41,7 +41,7 @@ export const BOOKS_API = {
       url: BOOKS_EXTENSION,
       method: METHOD_GET,
       params: {
-        page: req.page,
+        page: req.page + 1,
         page_size: req.page_size,
         ordering: req.ordering_field,
         genre: req.genre,

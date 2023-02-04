@@ -6,9 +6,13 @@ const BOOKS_EXTENSION = "books/";
 interface GetBooksReq {
   page: number;
   page_size: number;
+  ordering_field: string | undefined;
+  ordering_ascending: number | null | undefined;
+  genre: string;
+  search: string;
 }
 
-interface GetBooksResp {
+interface SingleBook {
   id: number;
   authors: string[];
   genres: string[];
@@ -24,19 +28,27 @@ interface GetBooksResp {
   retail_price: number;
 }
 
+export interface GetBooksResp {
+  books: Book[];
+  numberOfBooks: number;
+}
+
 export const BOOKS_API = {
-  getBooks: async function (req: GetBooksReq): Promise<Book[]> {
+  getBooks: async function (req: GetBooksReq): Promise<GetBooksResp> {
     const response = await API.request({
       url: BOOKS_EXTENSION,
       method: METHOD_GET,
-      params: JSON.stringify({
+      params: {
         page: req.page,
         page_size: req.page_size,
-      }),
+        //ordering: req.ordering_field,
+        genre: req.genre,
+        search: req.search,
+      },
     });
 
     // Convert response to internal data type (not strictly necessary, but I think good practice)
-    return response.data.results.map((book: GetBooksResp) => {
+    const books = response.data.results.map((book: SingleBook) => {
       return {
         id: book.id,
         title: book.title,
@@ -53,5 +65,10 @@ export const BOOKS_API = {
         retailPrice: book.retail_price,
       };
     });
+
+    return {
+      books: books,
+      numberOfBooks: response.data.count,
+    };
   },
 };

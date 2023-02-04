@@ -5,8 +5,8 @@ import { Dropdown } from "primereact/dropdown";
 import { GENRE_DATA } from "./GenreList";
 
 interface BookListState {
-  value: string;
-  addIsbns: string;
+  selectedGenre: string;
+  books: Book[];
 }
 
 export interface Book {
@@ -85,16 +85,16 @@ const COLUMNS: TableColumn[] = [
 class BookList extends React.Component<{}, BookListState> {
   constructor(props = {}) {
     super(props);
-    this.state = { value: "", addIsbns: "" };
+    this.state = { selectedGenre: "", books: [] };
   }
 
   onSubmit = (event: FormEvent<HTMLFormElement>): void => {
-    alert("A form was submitted: \n" + this.state.addIsbns);
+    alert("A form was submitted: \n");
 
     event.preventDefault();
   };
   render() {
-    return <Table<Book> columns={COLUMNS} data={DATA} />;
+    return <Table<Book> columns={COLUMNS} data={this.state.books} />;
   }
 }
 

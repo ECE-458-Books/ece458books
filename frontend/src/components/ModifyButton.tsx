@@ -7,12 +7,10 @@ interface ModifyButtonProps {
 
 export default function ModifyButton(props: ModifyButtonProps) {
   const navigate = useNavigate();
-  const modifyPage = () => {
-    navigate(props.path);
-  };
+
   return (
     <div>
-      <Button label="Modify" onClick={modifyPage} />
+      <Button label="Modify" onClick={() => navigate(props.path)} />
     </div>
   );
 }

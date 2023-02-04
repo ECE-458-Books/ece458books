@@ -1,5 +1,5 @@
 import Book from "../pages/list/BookList";
-import { API, METHOD_POST } from "./config";
+import { API, METHOD_POST } from "./Config";
 
 const BOOKS_EXTENSION = "books/";
 
@@ -30,18 +30,20 @@ export const BooksAPI = {
       }),
     });
 
+    // Convert response to internal data type (not strictly necessary, but I think good practice)
     return response.data.results.map((book: getResp) => {
       return {
+        id: book.id,
         title: book.title,
         authors: book.authors,
         genres: book.genres,
-        isbn_13: book.isbn_13,
-        isbn_10: book.isbn_10,
+        isbn13: book.isbn_13,
+        isbn10: book.isbn_10,
         publisher: book.publisher,
+        publishedYear: book.publishedDate,
         pageCount: book.pageCount,
-        publishyear: book.publishedDate,
         width: book.width,
-        hgieht: book.height,
+        height: book.height,
         thickness: book.thickness,
         retail_price: book.retail_price,
       };

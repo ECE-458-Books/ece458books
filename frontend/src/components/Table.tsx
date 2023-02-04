@@ -5,7 +5,7 @@ import "primereact/resources/themes/lara-light-indigo/theme.css";
 export interface TableColumn {
   field: string;
   header: string;
-  filterPlaceholder: string;
+  filterPlaceholder?: string;
   customFilter?: any;
   hidden?: boolean;
 }
@@ -16,7 +16,7 @@ export interface TableProps<T extends object> {
 }
 
 export default function Table<T extends object>(props: TableProps<T>) {
-  const dynamicColumns = props.columns.map((col, i) => {
+  const dynamicColumns = props.columns.map((col) => {
     return (
       <Column
         key={col.field}

@@ -7,6 +7,7 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from .sales_reconciliation import SalesReconciliationFieldsCalculator
 from .paginations import SalesReconciliationPagination
 from django.db.models import OuterRef, Subquery, F, Sum, Func
+import datetime, pytz
 
 
 class ListCreateSalesReconciliationAPIView(ListCreateAPIView):
@@ -17,7 +18,7 @@ class ListCreateSalesReconciliationAPIView(ListCreateAPIView):
     filter_backends = [filters.OrderingFilter, filters.SearchFilter]
     ordering_fields = '__all__'
     ordering = ['id']
-    search_fields = ['date']  # sales__book__isbn13??
+    # search_fields = ['date']  # sales__book__isbn13??
 
     def create(self, request, *args, **kwargs):
         serializer = SalesReconciliationSerializer(data=request.data)
@@ -45,6 +46,67 @@ class ListCreateSalesReconciliationAPIView(ListCreateAPIView):
         default_query_set = default_query_set.annotate(
             total_revenue=Subquery(subquery)
         )
+
+        # Filter by date
+        start_date = self.request.GET.get('start')
+        end_date = self.request.GET.get('end')
+        if start_date is not None and end_date is not None:
+            default_query_set = default_query_set.filter(date__range=(start_date, end_date))
+        elif start_date is not None:
+            default_query_set = default_query_set.filter(date__range=(start_date, datetime.datetime.now(pytz.timezone('US/Eastern'))))
+
+        
+        # Filter by book
+        book = self.request.GET.get('book')
+        if book is not None:
+            default_query_set = default_query_set.filter(sales__book=book).distinct()
+
+        # Filter by >= revenue
+        sale_revenue__gte = self.request.GET.get('sale_revenue__gte')
+        if sale_revenue__gte is not None:
+            default_query_set = default_query_set.filter(sales__revenue__gte=sale_revenue__gte).distinct()
+
+        # Filter by <= revenue
+        sale_revenue__lte = self.request.GET.get('sale_revenue__lte')
+        if sale_revenue__lte is not None:
+            default_query_set = default_query_set.filter(sales__revenue__lte=sale_revenue__lte).distinct()
+        
+        # Filter by <= revenue
+        sale_revenue = self.request.GET.get('sale_revenue')
+        if sale_revenue is not None:
+            default_query_set = default_query_set.filter(sales__revenue=sale_revenue).distinct()
+        
+        # Filter by >= quantity
+        sale_quantity__gte = self.request.GET.get('sale_quantity__gte')
+        if sale_quantity__gte is not None:
+            default_query_set = default_query_set.filter(sales__quantity__gte=sale_quantity__gte).distinct()
+
+        # Filter by <= quantity
+        sale_quantity__lte = self.request.GET.get('sale_quantity__lte')
+        if sale_quantity__lte is not None:
+            default_query_set = default_query_set.filter(sales__quantity__lte=sale_quantity__lte).distinct()
+
+        # Filter by == quantity
+        sale_quantity = self.request.GET.get('sale_quantity')
+        if sale_quantity is not None:
+            default_query_set = default_query_set.filter(sales__quantity=sale_quantity).distinct()
+        
+        # Filter by >= unit_retail_price
+        sale_unit_retail_price__gte = self.request.GET.get('sale_unit_retail_price__gte')
+        if sale_unit_retail_price__gte is not None:
+            default_query_set = default_query_set.filter(sales__unit_retail_price__gte=sale_unit_retail_price__gte).distinct()
+        
+        # Filter by <= unit_retail_price
+        sale_unit_retail_price__lte = self.request.GET.get('sale_unit_retail_price__lte')
+        if sale_unit_retail_price__lte is not None:
+            default_query_set = default_query_set.filter(sales__unit_retail_price__lte=sale_unit_retail_price__lte).distinct()
+        
+        # Filter by == unit_retail_price
+        sale_unit_retail_price = self.request.GET.get('sale_unit_retail_price')
+        if sale_unit_retail_price is not None:
+            default_query_set = default_query_set.filter(sales__unit_retail_price=sale_unit_retail_price).distinct()
+        
+        
 
         return default_query_set
 

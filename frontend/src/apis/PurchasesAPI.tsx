@@ -9,7 +9,7 @@ import {
 
 const PURCHASES_EXTENSION = "purchases/";
 
-interface GetPOReq {
+interface GetPurchaseOrdersReq {
   page: number;
   page_size: number;
   ordering_field: string | undefined;
@@ -23,13 +23,15 @@ interface APIPurchaseOrder {
   name: string;
 }
 
-export interface GetPOResp {
+export interface GetPurchaseOrdersResp {
   purchaseOrders: PurchaseOrder[];
-  numberOfPOs: number;
+  numberOfPurchaseOrders: number;
 }
 
 export const PURCHASES_API = {
-  getPOs: async function (req: GetPOReq): Promise<GetPOResp> {
+  getPurchaseOrders: async function (
+    req: GetPurchaseOrdersReq
+  ): Promise<GetPurchaseOrdersResp> {
     const response = await API.request({
       url: PURCHASES_EXTENSION,
       method: METHOD_GET,
@@ -51,20 +53,20 @@ export const PURCHASES_API = {
 
     return Promise.resolve({
       purchaseOrders: purchases,
-      numberOfPOs: response.data.count,
+      numberOfPurchaseOrders: response.data.count,
     });
   },
 
   // Everything below this point has not been tested
 
-  deletePO: async function (id: string) {
+  deletePurchaseOrder: async function (id: string) {
     await API.request({
       url: PURCHASES_EXTENSION.concat(id),
       method: METHOD_DELETE,
     });
   },
 
-  modifyPO: async function (po: PurchaseOrder) {
+  modifyPurchaseOrder: async function (po: PurchaseOrder) {
     const poParams = {
       id: po.id,
     };
@@ -76,7 +78,7 @@ export const PURCHASES_API = {
     });
   },
 
-  addPO: async function (po: string) {
+  addPurchaseOrder: async function (po: string) {
     await API.request({
       url: PURCHASES_EXTENSION,
       method: METHOD_POST,

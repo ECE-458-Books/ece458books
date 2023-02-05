@@ -7,7 +7,7 @@ import {
   DataTableSortEvent,
 } from "primereact/datatable";
 import { useEffect, useState } from "react";
-import { GENRES_API, GetGenresResp } from "../../apis/GenresAPI";
+import { GetVendorsResp, VENDORS_API } from "../../apis/VendorsAPI";
 import DeletePopup from "../../components/DeletePopup";
 import { TableColumn } from "../../components/Table";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
@@ -44,7 +44,7 @@ export default function VendorList() {
   // ----------------- STATE -----------------
   const [loading, setLoading] = useState(false); // Whether we show that the table is loading or not
   const [numberOfVendors, setNumberOfVendors] = useState(0); // The number of elements that match the query
-  const [genres, setGenres] = useState<Vendor[]>([]); // The data displayed in the table
+  const [vendors, setVendors] = useState<Vendor[]>([]); // The data displayed in the table
   const [deletePopupVisible, setDeletePopupVisible] = useState(false); // Whether the delete popup is shown
   const [selectedDeleteVendor, setSelectedDeleteVendor] =
     useState<Vendor>(emptyVendor); // The element that has been clicked on to delete
@@ -111,28 +111,28 @@ export default function VendorList() {
   // When any of the list of params are changed, useEffect is called to hit the API endpoint
   useEffect(() => callAPI(), [pageParams, sortParams, filterParams]);
 
-  // Calls the Genres API
+  // Calls the Vendors API
   const callAPI = () => {
-    GENRES_API.getGenres({
+    VENDORS_API.getVendors({
       page: pageParams.page ?? 0,
       page_size: pageParams.rows,
       ordering_field: sortParams.sortField,
       ordering_ascending: sortParams.sortOrder,
-      search: filterParams.filters.genre.value,
+      search: filterParams.filters.name.value,
     }).then((response) => onAPIResponse(response));
   };
 
   // Set state when response to API call is received
-  const onAPIResponse = (response: GetGenresResp) => {
-    setGenres(response.genres);
-    setNumberOfVendors(response.numberOfGenres);
+  const onAPIResponse = (response: GetVendorsResp) => {
+    setVendors(response.vendors);
+    setNumberOfVendors(response.numberOfVendors);
     setLoading(false);
   };
 
   // ----------------- TEMPLATES/VISIBLE COMPONENTS -----------------
 
   // Edit/Delete Cell Template
-  const editDeleteCellTemplate = EditDeleteTemplate<Genre>({
+  const editDeleteCellTemplate = EditDeleteTemplate<Vendor>({
     onEdit: (rowData) => editVendor(rowData),
     onDelete: (rowData) => deleteVendorPopup(rowData),
   });
@@ -140,7 +140,7 @@ export default function VendorList() {
   // The delete popup
   const deletePopup = (
     <DeletePopup
-      deleteItemIdentifier={selectedDeleteVendor.genre}
+      deleteItemIdentifier={selectedDeleteVendor.name}
       onConfirm={() => deleteVendorFinal()}
       setIsVisible={setDeletePopupVisible}
     />
@@ -176,7 +176,7 @@ export default function VendorList() {
     <>
       <DataTable
         // General Settings
-        value={genres}
+        value={vendors}
         lazy
         responsiveLayout="scroll"
         filterDisplay="row"

@@ -9,7 +9,7 @@ import {
 
 const SALES_EXTENSION = "sales/";
 
-interface GetSalesReq {
+interface GetSalesReconciliationsReq {
   page: number;
   page_size: number;
   ordering_field: string | undefined;
@@ -23,13 +23,15 @@ interface APISalesReconciliation {
   name: string;
 }
 
-export interface GetSalesResp {
+export interface GetSalesReconciliationsResp {
   salesReconciliations: SalesReconciliation[];
-  numberOfSRs: number;
+  numberOfSalesReconciliations: number;
 }
 
 export const SALES_API = {
-  getSRs: async function (req: GetSalesReq): Promise<GetSalesResp> {
+  getSalesReconciliations: async function (
+    req: GetSalesReconciliationsReq
+  ): Promise<GetSalesReconciliationsResp> {
     const response = await API.request({
       url: SALES_EXTENSION,
       method: METHOD_GET,
@@ -51,20 +53,20 @@ export const SALES_API = {
 
     return Promise.resolve({
       salesReconciliations: sales,
-      numberOfSRs: response.data.count,
+      numberOfSalesReconciliations: response.data.count,
     });
   },
 
   // Everything below this point has not been tested
 
-  deleteSR: async function (id: string) {
+  deleteSalesReconciliation: async function (id: string) {
     await API.request({
       url: SALES_EXTENSION.concat(id),
       method: METHOD_DELETE,
     });
   },
 
-  modifySR: async function (sr: SalesReconciliation) {
+  modifySalesReconciliation: async function (sr: SalesReconciliation) {
     const srParams = {
       id: sr.id,
     };
@@ -76,7 +78,7 @@ export const SALES_API = {
     });
   },
 
-  addSR: async function (sr: string) {
+  addSalesReconciliation: async function (sr: string) {
     await API.request({
       url: SALES_EXTENSION,
       method: METHOD_POST,

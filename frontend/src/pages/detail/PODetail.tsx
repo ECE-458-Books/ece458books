@@ -6,6 +6,9 @@ import { DataTable } from "primereact/datatable";
 import { TableColumn } from "../../components/Table";
 import { Column, ColumnEditorOptions } from "primereact/column";
 import ConfirmButton from "../../components/ConfirmButton";
+import { Button } from "primereact/button";
+import { Toolbar } from "primereact/toolbar";
+import { v4 as uuid } from "uuid";
 import {
   isPositiveInteger,
   numberEditor,
@@ -24,6 +27,7 @@ interface PODetailState {
 }
 
 interface POPurchaseRow {
+  rowID: string;
   books: string;
   quantity: number;
   unitRetailPrice: number;
@@ -44,6 +48,7 @@ const DATAVENDORS: Vendors[] = [
 ];
 
 const columns: TableColumn[] = [
+  { field: "rowID", header: "RowID", filterPlaceholder: "RowID" },
   { field: "books", header: "Books", filterPlaceholder: "Books" },
   { field: "quantity", header: "Quantity", filterPlaceholder: "Quantity" },
   {
@@ -54,16 +59,42 @@ const columns: TableColumn[] = [
 ];
 
 export default function PODetail() {
+  const emptyProduct = {
+    rowID: uuid(),
+    books: "",
+    quantity: 1,
+    unitRetailPrice: 0,
+  };
+
   const location = useLocation();
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const detailState = location.state! as PODetailState;
   const [date, setDate] = useState(detailState.date);
   const [vendor, setVendor] = useState(detailState.vendor);
   const [data, setData] = useState(detailState.data);
+  const [lineData, setLineData] = useState(emptyProduct);
   const [isModifiable, setIsModifiable] = useState(detailState.isModifiable);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] = useState(
     detailState.isConfirmationPopupVisible
   );
+
+  const deleteProduct = () => {
+    const _data = data.filter((val) => val.rowID !== lineData.rowID);
+    setData(_data);
+    setLineData(emptyProduct);
+  };
+
+  const openNew = () => {
+    setLineData(emptyProduct);
+    const _data = [...data];
+    _data.push({ ...lineData });
+    setData(_data);
+  };
+
+  const confirmDeleteProduct = (product: any) => {
+    setLineData(product);
+    deleteProduct;
+  };
 
   const onCellEditComplete = (e: {
     rowData: any;
@@ -94,6 +125,31 @@ export default function PODetail() {
     if (options.field === "unitRetailPrice") return priceEditor(options);
     if (options.field === "quantity") return numberEditor(options);
     else return textEditor(options);
+  };
+
+  const actionBodyTemplate = (rowData: any) => {
+    return (
+      <React.Fragment>
+        <Button
+          icon="pi pi-trash"
+          className="p-button-rounded p-button-warning"
+          onClick={() => confirmDeleteProduct(rowData)}
+        />
+      </React.Fragment>
+    );
+  };
+
+  const leftToolbarTemplate = () => {
+    return (
+      <React.Fragment>
+        <Button
+          label="New"
+          icon="pi pi-plus"
+          className="p-button-success mr-2"
+          onClick={openNew}
+        />
+      </React.Fragment>
+    );
   };
 
   const onSubmit = (): void => {
@@ -138,6 +194,8 @@ export default function PODetail() {
           optionLabel="name"
         />
 
+        <Toolbar className="mb-4" left={leftToolbarTemplate} />
+
         <DataTable
           value={data}
           className="editable-cells-table"
@@ -156,6 +214,11 @@ export default function PODetail() {
               />
             );
           })}
+          <Column
+            body={actionBodyTemplate}
+            exportable={false}
+            style={{ minWidth: "8rem" }}
+          ></Column>
         </DataTable>
 
         <ConfirmButton

@@ -17,6 +17,7 @@ interface GetGenresReq {
   search: string;
 }
 
+// The structure of the response for a genre from the API
 interface APIGenre {
   id: number;
   name: string;
@@ -50,10 +51,10 @@ export const GENRES_API = {
       };
     });
 
-    return {
+    return Promise.resolve({
       genres: genres,
       numberOfGenres: response.data.count,
-    };
+    });
   },
 
   // Everything below this point has not been tested

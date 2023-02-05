@@ -18,6 +18,7 @@ interface GetBooksReq {
   search: string;
 }
 
+// The structure of the response for a book from the API
 interface APIBook {
   id: number;
   authors: string[];
@@ -72,10 +73,10 @@ export const BOOKS_API = {
       };
     });
 
-    return {
+    return Promise.resolve({
       books: books,
       numberOfBooks: response.data.count,
-    };
+    });
   },
 
   // Everything below this point has not been tested

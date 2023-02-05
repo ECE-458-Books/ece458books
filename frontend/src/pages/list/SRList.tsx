@@ -5,15 +5,17 @@ interface SalesReconciliationListState {
   value: string;
 }
 
-interface SalesReconciliationRow {
+export interface SalesReconciliation {
+  id: number;
   date: string;
   uniqueBooks: number;
   totalBooks: number;
   totalRevenue: number;
 }
 
-const DATA: SalesReconciliationRow[] = [
+const DATA: SalesReconciliation[] = [
   {
+    id: 0,
     date: "today",
     uniqueBooks: 2,
     totalBooks: 2,
@@ -50,7 +52,7 @@ class SalesReconciliationList extends React.Component<
   }
 
   render() {
-    return <Table<SalesReconciliationRow> columns={COLUMNS} data={DATA} />;
+    return <Table<SalesReconciliation> columns={COLUMNS} data={DATA} />;
   }
 }
 

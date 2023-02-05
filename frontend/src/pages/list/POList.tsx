@@ -5,7 +5,8 @@ interface PurchaseOrderListState {
   value: string;
 }
 
-interface PurchaseOrderRow {
+export interface PurchaseOrder {
+  id: number;
   date: string;
   vendorName: string;
   uniqueBooks: number;
@@ -13,8 +14,9 @@ interface PurchaseOrderRow {
   totalCost: number;
 }
 
-const DATA: PurchaseOrderRow[] = [
+const DATA: PurchaseOrder[] = [
   {
+    id: 0,
     date: "today",
     vendorName: "blah",
     uniqueBooks: 2,
@@ -54,7 +56,7 @@ class PurchaseOrderList extends React.Component<{}, PurchaseOrderListState> {
   }
 
   render() {
-    return <Table<PurchaseOrderRow> columns={COLUMNS} data={DATA} />;
+    return <Table<PurchaseOrder> columns={COLUMNS} data={DATA} />;
   }
 }
 

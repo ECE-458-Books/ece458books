@@ -2,12 +2,23 @@ import React, { FormEvent, useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { ToggleButton } from "primereact/togglebutton";
 import ConfirmButton from "../../components/ConfirmButton";
+import { useLocation } from "react-router-dom";
+
+export interface VendorDetailState {
+  vendor: string;
+  isModifiable: boolean;
+  isConfirmationPopupVisible: boolean;
+}
 
 export default function VendorDetail() {
-  const [vendor, setVendor] = useState<string>("");
-  const [isModifiable, setIsModifiable] = useState(false);
-  const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
-    useState(false);
+  const location = useLocation();
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const detailState = location.state! as VendorDetailState;
+  const [vendor, setVendor] = useState<string>(detailState.vendor);
+  const [isModifiable, setIsModifiable] = useState(detailState.isModifiable);
+  const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] = useState(
+    detailState.isConfirmationPopupVisible
+  );
 
   const onSubmit = (): void => {
     setIsModifiable(false);

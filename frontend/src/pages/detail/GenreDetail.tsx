@@ -10,7 +10,7 @@ export interface GenreDetailState {
   isConfirmationPopupVisible: boolean;
 }
 
-export default function GenreDetailPage() {
+export default function GenreDetail() {
   const location = useLocation();
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const detailState = location.state! as GenreDetailState;

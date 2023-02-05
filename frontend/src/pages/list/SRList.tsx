@@ -11,6 +11,7 @@ import { GetSalesReconciliationsResp, SALES_API } from "../../apis/SalesAPI";
 import DeletePopup from "../../components/DeletePopup";
 import { TableColumn } from "../../components/Table";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
+import { logger } from "../../util/Logger";
 import { NUM_ROWS } from "./BookList";
 
 export interface SalesReconciliation {
@@ -102,35 +103,44 @@ export default function SalesReconciliationList() {
 
   // Callback functions for edit/delete buttons
   const editSalesReconciliation = (sr: SalesReconciliation) => {
+    logger.debug("Edit Sales Reconciliation Clicked", sr);
     console.log(sr);
   };
 
   // Called to make delete pop up show
   const deleteSalesReconciliationPopup = (sr: SalesReconciliation) => {
+    logger.debug("Delete Sales Reconciliation Clicked", sr);
     setSelectedDeleteSalesReconciliation(sr);
     setDeletePopupVisible(true);
   };
 
   // Call to actually delete the element
   const deleteSalesReconciliationFinal = () => {
+    logger.debug(
+      "Delete Sales Reconciliation Finalized",
+      selectedDeleteSalesReconciliation
+    );
     setDeletePopupVisible(false);
     setSelectedDeleteSalesReconciliation(emptySalesReconciliation);
   };
 
   // Called when any of the filters (search boxes) are typed into
   const onFilter = (event: DataTableFilterEvent) => {
+    logger.debug("Filter Applied", event);
     setLoading(true);
     setFilterParams(event);
   };
 
   // Called when any of the columns are selected to be sorted
   const onSort = (event: DataTableSortEvent) => {
+    logger.debug("Sort Applied", event);
     setLoading(true);
     setSortParams(event);
   };
 
   // Called when the paginator page is switched
   const onPage = (event: DataTablePageEvent) => {
+    logger.debug("Page Applied", event);
     setLoading(true);
     setPageParams(event);
   };

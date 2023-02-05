@@ -13,6 +13,7 @@ import { DataTableFilterMetaData } from "primereact/datatable";
 import { Genre } from "./GenreList";
 import DeletePopup from "../../components/DeletePopup";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
+import { logger } from "../../util/Logger";
 
 export const NUM_ROWS = 3;
 
@@ -172,15 +173,21 @@ export default function BookList() {
 
   // Callback functions for edit/delete buttons
   const editBook = (book: Book) => {
+    logger.debug("Edit Book Clicked", book);
+
     console.log(book);
   };
 
   const deleteBookPopup = (book: Book) => {
+    logger.debug("Delete Book Clicked", book);
+
     setSelectedDeleteBook(book);
     setDeletePopupVisible(true);
   };
 
   const deleteBookFinal = () => {
+    logger.debug("Delete Book Finalized", selectedDeleteBook);
+
     setDeletePopupVisible(false);
     setSelectedDeleteBook(emptyBook);
     console.log(selectedDeleteBook);
@@ -254,18 +261,25 @@ export default function BookList() {
 
   // Called when any of the filters (search boxes) are typed into
   const onFilter = (event: DataTableFilterEvent) => {
+    logger.debug("Filter Applied", event);
+
     setLoading(true);
     setFilterParams(event);
   };
 
   // Called when any of the columns are selected to be sorted
   const onSort = (event: DataTableSortEvent) => {
+    logger.debug("Sort Applied", event);
+
     setLoading(true);
     setSortParams(event);
   };
 
   // Called when the paginator page is switched
   const onPage = (event: DataTablePageEvent) => {
+    useEffect(() => {
+      logger.debug("Page Applied", event);
+    });
     setLoading(true);
     setPageParams(event);
   };

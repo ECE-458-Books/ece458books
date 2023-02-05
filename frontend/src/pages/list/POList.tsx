@@ -11,6 +11,7 @@ import { GetPurchaseOrdersResp, PURCHASES_API } from "../../apis/PurchasesAPI";
 import DeletePopup from "../../components/DeletePopup";
 import { TableColumn } from "../../components/Table";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
+import { logger } from "../../util/Logger";
 import { NUM_ROWS } from "./BookList";
 
 export interface PurchaseOrder {
@@ -105,35 +106,40 @@ export default function PurchaseOrderList() {
 
   // Callback functions for edit/delete buttons
   const editPurchaseOrder = (po: PurchaseOrder) => {
-    console.log(po);
+    logger.debug("Edit Purchase Order Clicked", po);
   };
 
   // Called to make delete pop up show
   const deletePurchaseOrderPopup = (po: PurchaseOrder) => {
+    logger.debug("Delete Purchase Order Clicked", po);
     setSelectedDeletePurchaseOrder(po);
     setDeletePopupVisible(true);
   };
 
   // Call to actually delete the element
   const deletePurchaseOrderFinal = () => {
+    logger.debug("Edit Purchase Order Finalized", selectedDeletePurchaseOrder);
     setDeletePopupVisible(false);
     setSelectedDeletePurchaseOrder(emptyPurchaseOrder);
   };
 
   // Called when any of the filters (search boxes) are typed into
   const onFilter = (event: DataTableFilterEvent) => {
+    logger.debug("Filter Applied", event);
     setLoading(true);
     setFilterParams(event);
   };
 
   // Called when any of the columns are selected to be sorted
   const onSort = (event: DataTableSortEvent) => {
+    logger.debug("Page Applied", event);
     setLoading(true);
     setSortParams(event);
   };
 
   // Called when the paginator page is switched
   const onPage = (event: DataTablePageEvent) => {
+    logger.debug("Sort Applied", event);
     setLoading(true);
     setPageParams(event);
   };

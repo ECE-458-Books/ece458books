@@ -1,9 +1,8 @@
-import React, { FormEvent, useEffect, useState } from "react";
+import React, { FormEvent, useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { ToggleButton } from "primereact/togglebutton";
 import ConfirmButton from "../../components/ConfirmButton";
 import { useLocation } from "react-router-dom";
-import { logger } from "../../util/Logger";
 
 export interface GenreDetailState {
   genre: string;
@@ -20,10 +19,6 @@ export default function GenreDetail() {
   const [isConfirmationPopVisible, setIsConfirmationPopupVisible] = useState(
     detailState.isConfirmationPopupVisible
   );
-
-  useEffect(() => {
-    logger.debug("Loaded Genre Detail Page", detailState);
-  });
 
   const onSubmit = (): void => {
     setIsModifiable(false);

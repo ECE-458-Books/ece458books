@@ -12,6 +12,7 @@ import { GENRES_API, GetGenresResp } from "../../apis/GenresAPI";
 import DeletePopup from "../../components/DeletePopup";
 import { TableColumn } from "../../components/Table";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
+import { logger } from "../../util/Logger";
 import { GenreDetailState } from "../detail/GenreDetail";
 import { NUM_ROWS } from "./BookList";
 
@@ -84,6 +85,7 @@ export default function GenreList() {
 
   // Callback functions for edit/delete buttons
   const editGenre = (genre: Genre) => {
+    logger.debug("Edit Genre Clicked", genre);
     const detailState = {
       genre: genre.genre,
       isModifiable: false,
@@ -96,30 +98,35 @@ export default function GenreList() {
 
   // Called to make delete pop up show
   const deleteGenrePopup = (genre: Genre) => {
+    logger.debug("Delete Genre Clicked", genre);
     setSelectedDeleteGenre(genre);
     setDeletePopupVisible(true);
   };
 
   // Call to actually delete the element
   const deleteGenreFinal = () => {
+    logger.debug("Delete Genre Finalized", selectedDeleteGenre);
     setDeletePopupVisible(false);
     setSelectedDeleteGenre(emptyGenre);
   };
 
   // Called when any of the filters (search boxes) are typed into
   const onFilter = (event: DataTableFilterEvent) => {
+    logger.debug("Filter Applied", event);
     setLoading(true);
     setFilterParams(event);
   };
 
   // Called when any of the columns are selected to be sorted
   const onSort = (event: DataTableSortEvent) => {
+    logger.debug("Sort Applied", event);
     setLoading(true);
     setSortParams(event);
   };
 
   // Called when the paginator page is switched
   const onPage = (event: DataTablePageEvent) => {
+    logger.debug("Page Applied", event);
     setLoading(true);
     setPageParams(event);
   };

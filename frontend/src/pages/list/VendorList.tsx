@@ -11,6 +11,7 @@ import { GetVendorsResp, VENDORS_API } from "../../apis/VendorsAPI";
 import DeletePopup from "../../components/DeletePopup";
 import { TableColumn } from "../../components/Table";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
+import { logger } from "../../util/Logger";
 import { NUM_ROWS } from "./BookList";
 
 // The Vendor Interface
@@ -75,35 +76,41 @@ export default function VendorList() {
 
   // Callback functions for edit/delete buttons
   const editVendor = (vendor: Vendor) => {
+    logger.debug("Edit Vendor Clicked", vendor);
     console.log(vendor);
   };
 
   // Called to make delete pop up show
   const deleteVendorPopup = (vendor: Vendor) => {
+    logger.debug("Delete Vendor Clicked", vendor);
     setSelectedDeleteVendor(vendor);
     setDeletePopupVisible(true);
   };
 
   // Call to actually delete the element
   const deleteVendorFinal = () => {
+    logger.debug("Delete Vendor Finalized", selectedDeleteVendor);
     setDeletePopupVisible(false);
     setSelectedDeleteVendor(emptyVendor);
   };
 
   // Called when any of the filters (search boxes) are typed into
   const onFilter = (event: DataTableFilterEvent) => {
+    logger.debug("Filter Applied", event);
     setLoading(true);
     setFilterParams(event);
   };
 
   // Called when any of the columns are selected to be sorted
   const onSort = (event: DataTableSortEvent) => {
+    logger.debug("Sort Applied", event);
     setLoading(true);
     setSortParams(event);
   };
 
   // Called when the paginator page is switched
   const onPage = (event: DataTablePageEvent) => {
+    logger.debug("Page Applied", event);
     setLoading(true);
     setPageParams(event);
   };

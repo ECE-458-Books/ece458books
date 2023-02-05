@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { ToggleButton } from "primereact/togglebutton";
 import { Calendar, CalendarProps } from "primereact/calendar";
 import { Dropdown, DropdownProps } from "primereact/dropdown";
@@ -14,7 +14,6 @@ import {
   textEditor,
 } from "../../util/TableCellEditFuncs";
 import { useLocation } from "react-router-dom";
-import { logger } from "../../util/Logger";
 
 interface PODetailState {
   date: any;
@@ -55,10 +54,6 @@ const columns: TableColumn[] = [
 ];
 
 export default function PODetail() {
-  useEffect(() => {
-    logger.debug("Loaded Genre Detail Page", detailState);
-  });
-
   const location = useLocation();
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const detailState = location.state! as PODetailState;

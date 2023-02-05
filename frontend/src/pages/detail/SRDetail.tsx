@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { ToggleButton } from "primereact/togglebutton";
 import { Calendar, CalendarProps } from "primereact/calendar";
 import { DataTable } from "primereact/datatable";
@@ -13,7 +13,6 @@ import {
   textEditor,
 } from "../../util/TableCellEditFuncs";
 import { useLocation } from "react-router-dom";
-import { logger } from "../../util/Logger";
 
 interface SRDetailState {
   date: any;
@@ -52,10 +51,6 @@ const COLUMNS: TableColumn[] = [
 ];
 
 export default function SRDetail() {
-  useEffect(() => {
-    logger.debug("Loaded Genre Detail Page", detailState);
-  });
-
   const location = useLocation();
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const detailState = location.state! as SRDetailState;

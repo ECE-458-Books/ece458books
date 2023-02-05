@@ -7,15 +7,19 @@ import {
   DataTableSortEvent,
 } from "primereact/datatable";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { GetSalesReconciliationsResp, SALES_API } from "../../apis/SalesAPI";
 import DeletePopup from "../../components/DeletePopup";
 import { TableColumn } from "../../components/Table";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
+import { logger } from "../../util/Logger";
+import { SRDetailState, SRSaleRow } from "../detail/SRDetail";
 import { NUM_ROWS } from "./BookList";
 
 export interface SalesReconciliation {
   id: number;
   date: string;
+  sales: SRSaleRow[];
   uniqueBooks: number;
   totalBooks: number;
   totalRevenue: number;
@@ -54,6 +58,7 @@ const emptySalesReconciliation = {
   id: 0,
   date: "",
   vendorName: "",
+  sales: [],
   uniqueBooks: 0,
   totalBooks: 0,
   totalRevenue: 0,
@@ -100,43 +105,65 @@ export default function SalesReconciliationList() {
 
   // ----------------- METHODS -----------------
 
+  // The navigator to switch pages
+  const navigate = useNavigate();
+
   // Callback functions for edit/delete buttons
   const editSalesReconciliation = (sr: SalesReconciliation) => {
-    console.log(sr);
+    logger.debug("Edit Sales Reconciliation Clicked", sr);
+    const detailState: SRDetailState = {
+      date: sr.date,
+      data: sr.sales,
+      isModifiable: false,
+      isConfirmationPopupVisible: false,
+    };
+
+    navigate("/sales-reconciliations/detail", { state: detailState });
   };
 
   // Called to make delete pop up show
   const deleteSalesReconciliationPopup = (sr: SalesReconciliation) => {
+    logger.debug("Delete Sales Reconciliation Clicked", sr);
     setSelectedDeleteSalesReconciliation(sr);
     setDeletePopupVisible(true);
   };
 
   // Call to actually delete the element
   const deleteSalesReconciliationFinal = () => {
+    logger.debug(
+      "Delete Sales Reconciliation Finalized",
+      selectedDeleteSalesReconciliation
+    );
     setDeletePopupVisible(false);
     setSelectedDeleteSalesReconciliation(emptySalesReconciliation);
   };
 
   // Called when any of the filters (search boxes) are typed into
   const onFilter = (event: DataTableFilterEvent) => {
+    logger.debug("Filter Applied", event);
     setLoading(true);
     setFilterParams(event);
+    callAPI();
   };
 
   // Called when any of the columns are selected to be sorted
   const onSort = (event: DataTableSortEvent) => {
+    logger.debug("Sort Applied", event);
     setLoading(true);
     setSortParams(event);
+    callAPI();
   };
 
   // Called when the paginator page is switched
   const onPage = (event: DataTablePageEvent) => {
+    logger.debug("Page Applied", event);
     setLoading(true);
     setPageParams(event);
+    callAPI();
   };
 
   // When any of the list of params are changed, useEffect is called to hit the API endpoint
-  useEffect(() => callAPI(), [pageParams, sortParams, filterParams]);
+  useEffect(() => callAPI(), []);
 
   // Calls the Vendors API
   const callAPI = () => {

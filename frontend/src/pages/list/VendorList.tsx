@@ -7,10 +7,13 @@ import {
   DataTableSortEvent,
 } from "primereact/datatable";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { GetVendorsResp, VENDORS_API } from "../../apis/VendorsAPI";
 import DeletePopup from "../../components/DeletePopup";
 import { TableColumn } from "../../components/Table";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
+import { logger } from "../../util/Logger";
+import { VendorDetailState } from "../detail/VendorDetail";
 import { NUM_ROWS } from "./BookList";
 
 // The Vendor Interface
@@ -73,43 +76,61 @@ export default function VendorList() {
 
   // ----------------- METHODS -----------------
 
+  // The navigator to switch pages
+  const navigate = useNavigate();
+
   // Callback functions for edit/delete buttons
   const editVendor = (vendor: Vendor) => {
-    console.log(vendor);
+    logger.debug("Edit Vendor Clicked", vendor);
+    const detailState: VendorDetailState = {
+      vendor: vendor.name,
+      isModifiable: false,
+      isConfirmationPopupVisible: false,
+    };
+
+    navigate("/vendors/detail", { state: detailState });
   };
 
   // Called to make delete pop up show
   const deleteVendorPopup = (vendor: Vendor) => {
+    logger.debug("Delete Vendor Clicked", vendor);
     setSelectedDeleteVendor(vendor);
     setDeletePopupVisible(true);
   };
 
   // Call to actually delete the element
   const deleteVendorFinal = () => {
+    logger.debug("Delete Vendor Finalized", selectedDeleteVendor);
     setDeletePopupVisible(false);
     setSelectedDeleteVendor(emptyVendor);
   };
 
   // Called when any of the filters (search boxes) are typed into
   const onFilter = (event: DataTableFilterEvent) => {
+    logger.debug("Filter Applied", event);
     setLoading(true);
     setFilterParams(event);
+    callAPI();
   };
 
   // Called when any of the columns are selected to be sorted
   const onSort = (event: DataTableSortEvent) => {
+    logger.debug("Sort Applied", event);
     setLoading(true);
     setSortParams(event);
+    callAPI();
   };
 
   // Called when the paginator page is switched
   const onPage = (event: DataTablePageEvent) => {
+    logger.debug("Page Applied", event);
     setLoading(true);
     setPageParams(event);
+    callAPI();
   };
 
   // When any of the list of params are changed, useEffect is called to hit the API endpoint
-  useEffect(() => callAPI(), [pageParams, sortParams, filterParams]);
+  useEffect(() => callAPI(), []);
 
   // Calls the Vendors API
   const callAPI = () => {

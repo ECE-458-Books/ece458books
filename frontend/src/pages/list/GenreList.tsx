@@ -12,6 +12,7 @@ import { GENRES_API, GetGenresResp } from "../../apis/GenresAPI";
 import DeletePopup from "../../components/DeletePopup";
 import { TableColumn } from "../../components/Table";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
+import { logger } from "../../util/Logger";
 import { GenreDetailState } from "../detail/GenreDetail";
 import { NUM_ROWS } from "./BookList";
 
@@ -84,48 +85,56 @@ export default function GenreList() {
 
   // Callback functions for edit/delete buttons
   const editGenre = (genre: Genre) => {
-    const detailState = {
+    logger.debug("Edit Genre Clicked", genre);
+    const detailState: GenreDetailState = {
       genre: genre.genre,
       isModifiable: false,
       isConfirmationPopupVisible: false,
-    } as GenreDetailState;
+    };
 
     navigate("/genres/detail", { state: detailState });
-    console.log(genre);
   };
 
   // Called to make delete pop up show
   const deleteGenrePopup = (genre: Genre) => {
+    logger.debug("Delete Genre Clicked", genre);
     setSelectedDeleteGenre(genre);
     setDeletePopupVisible(true);
   };
 
   // Call to actually delete the element
   const deleteGenreFinal = () => {
+    logger.debug("Delete Genre Finalized", selectedDeleteGenre);
     setDeletePopupVisible(false);
     setSelectedDeleteGenre(emptyGenre);
   };
 
   // Called when any of the filters (search boxes) are typed into
   const onFilter = (event: DataTableFilterEvent) => {
+    logger.debug("Filter Applied", event);
     setLoading(true);
     setFilterParams(event);
+    callAPI();
   };
 
   // Called when any of the columns are selected to be sorted
   const onSort = (event: DataTableSortEvent) => {
+    logger.debug("Sort Applied", event);
     setLoading(true);
     setSortParams(event);
+    callAPI();
   };
 
   // Called when the paginator page is switched
   const onPage = (event: DataTablePageEvent) => {
+    logger.debug("Page Applied", event);
     setLoading(true);
     setPageParams(event);
+    callAPI();
   };
 
-  // When any of the list of params are changed, useEffect is called to hit the API endpoint
-  useEffect(() => callAPI(), [pageParams, sortParams, filterParams]);
+  // API call on page load
+  useEffect(() => callAPI(), []);
 
   // Calls the Genres API
   const callAPI = () => {

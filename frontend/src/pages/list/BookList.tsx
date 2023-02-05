@@ -13,6 +13,9 @@ import { DataTableFilterMetaData } from "primereact/datatable";
 import { Genre } from "./GenreList";
 import DeletePopup from "../../components/DeletePopup";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
+import { logger } from "../../util/Logger";
+import { BookDetailState } from "../detail/ModfiyBook";
+import { useNavigate } from "react-router-dom";
 
 export const NUM_ROWS = 3;
 
@@ -37,8 +40,8 @@ export interface Book {
   title: string;
   authors: string[];
   genres: string[];
-  isbn13: string;
-  isbn10: string;
+  isbn13: number;
+  isbn10: number;
   publisher: string;
   publishedYear: number;
   pageCount: number;
@@ -69,8 +72,8 @@ export default function BookList() {
     title: "",
     authors: [""],
     genres: [""],
-    isbn13: "",
-    isbn10: "",
+    isbn13: 0,
+    isbn10: 0,
     publisher: "",
     publishedYear: 0,
     pageCount: 0,
@@ -161,6 +164,9 @@ export default function BookList() {
     },
   ];
 
+  // The navigator to switch pages
+  const navigate = useNavigate();
+
   // State to track the current book that has been selected to be deleted
   const [selectedDeleteBook, setSelectedDeleteBook] = useState<Book>(emptyBook);
 
@@ -172,15 +178,28 @@ export default function BookList() {
 
   // Callback functions for edit/delete buttons
   const editBook = (book: Book) => {
-    console.log(book);
+    logger.debug("Edit Book Clicked", book);
+    const detailState: BookDetailState = {
+      book: book,
+      isModifiable: false,
+      isConfirmationPopupVisible: false,
+    };
+
+    navigate("/books/detail", { state: detailState });
   };
 
   const deleteBookPopup = (book: Book) => {
+    logger.debug("Delete Book Clicked", book);
     setSelectedDeleteBook(book);
     setDeletePopupVisible(true);
   };
 
   const deleteBookFinal = () => {
+    logger.debug("Delete Book Finalized", selectedDeleteBook);
+    BOOKS_API.deleteBook(selectedDeleteBook.id);
+    // TODO: Show error if book is not actually deleted
+    const _books = books.filter((book) => selectedDeleteBook.id != book.id);
+    setBooks(_books);
     setDeletePopupVisible(false);
     setSelectedDeleteBook(emptyBook);
     console.log(selectedDeleteBook);
@@ -254,27 +273,32 @@ export default function BookList() {
 
   // Called when any of the filters (search boxes) are typed into
   const onFilter = (event: DataTableFilterEvent) => {
+    logger.debug("Filter Applied", event);
     setLoading(true);
     setFilterParams(event);
+    callAPI();
   };
 
   // Called when any of the columns are selected to be sorted
   const onSort = (event: DataTableSortEvent) => {
+    logger.debug("Sort Applied", event);
     setLoading(true);
     setSortParams(event);
+    callAPI();
   };
 
   // Called when the paginator page is switched
   const onPage = (event: DataTablePageEvent) => {
+    logger.debug("Page Applied", event);
     setLoading(true);
     setPageParams(event);
+    callAPI();
   };
 
-  // When any of the list of params are changed, useEffect is called to hit the API endpoint
-  useEffect(
-    () => callAPI(),
-    [pageParams, sortParams, filterParams, selectedGenre]
-  );
+  // Call endpoint on page load
+  useEffect(() => {
+    callAPI();
+  }, []);
 
   // Map column objects to actual columns
   const dynamicColumns = COLUMNS.map((col) => {

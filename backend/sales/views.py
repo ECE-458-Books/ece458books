@@ -6,7 +6,7 @@ from .models import SalesReconciliation, Sale
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from .sales_reconciliation import SalesReconciliationFieldsCalculator
 from .paginations import SalesReconciliationPagination
-from django.db.models import OuterRef, Subquery, F, Sum, Func
+from django.db.models import OuterRef, Subquery, Func, Count
 import datetime, pytz
 
 
@@ -18,7 +18,6 @@ class ListCreateSalesReconciliationAPIView(ListCreateAPIView):
     filter_backends = [filters.OrderingFilter, filters.SearchFilter]
     ordering_fields = '__all__'
     ordering = ['id']
-    # search_fields = ['date']  # sales__book__isbn13??
 
     def create(self, request, *args, **kwargs):
         serializer = SalesReconciliationSerializer(data=request.data)
@@ -34,7 +33,7 @@ class ListCreateSalesReconciliationAPIView(ListCreateAPIView):
         default_query_set = SalesReconciliation.objects.all()
 
         # Create a subquery to aggregate the 'revenue' value for each sale in SalesReconciliation
-        subquery = Sale.objects.filter(
+        revenue_subquery = Sale.objects.filter(
             sales_reconciliation=OuterRef('id')
         ).values_list(
             Func(
@@ -44,8 +43,22 @@ class ListCreateSalesReconciliationAPIView(ListCreateAPIView):
         )
 
         default_query_set = default_query_set.annotate(
-            total_revenue=Subquery(subquery)
+            total_revenue=Subquery(revenue_subquery)
         )
+        
+        # Filter by quantity of books in SalesReconciliation
+        num_books_subquery = Sale.objects.filter(
+            sales_reconciliation=OuterRef('id')
+        ).values_list(
+            Func(
+                'quantity',
+                function='SUM'
+            ),
+        )
+
+        default_query_set = default_query_set.annotate(num_books=Subquery(num_books_subquery))
+
+        default_query_set = default_query_set.annotate(num_unique_books=Count('sales__book', distinct=True))
 
         # Filter by date
         start_date = self.request.GET.get('start')
@@ -106,8 +119,6 @@ class ListCreateSalesReconciliationAPIView(ListCreateAPIView):
         if sale_unit_retail_price is not None:
             default_query_set = default_query_set.filter(sales__unit_retail_price=sale_unit_retail_price).distinct()
         
-        
-
         return default_query_set
 
 
@@ -116,11 +127,6 @@ class RetrieveUpdateDestroySalesReconciliationAPIView(RetrieveUpdateDestroyAPIVi
     serializer_class = SalesReconciliationSerializer
     lookup_field = 'id'
     pagination_class = SalesReconciliationPagination
-    filter_backends = [filters.OrderingFilter, filters.SearchFilter]
-
-    # ordering_fields = '__all__'
-    # ordering = ['id']
-    # search_fields = ['date']  # sales__book__isbn13??
 
     def get_queryset(self):
         return SalesReconciliation.objects.filter(id=self.kwargs['id'])

@@ -272,7 +272,6 @@ export default function BookList() {
   // Called when any of the filters (search boxes) are typed into
   const onFilter = (event: DataTableFilterEvent) => {
     logger.debug("Filter Applied", event);
-
     setLoading(true);
     setFilterParams(event);
   };
@@ -280,16 +279,13 @@ export default function BookList() {
   // Called when any of the columns are selected to be sorted
   const onSort = (event: DataTableSortEvent) => {
     logger.debug("Sort Applied", event);
-
     setLoading(true);
     setSortParams(event);
   };
 
   // Called when the paginator page is switched
   const onPage = (event: DataTablePageEvent) => {
-    useEffect(() => {
-      logger.debug("Page Applied", event);
-    });
+    logger.debug("Page Applied", event);
     setLoading(true);
     setPageParams(event);
   };

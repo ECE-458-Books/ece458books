@@ -12,6 +12,7 @@ from .serializers import BookAddSerializer, BookSerializer, ISBNSerializer
 from .isbn import ISBNTools
 from .models import Book, Author
 from .paginations import BookPagination
+from .search_filters import CustomSearchFilter
 
 from genres.models import Genre
 
@@ -75,7 +76,7 @@ class ListCreateBookAPIView(ListCreateAPIView):
     serializer_class = BookAddSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = BookPagination
-    filter_backends = [filters.OrderingFilter, filters.SearchFilter]
+    filter_backends = [filters.OrderingFilter, CustomSearchFilter]
     ordering_fields = '__all__'
     ordering = ['id']
     search_fields = ['authors__name', 'title', '=publisher', '=isbn_10', '=isbn_13']

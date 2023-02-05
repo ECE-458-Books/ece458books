@@ -190,14 +190,16 @@ export default function BookList() {
 
   const deleteBookPopup = (book: Book) => {
     logger.debug("Delete Book Clicked", book);
-
     setSelectedDeleteBook(book);
     setDeletePopupVisible(true);
   };
 
   const deleteBookFinal = () => {
     logger.debug("Delete Book Finalized", selectedDeleteBook);
-
+    BOOKS_API.deleteBook(selectedDeleteBook.id);
+    // TODO: Show error if book is not actually deleted
+    const _books = books.filter((book) => selectedDeleteBook.id != book.id);
+    setBooks(_books);
     setDeletePopupVisible(false);
     setSelectedDeleteBook(emptyBook);
     console.log(selectedDeleteBook);

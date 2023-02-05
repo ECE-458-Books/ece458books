@@ -15,5 +15,6 @@ class Sale(models.Model):
     revenue = models.FloatField()
 
     def save(self, *args, **kwargs):
-        self.revenue = self.quantity*self.unit_retail_price
+        self.revenue = f'{self.quantity*self.unit_retail_price:.2f}'
+        self.unit_retail_price = f'{self.unit_retail_price:.2f}'
         super(Sale, self).save(*args, **kwargs)

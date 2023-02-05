@@ -1,47 +1,210 @@
-import React, { FormEvent } from "react";
-import Table, { TableColumn } from "../../components/Table";
+import { Column } from "primereact/column";
+import {
+  DataTable,
+  DataTableFilterEvent,
+  DataTableFilterMetaData,
+  DataTablePageEvent,
+  DataTableSortEvent,
+} from "primereact/datatable";
+import { useEffect, useState } from "react";
+import { GENRES_API, GetGenresResp } from "../../apis/GenresAPI";
+import DeletePopup from "../../components/DeletePopup";
+import { TableColumn } from "../../components/Table";
+import EditDeleteTemplate from "../../util/EditDeleteTemplate";
+import { NUM_ROWS } from "./BookList";
 
-interface GenreListState {
-  value: string;
-}
-
-interface GenreRow {
+// The Genre interface
+export interface Genre {
+  id: number;
   genre: string;
-  numBooks: number;
+  numGenres: number;
 }
 
-// Currently being used for filtering in booklist, will have to change
-export const GENRE_DATA: GenreRow[] = [
-  {
-    genre: "blah",
-    numBooks: 5,
-  },
-];
-
+// Properties of each column that change, the rest are set below when creating the actual Columns to be rendered
 const COLUMNS: TableColumn[] = [
   { field: "genre", header: "Genre", filterPlaceholder: "Search by Genre" },
   {
-    field: "numBooks",
-    header: "Number of Books",
-    filterPlaceholder: "Search by Number of Books",
+    field: "numGenres",
+    header: "Number of Genres",
+    filterPlaceholder: "Search by Number of Genres",
   },
 ];
 
-class GenreList extends React.Component<{}, GenreListState> {
-  constructor(props = {}) {
-    super(props);
-    this.state = { value: "" };
-  }
-
-  onSubmit = (event: FormEvent<HTMLFormElement>): void => {
-    alert("A form was submitted: \n");
-
-    event.preventDefault();
-  };
-
-  render() {
-    return <Table<GenreRow> columns={COLUMNS} data={GENRE_DATA} />;
-  }
+// Define the column filters
+interface Filters {
+  [id: string]: DataTableFilterMetaData;
+  genre: DataTableFilterMetaData;
+  numGenres: DataTableFilterMetaData;
 }
 
-export default GenreList;
+// Empty genre, used to initialize state
+const emptyGenre = {
+  genre: "",
+  numGenres: 0,
+  id: 0,
+};
+
+export default function GenreList() {
+  // ----------------- STATE -----------------
+  const [loading, setLoading] = useState(false); // Whether we show that the table is loading or not
+  const [numberOfGenres, setNumberOfGenres] = useState(0); // The number of elements that match the query
+  const [genres, setGenres] = useState<Genre[]>([]); // The data displayed in the table
+  const [deletePopupVisible, setDeletePopupVisible] = useState(false); // Whether the delete popup is shown
+  const [selectedDeleteGenre, setSelectedDeleteGenre] =
+    useState<Genre>(emptyGenre); // The element that has been clicked on to delete
+
+  // The current state of sorting.
+  const [sortParams, setSortParams] = useState<DataTableSortEvent>({
+    sortField: "",
+    sortOrder: null,
+    multiSortMeta: null, // Not used
+  });
+
+  // The current state of the paginator
+  const [pageParams, setPageParams] = useState<DataTablePageEvent>({
+    first: 0,
+    rows: NUM_ROWS,
+    page: 0,
+  });
+
+  // The current state of the filters
+  const [filterParams, setFilterParams] = useState<any>({
+    filters: {
+      id: { value: "", matchMode: "contains" },
+      genre: { value: "", matchMode: "contains" },
+      numGenres: { value: "", matchMode: "contains" },
+    } as Filters,
+  });
+
+  // ----------------- METHODS -----------------
+
+  // Callback functions for edit/delete buttons
+  const editGenre = (genre: Genre) => {
+    console.log(genre);
+  };
+
+  // Called to make delete pop up show
+  const deleteGenrePopup = (genre: Genre) => {
+    setSelectedDeleteGenre(genre);
+    setDeletePopupVisible(true);
+  };
+
+  // Call to actually delete the element
+  const deleteGenreFinal = () => {
+    setDeletePopupVisible(false);
+    setSelectedDeleteGenre(emptyGenre);
+  };
+
+  // Called when any of the filters (search boxes) are typed into
+  const onFilter = (event: DataTableFilterEvent) => {
+    setLoading(true);
+    setFilterParams(event);
+  };
+
+  // Called when any of the columns are selected to be sorted
+  const onSort = (event: DataTableSortEvent) => {
+    setLoading(true);
+    setSortParams(event);
+  };
+
+  // Called when the paginator page is switched
+  const onPage = (event: DataTablePageEvent) => {
+    setLoading(true);
+    setPageParams(event);
+  };
+
+  // When any of the list of params are changed, useEffect is called to hit the API endpoint
+  useEffect(() => callAPI(), [pageParams, sortParams, filterParams]);
+
+  // Calls the Genres API
+  const callAPI = () => {
+    GENRES_API.getGenres({
+      page: pageParams.page ?? 0,
+      page_size: pageParams.rows,
+      ordering_field: sortParams.sortField,
+      ordering_ascending: sortParams.sortOrder,
+      search: filterParams.filters.genre.value,
+    }).then((response) => onAPIResponse(response));
+  };
+
+  // Set state when response to API call is received
+  const onAPIResponse = (response: GetGenresResp) => {
+    setGenres(response.genres);
+    setNumberOfGenres(response.numberOfGenres);
+    setLoading(false);
+  };
+
+  // ----------------- TEMPLATES/VISIBLE COMPONENTS -----------------
+
+  // Edit/Delete Cell Template
+  const editDeleteCellTemplate = EditDeleteTemplate<Genre>({
+    onEdit: (rowData) => editGenre(rowData),
+    onDelete: (rowData) => deleteGenrePopup(rowData),
+  });
+
+  // The delete popup
+  const deletePopup = (
+    <DeletePopup
+      deleteItemIdentifier={selectedDeleteGenre.genre}
+      onConfirm={() => deleteGenreFinal()}
+      setIsVisible={setDeletePopupVisible}
+    />
+  );
+
+  // Map column objects to actual columns
+  const dynamicColumns = COLUMNS.map((col) => {
+    return (
+      <Column
+        // Indexing/header
+        key={col.field}
+        field={col.field}
+        header={col.header}
+        // Filtering
+        filter
+        filterElement={col.customFilter}
+        //filterMatchMode={"contains"}
+        filterPlaceholder={col.filterPlaceholder}
+        // Sorting
+        sortable
+        //sortField={col.field}
+        // Hiding Fields
+        showFilterMenuOptions={false}
+        showClearButton={false}
+        // Other
+        style={{ minWidth: "16rem" }}
+        hidden={col.hidden}
+      />
+    );
+  });
+
+  return (
+    <>
+      <DataTable
+        // General Settings
+        value={genres}
+        lazy
+        responsiveLayout="scroll"
+        filterDisplay="row"
+        loading={loading}
+        // Paginator
+        paginator
+        first={pageParams.first}
+        rows={NUM_ROWS}
+        totalRecords={numberOfGenres}
+        paginatorTemplate="PrevPageLink NextPageLink"
+        onPage={onPage}
+        // Sorting
+        onSort={onSort}
+        sortField={sortParams.sortField}
+        sortOrder={sortParams.sortOrder}
+        // Filtering
+        onFilter={onFilter}
+        filters={filterParams.filters}
+      >
+        {dynamicColumns}
+        <Column body={editDeleteCellTemplate} style={{ minWidth: "16rem" }} />
+      </DataTable>
+      {deletePopupVisible && deletePopup}
+    </>
+  );
+}

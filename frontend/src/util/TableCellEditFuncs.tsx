@@ -52,11 +52,9 @@ export function priceEditor(options: ColumnEditorOptions) {
   );
 }
 
-export function priceBodyTemplate(rowData: {
-  unitRetailPrice: number | bigint;
-}) {
+export function priceBodyTemplate(rowData: { retailPrice: number | bigint }) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-  }).format(rowData.unitRetailPrice);
+  }).format(rowData.retailPrice);
 }

@@ -10,11 +10,9 @@ import { Column } from "primereact/column";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import { useEffect, useState } from "react";
 import { DataTableFilterMetaData } from "primereact/datatable";
-import { useNavigate } from "react-router-dom";
-import { Button } from "primereact/button";
-import React from "react";
 import { Genre } from "./GenreList";
 import DeletePopup from "../../components/DeletePopup";
+import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 
 export const NUM_ROWS = 3;
 
@@ -167,22 +165,10 @@ export default function BookList() {
   const [selectedDeleteBook, setSelectedDeleteBook] = useState<Book>(emptyBook);
 
   // Custom body template for edit/delete buttons
-  const actionBodyTemplate = (rowData: Book) => {
-    return (
-      <React.Fragment>
-        <Button
-          icon="pi pi-pencil"
-          className="p-button-rounded p-button-success mr-2"
-          onClick={() => editBook(rowData)}
-        />
-        <Button
-          icon="pi pi-trash"
-          className="p-button-rounded p-button-danger"
-          onClick={() => deleteBookPopup(rowData)}
-        />
-      </React.Fragment>
-    );
-  };
+  const editDeleteCellTemplate = EditDeleteTemplate<Book>({
+    onEdit: (rowData) => editBook(rowData),
+    onDelete: (rowData) => deleteBookPopup(rowData),
+  });
 
   // Callback functions for edit/delete buttons
   const editBook = (book: Book) => {
@@ -341,7 +327,7 @@ export default function BookList() {
         filters={filterParams.filters}
       >
         {dynamicColumns}
-        <Column body={actionBodyTemplate} style={{ minWidth: "16rem" }} />
+        <Column body={editDeleteCellTemplate} style={{ minWidth: "16rem" }} />
       </DataTable>
       {deletePopupVisible && deletePopup}
     </>

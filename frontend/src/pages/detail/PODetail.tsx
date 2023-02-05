@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { ToggleButton } from "primereact/togglebutton";
 import { Calendar, CalendarProps } from "primereact/calendar";
 import { Dropdown, DropdownProps } from "primereact/dropdown";
@@ -13,14 +13,23 @@ import {
   priceEditor,
   textEditor,
 } from "../../util/TableCellEditFuncs";
+import { useLocation } from "react-router-dom";
 
-interface modifyPOState {
+interface PODetailState {
   date: any;
+  data: POPurchaseRow[];
   vendor: string;
   isModifiable: boolean;
-  isConfirmationPopVisible: boolean;
+  isConfirmationPopupVisible: boolean;
 }
 
+interface POPurchaseRow {
+  books: string;
+  quantity: number;
+  unitRetailPrice: number;
+}
+
+// Below placeholders need to be removed
 interface Vendors {
   name: string;
   code: string;
@@ -34,25 +43,6 @@ const DATAVENDORS: Vendors[] = [
   { name: "Paris", code: "PRS" },
 ];
 
-interface POPurchaseRow {
-  books: string;
-  quantity: number;
-  unitRetailPrice: number;
-}
-
-const DATAPOROW: POPurchaseRow[] = [
-  {
-    books: "blah",
-    quantity: 20,
-    unitRetailPrice: 3.9,
-  },
-  {
-    books: "ohaha",
-    quantity: 200,
-    unitRetailPrice: 4.0,
-  },
-];
-
 const columns: TableColumn[] = [
   { field: "books", header: "Books", filterPlaceholder: "Books" },
   { field: "quantity", header: "Quantity", filterPlaceholder: "Quantity" },
@@ -63,18 +53,19 @@ const columns: TableColumn[] = [
   },
 ];
 
-class ModifyPOPage extends React.Component<{}, modifyPOState> {
-  constructor(props = {}) {
-    super(props);
-    this.state = {
-      date: new Date(),
-      vendor: "asdfa",
-      isModifiable: false,
-      isConfirmationPopVisible: false,
-    };
-  }
+export default function PODetail() {
+  const location = useLocation();
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const detailState = location.state! as PODetailState;
+  const [date, setDate] = useState(detailState.date);
+  const [vendor, setVendor] = useState(detailState.vendor);
+  const [data, setData] = useState(detailState.data);
+  const [isModifiable, setIsModifiable] = useState(detailState.isModifiable);
+  const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] = useState(
+    detailState.isConfirmationPopupVisible
+  );
 
-  onCellEditComplete = (e: {
+  const onCellEditComplete = (e: {
     rowData: any;
     newValue: any;
     field: string;
@@ -99,107 +90,89 @@ class ModifyPOPage extends React.Component<{}, modifyPOState> {
     }
   };
 
-  cellEditor = (options: ColumnEditorOptions) => {
+  const cellEditor = (options: ColumnEditorOptions) => {
     if (options.field === "unitRetailPrice") return priceEditor(options);
     if (options.field === "quantity") return numberEditor(options);
     else return textEditor(options);
   };
 
-  onSubmit = (): void => {
-    this.setState({ isModifiable: false });
-    alert(
-      "A form was submitted: \n" +
-        this.state.date +
-        "\n" +
-        this.state.vendor +
-        "\n" +
-        this.state.isModifiable +
-        "\n" +
-        JSON.stringify(DATAPOROW)
-    );
+  const onSubmit = (): void => {
+    setIsModifiable(false);
   };
 
-  render() {
-    return (
-      <div>
-        <h1>Modify Purchase Order</h1>
-        <form onSubmit={this.onSubmit}>
-          <ToggleButton
-            id="modifyPOToggle"
-            name="modifyPOToggle"
-            onLabel="Modifiable"
-            offLabel="Modify"
-            onIcon="pi pi-check"
-            offIcon="pi pi-times"
-            checked={this.state.isModifiable}
-            onChange={() =>
-              this.setState({ isModifiable: !this.state.isModifiable })
-            }
-          />
+  return (
+    <div>
+      <h1>Modify Purchase Order</h1>
+      <form onSubmit={onSubmit}>
+        <ToggleButton
+          id="modifyPOToggle"
+          name="modifyPOToggle"
+          onLabel="Modifiable"
+          offLabel="Modify"
+          onIcon="pi pi-check"
+          offIcon="pi pi-times"
+          checked={isModifiable}
+          onChange={() => setIsModifiable(!isModifiable)}
+        />
 
-          <label htmlFor="date">Date</label>
-          <Calendar
-            id="date"
-            disabled={!this.state.isModifiable}
-            value={this.state.date}
-            readOnlyInput
-            onChange={(event: CalendarProps): void => {
-              this.setState({ date: event.value });
-            }}
-          />
+        <label htmlFor="date">Date</label>
+        <Calendar
+          id="date"
+          disabled={isModifiable}
+          value={date}
+          readOnlyInput
+          onChange={(event: CalendarProps): void => {
+            setDate(event.value);
+          }}
+        />
 
-          <label htmlFor="vendor">Vendor</label>
-          <Dropdown
-            value={this.state.vendor}
-            placeholder={this.state.vendor}
-            options={DATAVENDORS}
-            disabled={!this.state.isModifiable}
-            onChange={(event: DropdownProps): void => {
-              this.setState({ vendor: event.value.name });
-            }}
-            optionLabel="name"
-          />
+        <label htmlFor="vendor">Vendor</label>
+        <Dropdown
+          value={vendor}
+          placeholder={vendor}
+          options={DATAVENDORS}
+          disabled={!isModifiable}
+          onChange={(event: DropdownProps): void => {
+            setVendor(event.value.name);
+          }}
+          optionLabel="name"
+        />
 
-          <DataTable
-            value={DATAPOROW}
-            className="editable-cells-table"
-            responsiveLayout="scroll"
-          >
-            {columns.map(({ field, header }) => {
-              return (
-                <Column
-                  key={field}
-                  field={field}
-                  header={header}
-                  style={{ width: "25%" }}
-                  body={field === "unitRetailPrice" && priceBodyTemplate}
-                  editor={(options) => this.cellEditor(options)}
-                  onCellEditComplete={this.onCellEditComplete}
-                />
-              );
-            })}
-          </DataTable>
+        <DataTable
+          value={data}
+          className="editable-cells-table"
+          responsiveLayout="scroll"
+        >
+          {columns.map(({ field, header }) => {
+            return (
+              <Column
+                key={field}
+                field={field}
+                header={header}
+                style={{ width: "25%" }}
+                body={field === "unitRetailPrice" && priceBodyTemplate}
+                editor={(options) => cellEditor(options)}
+                onCellEditComplete={onCellEditComplete}
+              />
+            );
+          })}
+        </DataTable>
 
-          <ConfirmButton
-            isVisible={this.state.isConfirmationPopVisible}
-            hideFunc={() => this.setState({ isConfirmationPopVisible: false })}
-            acceptFunc={this.onSubmit}
-            rejectFunc={() => {
-              console.log("reject");
-            }}
-            buttonClickFunc={() => {
-              this.setState({ isConfirmationPopVisible: true });
-            }}
-            disabled={!this.state.isModifiable}
-            label={"Submit"}
-          />
+        <ConfirmButton
+          isVisible={isConfirmationPopupVisible}
+          hideFunc={() => setIsConfirmationPopupVisible(false)}
+          acceptFunc={onSubmit}
+          rejectFunc={() => {
+            console.log("reject");
+          }}
+          buttonClickFunc={() => setIsConfirmationPopupVisible(true)}
+          disabled={!isModifiable}
+          label={"Submit"}
+        />
 
-          {/* Maybe be needed in case the confrim button using the popup breaks */}
-          {/* <Button disabled={!this.state.isModifiable} label="submit" type="submit" /> */}
-        </form>
-      </div>
-    );
-  }
+        {/* Maybe be needed in case the confrim button using the popup breaks */}
+        {/* <Button disabled={!this.state.isModifiable} label="submit" type="submit" /> */}
+      </form>
+    </div>
+  );
 }
-
-export default ModifyPOPage;

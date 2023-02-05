@@ -78,9 +78,11 @@ export const BOOKS_API = {
     };
   },
 
-  deleteBook: async function (isbn13: string) {
+  // Everything below this point has not been tested
+
+  deleteBook: async function (id: number) {
     await API.request({
-      url: BOOKS_EXTENSION.concat(isbn13),
+      url: BOOKS_EXTENSION.concat(id.toString()),
       method: METHOD_DELETE,
     });
   },
@@ -103,7 +105,7 @@ export const BOOKS_API = {
     };
 
     await API.request({
-      url: BOOKS_EXTENSION.concat(book.isbn13),
+      url: BOOKS_EXTENSION.concat(book.id.toString()),
       method: METHOD_PATCH,
       data: bookParams,
     });
@@ -135,7 +137,7 @@ export const BOOKS_API = {
     };
 
     await API.request({
-      url: BOOKS_EXTENSION.concat(book.isbn13),
+      url: BOOKS_EXTENSION,
       method: METHOD_POST,
       data: bookParams,
     });

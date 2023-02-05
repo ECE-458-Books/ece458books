@@ -1,5 +1,4 @@
 import { Dropdown } from "primereact/dropdown";
-import { GENRE_DATA } from "./GenreList";
 import { BOOKS_API, GetBooksResp } from "../../apis/BooksAPI";
 import {
   DataTable,
@@ -14,9 +13,10 @@ import { DataTableFilterMetaData } from "primereact/datatable";
 import { useNavigate } from "react-router-dom";
 import { Button } from "primereact/button";
 import React from "react";
-import { Dialog } from "primereact/dialog";
+import { Genre } from "./GenreList";
+import DeletePopup from "../../components/DeletePopup";
 
-const NUM_ROWS = 3;
+export const NUM_ROWS = 3;
 
 interface TableColumn {
   field: string;
@@ -25,6 +25,14 @@ interface TableColumn {
   customFilter?: () => JSX.Element;
   hidden?: boolean;
 }
+
+const GENRE_DATA: Genre[] = [
+  {
+    id: 3,
+    genre: "blah",
+    numGenres: 5,
+  },
+];
 
 export interface Book {
   id: number;
@@ -156,7 +164,7 @@ export default function BookList() {
   ];
 
   // State to track the current book that has been selected to be deleted
-  const [selectedDeleteBook, setSelectedDeleteBook] = useState(emptyBook);
+  const [selectedDeleteBook, setSelectedDeleteBook] = useState<Book>(emptyBook);
 
   // Custom body template for edit/delete buttons
   const actionBodyTemplate = (rowData: Book) => {
@@ -183,56 +191,24 @@ export default function BookList() {
 
   const deleteBookPopup = (book: Book) => {
     setSelectedDeleteBook(book);
-    setDeleteDialogueVisible(true);
+    setDeletePopupVisible(true);
   };
 
   const deleteBookFinal = () => {
-    setDeleteDialogueVisible(false);
+    setDeletePopupVisible(false);
     setSelectedDeleteBook(emptyBook);
     console.log(selectedDeleteBook);
   };
 
   // Buttons for the delete Dialogue Popup
-  const [deleteDialogueVisible, setDeleteDialogueVisible] = useState(false);
-  const deleteProductDialogFooter = (
-    <React.Fragment>
-      <Button
-        label="No"
-        icon="pi pi-times"
-        className="p-button-text"
-        onClick={() => setDeleteDialogueVisible(false)}
-      />
-      <Button
-        label="Yes"
-        icon="pi pi-check"
-        className="p-button-text"
-        onClick={() => deleteBookFinal()}
-      />
-    </React.Fragment>
-  );
+  const [deletePopupVisible, setDeletePopupVisible] = useState(false);
 
-  // Template for the delete dialogue popup
-  const deleteDialogue = (
-    <Dialog
-      visible={deleteDialogueVisible}
-      style={{ width: "450px" }}
-      header="Confirm"
-      modal
-      footer={deleteProductDialogFooter}
-      onHide={() => setDeleteDialogueVisible(false)}
-    >
-      <div className="confirmation-content">
-        <i
-          className="pi pi-exclamation-triangle mr-3"
-          style={{ fontSize: "2rem" }}
-        />
-        {selectedDeleteBook && (
-          <span>
-            Are you sure you want to delete <b>{selectedDeleteBook.title}</b>?
-          </span>
-        )}
-      </div>
-    </Dialog>
+  const deletePopup = (
+    <DeletePopup
+      deleteItemIdentifier={selectedDeleteBook.title}
+      onConfirm={() => deleteBookFinal()}
+      setIsVisible={setDeletePopupVisible}
+    />
   );
 
   const [loading, setLoading] = useState(false); // Whether we show that the table is loading or not
@@ -367,7 +343,7 @@ export default function BookList() {
         {dynamicColumns}
         <Column body={actionBodyTemplate} style={{ minWidth: "16rem" }} />
       </DataTable>
-      {deleteDialogue}
+      {deletePopupVisible && deletePopup}
     </>
   );
 }

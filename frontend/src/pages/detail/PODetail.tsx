@@ -30,7 +30,7 @@ interface POPurchaseRow {
   rowID: string;
   books: string;
   quantity: number;
-  unitRetailPrice: number;
+  retailPrice: number;
 }
 
 // Below placeholders need to be removed
@@ -52,7 +52,7 @@ const columns: TableColumn[] = [
   { field: "books", header: "Books", filterPlaceholder: "Books" },
   { field: "quantity", header: "Quantity", filterPlaceholder: "Quantity" },
   {
-    field: "unitRetailPrice",
+    field: "retailPrice",
     header: "Unit Retail Price",
     filterPlaceholder: "Price",
   },
@@ -63,7 +63,7 @@ export default function PODetail() {
     rowID: uuid(),
     books: "",
     quantity: 1,
-    unitRetailPrice: 0,
+    retailPrice: 0,
   };
 
   const location = useLocation();
@@ -78,22 +78,19 @@ export default function PODetail() {
     detailState.isConfirmationPopupVisible
   );
 
-  const deleteProduct = () => {
-    const _data = data.filter((val) => val.rowID !== lineData.rowID);
-    setData(_data);
-    setLineData(emptyProduct);
-  };
-
   const openNew = () => {
     setLineData(emptyProduct);
+    const _lineData = lineData;
+    _lineData.rowID = uuid();
+    setLineData(_lineData);
     const _data = [...data];
     _data.push({ ...lineData });
     setData(_data);
   };
 
-  const confirmDeleteProduct = (product: any) => {
-    setLineData(product);
-    deleteProduct;
+  const deleteProduct = (rowData: any) => {
+    const _data = data.filter((val) => val.rowID !== rowData.rowID);
+    setData(_data);
   };
 
   const onCellEditComplete = (e: {
@@ -109,7 +106,7 @@ export default function PODetail() {
         if (isPositiveInteger(newValue)) rowData[field] = newValue;
         else event.preventDefault();
         break;
-      case "unitRetailPrice":
+      case "retailPrice":
         if (isPositiveInteger(newValue)) rowData[field] = newValue;
         else event.preventDefault();
         break;
@@ -122,18 +119,22 @@ export default function PODetail() {
   };
 
   const cellEditor = (options: ColumnEditorOptions) => {
-    if (options.field === "unitRetailPrice") return priceEditor(options);
-    if (options.field === "quantity") return numberEditor(options);
-    else return textEditor(options);
+    if (isModifiable) {
+      if (options.field === "retailPrice") return priceEditor(options);
+      if (options.field === "quantity") return numberEditor(options);
+      else return textEditor(options);
+    }
   };
 
   const actionBodyTemplate = (rowData: any) => {
     return (
       <React.Fragment>
         <Button
+          type="button"
           icon="pi pi-trash"
           className="p-button-rounded p-button-warning"
-          onClick={() => confirmDeleteProduct(rowData)}
+          onClick={() => deleteProduct(rowData)}
+          disabled={!isModifiable}
         />
       </React.Fragment>
     );
@@ -143,10 +144,12 @@ export default function PODetail() {
     return (
       <React.Fragment>
         <Button
+          type="button"
           label="New"
           icon="pi pi-plus"
           className="p-button-success mr-2"
           onClick={openNew}
+          disabled={!isModifiable}
         />
       </React.Fragment>
     );
@@ -174,7 +177,7 @@ export default function PODetail() {
         <label htmlFor="date">Date</label>
         <Calendar
           id="date"
-          disabled={isModifiable}
+          disabled={!isModifiable}
           value={date}
           readOnlyInput
           onChange={(event: CalendarProps): void => {
@@ -200,6 +203,7 @@ export default function PODetail() {
           value={data}
           className="editable-cells-table"
           responsiveLayout="scroll"
+          editMode="cell"
         >
           {columns.map(({ field, header }) => {
             return (
@@ -208,9 +212,10 @@ export default function PODetail() {
                 field={field}
                 header={header}
                 style={{ width: "25%" }}
-                body={field === "unitRetailPrice" && priceBodyTemplate}
+                body={field === "retailPrice" && priceBodyTemplate}
                 editor={(options) => cellEditor(options)}
                 onCellEditComplete={onCellEditComplete}
+                hidden={field === "rowID"}
               />
             );
           })}

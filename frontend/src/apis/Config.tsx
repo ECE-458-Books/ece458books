@@ -25,12 +25,12 @@ function DefaultErrorHandler(error: AxiosError) {
 }
 
 // Logging all API calls
-axios.interceptors.request.use((request) => {
+API.interceptors.request.use((request) => {
   logger.debug("Making API Request", request);
   return request;
 });
 
-axios.interceptors.response.use((response) => {
+API.interceptors.response.use((response) => {
   logger.debug("API Response", response);
   return response;
 });

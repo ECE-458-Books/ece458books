@@ -7,10 +7,12 @@ import {
   DataTableSortEvent,
 } from "primereact/datatable";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { GENRES_API, GetGenresResp } from "../../apis/GenresAPI";
 import DeletePopup from "../../components/DeletePopup";
 import { TableColumn } from "../../components/Table";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
+import { GenreDetailState } from "../detail/GenreDetail";
 import { NUM_ROWS } from "./BookList";
 
 // The Genre interface
@@ -77,9 +79,18 @@ export default function GenreList() {
   });
 
   // ----------------- METHODS -----------------
+  // Navigator used to go to a different page
+  const navigate = useNavigate();
 
   // Callback functions for edit/delete buttons
   const editGenre = (genre: Genre) => {
+    const detailState = {
+      genre: genre.genre,
+      isModifiable: false,
+      isConfirmationPopupVisible: false,
+    } as GenreDetailState;
+
+    navigate("/genres/detail", { state: detailState });
     console.log(genre);
   };
 

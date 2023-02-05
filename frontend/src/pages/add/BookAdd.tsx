@@ -12,11 +12,6 @@ import {
   textEditor,
 } from "../../util/TableCellEditFuncs";
 
-interface BookAddState {
-  inputBoxText: string;
-  data: BookRow[];
-}
-
 interface BookRow {
   title: string;
   authors: string;

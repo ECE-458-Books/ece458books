@@ -5,6 +5,7 @@ import { DataTable } from "primereact/datatable";
 import { Column, ColumnEditorOptions } from "primereact/column";
 import { TableColumn } from "../../components/Table";
 import ConfirmButton from "../../components/ConfirmButton";
+import { v4 as uuid } from "uuid";
 import {
   isPositiveInteger,
   numberEditor,
@@ -13,53 +14,67 @@ import {
   textEditor,
 } from "../../util/TableCellEditFuncs";
 import { useLocation } from "react-router-dom";
+import { Toolbar } from "primereact/toolbar";
+import { Button } from "primereact/button";
 
-export interface SRDetailState {
+interface SRDetailState {
   date: any;
   data: SRSaleRow[];
   isModifiable: boolean;
   isConfirmationPopupVisible: boolean;
 }
 
-export interface SRSaleRow {
+interface SRSaleRow {
+  rowID: string;
   books: string;
   quantity: number;
-  unitRetailPrice: number;
+  retailPrice: number;
 }
 
-const DATA: SRSaleRow[] = [
-  {
-    books: "blah",
-    quantity: 20,
-    unitRetailPrice: 3.9,
-  },
-  {
-    books: "ohaha",
-    quantity: 200,
-    unitRetailPrice: 4.0,
-  },
-];
-
 const COLUMNS: TableColumn[] = [
+  { field: "rowID", header: "RowID", filterPlaceholder: "RowID" },
   { field: "books", header: "Books", filterPlaceholder: "Books" },
   { field: "quantity", header: "Quantity", filterPlaceholder: "Quantity" },
   {
-    field: "unitRetailPrice",
+    field: "retailPrice",
     header: "Unit Retail Price",
     filterPlaceholder: "Price",
   },
 ];
 
 export default function SRDetail() {
+  const emptyProduct = {
+    rowID: uuid(),
+    books: "",
+    quantity: 1,
+    retailPrice: 0,
+  };
+
   const location = useLocation();
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const detailState = location.state! as SRDetailState;
   const [date, setDate] = useState(detailState.date);
   const [data, setData] = useState(detailState.data);
+  const [lineData, setLineData] = useState(emptyProduct);
   const [isModifiable, setIsModifiable] = useState(detailState.isModifiable);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] = useState(
     detailState.isConfirmationPopupVisible
   );
+
+  const openNew = () => {
+    setLineData(emptyProduct);
+    const _lineData = lineData;
+    _lineData.rowID = uuid();
+    setLineData(_lineData);
+    const _data = [...data];
+    _data.push({ ...lineData });
+    setData(_data);
+  };
+
+  const deleteProduct = (rowData: any) => {
+    const _data = data.filter((val) => val.rowID !== rowData.rowID);
+    setData(_data);
+  };
 
   const onCellEditComplete = (e: {
     rowData: any;
@@ -74,7 +89,7 @@ export default function SRDetail() {
         if (isPositiveInteger(newValue)) rowData[field] = newValue;
         else event.preventDefault();
         break;
-      case "unitRetailPrice":
+      case "retailPrice":
         if (isPositiveInteger(newValue)) rowData[field] = newValue;
         else event.preventDefault();
         break;
@@ -87,14 +102,44 @@ export default function SRDetail() {
   };
 
   const cellEditor = (options: ColumnEditorOptions) => {
-    if (options.field === "unitRetailPrice") return priceEditor(options);
-    if (options.field === "quantity") return numberEditor(options);
-    else return textEditor(options);
+    if (isModifiable) {
+      if (options.field === "retailPrice") return priceEditor(options);
+      if (options.field === "quantity") return numberEditor(options);
+      else return textEditor(options);
+    }
+  };
+
+  const actionBodyTemplate = (rowData: any) => {
+    return (
+      <React.Fragment>
+        <Button
+          type="button"
+          icon="pi pi-trash"
+          className="p-button-rounded p-button-warning"
+          onClick={() => deleteProduct(rowData)}
+          disabled={!isModifiable}
+        />
+      </React.Fragment>
+    );
+  };
+
+  const leftToolbarTemplate = () => {
+    return (
+      <React.Fragment>
+        <Button
+          type="button"
+          label="New"
+          icon="pi pi-plus"
+          className="p-button-success mr-2"
+          onClick={openNew}
+          disabled={!isModifiable}
+        />
+      </React.Fragment>
+    );
   };
 
   const onSubmit = (): void => {
     setIsModifiable(false);
-    console.log(data);
   };
 
   return (
@@ -123,10 +168,13 @@ export default function SRDetail() {
           }}
         />
 
+        <Toolbar className="mb-4" left={leftToolbarTemplate} />
+
         <DataTable
-          value={DATA}
+          value={data}
           className="editable-cells-table"
           responsiveLayout="scroll"
+          editMode="cell"
         >
           {COLUMNS.map(({ field, header }) => {
             return (
@@ -135,12 +183,18 @@ export default function SRDetail() {
                 field={field}
                 header={header}
                 style={{ width: "25%" }}
-                body={field === "unitRetailPrice" && priceBodyTemplate}
+                body={field === "retailPrice" && priceBodyTemplate}
                 editor={(options) => cellEditor(options)}
                 onCellEditComplete={onCellEditComplete}
+                hidden={field === "rowID"}
               />
             );
           })}
+          <Column
+            body={actionBodyTemplate}
+            exportable={false}
+            style={{ minWidth: "8rem" }}
+          ></Column>
         </DataTable>
         <ConfirmButton
           isVisible={isConfirmationPopupVisible}

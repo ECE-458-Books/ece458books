@@ -19,7 +19,7 @@ To deploy the frontend to the remote dev environment: `make front-remote`
 - Hosung Kim, [@hkder](https://github.com/hkder)
 - Daniel Feinblatt [@danielfeinblatt](https://github.com/danielfeinblatt)
 - Casey Szilagyi [@caseyszilagyi](https://github.com/caseyszilagyi)
-- Haseeb Chaudhry [@]()
+- Haseeb Chaudhry [@nex-pixel](https://github.com/nex-pixel)
 
 ## Contributing
 

@@ -1,41 +1,30 @@
-import React, { FormEvent } from "react";
+import React, { FormEvent, useEffect, useState } from "react";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Button } from "primereact/button";
 
-interface GenreAddState {
-  inputBoxText: string;
-}
+export default function GenreAdd() {
+  const [textBox, setTextBox] = useState("");
 
-class GenreAdd extends React.Component<{}, GenreAddState> {
-  constructor(props = {}) {
-    super(props);
-    this.state = { inputBoxText: "" };
-  }
-
-  onSubmit = (): void => {
-    alert("A form was submitted: \n" + this.state.inputBoxText);
+  const onSubmit = (): void => {
+    console.log(textBox);
   };
 
-  render() {
-    return (
-      <div>
-        <form onSubmit={this.onSubmit}>
-          <label htmlFor="addgenre">Add Genres</label>
-          <InputTextarea
-            id="addgenre"
-            name="addgenre"
-            value={this.state.inputBoxText}
-            onChange={(e: FormEvent<HTMLTextAreaElement>) =>
-              this.setState({ inputBoxText: e.currentTarget.value })
-            }
-            rows={5}
-            cols={30}
-          />
-          <Button label="submit" type="submit" />
-        </form>
-      </div>
-    );
-  }
+  return (
+    <div>
+      <form onSubmit={onSubmit}>
+        <label htmlFor="addgenre">Add Genres</label>
+        <InputTextarea
+          id="addgenre"
+          name="addgenre"
+          value={textBox}
+          onChange={(e: FormEvent<HTMLTextAreaElement>) =>
+            setTextBox(e.currentTarget.value)
+          }
+          rows={5}
+          cols={30}
+        />
+        <Button label="submit" type="submit" />
+      </form>
+    </div>
+  );
 }
-
-export default GenreAdd;

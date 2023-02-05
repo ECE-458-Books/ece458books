@@ -14,6 +14,7 @@ import GenreAdd from "../pages/add/GenreAdd";
 import VendorAdd from "../pages/add/VendorAdd";
 import GenreDetail from "../pages/detail/GenreDetail";
 import VendorDetail from "../pages/detail/VendorDetail";
+import PurchaseOrderList from "../pages/list/POList";
 
 const WithNavBar = () => {
   return (
@@ -42,7 +43,7 @@ export default function Router() {
       <Route element={<WithNavBar />}>
         <Route path="books" element={<BookList />} />
         <Route path="genres" element={<GenreList />} />
-        <Route path="purchase-orders" element={<GenreList />} />
+        <Route path="purchase-orders" element={<PurchaseOrderList />} />
         <Route
           path="sales-reconciliations"
           element={<SalesReconciliationList />}

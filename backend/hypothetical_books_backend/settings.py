@@ -58,6 +58,9 @@ INSTALLED_APPS = [
     # Authentication App
     'authapp',
 
+    # Sales App
+    'sales',
+
     # add REST Framework
     'corsheaders',
     'rest_framework',
@@ -168,5 +171,5 @@ AUTH_USER_MODEL = 'authapp.User'
 
 CORS_ORIGIN_ALLOW_ALL = False
 CORS_ORIGIN_WHITELIST = [
-  'http://localhost',
+    'http://localhost',
 ]

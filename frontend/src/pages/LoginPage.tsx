@@ -4,6 +4,7 @@ import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import { Messages } from "primereact/messages";
 import NavigateFunction from "react-router-dom";
+import { API } from "../apis/Config";
 
 interface LoginProps {
   navigator: NavigateFunction.NavigateFunction;
@@ -68,9 +69,7 @@ class LoginPage extends React.Component<LoginProps, LoginState> {
 
   // Sets the default auth token used by axios
   setAuthToken(token: string) {
-    if (token) {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    } else delete axios.defaults.headers.common["Authorization"];
+    API.defaults.headers.common["Authorization"] = `Bearer ${token}`;
   }
 
   render() {

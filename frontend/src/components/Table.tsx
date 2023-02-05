@@ -19,22 +19,37 @@ export default function Table<T extends object>(props: TableProps<T>) {
   const dynamicColumns = props.columns.map((col) => {
     return (
       <Column
+        // Indexing/header
         key={col.field}
         field={col.field}
         header={col.header}
+        // Filtering
         filter
         filterElement={col.customFilter}
+        filterMatchMode={"contains"}
         filterPlaceholder={col.filterPlaceholder}
-        style={{ minWidth: "16rem" }}
-        showClearButton={false}
+        // Sorting
         sortable
+        sortField={col.field}
+        // Hiding Fields
+        showFilterMenuOptions={false}
+        showClearButton={false}
+        // Other
+        style={{ minWidth: "16rem" }}
         hidden={col.hidden}
       />
     );
   });
 
   return (
-    <DataTable value={props.data} responsiveLayout="scroll" filterDisplay="row">
+    <DataTable
+      value={props.data}
+      responsiveLayout="scroll"
+      filterDisplay="row"
+      paginator
+      rows={10}
+      paginatorTemplate="PrevPageLink NextPageLink"
+    >
       {dynamicColumns}
     </DataTable>
   );

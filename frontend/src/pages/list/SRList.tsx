@@ -7,16 +7,19 @@ import {
   DataTableSortEvent,
 } from "primereact/datatable";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { GetSalesReconciliationsResp, SALES_API } from "../../apis/SalesAPI";
 import DeletePopup from "../../components/DeletePopup";
 import { TableColumn } from "../../components/Table";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import { logger } from "../../util/Logger";
+import { SRDetailState, SRSaleRow } from "../detail/SRDetail";
 import { NUM_ROWS } from "./BookList";
 
 export interface SalesReconciliation {
   id: number;
   date: string;
+  sales: SRSaleRow[];
   uniqueBooks: number;
   totalBooks: number;
   totalRevenue: number;
@@ -55,6 +58,7 @@ const emptySalesReconciliation = {
   id: 0,
   date: "",
   vendorName: "",
+  sales: [],
   uniqueBooks: 0,
   totalBooks: 0,
   totalRevenue: 0,
@@ -101,10 +105,20 @@ export default function SalesReconciliationList() {
 
   // ----------------- METHODS -----------------
 
+  // The navigator to switch pages
+  const navigate = useNavigate();
+
   // Callback functions for edit/delete buttons
   const editSalesReconciliation = (sr: SalesReconciliation) => {
     logger.debug("Edit Sales Reconciliation Clicked", sr);
-    console.log(sr);
+    const detailState: SRDetailState = {
+      date: sr.date,
+      data: sr.sales,
+      isModifiable: false,
+      isConfirmationPopupVisible: false,
+    };
+
+    navigate("/sales-reconciliations/detail", { state: detailState });
   };
 
   // Called to make delete pop up show

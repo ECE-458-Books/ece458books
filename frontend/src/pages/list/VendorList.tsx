@@ -7,11 +7,13 @@ import {
   DataTableSortEvent,
 } from "primereact/datatable";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { GetVendorsResp, VENDORS_API } from "../../apis/VendorsAPI";
 import DeletePopup from "../../components/DeletePopup";
 import { TableColumn } from "../../components/Table";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import { logger } from "../../util/Logger";
+import { VendorDetailState } from "../detail/VendorDetail";
 import { NUM_ROWS } from "./BookList";
 
 // The Vendor Interface
@@ -74,10 +76,19 @@ export default function VendorList() {
 
   // ----------------- METHODS -----------------
 
+  // The navigator to switch pages
+  const navigate = useNavigate();
+
   // Callback functions for edit/delete buttons
   const editVendor = (vendor: Vendor) => {
     logger.debug("Edit Vendor Clicked", vendor);
-    console.log(vendor);
+    const detailState: VendorDetailState = {
+      vendor: vendor.name,
+      isModifiable: false,
+      isConfirmationPopupVisible: false,
+    };
+
+    navigate("/vendors/detail", { state: detailState });
   };
 
   // Called to make delete pop up show

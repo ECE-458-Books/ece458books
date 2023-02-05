@@ -86,14 +86,13 @@ export default function GenreList() {
   // Callback functions for edit/delete buttons
   const editGenre = (genre: Genre) => {
     logger.debug("Edit Genre Clicked", genre);
-    const detailState = {
+    const detailState: GenreDetailState = {
       genre: genre.genre,
       isModifiable: false,
       isConfirmationPopupVisible: false,
-    } as GenreDetailState;
+    };
 
     navigate("/genres/detail", { state: detailState });
-    console.log(genre);
   };
 
   // Called to make delete pop up show

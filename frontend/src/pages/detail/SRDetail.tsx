@@ -14,14 +14,14 @@ import {
 } from "../../util/TableCellEditFuncs";
 import { useLocation } from "react-router-dom";
 
-interface SRDetailState {
+export interface SRDetailState {
   date: any;
   data: SRSaleRow[];
   isModifiable: boolean;
   isConfirmationPopupVisible: boolean;
 }
 
-interface SRSaleRow {
+export interface SRSaleRow {
   books: string;
   quantity: number;
   unitRetailPrice: number;

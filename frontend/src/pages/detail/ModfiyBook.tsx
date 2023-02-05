@@ -9,7 +9,7 @@ import {
   InputNumberValueChangeEvent,
 } from "primereact/inputnumber";
 
-interface BookDetailState {
+export interface BookDetailState {
   book: Book;
   isModifiable: boolean;
   isConfirmationPopupVisible: boolean;

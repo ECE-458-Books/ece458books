@@ -14,6 +14,8 @@ import { Genre } from "./GenreList";
 import DeletePopup from "../../components/DeletePopup";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import { logger } from "../../util/Logger";
+import { BookDetailState } from "../detail/ModfiyBook";
+import { useNavigate } from "react-router-dom";
 
 export const NUM_ROWS = 3;
 
@@ -162,6 +164,9 @@ export default function BookList() {
     },
   ];
 
+  // The navigator to switch pages
+  const navigate = useNavigate();
+
   // State to track the current book that has been selected to be deleted
   const [selectedDeleteBook, setSelectedDeleteBook] = useState<Book>(emptyBook);
 
@@ -174,8 +179,13 @@ export default function BookList() {
   // Callback functions for edit/delete buttons
   const editBook = (book: Book) => {
     logger.debug("Edit Book Clicked", book);
+    const detailState: BookDetailState = {
+      book: book,
+      isModifiable: false,
+      isConfirmationPopupVisible: false,
+    };
 
-    console.log(book);
+    navigate("/books/detail", { state: detailState });
   };
 
   const deleteBookPopup = (book: Book) => {

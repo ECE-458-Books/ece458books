@@ -7,11 +7,13 @@ import {
   DataTableSortEvent,
 } from "primereact/datatable";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { GetPurchaseOrdersResp, PURCHASES_API } from "../../apis/PurchasesAPI";
 import DeletePopup from "../../components/DeletePopup";
 import { TableColumn } from "../../components/Table";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import { logger } from "../../util/Logger";
+import { PODetailState, POPurchaseRow } from "../detail/PODetail";
 import { NUM_ROWS } from "./BookList";
 
 export interface PurchaseOrder {
@@ -21,6 +23,7 @@ export interface PurchaseOrder {
   uniqueBooks: number;
   totalBooks: number;
   totalCost: number;
+  purchases: POPurchaseRow[];
 }
 
 const COLUMNS: TableColumn[] = [
@@ -65,6 +68,7 @@ const emptyPurchaseOrder = {
   uniqueBooks: 0,
   totalBooks: 0,
   totalCost: 0,
+  purchases: [],
 };
 
 export default function PurchaseOrderList() {
@@ -104,9 +108,21 @@ export default function PurchaseOrderList() {
 
   // ----------------- METHODS -----------------
 
+  // The navigator to switch pages
+  const navigate = useNavigate();
+
   // Callback functions for edit/delete buttons
   const editPurchaseOrder = (po: PurchaseOrder) => {
     logger.debug("Edit Purchase Order Clicked", po);
+    const detailState: PODetailState = {
+      date: po.date,
+      data: po.purchases,
+      vendor: po.vendorName,
+      isModifiable: false,
+      isConfirmationPopupVisible: false,
+    };
+
+    navigate("/purchase-orders/detail", { state: detailState });
   };
 
   // Called to make delete pop up show

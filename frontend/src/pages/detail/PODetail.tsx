@@ -15,7 +15,7 @@ import {
 } from "../../util/TableCellEditFuncs";
 import { useLocation } from "react-router-dom";
 
-interface PODetailState {
+export interface PODetailState {
   date: any;
   data: POPurchaseRow[];
   vendor: string;
@@ -23,7 +23,7 @@ interface PODetailState {
   isConfirmationPopupVisible: boolean;
 }
 
-interface POPurchaseRow {
+export interface POPurchaseRow {
   books: string;
   quantity: number;
   unitRetailPrice: number;

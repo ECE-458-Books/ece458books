@@ -1,5 +1,6 @@
 import axios, { AxiosError } from "axios";
 import { stringify } from "qs";
+import { logger } from "../util/Logger";
 
 export const BACKEND_ENDPOINT = "http://books-dev.colab.duke.edu:8000/api/v1/";
 export const JSON_HEADER = { "Content-Type": "application/json" };
@@ -23,6 +24,18 @@ function DefaultErrorHandler(error: AxiosError) {
   console.log(error);
 }
 
+// Logging all API calls
+axios.interceptors.request.use((request) => {
+  logger.debug("Making API Request", request);
+  return request;
+});
+
+axios.interceptors.response.use((response) => {
+  logger.debug("API Response", response);
+  return response;
+});
+
 API.interceptors.response.use(undefined, (error) => {
+  logger.error(error);
   return DefaultErrorHandler(error);
 });

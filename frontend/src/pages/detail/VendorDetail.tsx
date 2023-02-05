@@ -1,8 +1,9 @@
-import React, { FormEvent, useState } from "react";
+import React, { FormEvent, useEffect, useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { ToggleButton } from "primereact/togglebutton";
 import ConfirmButton from "../../components/ConfirmButton";
 import { useLocation } from "react-router-dom";
+import { logger } from "../../util/Logger";
 
 export interface VendorDetailState {
   vendor: string;
@@ -11,6 +12,10 @@ export interface VendorDetailState {
 }
 
 export default function VendorDetail() {
+  useEffect(() => {
+    logger.debug("Loaded Genre Detail Page", detailState);
+  });
+
   const location = useLocation();
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const detailState = location.state! as VendorDetailState;

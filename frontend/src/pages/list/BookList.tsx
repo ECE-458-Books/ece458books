@@ -37,8 +37,8 @@ export interface Book {
   title: string;
   authors: string[];
   genres: string[];
-  isbn13: string;
-  isbn10: string;
+  isbn13: number;
+  isbn10: number;
   publisher: string;
   publishedYear: number;
   pageCount: number;
@@ -69,8 +69,8 @@ export default function BookList() {
     title: "",
     authors: [""],
     genres: [""],
-    isbn13: "",
-    isbn10: "",
+    isbn13: 0,
+    isbn10: 0,
     publisher: "",
     publishedYear: 0,
     pageCount: 0,

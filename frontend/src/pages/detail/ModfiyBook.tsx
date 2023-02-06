@@ -1,4 +1,4 @@
-import React, { FormEvent, useState } from "react";
+import React, { createRef, FormEvent, useRef, useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { ToggleButton } from "primereact/togglebutton";
 import ConfirmButton from "../../components/ConfirmButton";
@@ -8,6 +8,9 @@ import {
   InputNumber,
   InputNumberValueChangeEvent,
 } from "primereact/inputnumber";
+import { BOOKS_API } from "../../apis/BooksAPI";
+import { FormikErrors, useFormik } from "formik";
+import { Toast } from "primereact/toast";
 
 export interface BookDetailState {
   book: Book;
@@ -15,17 +18,23 @@ export interface BookDetailState {
   isConfirmationPopupVisible: boolean;
 }
 
+interface ErrorDisplay {
+  message: string;
+}
+
 export default function BookDetail() {
   const location = useLocation();
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const detailState = location.state! as BookDetailState;
+  const [id, setId] = useState(detailState.book.id);
   const [title, setTitle] = useState(detailState.book.title);
   const [authors, setAuthors] = useState(detailState.book.author);
-  const [isbn, setISBN] = useState(detailState.book.isbn);
+  const [genre, setGenre] = useState(detailState.book.genres);
+  const [isbn13, setISBN13] = useState(detailState.book.isbn_13);
+  const [isbn10, setISBN10] = useState(detailState.book.isbn10);
   const [publisher, setPublisher] = useState(detailState.book.publisher);
   const [pubYear, setPubYear] = useState(detailState.book.publishedYear);
   const [pageCount, setPageCount] = useState(detailState.book.pageCount);
-  const [genres, setGenres] = useState(detailState.book.genres);
   const [price, setPrice] = useState(detailState.book.retailPrice);
   const [width, setWidth] = useState(detailState.book.width);
   const [height, setHeight] = useState(detailState.book.height);
@@ -35,24 +44,67 @@ export default function BookDetail() {
     detailState.isConfirmationPopupVisible
   );
 
-  const onSubmit = (): void => {
-    setIsModifiable(false);
+  const toast = useRef<Toast>(null);
+
+  const showSuccess = () => {
+    toast.current?.show({ severity: "success", summary: "Book Edited" });
   };
 
-  // TODO: Fix these set functions
-  const setAuthorsModified = (authors: string[]): void => {
-    setAuthors(authors);
+  const showFailure = (message: string) => {
+    toast.current?.show({ severity: "error", summary: message });
   };
 
-  // TODO: Fix these set functions
-  const setGenresModified = (genres: string[]): void => {
-    setGenres(genres);
-  };
+  // Validation for the form
+  const formik = useFormik({
+    initialValues: {
+      genres: genre,
+      retailPrice: price,
+    },
+
+    validate: () => {
+      const errors: FormikErrors<ErrorDisplay> = {};
+
+      if (!genre) {
+        errors.message = "Genre is a required field";
+      }
+
+      if (!price) {
+        errors.message = "Retail Price is a required Field";
+      }
+
+      if (errors.message) {
+        showFailure(errors.message);
+      }
+
+      return errors;
+    },
+    onSubmit: () => {
+      BOOKS_API.modifyBook({
+        id: id,
+        title: title,
+        author: authors,
+        genres: genre,
+        isbn_13: isbn13,
+        isbn10: isbn10,
+        publisher: publisher,
+        publishedYear: pubYear,
+        pageCount: pageCount,
+        retailPrice: price,
+        width: width,
+        height: height,
+        thickness: thickness,
+      });
+      showSuccess();
+      formik.resetForm();
+    },
+  });
 
   return (
     <div>
       <h1>Modify Book</h1>
-      <form onSubmit={onSubmit}>
+      <form onSubmit={formik.handleSubmit}>
+        <Toast ref={toast} />
+
         <ToggleButton
           id="modifyBookToggle"
           name="modifyBookToggle"
@@ -84,19 +136,31 @@ export default function BookDetail() {
           value={authors[0]}
           disabled={true}
           onChange={(event: FormEvent<HTMLInputElement>): void => {
-            setAuthors([event.currentTarget.value]);
+            setAuthors(event.currentTarget.value);
           }}
         />
 
-        <label htmlFor="isbn">ISBN</label>
+        <label htmlFor="isbn13">ISBN13</label>
         <InputNumber
-          id="isbn"
+          id="isbn13"
           className="p-inputtext-sm"
-          name="isbn"
-          value={isbn}
+          name="isbn13"
+          value={isbn13}
           disabled={true}
           onValueChange={(e: InputNumberValueChangeEvent) =>
-            setISBN(e.value ?? 0)
+            setISBN13(e.value ?? 0)
+          }
+        />
+
+        <label htmlFor="isbn10">ISBN10</label>
+        <InputNumber
+          id="isbn10"
+          className="p-inputtext-sm"
+          name="isbn10"
+          value={isbn10}
+          disabled={true}
+          onValueChange={(e: InputNumberValueChangeEvent) =>
+            setISBN10(e.value ?? 0)
           }
         />
 
@@ -148,6 +212,30 @@ export default function BookDetail() {
           }
         />
 
+        <label htmlFor="height">Dimensions</label>
+        <InputNumber
+          id="height"
+          className="p-inputtext-sm"
+          name="height"
+          value={height}
+          disabled={!isModifiable}
+          onValueChange={(e: InputNumberValueChangeEvent) =>
+            setHeight(e.value ?? 0)
+          }
+        />
+
+        <label htmlFor="thickness">Dimensions</label>
+        <InputNumber
+          id="thickness"
+          className="p-inputtext-sm"
+          name="thickness"
+          value={thickness}
+          disabled={!isModifiable}
+          onValueChange={(e: InputNumberValueChangeEvent) =>
+            setThickness(e.value ?? 0)
+          }
+        />
+
         <label htmlFor="retailPrice">Retail Price</label>
         <InputNumber
           id="retailPrice"
@@ -165,17 +253,17 @@ export default function BookDetail() {
           id="genre"
           className="p-inputtext-sm"
           name="genre"
-          value={genres[0]}
+          value={genre}
           disabled={!isModifiable}
           onChange={(event: FormEvent<HTMLInputElement>): void => {
-            setGenresModified([event.currentTarget.value]);
+            setGenre(event.currentTarget.value);
           }}
         />
 
         <ConfirmButton
           isVisible={isConfirmationPopupVisible}
           hideFunc={() => setIsConfirmationPopupVisible(false)}
-          acceptFunc={onSubmit}
+          acceptFunc={formik.handleSubmit}
           rejectFunc={() => {
             console.log("reject");
           }}

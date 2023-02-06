@@ -38,9 +38,9 @@ const GENRE_DATA: Genre[] = [
 export interface Book {
   id: number;
   title: string;
-  author: string[];
-  genres: string[];
-  isbn: number;
+  author: string;
+  genres: string;
+  isbn_13: number;
   isbn10: number;
   publisher: string;
   publishedYear: number;
@@ -55,7 +55,7 @@ interface Filters {
   [id: string]: DataTableFilterMetaData;
   title: DataTableFilterMetaData;
   author: DataTableFilterMetaData;
-  isbn: DataTableFilterMetaData;
+  isbn_13: DataTableFilterMetaData;
   isbn10: DataTableFilterMetaData;
   publisher: DataTableFilterMetaData;
   publishedYear: DataTableFilterMetaData;
@@ -70,9 +70,9 @@ export default function BookList() {
   const emptyBook = {
     id: 0,
     title: "",
-    author: [""],
-    genres: [""],
-    isbn: 0,
+    author: "",
+    genres: "",
+    isbn_13: 0,
     isbn10: 0,
     publisher: "",
     publishedYear: 0,
@@ -114,7 +114,7 @@ export default function BookList() {
       filterPlaceholder: "Search by Genre",
       customFilter: genreFilter,
     },
-    { field: "isbn", header: "ISBN", filterPlaceholder: "Search by ISBN" },
+    { field: "isbn_13", header: "ISBN", filterPlaceholder: "Search by ISBN" },
     {
       field: "isbn10",
       header: "ISBN",
@@ -239,7 +239,7 @@ export default function BookList() {
       id: { value: "", matchMode: "contains" },
       title: { value: "", matchMode: "contains" },
       author: { value: "", matchMode: "contains" },
-      isbn: { value: "", matchMode: "contains" },
+      isbn_13: { value: "", matchMode: "contains" },
       isbn10: { value: "", matchMode: "contains" },
       publisher: { value: "", matchMode: "contains" },
       publishedYear: { value: "", matchMode: "contains" },
@@ -268,8 +268,8 @@ export default function BookList() {
     } else if (filterParams.filters.author.value) {
       search_string = filterParams.filters.author.value;
       author_only = true;
-    } else if (filterParams.filters.isbn.value) {
-      search_string = filterParams.filters.isbn.value ?? "";
+    } else if (filterParams.filters.isbn_13.value) {
+      search_string = filterParams.filters.isbn_13.value ?? "";
       isbn_only = true;
     }
 

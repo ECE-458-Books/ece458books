@@ -1,4 +1,5 @@
 import { Book } from "../pages/list/BookList";
+import { CommaSeparatedStringToArray } from "../util/StringOperations";
 import {
   API,
   METHOD_DELETE,
@@ -66,9 +67,9 @@ export const BOOKS_API = {
       return {
         id: book.id,
         title: book.title,
-        author: book.authors,
-        genres: book.genres,
-        isbn: book.isbn_13,
+        author: book.authors.toString(), // changes from array to comma-separated string
+        genres: book.genres.toString(),
+        isbn_13: book.isbn_13,
         isbn10: book.isbn_10,
         publisher: book.publisher,
         publishedYear: book.publishedDate,
@@ -90,7 +91,7 @@ export const BOOKS_API = {
 
   deleteBook: async function (id: number) {
     await API.request({
-      url: BOOKS_EXTENSION.concat(id.toString()),
+      url: BOOKS_EXTENSION.concat(id.toString()).concat("/"),
       method: METHOD_DELETE,
     });
   },
@@ -99,9 +100,9 @@ export const BOOKS_API = {
     const bookParams = {
       id: book.id,
       title: book.title,
-      authors: book.author,
-      genres: book.genres,
-      isbn_13: book.isbn,
+      authors: CommaSeparatedStringToArray(book.author),
+      genres: [book.genres],
+      isbn_13: book.isbn_13,
       isbn_10: book.isbn10,
       publisher: book.publisher,
       publishedDate: book.publishedYear,
@@ -110,10 +111,10 @@ export const BOOKS_API = {
       height: book.height,
       thickness: book.thickness,
       retail_price: book.retailPrice,
-    };
+    } as APIBook;
 
     await API.request({
-      url: BOOKS_EXTENSION.concat(book.id.toString()),
+      url: BOOKS_EXTENSION.concat(book.id.toString()).concat("/"),
       method: METHOD_PATCH,
       data: bookParams,
     });
@@ -133,7 +134,7 @@ export const BOOKS_API = {
       title: book.title,
       authors: book.author,
       genres: book.genres,
-      isbn_13: book.isbn,
+      isbn_13: book.isbn_13,
       isbn_10: book.isbn10,
       publisher: book.publisher,
       publishedDate: book.publishedYear,

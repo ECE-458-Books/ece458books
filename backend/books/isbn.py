@@ -105,4 +105,4 @@ class ISBNTools:
             list: The parsed ISBN list formatted to ISBN13.
 
         """
-        return [self.parse_isbn(raw_isbn) for raw_isbn in isbn_list]
+        return [self.parse_isbn(raw_isbn) if raw_isbn.isdigit() else raw_isbn for raw_isbn in isbn_list]

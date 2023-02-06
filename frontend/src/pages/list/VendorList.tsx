@@ -101,6 +101,11 @@ export default function VendorList() {
   // Call to actually delete the element
   const deleteVendorFinal = () => {
     logger.debug("Delete Vendor Finalized", selectedDeleteVendor);
+    VENDORS_API.deleteVendor(selectedDeleteVendor.id.toString());
+    const _vendors = vendors.filter(
+      (selectVendor) => selectedDeleteVendor.id != selectVendor.id
+    );
+    setVendors(_vendors);
     setDeletePopupVisible(false);
     setSelectedDeleteVendor(emptyVendor);
   };

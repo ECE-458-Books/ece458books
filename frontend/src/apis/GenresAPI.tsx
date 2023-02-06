@@ -59,9 +59,9 @@ export const GENRES_API = {
 
   // Everything below this point has not been tested
 
-  deleteGenre: async function (id: string) {
+  deleteGenre: async function (id: number) {
     await API.request({
-      url: GENRES_EXTENSION.concat(id),
+      url: GENRES_EXTENSION.concat(id.toString()),
       method: METHOD_DELETE,
     });
   },

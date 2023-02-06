@@ -3,8 +3,11 @@ import { InputText } from "primereact/inputtext";
 import { ToggleButton } from "primereact/togglebutton";
 import ConfirmButton from "../../components/ConfirmButton";
 import { useLocation } from "react-router-dom";
+import { GENRES_API } from "../../apis/GenresAPI";
+import { Genre } from "../list/GenreList";
 
 export interface GenreDetailState {
+  id: number;
   genre: string;
   isModifiable: boolean;
   isConfirmationPopupVisible: boolean;
@@ -15,12 +18,15 @@ export default function GenreDetail() {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const detailState = location.state! as GenreDetailState;
   const [genre, setGenre] = useState<string>(detailState.genre);
+  const [id, setId] = useState(detailState.id);
   const [isModifiable, setIsModifiable] = useState(detailState.isModifiable);
   const [isConfirmationPopVisible, setIsConfirmationPopupVisible] = useState(
     detailState.isConfirmationPopupVisible
   );
 
   const onSubmit = (): void => {
+    const modifiedGenre: Genre = { id: id, genre: genre, numGenres: 0 };
+    GENRES_API.modifyGenre(modifiedGenre);
     setIsModifiable(false);
     console.log("Submit");
   };
@@ -46,7 +52,7 @@ export default function GenreDetail() {
           className="p-inputtext-sm"
           name="genre"
           value={genre}
-          disabled={isModifiable}
+          disabled={!isModifiable}
           onChange={(event: FormEvent<HTMLInputElement>): void => {
             setGenre(event.currentTarget.value);
           }}

@@ -87,6 +87,7 @@ export default function GenreList() {
   const editGenre = (genre: Genre) => {
     logger.debug("Edit Genre Clicked", genre);
     const detailState: GenreDetailState = {
+      id: genre.id,
       genre: genre.genre,
       isModifiable: false,
       isConfirmationPopupVisible: false,
@@ -105,6 +106,11 @@ export default function GenreList() {
   // Call to actually delete the element
   const deleteGenreFinal = () => {
     logger.debug("Delete Genre Finalized", selectedDeleteGenre);
+    GENRES_API.deleteGenre(selectedDeleteGenre.id);
+    const _genres = genres.filter(
+      (selectGenre) => selectedDeleteGenre.id != selectGenre.id
+    );
+    setGenres(_genres);
     setDeletePopupVisible(false);
     setSelectedDeleteGenre(emptyGenre);
   };

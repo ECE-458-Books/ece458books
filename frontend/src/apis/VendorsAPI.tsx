@@ -71,7 +71,7 @@ export const VENDORS_API = {
     };
 
     await API.request({
-      url: VENDORS_EXTENSION.concat(vendor.id.toString()),
+      url: VENDORS_EXTENSION.concat(vendor.id.toString().concat("/")),
       method: METHOD_PATCH,
       data: vendorParams,
     });

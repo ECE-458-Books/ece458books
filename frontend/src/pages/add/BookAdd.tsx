@@ -11,8 +11,6 @@ import {
   priceEditor,
   textEditor,
 } from "../../util/TableCellEditFuncs";
-import { BOOKS_API, GetBooksResp } from "../../apis/BooksAPI";
-import { Book } from "../list/BookList";
 
 interface BookRow {
   title: string;
@@ -25,6 +23,31 @@ interface BookRow {
   retailPrice: number;
   genre: string;
 }
+
+const DATA: BookRow[] = [
+  {
+    title: "blah",
+    authors: "blah",
+    isbn: "blah",
+    publisher: "blah",
+    pubYear: 2000,
+    pageCount: 3029,
+    dimensions: "blah",
+    retailPrice: 11.99,
+    genre: "blah",
+  },
+  {
+    title: "clah",
+    authors: "clah",
+    isbn: "clah",
+    publisher: "clah",
+    pubYear: 2000,
+    pageCount: 3029,
+    dimensions: "clah",
+    retailPrice: 11.9,
+    genre: "clah",
+  },
+];
 
 const COLUMNS: TableColumn[] = [
   { field: "title", header: "Title", filterPlaceholder: "Search by Title" },
@@ -70,34 +93,9 @@ const COLUMNS: TableColumn[] = [
   },
 ];
 
-const DATA: BookRow[] = [
-  {
-    title: "blah",
-    authors: "blah",
-    isbn: "blah",
-    publisher: "blah",
-    pubYear: 2000,
-    pageCount: 3029,
-    dimensions: "blah",
-    retailPrice: 11.99,
-    genre: "blah",
-  },
-  {
-    title: "clah",
-    authors: "clah",
-    isbn: "clah",
-    publisher: "clah",
-    pubYear: 2000,
-    pageCount: 3029,
-    dimensions: "clah",
-    retailPrice: 11.9,
-    genre: "clah",
-  },
-];
-
 export default function BookAdd() {
   const [textBox, setTextBox] = useState("");
-  const [books, setBooks] = useState<Book[]>();
+  const [books, setBooks] = useState(DATA);
 
   const onCellEditComplete = (e: {
     rowData: any;
@@ -140,22 +138,12 @@ export default function BookAdd() {
     }
   };
 
-  const onSubmit = (event: FormEvent<HTMLFormElement>): void => {
-    BOOKS_API.addBookInitialLookup(textBox).then((response) =>
-      onAPIResponse(response)
-    );
+  const onSubmit = (): void => {
     console.log(textBox);
-    event?.preventDefault();
-  };
-
-  // Set state when response to API call is received
-  const onAPIResponse = (response: any) => {
-    setBooks(response.books);
-    alert("Form Data" + JSON.stringify(books));
   };
 
   const onCompleteSubmit = (): void => {
-    alert("Form Data" + JSON.stringify(books));
+    alert("Form Data" + JSON.stringify(DATA));
   };
 
   //Two Forms exist in order for the seperate submission of two seperate types of data.

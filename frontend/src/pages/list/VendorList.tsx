@@ -83,6 +83,7 @@ export default function VendorList() {
   const editVendor = (vendor: Vendor) => {
     logger.debug("Edit Vendor Clicked", vendor);
     const detailState: VendorDetailState = {
+      id: vendor.id,
       vendor: vendor.name,
       isModifiable: false,
       isConfirmationPopupVisible: false,
@@ -106,6 +107,7 @@ export default function VendorList() {
       (selectVendor) => selectedDeleteVendor.id != selectVendor.id
     );
     setVendors(_vendors);
+    logger.debug("Delete Vendor Completed", selectedDeleteVendor);
     setDeletePopupVisible(false);
     setSelectedDeleteVendor(emptyVendor);
   };

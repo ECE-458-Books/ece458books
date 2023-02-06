@@ -2,14 +2,15 @@ import React, { FormEvent, useEffect, useState } from "react";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Button } from "primereact/button";
 import { VENDORS_API } from "../../apis/VendorsAPI";
+import { logger } from "../../util/Logger";
 
 export default function VendorAdd() {
   const [textBox, setTextBox] = useState("");
 
   const onSubmit = (event: FormEvent<HTMLFormElement>): void => {
+    logger.debug("Add Vendor Submitted", textBox);
     VENDORS_API.addVendor(textBox);
-    console.log(textBox);
-    event?.preventDefault();
+    event.preventDefault();
   };
 
   return (

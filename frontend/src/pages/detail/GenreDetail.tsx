@@ -5,6 +5,7 @@ import ConfirmButton from "../../components/ConfirmButton";
 import { useLocation } from "react-router-dom";
 import { GENRES_API } from "../../apis/GenresAPI";
 import { Genre } from "../list/GenreList";
+import { logger } from "../../util/Logger";
 
 export interface GenreDetailState {
   id: number;
@@ -26,9 +27,9 @@ export default function GenreDetail() {
 
   const onSubmit = (): void => {
     const modifiedGenre: Genre = { id: id, genre: genre, numGenres: 0 };
+    logger.debug("Edit Genre Submitted", modifiedGenre);
     GENRES_API.modifyGenre(modifiedGenre);
     setIsModifiable(false);
-    console.log("Submit");
   };
 
   return (

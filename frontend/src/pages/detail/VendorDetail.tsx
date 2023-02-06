@@ -3,8 +3,13 @@ import { InputText } from "primereact/inputtext";
 import { ToggleButton } from "primereact/togglebutton";
 import ConfirmButton from "../../components/ConfirmButton";
 import { useLocation } from "react-router-dom";
+import { VENDORS_API } from "../../apis/VendorsAPI";
+import { Vendor } from "../list/VendorList";
+import { InputNumber } from "primereact/inputnumber";
+import { logger } from "../../util/Logger";
 
 export interface VendorDetailState {
+  id: number;
   vendor: string;
   isModifiable: boolean;
   isConfirmationPopupVisible: boolean;
@@ -15,12 +20,16 @@ export default function VendorDetail() {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const detailState = location.state! as VendorDetailState;
   const [vendor, setVendor] = useState<string>(detailState.vendor);
+  const [id, setId] = useState<number>(detailState.id);
   const [isModifiable, setIsModifiable] = useState(detailState.isModifiable);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] = useState(
     detailState.isConfirmationPopupVisible
   );
 
   const onSubmit = (): void => {
+    const modifiedVendor: Vendor = { id: id, name: vendor };
+    logger.debug("Edit Vendor Submitted", modifiedVendor);
+    VENDORS_API.modifyVendor(modifiedVendor);
     setIsModifiable(false);
   };
 
@@ -43,7 +52,7 @@ export default function VendorDetail() {
         <InputText
           id="vendor"
           className="p-inputtext-sm"
-          name="genre"
+          name="vendor"
           value={vendor}
           disabled={!isModifiable}
           onChange={(event: FormEvent<HTMLInputElement>): void => {

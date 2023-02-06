@@ -17,14 +17,14 @@ import { useLocation } from "react-router-dom";
 import { Toolbar } from "primereact/toolbar";
 import { Button } from "primereact/button";
 
-interface SRDetailState {
+export interface SRDetailState {
   date: any;
   data: SRSaleRow[];
   isModifiable: boolean;
   isConfirmationPopupVisible: boolean;
 }
 
-interface SRSaleRow {
+export interface SRSaleRow {
   rowID: string;
   books: string;
   quantity: number;

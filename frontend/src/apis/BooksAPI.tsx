@@ -96,7 +96,7 @@ export const BOOKS_API = {
 
   deleteBook: async function (id: number) {
     await API.request({
-      url: BOOKS_EXTENSION.concat(id.toString()).concat("/"),
+      url: BOOKS_EXTENSION.concat(id.toString()),
       method: METHOD_DELETE,
     });
   },
@@ -119,7 +119,7 @@ export const BOOKS_API = {
     } as APIBook;
 
     await API.request({
-      url: BOOKS_EXTENSION.concat(book.id.toString()).concat("/"),
+      url: BOOKS_EXTENSION.concat(book.id.toString()),
       method: METHOD_PATCH,
       data: bookParams,
     });
@@ -129,7 +129,7 @@ export const BOOKS_API = {
     isbns: string
   ): Promise<BookWithDBTag[]> {
     const response = await API.request({
-      url: BOOKS_EXTENSION.concat("isbns").concat("/"),
+      url: BOOKS_EXTENSION.concat("isbns"),
       method: METHOD_POST,
       data: { isbns: isbns },
     });

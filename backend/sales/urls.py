@@ -4,6 +4,6 @@ from .views import ListCreateSalesReconciliationAPIView, RetrieveUpdateDestroySa
 app_name = 'sales'
 
 urlpatterns = [
-    path('sales_reconciliation/', ListCreateSalesReconciliationAPIView.as_view()),
-    path('sales_reconciliation/<id>/', RetrieveUpdateDestroySalesReconciliationAPIView.as_view())
+    path('/sales_reconciliation', ListCreateSalesReconciliationAPIView.as_view()),
+    path('/sales_reconciliation/<id>', RetrieveUpdateDestroySalesReconciliationAPIView.as_view())
 ]

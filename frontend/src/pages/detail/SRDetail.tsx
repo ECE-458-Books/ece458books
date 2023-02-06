@@ -20,7 +20,7 @@ import { Button } from "primereact/button";
 export interface SRDetailState {
   date: any;
   data: SRSaleRow[];
-  isAddPageState: boolean;
+  isAddPage: boolean;
   isModifiable: boolean;
   isConfirmationPopupVisible: boolean;
 }
@@ -63,16 +63,14 @@ export default function SRDetail() {
         retailPrice: 0,
       },
     ],
-    isAddPageState: true,
+    isAddPage: true,
     isModifiable: true,
     isConfirmationPopupVisible: false,
   };
   const [date, setDate] = useState(detailState.date);
   const [data, setData] = useState(detailState.data);
   const [lineData, setLineData] = useState(emptyProduct);
-  const [isAddPageState, setIsAddPageState] = useState(
-    detailState.isAddPageState
-  );
+  const [isAddPage, setisAddPage] = useState(detailState.isAddPage);
   const [isModifiable, setIsModifiable] = useState(detailState.isModifiable);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] = useState(
     detailState.isConfirmationPopupVisible
@@ -156,7 +154,7 @@ export default function SRDetail() {
   };
 
   const onSubmit = (): void => {
-    if (isAddPageState) {
+    if (isAddPage) {
       console.log("Add page state submit");
     } else {
       setIsModifiable(false);
@@ -165,13 +163,13 @@ export default function SRDetail() {
 
   return (
     <div>
-      {isAddPageState ? (
+      {isAddPage ? (
         <h1>Add Sales Reconciliation</h1>
       ) : (
         <h1>Modify Sales Reconciliation</h1>
       )}
       <form id="localForm">
-        {!isAddPageState && (
+        {!isAddPage && (
           <ToggleButton
             id="modifySRToggle"
             name="modifySRToggle"
@@ -180,7 +178,7 @@ export default function SRDetail() {
             onIcon="pi pi-check"
             offIcon="pi pi-times"
             checked={isModifiable}
-            disabled={isAddPageState}
+            disabled={isAddPage}
             onChange={() => setIsModifiable(!isModifiable)}
           />
         )}

@@ -22,7 +22,7 @@ export interface PODetailState {
   date: any;
   data: POPurchaseRow[];
   vendor: string;
-  isAddPageState: boolean;
+  isAddPage: boolean;
   isModifiable: boolean;
   isConfirmationPopupVisible: boolean;
 }
@@ -80,7 +80,7 @@ export default function PODetail() {
         retailPrice: 0,
       },
     ],
-    isAddPageState: true,
+    isAddPage: true,
     isModifiable: true,
     isConfirmationPopupVisible: false,
   };
@@ -88,9 +88,7 @@ export default function PODetail() {
   const [vendor, setVendor] = useState(detailState.vendor);
   const [data, setData] = useState(detailState.data);
   const [lineData, setLineData] = useState(emptyProduct);
-  const [isAddPageState, setIsAddPageState] = useState(
-    detailState.isAddPageState
-  );
+  const [isAddPage, setisAddPage] = useState(detailState.isAddPage);
   const [isModifiable, setIsModifiable] = useState(detailState.isModifiable);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] = useState(
     detailState.isConfirmationPopupVisible
@@ -174,7 +172,7 @@ export default function PODetail() {
   };
 
   const onSubmit = (): void => {
-    if (isAddPageState) {
+    if (isAddPage) {
       console.log("Add Page is submitted");
     } else {
       setIsModifiable(false);
@@ -183,13 +181,9 @@ export default function PODetail() {
 
   return (
     <div>
-      {isAddPageState ? (
-        <h1>Add Purchase Order</h1>
-      ) : (
-        <h1>Modify Purchase Order</h1>
-      )}
+      {isAddPage ? <h1>Add Purchase Order</h1> : <h1>Modify Purchase Order</h1>}
       <form onSubmit={onSubmit}>
-        {!isAddPageState && (
+        {!isAddPage && (
           <ToggleButton
             id="modifyPOToggle"
             name="modifyPOToggle"
@@ -197,7 +191,7 @@ export default function PODetail() {
             offLabel="Modify"
             onIcon="pi pi-check"
             offIcon="pi pi-times"
-            disabled={isAddPageState}
+            disabled={isAddPage}
             checked={isModifiable}
             onChange={() => setIsModifiable(!isModifiable)}
           />

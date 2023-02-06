@@ -165,9 +165,13 @@ export default function SRDetail() {
 
   return (
     <div>
-      <h1>Modify Sales Reconciliation</h1>
+      {isAddPageState ? (
+        <h1>Add Sales Reconciliation</h1>
+      ) : (
+        <h1>Modify Sales Reconciliation</h1>
+      )}
       <form id="localForm">
-        {isAddPageState ? (
+        {!isAddPageState && (
           <ToggleButton
             id="modifySRToggle"
             name="modifySRToggle"
@@ -179,7 +183,7 @@ export default function SRDetail() {
             disabled={isAddPageState}
             onChange={() => setIsModifiable(!isModifiable)}
           />
-        ) : null}
+        )}
 
         <label htmlFor="date">Date</label>
         <Calendar

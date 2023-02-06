@@ -183,19 +183,25 @@ export default function PODetail() {
 
   return (
     <div>
-      <h1>Modify Purchase Order</h1>
+      {isAddPageState ? (
+        <h1>Add Purchase Order</h1>
+      ) : (
+        <h1>Modify Purchase Order</h1>
+      )}
       <form onSubmit={onSubmit}>
-        <ToggleButton
-          id="modifyPOToggle"
-          name="modifyPOToggle"
-          onLabel="Modifiable"
-          offLabel="Modify"
-          onIcon="pi pi-check"
-          offIcon="pi pi-times"
-          disabled={isAddPageState}
-          checked={isModifiable}
-          onChange={() => setIsModifiable(!isModifiable)}
-        />
+        {!isAddPageState && (
+          <ToggleButton
+            id="modifyPOToggle"
+            name="modifyPOToggle"
+            onLabel="Modifiable"
+            offLabel="Modify"
+            onIcon="pi pi-check"
+            offIcon="pi pi-times"
+            disabled={isAddPageState}
+            checked={isModifiable}
+            onChange={() => setIsModifiable(!isModifiable)}
+          />
+        )}
 
         <label htmlFor="date">Date</label>
         <Calendar

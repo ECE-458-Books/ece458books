@@ -7,7 +7,7 @@ import {
   METHOD_POST,
 } from "./Config";
 
-const GENRES_EXTENSION = "genres/";
+const GENRES_EXTENSION = "genres";
 
 interface GetGenresReq {
   page: number;
@@ -61,7 +61,7 @@ export const GENRES_API = {
 
   deleteGenre: async function (id: number) {
     await API.request({
-      url: GENRES_EXTENSION.concat(id.toString()),
+      url: GENRES_EXTENSION.concat("/".concat(id.toString())),
       method: METHOD_DELETE,
     });
   },
@@ -73,7 +73,7 @@ export const GENRES_API = {
     };
 
     await API.request({
-      url: GENRES_EXTENSION.concat(genre.id.toString()),
+      url: GENRES_EXTENSION.concat("/".concat(genre.id.toString())),
       method: METHOD_PATCH,
       data: genreParams,
     });

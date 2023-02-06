@@ -7,7 +7,7 @@ import {
   METHOD_POST,
 } from "./Config";
 
-const SALES_EXTENSION = "sales/";
+const SALES_EXTENSION = "sales";
 
 interface GetSalesReconciliationsReq {
   page: number;
@@ -61,7 +61,7 @@ export const SALES_API = {
 
   deleteSalesReconciliation: async function (id: string) {
     await API.request({
-      url: SALES_EXTENSION.concat(id),
+      url: SALES_EXTENSION.concat("/".concat(id)),
       method: METHOD_DELETE,
     });
   },
@@ -72,7 +72,7 @@ export const SALES_API = {
     };
 
     await API.request({
-      url: SALES_EXTENSION.concat(sr.id.toString()),
+      url: SALES_EXTENSION.concat("/".concat(sr.id.toString())),
       method: METHOD_PATCH,
       data: srParams,
     });

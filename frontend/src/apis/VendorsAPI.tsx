@@ -7,7 +7,7 @@ import {
   METHOD_POST,
 } from "./Config";
 
-const VENDORS_EXTENSION = "vendors/";
+const VENDORS_EXTENSION = "vendors";
 
 interface GetVendorsReq {
   page: number;
@@ -59,7 +59,7 @@ export const VENDORS_API = {
 
   deleteVendor: async function (id: string) {
     await API.request({
-      url: VENDORS_EXTENSION.concat(id),
+      url: VENDORS_EXTENSION.concat("/".concat(id)),
       method: METHOD_DELETE,
     });
   },
@@ -71,7 +71,7 @@ export const VENDORS_API = {
     };
 
     await API.request({
-      url: VENDORS_EXTENSION.concat(vendor.id.toString()),
+      url: VENDORS_EXTENSION.concat("/".concat(vendor.id.toString())),
       method: METHOD_PATCH,
       data: vendorParams,
     });

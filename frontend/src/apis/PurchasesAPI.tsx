@@ -7,7 +7,7 @@ import {
   METHOD_POST,
 } from "./Config";
 
-const PURCHASES_EXTENSION = "purchases/";
+const PURCHASES_EXTENSION = "purchases";
 
 interface GetPurchaseOrdersReq {
   page: number;
@@ -61,7 +61,7 @@ export const PURCHASES_API = {
 
   deletePurchaseOrder: async function (id: string) {
     await API.request({
-      url: PURCHASES_EXTENSION.concat(id),
+      url: PURCHASES_EXTENSION.concat("/".concat(id)),
       method: METHOD_DELETE,
     });
   },
@@ -72,7 +72,7 @@ export const PURCHASES_API = {
     };
 
     await API.request({
-      url: PURCHASES_EXTENSION.concat(po.id.toString()),
+      url: PURCHASES_EXTENSION.concat("/".concat(po.id.toString())),
       method: METHOD_PATCH,
       data: poParams,
     });

@@ -23,5 +23,6 @@ urlpatterns = [
     path(f'{api_prefix}genres/', include('genres.urls')),
     path(f'{api_prefix}vendors/', include('vendors.urls')),
     path(f'{api_prefix}sales/', include('sales.urls')),
+    path(f'{api_prefix}purchase_orders/', include('purchase_orders.urls')),
     path(f'{api_prefix}auth/', include('authapp.urls', namespace='authentication')),
 ]

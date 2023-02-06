@@ -18,6 +18,12 @@ class ListCreateVendorAPIView(ListCreateAPIView):
     ordering_fields = '__all__'
     ordering = ['name']
 
+    def paginate_queryset(self, queryset):
+        if 'no_pagination' in self.request.query_params:
+            return None
+        else:
+            return super().paginate_queryset(queryset)
+
 class RetrieveUpdateDestroyVendorAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = VendorSerializer
     queryset = Vendor.objects.all()

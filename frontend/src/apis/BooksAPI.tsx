@@ -12,10 +12,13 @@ const BOOKS_EXTENSION = "books/";
 interface GetBooksReq {
   page: number;
   page_size: number;
-  ordering_field: string | undefined;
-  ordering_ascending: number | null | undefined;
+  ordering: string;
   genre: string;
   search: string;
+  title_only: boolean;
+  publisher_only: boolean;
+  author_only: boolean;
+  isbn_only: boolean;
 }
 
 // The structure of the response for a book from the API
@@ -24,8 +27,8 @@ interface APIBook {
   authors: string[];
   genres: string[];
   title: string;
-  isbn_13: string;
-  isbn_10: string;
+  isbn_13: number;
+  isbn_10: number;
   publisher: string;
   publishedDate: number;
   pageCount: number;
@@ -48,9 +51,13 @@ export const BOOKS_API = {
       params: {
         page: req.page + 1,
         page_size: req.page_size,
-        ordering: req.ordering_field,
+        ordering: req.ordering,
         genre: req.genre,
         search: req.search,
+        title_only: req.title_only,
+        publisher_only: req.publisher_only,
+        author_only: req.author_only,
+        isbn_only: req.isbn_only,
       },
     });
 
@@ -59,9 +66,9 @@ export const BOOKS_API = {
       return {
         id: book.id,
         title: book.title,
-        authors: book.authors,
+        author: book.authors,
         genres: book.genres,
-        isbn13: book.isbn_13,
+        isbn: book.isbn_13,
         isbn10: book.isbn_10,
         publisher: book.publisher,
         publishedYear: book.publishedDate,
@@ -70,7 +77,7 @@ export const BOOKS_API = {
         height: book.height,
         thickness: book.thickness,
         retailPrice: book.retail_price,
-      };
+      } as Book;
     });
 
     return Promise.resolve({
@@ -92,9 +99,9 @@ export const BOOKS_API = {
     const bookParams = {
       id: book.id,
       title: book.title,
-      authors: book.authors,
+      authors: book.author,
       genres: book.genres,
-      isbn_13: book.isbn13,
+      isbn_13: book.isbn,
       isbn_10: book.isbn10,
       publisher: book.publisher,
       publishedDate: book.publishedYear,
@@ -124,9 +131,9 @@ export const BOOKS_API = {
     const bookParams = {
       id: book.id,
       title: book.title,
-      authors: book.authors,
+      authors: book.author,
       genres: book.genres,
-      isbn_13: book.isbn13,
+      isbn_13: book.isbn,
       isbn_10: book.isbn10,
       publisher: book.publisher,
       publishedDate: book.publishedYear,

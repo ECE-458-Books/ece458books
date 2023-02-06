@@ -38,9 +38,9 @@ const GENRE_DATA: Genre[] = [
 export interface Book {
   id: number;
   title: string;
-  authors: string[];
+  author: string[];
   genres: string[];
-  isbn13: number;
+  isbn: number;
   isbn10: number;
   publisher: string;
   publishedYear: number;
@@ -54,8 +54,8 @@ export interface Book {
 interface Filters {
   [id: string]: DataTableFilterMetaData;
   title: DataTableFilterMetaData;
-  authors: DataTableFilterMetaData;
-  isbn13: DataTableFilterMetaData;
+  author: DataTableFilterMetaData;
+  isbn: DataTableFilterMetaData;
   isbn10: DataTableFilterMetaData;
   publisher: DataTableFilterMetaData;
   publishedYear: DataTableFilterMetaData;
@@ -70,9 +70,9 @@ export default function BookList() {
   const emptyBook = {
     id: 0,
     title: "",
-    authors: [""],
+    author: [""],
     genres: [""],
-    isbn13: 0,
+    isbn: 0,
     isbn10: 0,
     publisher: "",
     publishedYear: 0,
@@ -104,7 +104,7 @@ export default function BookList() {
     { field: "id", header: "ID", filterPlaceholder: "Search by ID" },
     { field: "title", header: "Title", filterPlaceholder: "Search by Title" },
     {
-      field: "authors",
+      field: "author",
       header: "Authors",
       filterPlaceholder: "Search by Authors",
     },
@@ -114,7 +114,7 @@ export default function BookList() {
       filterPlaceholder: "Search by Genre",
       customFilter: genreFilter,
     },
-    { field: "isbn13", header: "ISBN", filterPlaceholder: "Search by ISBN" },
+    { field: "isbn", header: "ISBN", filterPlaceholder: "Search by ISBN" },
     {
       field: "isbn10",
       header: "ISBN",
@@ -125,7 +125,6 @@ export default function BookList() {
       field: "publisher",
       header: "Publisher",
       filterPlaceholder: "Search by Publisher",
-      hidden: true,
     },
     {
       field: "publishedYear",
@@ -239,8 +238,8 @@ export default function BookList() {
     filters: {
       id: { value: "", matchMode: "contains" },
       title: { value: "", matchMode: "contains" },
-      authors: { value: "", matchMode: "contains" },
-      isbn13: { value: "", matchMode: "contains" },
+      author: { value: "", matchMode: "contains" },
+      isbn: { value: "", matchMode: "contains" },
       isbn10: { value: "", matchMode: "contains" },
       publisher: { value: "", matchMode: "contains" },
       publishedYear: { value: "", matchMode: "contains" },
@@ -254,13 +253,42 @@ export default function BookList() {
 
   // Calls the Books API
   const callAPI = () => {
+    // Only search by one of the search boxes
+    let search_string = "";
+    let title_only = false;
+    let publisher_only = false;
+    let author_only = false;
+    let isbn_only = false;
+    if (filterParams.filters.title.value) {
+      search_string = filterParams.filters.title.value;
+      title_only = true;
+    } else if (filterParams.filters.publisher.value) {
+      search_string = filterParams.filters.publisher.value;
+      publisher_only = true;
+    } else if (filterParams.filters.author.value) {
+      search_string = filterParams.filters.author.value;
+      author_only = true;
+    } else if (filterParams.filters.isbn.value) {
+      search_string = filterParams.filters.isbn.value ?? "";
+      isbn_only = true;
+    }
+
+    // Invert sort order
+    let sortField = sortParams.sortField;
+    if (sortParams.sortOrder == -1) {
+      sortField = "-".concat(sortField);
+    }
+
     BOOKS_API.getBooks({
       page: pageParams.page ?? 0,
       page_size: pageParams.rows,
-      ordering_field: sortParams.sortField,
-      ordering_ascending: sortParams.sortOrder,
+      ordering: sortField,
       genre: selectedGenre,
-      search: filterParams.filters.title.value,
+      search: search_string,
+      title_only: title_only,
+      publisher_only: publisher_only,
+      author_only: author_only,
+      isbn_only: isbn_only,
     }).then((response) => onAPIResponse(response));
   };
 
@@ -276,7 +304,6 @@ export default function BookList() {
     logger.debug("Filter Applied", event);
     setLoading(true);
     setFilterParams(event);
-    callAPI();
   };
 
   // Called when any of the columns are selected to be sorted
@@ -284,21 +311,21 @@ export default function BookList() {
     logger.debug("Sort Applied", event);
     setLoading(true);
     setSortParams(event);
-    callAPI();
+    console.log(sortParams.sortOrder);
   };
 
   // Called when the paginator page is switched
   const onPage = (event: DataTablePageEvent) => {
+    console.log(event.page);
     logger.debug("Page Applied", event);
     setLoading(true);
     setPageParams(event);
-    callAPI();
   };
 
-  // Call endpoint on page load
+  // Call endpoint on page load whenever any of these variables change
   useEffect(() => {
     callAPI();
-  }, []);
+  }, [sortParams, pageParams, filterParams, selectedGenre]);
 
   // Map column objects to actual columns
   const dynamicColumns = COLUMNS.map((col) => {

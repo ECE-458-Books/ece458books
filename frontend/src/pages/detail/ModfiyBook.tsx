@@ -20,8 +20,8 @@ export default function BookDetail() {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const detailState = location.state! as BookDetailState;
   const [title, setTitle] = useState(detailState.book.title);
-  const [authors, setAuthors] = useState(detailState.book.authors);
-  const [isbn, setISBN] = useState(detailState.book.isbn13);
+  const [authors, setAuthors] = useState(detailState.book.author);
+  const [isbn, setISBN] = useState(detailState.book.isbn);
   const [publisher, setPublisher] = useState(detailState.book.publisher);
   const [pubYear, setPubYear] = useState(detailState.book.publishedYear);
   const [pageCount, setPageCount] = useState(detailState.book.pageCount);

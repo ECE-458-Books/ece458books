@@ -99,27 +99,17 @@ export default function BookDetail() {
 
   return (
     <div>
-      <h1>Modify Book</h1>
+      <h1 className="p-component p-text-secondary">Book Details</h1>
       <form onSubmit={formik.handleSubmit}>
         <Toast ref={toast} />
         <div className="card">
           <div className="flex flex-column card-container">
-            <ToggleButton
-              className="flex align-items-center justify-content-center w-3"
-              id="modifyBookToggle"
-              name="modifyBookToggle"
-              onLabel="Modifiable"
-              offLabel="Modify"
-              onIcon="pi pi-check"
-              offIcon="pi pi-times"
-              checked={isModifiable}
-              onChange={() => setIsModifiable(!isModifiable)}
-            />
-
-            <label htmlFor="title">Title</label>
+            <label className="p-component p-text-secondary" htmlFor="title">
+              Title
+            </label>
             <InputText
               id="title"
-              className="p-inputtext-sm flex align-items-center justify-content-center w-3"
+              className="p-inputtext-sm flex align-items-center justify-content-center w-3 pb-2"
               name="title"
               value={title}
               disabled={true}
@@ -128,19 +118,23 @@ export default function BookDetail() {
               }}
             />
 
-            <label htmlFor="authors">Authors</label>
+            <label className="p-component p-text-secondary" htmlFor="authors">
+              Authors
+            </label>
             <InputText
               id="authors"
               className="p-inputtext-sm flex align-items-center justify-content-center w-3"
               name="authors"
-              value={authors[0]}
+              value={authors}
               disabled={true}
               onChange={(event: FormEvent<HTMLInputElement>): void => {
                 setAuthors(event.currentTarget.value);
               }}
             />
 
-            <label htmlFor="isbn13">ISBN13</label>
+            <label className="p-component p-text-secondary" htmlFor="isbn13">
+              ISBN13
+            </label>
             <InputNumber
               id="isbn13"
               className="p-inputtext-sm flex align-items-center justify-content-center w-3"
@@ -152,7 +146,9 @@ export default function BookDetail() {
               }
             />
 
-            <label htmlFor="isbn10">ISBN10</label>
+            <label className="p-component p-text-secondary" htmlFor="isbn10">
+              ISBN10
+            </label>
             <InputNumber
               id="isbn10"
               className="p-inputtext-sm flex align-items-center justify-content-center w-3"
@@ -164,7 +160,9 @@ export default function BookDetail() {
               }
             />
 
-            <label htmlFor="publisher">Publisher</label>
+            <label className="p-component p-text-secondary" htmlFor="publisher">
+              Publisher
+            </label>
             <InputText
               id="publisher"
               className="p-inputtext-sm flex align-items-center justify-content-center w-3"
@@ -176,7 +174,9 @@ export default function BookDetail() {
               }}
             />
 
-            <label htmlFor="pubYear">Publication Year</label>
+            <label className="p-component p-text-secondary" htmlFor="pubYear">
+              Publication Year
+            </label>
             <InputNumber
               id="pubYear"
               className="p-inputtext-sm flex align-items-center justify-content-center w-3"
@@ -188,7 +188,9 @@ export default function BookDetail() {
               }
             />
 
-            <label htmlFor="pageCount">Page Count</label>
+            <label className="p-component p-text-secondary" htmlFor="pageCount">
+              Page Count
+            </label>
             <InputNumber
               id="pageCount"
               className="p-inputtext-sm flex align-items-center justify-content-center w-3"
@@ -200,7 +202,9 @@ export default function BookDetail() {
               }
             />
 
-            <label htmlFor="width">Dimensions</label>
+            <label className="p-component p-text-secondary" htmlFor="width">
+              Dimensions
+            </label>
             <InputNumber
               id="width"
               className="p-inputtext-sm flex align-items-center justify-content-center w-3"
@@ -212,7 +216,9 @@ export default function BookDetail() {
               }
             />
 
-            <label htmlFor="height">Dimensions</label>
+            <label className="p-component p-text-secondary" htmlFor="height">
+              Dimensions
+            </label>
             <InputNumber
               id="height"
               className="p-inputtext-sm flex align-items-center justify-content-center w-3"
@@ -224,7 +230,9 @@ export default function BookDetail() {
               }
             />
 
-            <label htmlFor="thickness">Dimensions</label>
+            <label className="p-component p-text-secondary" htmlFor="thickness">
+              Dimensions
+            </label>
             <InputNumber
               id="thickness"
               className="p-inputtext-sm flex align-items-center justify-content-center w-3"
@@ -236,7 +244,12 @@ export default function BookDetail() {
               }
             />
 
-            <label htmlFor="retailPrice">Retail Price</label>
+            <label
+              className="p-component p-text-secondary"
+              htmlFor="retailPrice"
+            >
+              Retail Price
+            </label>
             <InputNumber
               id="retailPrice"
               className="p-inputtext-sm flex align-items-center justify-content-center w-3"
@@ -248,7 +261,9 @@ export default function BookDetail() {
               }
             />
 
-            <label htmlFor="genre">Genre</label>
+            <label className="p-component p-text-secondary" htmlFor="genre">
+              Genre
+            </label>
             <InputText
               id="genre"
               className="p-inputtext-sm flex align-items-center justify-content-center w-3"
@@ -258,6 +273,18 @@ export default function BookDetail() {
               onChange={(event: FormEvent<HTMLInputElement>): void => {
                 setGenre(event.currentTarget.value);
               }}
+            />
+
+            <ToggleButton
+              className="flex align-items-center justify-content-center w-1"
+              id="modifyBookToggle"
+              name="modifyBookToggle"
+              onLabel="Modifiable"
+              offLabel="Modify"
+              onIcon="pi pi-check"
+              offIcon="pi pi-times"
+              checked={isModifiable}
+              onChange={() => setIsModifiable(!isModifiable)}
             />
 
             <ConfirmButton

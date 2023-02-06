@@ -54,12 +54,11 @@ INSTALLED_APPS = [
     'books',
     "genres",
     'vendors',
+    'purchase_orders',
+    'sales',
 
     # Authentication App
     'authapp',
-
-    # Sales App
-    'sales',
 
     # add REST Framework
     'corsheaders',

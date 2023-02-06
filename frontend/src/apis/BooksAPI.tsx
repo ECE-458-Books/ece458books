@@ -113,33 +113,10 @@ export const BOOKS_API = {
   },
 
   addBookInitialLookup: async function (isbns: string) {
-    const response = await API.request({
+    await API.request({
       url: BOOKS_EXTENSION.concat("isbns"),
       method: METHOD_POST,
       data: { isbns: isbns },
-    });
-
-    // Convert response to internal data type (not strictly necessary, but I think good practice)
-    const books = response.data.results.map((book: APIBook) => {
-      return {
-        id: book.id,
-        title: book.title,
-        authors: book.authors,
-        genres: book.genres,
-        isbn13: book.isbn_13,
-        isbn10: book.isbn_10,
-        publisher: book.publisher,
-        publishedYear: book.publishedDate,
-        pageCount: book.pageCount,
-        width: book.width,
-        height: book.height,
-        thickness: book.thickness,
-        retailPrice: book.retail_price,
-      };
-    });
-
-    return Promise.resolve({
-      books: books,
     });
   },
 

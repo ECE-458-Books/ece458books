@@ -111,7 +111,6 @@ export default function GenreList() {
       (selectGenre) => selectedDeleteGenre.id != selectGenre.id
     );
     setGenres(_genres);
-    logger.debug("Delete Genre Completed", selectedDeleteGenre);
     setDeletePopupVisible(false);
     setSelectedDeleteGenre(emptyGenre);
   };

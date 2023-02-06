@@ -107,7 +107,6 @@ export default function VendorList() {
       (selectVendor) => selectedDeleteVendor.id != selectVendor.id
     );
     setVendors(_vendors);
-    logger.debug("Delete Vendor Completed", selectedDeleteVendor);
     setDeletePopupVisible(false);
     setSelectedDeleteVendor(emptyVendor);
   };

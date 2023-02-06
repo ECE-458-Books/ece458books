@@ -19,6 +19,12 @@ class ListCreatePurchaseOrderAPIView(ListCreateAPIView):
     ordering_fields = '__all__'
     ordering = ['id']
 
+    def paginate_queryset(self, queryset):
+        if 'no_pagination' in self.request.query_params:
+            return None
+        else:
+            return super().paginate_queryset(queryset)
+
     def create(self, request, *args, **kwargs):
         serializer = PurchaseOrderSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

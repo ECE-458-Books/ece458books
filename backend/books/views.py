@@ -81,6 +81,12 @@ class ListCreateBookAPIView(ListCreateAPIView):
     ordering = ['id']
     search_fields = ['authors__name', 'title', '=publisher', '=isbn_10', '=isbn_13']
 
+    def paginate_queryset(self, queryset):
+        if 'no_pagination' in self.request.query_params:
+            return None
+        else:
+            return super().paginate_queryset(queryset)
+
     # Override default create method
     def create(self, request, *args, **kwargs):
         # Need to handle creating authors and genres if not present in DB

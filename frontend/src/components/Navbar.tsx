@@ -82,7 +82,7 @@ function NavigationBar() {
         {
           label: "Add",
           icon: "pi pi-fw pi-plus",
-          command: () => navigate("/sales-reconciliations/detail"),
+          command: () => navigate("/sales-reconciliations/add"),
         },
       ],
     },

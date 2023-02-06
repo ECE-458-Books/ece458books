@@ -11,6 +11,7 @@ import {
 import { BOOKS_API } from "../../apis/BooksAPI";
 import { FormikErrors, useFormik } from "formik";
 import { Toast } from "primereact/toast";
+import { logger } from "../../util/Logger";
 
 export interface BookDetailState {
   book: Book;
@@ -77,7 +78,7 @@ export default function BookDetail() {
       return errors;
     },
     onSubmit: () => {
-      BOOKS_API.modifyBook({
+      const book: Book = {
         id: id,
         title: title,
         author: authors,
@@ -91,7 +92,9 @@ export default function BookDetail() {
         width: width,
         height: height,
         thickness: thickness,
-      });
+      };
+      logger.debug("Submitting Book Modify", book);
+      BOOKS_API.modifyBook(book);
       showSuccess();
       formik.resetForm();
     },
@@ -279,8 +282,8 @@ export default function BookDetail() {
               className="flex align-items-center justify-content-center w-1"
               id="modifyBookToggle"
               name="modifyBookToggle"
-              onLabel="Modifiable"
-              offLabel="Modify"
+              onLabel="Stop Edit"
+              offLabel="Edit"
               onIcon="pi pi-check"
               offIcon="pi pi-times"
               checked={isModifiable}

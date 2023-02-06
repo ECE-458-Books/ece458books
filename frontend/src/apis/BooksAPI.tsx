@@ -1,3 +1,4 @@
+import { BookWithDBTag } from "../pages/add/BookAdd";
 import { Book } from "../pages/list/BookList";
 import { CommaSeparatedStringToArray } from "../util/StringOperations";
 import {
@@ -37,6 +38,10 @@ interface APIBook {
   height: number;
   thickness: number;
   retail_price: number;
+}
+
+interface APIBookFromAdd extends APIBook {
+  fromDB: boolean;
 }
 
 export interface GetBooksResp {
@@ -120,12 +125,36 @@ export const BOOKS_API = {
     });
   },
 
-  addBookInitialLookup: async function (isbns: string) {
-    await API.request({
-      url: BOOKS_EXTENSION.concat("isbns"),
+  addBookInitialLookup: async function (
+    isbns: string
+  ): Promise<BookWithDBTag[]> {
+    const response = await API.request({
+      url: BOOKS_EXTENSION.concat("isbns").concat("/"),
       method: METHOD_POST,
       data: { isbns: isbns },
     });
+
+    // Convert response to internal data type (not strictly necessary, but I think good practice)
+    const books = response.data.map((book: APIBookFromAdd) => {
+      return {
+        id: book.id,
+        title: book.title,
+        author: book.authors.toString(), // changes from array to comma-separated string
+        genres: book.genres.toString(),
+        isbn_13: book.isbn_13,
+        isbn10: book.isbn_10,
+        publisher: book.publisher,
+        publishedYear: book.publishedDate,
+        pageCount: book.pageCount,
+        width: book.width,
+        height: book.height,
+        thickness: book.thickness,
+        retailPrice: book.retail_price,
+        fromDB: book.fromDB,
+      } as BookWithDBTag;
+    });
+
+    return Promise.resolve(books);
   },
 
   addBookFinal: async function (book: Book) {

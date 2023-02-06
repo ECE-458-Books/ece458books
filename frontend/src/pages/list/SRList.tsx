@@ -114,6 +114,7 @@ export default function SalesReconciliationList() {
     const detailState: SRDetailState = {
       date: sr.date,
       data: sr.sales,
+      isAddPage: false,
       isModifiable: false,
       isConfirmationPopupVisible: false,
     };

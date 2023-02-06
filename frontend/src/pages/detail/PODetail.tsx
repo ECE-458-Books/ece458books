@@ -22,6 +22,7 @@ export interface PODetailState {
   date: any;
   data: POPurchaseRow[];
   vendor: string;
+  isAddPage: boolean;
   isModifiable: boolean;
   isConfirmationPopupVisible: boolean;
 }
@@ -68,11 +69,26 @@ export default function PODetail() {
 
   const location = useLocation();
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const detailState = location.state! as PODetailState;
+  const detailState = (location.state! as PODetailState) ?? {
+    date: new Date(),
+    vendor: "",
+    data: [
+      {
+        rowID: uuid(),
+        books: "",
+        quantity: 1,
+        retailPrice: 0,
+      },
+    ],
+    isAddPage: true,
+    isModifiable: true,
+    isConfirmationPopupVisible: false,
+  };
   const [date, setDate] = useState(detailState.date);
   const [vendor, setVendor] = useState(detailState.vendor);
   const [data, setData] = useState(detailState.data);
   const [lineData, setLineData] = useState(emptyProduct);
+  const [isAddPage, setisAddPage] = useState(detailState.isAddPage);
   const [isModifiable, setIsModifiable] = useState(detailState.isModifiable);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] = useState(
     detailState.isConfirmationPopupVisible
@@ -156,23 +172,30 @@ export default function PODetail() {
   };
 
   const onSubmit = (): void => {
-    setIsModifiable(false);
+    if (isAddPage) {
+      console.log("Add Page is submitted");
+    } else {
+      setIsModifiable(false);
+    }
   };
 
   return (
     <div>
-      <h1>Modify Purchase Order</h1>
+      {isAddPage ? <h1>Add Purchase Order</h1> : <h1>Modify Purchase Order</h1>}
       <form onSubmit={onSubmit}>
-        <ToggleButton
-          id="modifyPOToggle"
-          name="modifyPOToggle"
-          onLabel="Modifiable"
-          offLabel="Modify"
-          onIcon="pi pi-check"
-          offIcon="pi pi-times"
-          checked={isModifiable}
-          onChange={() => setIsModifiable(!isModifiable)}
-        />
+        {!isAddPage && (
+          <ToggleButton
+            id="modifyPOToggle"
+            name="modifyPOToggle"
+            onLabel="Modifiable"
+            offLabel="Modify"
+            onIcon="pi pi-check"
+            offIcon="pi pi-times"
+            disabled={isAddPage}
+            checked={isModifiable}
+            onChange={() => setIsModifiable(!isModifiable)}
+          />
+        )}
 
         <label htmlFor="date">Date</label>
         <Calendar

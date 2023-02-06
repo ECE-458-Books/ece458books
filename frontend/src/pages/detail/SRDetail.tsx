@@ -20,6 +20,7 @@ import { Button } from "primereact/button";
 export interface SRDetailState {
   date: any;
   data: SRSaleRow[];
+  isAddPage: boolean;
   isModifiable: boolean;
   isConfirmationPopupVisible: boolean;
 }
@@ -52,10 +53,24 @@ export default function SRDetail() {
 
   const location = useLocation();
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const detailState = location.state! as SRDetailState;
+  const detailState = (location.state! as SRDetailState) ?? {
+    date: new Date(),
+    data: [
+      {
+        rowID: uuid(),
+        books: "",
+        quantity: 1,
+        retailPrice: 0,
+      },
+    ],
+    isAddPage: true,
+    isModifiable: true,
+    isConfirmationPopupVisible: false,
+  };
   const [date, setDate] = useState(detailState.date);
   const [data, setData] = useState(detailState.data);
   const [lineData, setLineData] = useState(emptyProduct);
+  const [isAddPage, setisAddPage] = useState(detailState.isAddPage);
   const [isModifiable, setIsModifiable] = useState(detailState.isModifiable);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] = useState(
     detailState.isConfirmationPopupVisible
@@ -139,23 +154,34 @@ export default function SRDetail() {
   };
 
   const onSubmit = (): void => {
-    setIsModifiable(false);
+    if (isAddPage) {
+      console.log("Add page state submit");
+    } else {
+      setIsModifiable(false);
+    }
   };
 
   return (
     <div>
-      <h1>Modify Sales Reconciliation</h1>
+      {isAddPage ? (
+        <h1>Add Sales Reconciliation</h1>
+      ) : (
+        <h1>Modify Sales Reconciliation</h1>
+      )}
       <form id="localForm">
-        <ToggleButton
-          id="modifySRToggle"
-          name="modifySRToggle"
-          onLabel="Modifiable"
-          offLabel="Modify"
-          onIcon="pi pi-check"
-          offIcon="pi pi-times"
-          checked={isModifiable}
-          onChange={() => setIsModifiable(!isModifiable)}
-        />
+        {!isAddPage && (
+          <ToggleButton
+            id="modifySRToggle"
+            name="modifySRToggle"
+            onLabel="Modifiable"
+            offLabel="Modify"
+            onIcon="pi pi-check"
+            offIcon="pi pi-times"
+            checked={isModifiable}
+            disabled={isAddPage}
+            onChange={() => setIsModifiable(!isModifiable)}
+          />
+        )}
 
         <label htmlFor="date">Date</label>
         <Calendar
@@ -167,9 +193,7 @@ export default function SRDetail() {
             setDate(event.value);
           }}
         />
-
         <Toolbar className="mb-4" left={leftToolbarTemplate} />
-
         <DataTable
           value={data}
           className="editable-cells-table"
@@ -209,7 +233,6 @@ export default function SRDetail() {
           disabled={!isModifiable}
           label={"Submit"}
         />
-
         {/* Maybe be needed in case the confrim button using the popup breaks */}
         {/* <Button type="submit" onClick={this.onSubmit} /> */}
       </form>

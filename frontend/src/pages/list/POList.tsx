@@ -118,6 +118,7 @@ export default function PurchaseOrderList() {
       date: po.date,
       data: po.purchases,
       vendor: po.vendorName,
+      isAddPage: false,
       isModifiable: false,
       isConfirmationPopupVisible: false,
     };

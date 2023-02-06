@@ -73,7 +73,7 @@ export const GENRES_API = {
     };
 
     await API.request({
-      url: GENRES_EXTENSION.concat(genre.id.toString().concat("/")),
+      url: GENRES_EXTENSION.concat(genre.id.toString()),
       method: METHOD_PATCH,
       data: genreParams,
     });

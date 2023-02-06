@@ -1,14 +1,13 @@
-import React, { FormEvent, useState } from "react";
+import React, { FormEvent, ReactNode, useState } from "react";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Button } from "primereact/button";
 import { DataTable } from "primereact/datatable";
-import { Column, ColumnEditorOptions } from "primereact/column";
+import { Column, ColumnEditorOptions, ColumnEvent } from "primereact/column";
 import {
   isPositiveInteger,
   numberEditor,
   priceBodyTemplate,
   priceEditor,
-  textEditor,
 } from "../../util/TableCellEditFuncs";
 import { BOOKS_API } from "../../apis/BooksAPI";
 import { Book } from "../list/BookList";
@@ -24,7 +23,9 @@ interface TableColumn {
   header: string;
   filterPlaceholder?: string;
   hidden?: boolean;
-  customBody?: (arg0: BookWithDBTag) => JSX.Element;
+  customBody?: any; // TODO: Remove this after ev 1
+  cellEditValidator?: (event: ColumnEvent) => boolean;
+  cellEditor?: (options: ColumnEditorOptions) => ReactNode;
 }
 
 export default function BookAdd() {
@@ -33,9 +34,9 @@ export default function BookAdd() {
 
   const statusTemplate = (rowData: BookWithDBTag) => {
     if (rowData.fromDB) {
-      return <Badge value="Already Exists"></Badge>;
+      return <Badge value="Exists"></Badge>;
     } else {
-      return <Badge value="New Book" severity="success"></Badge>;
+      return <Badge value="New" severity="success"></Badge>;
     }
   };
 
@@ -46,102 +47,101 @@ export default function BookAdd() {
       header: "Book Status",
       filterPlaceholder: "Search by Book Status",
       customBody: statusTemplate,
+      cellEditValidator: () => false,
     },
-    { field: "id", header: "ID", filterPlaceholder: "Search by ID" },
-    { field: "title", header: "Title", filterPlaceholder: "Search by Title" },
+    {
+      field: "id",
+      header: "ID",
+      filterPlaceholder: "Search by ID",
+      cellEditValidator: () => false,
+    },
+    {
+      field: "title",
+      header: "Title",
+      filterPlaceholder: "Search by Title",
+      cellEditValidator: () => false,
+    },
     {
       field: "author",
       header: "Authors",
       filterPlaceholder: "Search by Authors",
+      cellEditValidator: () => false,
     },
     {
       field: "genres",
       header: "Genre",
       filterPlaceholder: "Search by Genre",
     },
-    { field: "isbn_13", header: "ISBN", filterPlaceholder: "Search by ISBN" },
+    {
+      field: "isbn_13",
+      header: "ISBN",
+      filterPlaceholder: "Search by ISBN",
+      cellEditValidator: () => false,
+    },
     {
       field: "isbn10",
       header: "ISBN",
       filterPlaceholder: "Search by ISBN",
+      cellEditValidator: () => false,
     },
     {
       field: "publisher",
       header: "Publisher",
       filterPlaceholder: "Search by Publisher",
+      cellEditValidator: () => false,
     },
     {
       field: "publishedYear",
       header: "Publication Year",
       filterPlaceholder: "Search by Publication Year",
+      cellEditValidator: () => false,
     },
     {
       field: "pageCount",
       header: "Page Count",
       filterPlaceholder: "Search by Page Count",
       hidden: true,
+      cellEditValidator: (event: ColumnEvent) =>
+        isPositiveInteger(event.newValue),
+      cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
     },
     {
       field: "width",
       header: "Width",
       filterPlaceholder: "Search by Width",
+      cellEditValidator: (event: ColumnEvent) =>
+        isPositiveInteger(event.newValue),
+      cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
     },
     {
       field: "height",
       header: "Height",
       filterPlaceholder: "Search by Height",
+      cellEditValidator: (event: ColumnEvent) =>
+        isPositiveInteger(event.newValue),
+      cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
     },
     {
       field: "thickness",
       header: "Thickness",
       filterPlaceholder: "Search by Thickness",
+      cellEditValidator: (event: ColumnEvent) =>
+        isPositiveInteger(event.newValue),
+      cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
     },
     {
       field: "retailPrice",
       header: "Retail Price",
       filterPlaceholder: "Search by Price",
+      customBody: priceBodyTemplate,
+      cellEditValidator: (event: ColumnEvent) =>
+        isPositiveInteger(event.newValue),
+      cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
     },
   ];
 
-  const onCellEditComplete = (e: {
-    rowData: any;
-    newValue: any;
-    field: string;
-    originalEvent: React.SyntheticEvent;
-  }) => {
-    const { rowData, newValue, field, originalEvent: event } = e;
-
-    switch (field) {
-      case "pubYear":
-        if (isPositiveInteger(newValue)) rowData[field] = newValue;
-        else event.preventDefault();
-        break;
-      case "pageCount":
-        if (isPositiveInteger(newValue)) rowData[field] = newValue;
-        else event.preventDefault();
-        break;
-      case "retailPrice":
-        if (isPositiveInteger(newValue)) rowData[field] = newValue;
-        else event.preventDefault();
-        break;
-      default:
-        if (newValue.trim().length > 0) rowData[field] = newValue;
-        else event.preventDefault();
-        break;
-    }
-  };
-
-  const cellEditor = (options: ColumnEditorOptions) => {
-    switch (options.field) {
-      case "pubYear":
-        return numberEditor(options);
-      case "pageCount":
-        return numberEditor(options);
-      case "retailPrice":
-        return priceEditor(options);
-      default:
-        return textEditor(options);
-    }
+  const onCellEditComplete = (event: ColumnEvent) => {
+    event.rowData[event.field] = event.newValue;
   };
 
   const onISBNInitialSubmit = (event: FormEvent<HTMLFormElement>): void => {
@@ -161,19 +161,22 @@ export default function BookAdd() {
     }
   };
 
-  const columns = COLUMNS.map(({ field, header }) => {
-    return (
-      <Column
-        key={field}
-        field={field}
-        header={header}
-        style={{ width: "25%" }}
-        body={field === "retailPrice" && priceBodyTemplate}
-        editor={(options) => cellEditor(options)}
-        onCellEditComplete={onCellEditComplete}
-      />
-    );
-  });
+  const columns = COLUMNS.map(
+    ({ field, header, customBody, cellEditValidator, cellEditor }) => {
+      return (
+        <Column
+          key={field}
+          field={field}
+          header={header}
+          style={{ width: "25%" }}
+          body={customBody}
+          cellEditValidator={cellEditValidator}
+          editor={cellEditor}
+          onCellEditComplete={onCellEditComplete}
+        />
+      );
+    }
+  );
 
   //Two Forms exist in order for the seperate submission of two seperate types of data.
   //First one is the submission of ISBNS that need to be added

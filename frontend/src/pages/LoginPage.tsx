@@ -32,7 +32,7 @@ class LoginPage extends React.Component<LoginProps, LoginState> {
   // Hits the token endpoint, and stores the token in local storage. Displays incorrect password text if error returned from endpoint
   onSubmit = (event: FormEvent<HTMLFormElement>): void => {
     const reqOpts = {
-      url: "http://books-dev.colab.duke.edu:8000/api/v1/auth/users/login/",
+      url: "http://books-dev.colab.duke.edu:8000/api/v1/auth/users/login",
       headers: { "Content-Type": "application/json" },
       method: "POST",
       data: JSON.stringify({

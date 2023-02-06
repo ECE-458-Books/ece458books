@@ -9,7 +9,7 @@ import {
   METHOD_POST,
 } from "./Config";
 
-const BOOKS_EXTENSION = "books/";
+const BOOKS_EXTENSION = "books";
 
 interface GetBooksReq {
   page: number;
@@ -96,7 +96,7 @@ export const BOOKS_API = {
 
   deleteBook: async function (id: number) {
     await API.request({
-      url: BOOKS_EXTENSION.concat(id.toString()),
+      url: BOOKS_EXTENSION.concat("/".concat(id.toString())),
       method: METHOD_DELETE,
     });
   },
@@ -119,7 +119,7 @@ export const BOOKS_API = {
     } as APIBook;
 
     await API.request({
-      url: BOOKS_EXTENSION.concat(book.id.toString()),
+      url: BOOKS_EXTENSION.concat("/".concat(book.id.toString())),
       method: METHOD_PATCH,
       data: bookParams,
     });
@@ -129,18 +129,18 @@ export const BOOKS_API = {
     isbns: string
   ): Promise<BookWithDBTag[]> {
     const response = await API.request({
-      url: BOOKS_EXTENSION.concat("isbns"),
+      url: BOOKS_EXTENSION.concat("/isbns"),
       method: METHOD_POST,
       data: { isbns: isbns },
     });
 
     // Convert response to internal data type (not strictly necessary, but I think good practice)
-    const books = response.data.map((book: APIBookFromAdd) => {
+    const books = response.data.books.map((book: APIBookFromAdd) => {
       return {
         id: book.id,
         title: book.title,
         author: book.authors.toString(), // changes from array to comma-separated string
-        genres: book.genres.toString(),
+        genres: (book.genres ?? "").toString(), // Doesn't exist on new book, so can't call toString directly
         isbn_13: book.isbn_13,
         isbn10: book.isbn_10,
         publisher: book.publisher,

@@ -7,7 +7,7 @@ import {
   METHOD_POST,
 } from "./Config";
 
-const SALES_EXTENSION = "sales/";
+const SALES_EXTENSION = "sales/sales_reconciliation/";
 
 interface GetSalesReconciliationsReq {
   page: number;

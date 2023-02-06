@@ -17,14 +17,15 @@ import { useLocation } from "react-router-dom";
 import { Toolbar } from "primereact/toolbar";
 import { Button } from "primereact/button";
 
-interface SRDetailState {
+export interface SRDetailState {
   date: any;
   data: SRSaleRow[];
+  isAddPageState: boolean;
   isModifiable: boolean;
   isConfirmationPopupVisible: boolean;
 }
 
-interface SRSaleRow {
+export interface SRSaleRow {
   rowID: string;
   books: string;
   quantity: number;
@@ -56,6 +57,9 @@ export default function SRDetail() {
   const [date, setDate] = useState(detailState.date);
   const [data, setData] = useState(detailState.data);
   const [lineData, setLineData] = useState(emptyProduct);
+  const [isAddPageState, setIsAddPageState] = useState(
+    detailState.isAddPageState
+  );
   const [isModifiable, setIsModifiable] = useState(detailState.isModifiable);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] = useState(
     detailState.isConfirmationPopupVisible
@@ -139,7 +143,11 @@ export default function SRDetail() {
   };
 
   const onSubmit = (): void => {
-    setIsModifiable(false);
+    if (isAddPageState) {
+      console.log("Add page state submit");
+    } else {
+      setIsModifiable(false);
+    }
   };
 
   return (
@@ -154,6 +162,8 @@ export default function SRDetail() {
           onIcon="pi pi-check"
           offIcon="pi pi-times"
           checked={isModifiable}
+          hidden={isAddPageState}
+          disabled={isAddPageState}
           onChange={() => setIsModifiable(!isModifiable)}
         />
 

@@ -1,6 +1,5 @@
 from urllib.request import urlopen
 import json
-from pprint import pprint
 from isbnlib import *
 from dateutil import parser
 

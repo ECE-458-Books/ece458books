@@ -22,6 +22,7 @@ export interface PODetailState {
   date: any;
   data: POPurchaseRow[];
   vendor: string;
+  isAddPageState: boolean;
   isModifiable: boolean;
   isConfirmationPopupVisible: boolean;
 }
@@ -68,11 +69,28 @@ export default function PODetail() {
 
   const location = useLocation();
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const detailState = location.state! as PODetailState;
+  const detailState = (location.state! as PODetailState) ?? {
+    date: new Date(),
+    vendor: "",
+    data: [
+      {
+        rowID: uuid(),
+        books: "",
+        quantity: 1,
+        retailPrice: 0,
+      },
+    ],
+    isAddPageState: true,
+    isModifiable: true,
+    isConfirmationPopupVisible: false,
+  };
   const [date, setDate] = useState(detailState.date);
   const [vendor, setVendor] = useState(detailState.vendor);
   const [data, setData] = useState(detailState.data);
   const [lineData, setLineData] = useState(emptyProduct);
+  const [isAddPageState, setIsAddPageState] = useState(
+    detailState.isAddPageState
+  );
   const [isModifiable, setIsModifiable] = useState(detailState.isModifiable);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] = useState(
     detailState.isConfirmationPopupVisible
@@ -156,7 +174,11 @@ export default function PODetail() {
   };
 
   const onSubmit = (): void => {
-    setIsModifiable(false);
+    if (isAddPageState) {
+      console.log("Add Page is submitted");
+    } else {
+      setIsModifiable(false);
+    }
   };
 
   return (
@@ -170,6 +192,7 @@ export default function PODetail() {
           offLabel="Modify"
           onIcon="pi pi-check"
           offIcon="pi pi-times"
+          disabled={isAddPageState}
           checked={isModifiable}
           onChange={() => setIsModifiable(!isModifiable)}
         />

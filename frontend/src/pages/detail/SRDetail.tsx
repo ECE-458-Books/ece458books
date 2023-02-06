@@ -53,7 +53,20 @@ export default function SRDetail() {
 
   const location = useLocation();
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const detailState = location.state! as SRDetailState;
+  const detailState = (location.state! as SRDetailState) ?? {
+    date: new Date(),
+    data: [
+      {
+        rowID: uuid(),
+        books: "",
+        quantity: 1,
+        retailPrice: 0,
+      },
+    ],
+    isAddPageState: true,
+    isModifiable: true,
+    isConfirmationPopupVisible: false,
+  };
   const [date, setDate] = useState(detailState.date);
   const [data, setData] = useState(detailState.data);
   const [lineData, setLineData] = useState(emptyProduct);
@@ -154,18 +167,19 @@ export default function SRDetail() {
     <div>
       <h1>Modify Sales Reconciliation</h1>
       <form id="localForm">
-        <ToggleButton
-          id="modifySRToggle"
-          name="modifySRToggle"
-          onLabel="Modifiable"
-          offLabel="Modify"
-          onIcon="pi pi-check"
-          offIcon="pi pi-times"
-          checked={isModifiable}
-          hidden={isAddPageState}
-          disabled={isAddPageState}
-          onChange={() => setIsModifiable(!isModifiable)}
-        />
+        {isAddPageState ? (
+          <ToggleButton
+            id="modifySRToggle"
+            name="modifySRToggle"
+            onLabel="Modifiable"
+            offLabel="Modify"
+            onIcon="pi pi-check"
+            offIcon="pi pi-times"
+            checked={isModifiable}
+            disabled={isAddPageState}
+            onChange={() => setIsModifiable(!isModifiable)}
+          />
+        ) : null}
 
         <label htmlFor="date">Date</label>
         <Calendar
@@ -177,9 +191,7 @@ export default function SRDetail() {
             setDate(event.value);
           }}
         />
-
         <Toolbar className="mb-4" left={leftToolbarTemplate} />
-
         <DataTable
           value={data}
           className="editable-cells-table"
@@ -219,7 +231,6 @@ export default function SRDetail() {
           disabled={!isModifiable}
           label={"Submit"}
         />
-
         {/* Maybe be needed in case the confrim button using the popup breaks */}
         {/* <Button type="submit" onClick={this.onSubmit} /> */}
       </form>

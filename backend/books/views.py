@@ -31,11 +31,13 @@ class ISBNSearchView(APIView):
 
         # Split ISBN with spaces and/or commas
         raw_isbn_list = re.split("\s?[, ]\s?", serializer.data['isbns'].strip())
-
         # Convert all ISBN to ISBN-13
         parsed_isbn_list = self.isbn_toolbox.parse_raw_isbn_list(raw_isbn_list)
 
-        data_populated_isbn_list = []
+        data_populated_isbns = {
+            "books": [],
+            "invalid_isbns": [],
+        }
 
         # Fetch from DB if exist or else get from External DB such as Google Books
         for isbn in parsed_isbn_list:
@@ -44,12 +46,16 @@ class ISBNSearchView(APIView):
             # If ISBN exist in DB get from DB
             if(len(query_set) == 0):
                 # Get book data from external source
-                data_populated_isbn_list.append(self.isbn_toolbox.fetch_isbn_data(isbn))
+                external_data = self.isbn_toolbox.fetch_isbn_data(isbn)
+                if "Invalid ISBN" in external_data:
+                    data_populated_isbns['invalid_isbns'].append(isbn)
+                else:
+                    data_populated_isbns['books'].append(external_data)
             else:
                 # get book data from DB
-                data_populated_isbn_list.append(self.parseDBBookModel(query_set[0]))
+                data_populated_isbns['books'].append(self.parseDBBookModel(query_set[0]))
 
-        return Response(data_populated_isbn_list)
+        return Response(data_populated_isbns)
     
     def parseDBBookModel(self, book):
         # Returns a parsed Book json from Book Model

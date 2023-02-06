@@ -5,5 +5,5 @@ app_name='genres'
 
 urlpatterns = [
     path('', ListCreateGenreAPIView.as_view()),
-    path('<id>/', RetrieveUpdateDestroyGenreAPIView.as_view()),
+    path('/<id>', RetrieveUpdateDestroyGenreAPIView.as_view()),
 ]

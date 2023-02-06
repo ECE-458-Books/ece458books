@@ -19,10 +19,10 @@ api_version = 1
 api_prefix = f'api/v{api_version}/'
 
 urlpatterns = [
-    path(f'{api_prefix}books/', include('books.urls')),
-    path(f'{api_prefix}genres/', include('genres.urls')),
-    path(f'{api_prefix}vendors/', include('vendors.urls')),
-    path(f'{api_prefix}sales/', include('sales.urls')),
-    path(f'{api_prefix}purchase_orders/', include('purchase_orders.urls')),
-    path(f'{api_prefix}auth/', include('authapp.urls', namespace='authentication')),
+    path(f'{api_prefix}books', include('books.urls')),
+    path(f'{api_prefix}genres', include('genres.urls')),
+    path(f'{api_prefix}vendors', include('vendors.urls')),
+    path(f'{api_prefix}sales', include('sales.urls')),
+    path(f'{api_prefix}purchase_orders', include('purchase_orders.urls')),
+    path(f'{api_prefix}auth', include('authapp.urls', namespace='authentication')),
 ]

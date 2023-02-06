@@ -83,6 +83,7 @@ export default function VendorList() {
   const editVendor = (vendor: Vendor) => {
     logger.debug("Edit Vendor Clicked", vendor);
     const detailState: VendorDetailState = {
+      id: vendor.id,
       vendor: vendor.name,
       isModifiable: false,
       isConfirmationPopupVisible: false,
@@ -101,6 +102,11 @@ export default function VendorList() {
   // Call to actually delete the element
   const deleteVendorFinal = () => {
     logger.debug("Delete Vendor Finalized", selectedDeleteVendor);
+    VENDORS_API.deleteVendor(selectedDeleteVendor.id.toString());
+    const _vendors = vendors.filter(
+      (selectVendor) => selectedDeleteVendor.id != selectVendor.id
+    );
+    setVendors(_vendors);
     setDeletePopupVisible(false);
     setSelectedDeleteVendor(emptyVendor);
   };

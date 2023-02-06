@@ -4,7 +4,7 @@ from .views import ISBNSearchView, ListCreateBookAPIView, RetrieveUpdateDestroyB
 app_name='books'
 
 urlpatterns = [
-    path('isbns/', ISBNSearchView.as_view()),
-    path('<id>/', RetrieveUpdateDestroyBookAPIView.as_view()),
+    path('/isbns', ISBNSearchView.as_view()),
+    path('/<id>', RetrieveUpdateDestroyBookAPIView.as_view()),
     path('', ListCreateBookAPIView.as_view()),
 ]

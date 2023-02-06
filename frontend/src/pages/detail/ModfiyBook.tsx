@@ -1,4 +1,4 @@
-import React, { createRef, FormEvent, useRef, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { ToggleButton } from "primereact/togglebutton";
 import ConfirmButton from "../../components/ConfirmButton";
@@ -44,6 +44,7 @@ export default function BookDetail() {
     detailState.isConfirmationPopupVisible
   );
 
+  // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
 
   const showSuccess = () => {
@@ -56,10 +57,7 @@ export default function BookDetail() {
 
   // Validation for the form
   const formik = useFormik({
-    initialValues: {
-      genres: genre,
-      retailPrice: price,
-    },
+    initialValues: {},
 
     validate: () => {
       const errors: FormikErrors<ErrorDisplay> = {};
@@ -104,175 +102,179 @@ export default function BookDetail() {
       <h1>Modify Book</h1>
       <form onSubmit={formik.handleSubmit}>
         <Toast ref={toast} />
+        <div className="card">
+          <div className="flex flex-column card-container">
+            <ToggleButton
+              className="flex align-items-center justify-content-center w-3"
+              id="modifyBookToggle"
+              name="modifyBookToggle"
+              onLabel="Modifiable"
+              offLabel="Modify"
+              onIcon="pi pi-check"
+              offIcon="pi pi-times"
+              checked={isModifiable}
+              onChange={() => setIsModifiable(!isModifiable)}
+            />
 
-        <ToggleButton
-          id="modifyBookToggle"
-          name="modifyBookToggle"
-          onLabel="Modifiable"
-          offLabel="Modify"
-          onIcon="pi pi-check"
-          offIcon="pi pi-times"
-          checked={isModifiable}
-          onChange={() => setIsModifiable(!isModifiable)}
-        />
+            <label htmlFor="title">Title</label>
+            <InputText
+              id="title"
+              className="p-inputtext-sm flex align-items-center justify-content-center w-3"
+              name="title"
+              value={title}
+              disabled={true}
+              onChange={(event: FormEvent<HTMLInputElement>): void => {
+                setTitle(event.currentTarget.value);
+              }}
+            />
 
-        <label htmlFor="title">Title</label>
-        <InputText
-          id="title"
-          className="p-inputtext-sm"
-          name="title"
-          value={title}
-          disabled={true}
-          onChange={(event: FormEvent<HTMLInputElement>): void => {
-            setTitle(event.currentTarget.value);
-          }}
-        />
+            <label htmlFor="authors">Authors</label>
+            <InputText
+              id="authors"
+              className="p-inputtext-sm flex align-items-center justify-content-center w-3"
+              name="authors"
+              value={authors[0]}
+              disabled={true}
+              onChange={(event: FormEvent<HTMLInputElement>): void => {
+                setAuthors(event.currentTarget.value);
+              }}
+            />
 
-        <label htmlFor="authors">Authors</label>
-        <InputText
-          id="authors"
-          className="p-inputtext-sm"
-          name="authors"
-          value={authors[0]}
-          disabled={true}
-          onChange={(event: FormEvent<HTMLInputElement>): void => {
-            setAuthors(event.currentTarget.value);
-          }}
-        />
+            <label htmlFor="isbn13">ISBN13</label>
+            <InputNumber
+              id="isbn13"
+              className="p-inputtext-sm flex align-items-center justify-content-center w-3"
+              name="isbn13"
+              value={isbn13}
+              disabled={true}
+              onValueChange={(e: InputNumberValueChangeEvent) =>
+                setISBN13(e.value ?? 0)
+              }
+            />
 
-        <label htmlFor="isbn13">ISBN13</label>
-        <InputNumber
-          id="isbn13"
-          className="p-inputtext-sm"
-          name="isbn13"
-          value={isbn13}
-          disabled={true}
-          onValueChange={(e: InputNumberValueChangeEvent) =>
-            setISBN13(e.value ?? 0)
-          }
-        />
+            <label htmlFor="isbn10">ISBN10</label>
+            <InputNumber
+              id="isbn10"
+              className="p-inputtext-sm flex align-items-center justify-content-center w-3"
+              name="isbn10"
+              value={isbn10}
+              disabled={true}
+              onValueChange={(e: InputNumberValueChangeEvent) =>
+                setISBN10(e.value ?? 0)
+              }
+            />
 
-        <label htmlFor="isbn10">ISBN10</label>
-        <InputNumber
-          id="isbn10"
-          className="p-inputtext-sm"
-          name="isbn10"
-          value={isbn10}
-          disabled={true}
-          onValueChange={(e: InputNumberValueChangeEvent) =>
-            setISBN10(e.value ?? 0)
-          }
-        />
+            <label htmlFor="publisher">Publisher</label>
+            <InputText
+              id="publisher"
+              className="p-inputtext-sm flex align-items-center justify-content-center w-3"
+              name="publisher"
+              value={publisher}
+              disabled={true}
+              onChange={(event: FormEvent<HTMLInputElement>): void => {
+                setPublisher(event.currentTarget.value);
+              }}
+            />
 
-        <label htmlFor="publisher">Publisher</label>
-        <InputText
-          id="publisher"
-          className="p-inputtext-sm"
-          name="publisher"
-          value={publisher}
-          disabled={true}
-          onChange={(event: FormEvent<HTMLInputElement>): void => {
-            setPublisher(event.currentTarget.value);
-          }}
-        />
+            <label htmlFor="pubYear">Publication Year</label>
+            <InputNumber
+              id="pubYear"
+              className="p-inputtext-sm flex align-items-center justify-content-center w-3"
+              name="pubYear"
+              value={pubYear}
+              disabled={true}
+              onValueChange={(e: InputNumberValueChangeEvent) =>
+                setPubYear(e.value ?? 0)
+              }
+            />
 
-        <label htmlFor="pubYear">Publication Year</label>
-        <InputNumber
-          id="pubYear"
-          className="p-inputtext-sm"
-          name="pubYear"
-          value={pubYear}
-          disabled={true}
-          onValueChange={(e: InputNumberValueChangeEvent) =>
-            setPubYear(e.value ?? 0)
-          }
-        />
+            <label htmlFor="pageCount">Page Count</label>
+            <InputNumber
+              id="pageCount"
+              className="p-inputtext-sm flex align-items-center justify-content-center w-3"
+              name="pageCount"
+              value={pageCount}
+              disabled={!isModifiable}
+              onValueChange={(e: InputNumberValueChangeEvent) =>
+                setPageCount(e.value ?? 0)
+              }
+            />
 
-        <label htmlFor="pageCount">Page Count</label>
-        <InputNumber
-          id="pageCount"
-          className="p-inputtext-sm"
-          name="pageCount"
-          value={pageCount}
-          disabled={!isModifiable}
-          onValueChange={(e: InputNumberValueChangeEvent) =>
-            setPageCount(e.value ?? 0)
-          }
-        />
+            <label htmlFor="width">Dimensions</label>
+            <InputNumber
+              id="width"
+              className="p-inputtext-sm flex align-items-center justify-content-center w-3"
+              name="width"
+              value={width}
+              disabled={!isModifiable}
+              onValueChange={(e: InputNumberValueChangeEvent) =>
+                setWidth(e.value ?? 0)
+              }
+            />
 
-        <label htmlFor="width">Dimensions</label>
-        <InputNumber
-          id="width"
-          className="p-inputtext-sm"
-          name="width"
-          value={width}
-          disabled={!isModifiable}
-          onValueChange={(e: InputNumberValueChangeEvent) =>
-            setWidth(e.value ?? 0)
-          }
-        />
+            <label htmlFor="height">Dimensions</label>
+            <InputNumber
+              id="height"
+              className="p-inputtext-sm flex align-items-center justify-content-center w-3"
+              name="height"
+              value={height}
+              disabled={!isModifiable}
+              onValueChange={(e: InputNumberValueChangeEvent) =>
+                setHeight(e.value ?? 0)
+              }
+            />
 
-        <label htmlFor="height">Dimensions</label>
-        <InputNumber
-          id="height"
-          className="p-inputtext-sm"
-          name="height"
-          value={height}
-          disabled={!isModifiable}
-          onValueChange={(e: InputNumberValueChangeEvent) =>
-            setHeight(e.value ?? 0)
-          }
-        />
+            <label htmlFor="thickness">Dimensions</label>
+            <InputNumber
+              id="thickness"
+              className="p-inputtext-sm flex align-items-center justify-content-center w-3"
+              name="thickness"
+              value={thickness}
+              disabled={!isModifiable}
+              onValueChange={(e: InputNumberValueChangeEvent) =>
+                setThickness(e.value ?? 0)
+              }
+            />
 
-        <label htmlFor="thickness">Dimensions</label>
-        <InputNumber
-          id="thickness"
-          className="p-inputtext-sm"
-          name="thickness"
-          value={thickness}
-          disabled={!isModifiable}
-          onValueChange={(e: InputNumberValueChangeEvent) =>
-            setThickness(e.value ?? 0)
-          }
-        />
+            <label htmlFor="retailPrice">Retail Price</label>
+            <InputNumber
+              id="retailPrice"
+              className="p-inputtext-sm flex align-items-center justify-content-center w-3"
+              name="retailPrice"
+              value={price}
+              disabled={!isModifiable}
+              onValueChange={(e: InputNumberValueChangeEvent) =>
+                setPrice(e.value ?? 0)
+              }
+            />
 
-        <label htmlFor="retailPrice">Retail Price</label>
-        <InputNumber
-          id="retailPrice"
-          className="p-inputtext-sm"
-          name="retailPrice"
-          value={price}
-          disabled={!isModifiable}
-          onValueChange={(e: InputNumberValueChangeEvent) =>
-            setPrice(e.value ?? 0)
-          }
-        />
+            <label htmlFor="genre">Genre</label>
+            <InputText
+              id="genre"
+              className="p-inputtext-sm flex align-items-center justify-content-center w-3"
+              name="genre"
+              value={genre}
+              disabled={!isModifiable}
+              onChange={(event: FormEvent<HTMLInputElement>): void => {
+                setGenre(event.currentTarget.value);
+              }}
+            />
 
-        <label htmlFor="genre">Genre</label>
-        <InputText
-          id="genre"
-          className="p-inputtext-sm"
-          name="genre"
-          value={genre}
-          disabled={!isModifiable}
-          onChange={(event: FormEvent<HTMLInputElement>): void => {
-            setGenre(event.currentTarget.value);
-          }}
-        />
-
-        <ConfirmButton
-          isVisible={isConfirmationPopupVisible}
-          hideFunc={() => setIsConfirmationPopupVisible(false)}
-          acceptFunc={formik.handleSubmit}
-          rejectFunc={() => {
-            console.log("reject");
-          }}
-          buttonClickFunc={() => {
-            setIsConfirmationPopupVisible(true);
-          }}
-          disabled={!isModifiable}
-          label={"Submit"}
-        />
+            <ConfirmButton
+              isVisible={isConfirmationPopupVisible}
+              hideFunc={() => setIsConfirmationPopupVisible(false)}
+              acceptFunc={formik.handleSubmit}
+              rejectFunc={() => {
+                console.log("reject");
+              }}
+              buttonClickFunc={() => {
+                setIsConfirmationPopupVisible(true);
+              }}
+              disabled={!isModifiable}
+              label={"Submit"}
+            />
+          </div>
+        </div>
         {/* Maybe be needed in case the confrim button using the popup breaks */}
         {/* <Button disabled={!this.state.isModifiable} label="submit" type="submit" /> */}
       </form>

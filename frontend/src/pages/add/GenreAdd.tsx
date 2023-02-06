@@ -1,12 +1,16 @@
 import React, { FormEvent, useEffect, useState } from "react";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Button } from "primereact/button";
+import { GENRES_API } from "../../apis/GenresAPI";
+import { logger } from "../../util/Logger";
 
 export default function GenreAdd() {
   const [textBox, setTextBox] = useState("");
 
-  const onSubmit = (): void => {
-    console.log(textBox);
+  const onSubmit = (event: FormEvent<HTMLFormElement>): void => {
+    logger.debug("Add Genre Submitted", textBox);
+    GENRES_API.addGenres(textBox);
+    event.preventDefault();
   };
 
   return (
@@ -23,6 +27,7 @@ export default function GenreAdd() {
           rows={5}
           cols={30}
         />
+        <Button label="Clear" type="button" onClick={() => setTextBox("")} />
         <Button label="submit" type="submit" />
       </form>
     </div>

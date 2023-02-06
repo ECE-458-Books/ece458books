@@ -193,6 +193,7 @@ export default function BookAdd() {
           rows={5}
           cols={30}
         />
+        <Button label="Clear" type="button" onClick={() => setTextBox("")} />
         <Button
           id="addbooksubmission"
           name="addbooksubmission"

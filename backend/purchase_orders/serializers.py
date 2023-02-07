@@ -1,8 +1,6 @@
 from rest_framework import serializers
 from books.models import Book
 from .models import Purchase, PurchaseOrder
-from vendors.models import Vendor
-from vendors.serializers import VendorSerializer
 
 class PurchaseSerializer(serializers.ModelSerializer):
     book = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all())
@@ -14,12 +12,35 @@ class PurchaseSerializer(serializers.ModelSerializer):
 
 class PurchaseOrderSerializer(serializers.ModelSerializer):
     purchases = PurchaseSerializer(many=True)
-    # vendor = VendorSerializer()
+    num_books = serializers.SerializerMethodField()
+    num_unique_books = serializers.SerializerMethodField()
+    total_cost = serializers.SerializerMethodField()
 
     class Meta:
         model = PurchaseOrder
-        fields = ['id', 'date', 'purchases', 'vendor']
+        fields = ['id', 'date', 'purchases', 'vendor', 'num_books', 'num_unique_books', 'total_cost']
         read_only_fields = ['id']
+
+    def get_num_books(self, instance):
+        num_books = 0
+        purchases = Purchase.objects.filter(purchase_order=instance.id)
+        for purchase in purchases:
+            num_books += purchase.quantity
+        return num_books
+
+    def get_num_unique_books(self, instance):
+        unique_books = set()
+        purchases = Purchase.objects.filter(purchase_order=instance.id)
+        for purchase in purchases:
+            unique_books.add(purchase.book)
+        return len(unique_books)
+    
+    def get_total_cost(self, instance):
+        total_cost = 0
+        purchases = Purchase.objects.filter(purchase_order=instance.id)
+        for purchase in purchases:
+            total_cost += purchase.cost
+        return round(total_cost, 2)
 
     def create(self, validated_data):
         print(validated_data)

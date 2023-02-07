@@ -2,6 +2,7 @@ import { Button } from "primereact/button";
 import { ConfirmDialog } from "primereact/confirmdialog";
 
 export interface ConfirmButtonProps {
+  className: string | undefined;
   isVisible: boolean;
   hideFunc: () => void;
   acceptFunc: () => void;
@@ -30,6 +31,7 @@ export default function ConfirmButton(props: ConfirmButtonProps) {
         onClick={props.buttonClickFunc}
         disabled={props.disabled}
         label={props.label}
+        className={props.className}
       />
     </div>
   );

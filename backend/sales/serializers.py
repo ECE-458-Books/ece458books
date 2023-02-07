@@ -14,11 +14,36 @@ class SaleSerializer(serializers.ModelSerializer):
 
 class SalesReconciliationSerializer(serializers.ModelSerializer):
     sales = SaleSerializer(many=True)
+    num_books = serializers.SerializerMethodField()
+    num_unique_books = serializers.SerializerMethodField()
+    total_revenue = serializers.SerializerMethodField()
 
     class Meta:
         model = SalesReconciliation
-        fields = ['id', 'date', 'sales']
+        fields = ['id', 'date', 'sales', 'num_books', 'num_unique_books', 'total_revenue']
         read_only_fields = ['id']
+    
+    def get_num_books(self, instance):
+        num_books = 0
+        sales = Sale.objects.filter(sales_reconciliation=instance.id)
+        for sale in sales:
+            num_books += sale.quantity
+        return num_books
+
+    def get_num_unique_books(self, instance):
+        unique_books = set()
+        sales = Sale.objects.filter(sales_reconciliation=instance.id)
+        for sale in sales:
+            unique_books.add(sale.book)
+        return len(unique_books)
+    
+    def get_total_revenue(self, instance):
+        total_revenue = 0
+        sales = Sale.objects.filter(sales_reconciliation=instance.id)
+        for sale in sales:
+            total_revenue += sale.revenue
+        return round(total_revenue, 2)
+
 
     def create(self, validated_data):
         sales_data = validated_data.pop('sales')

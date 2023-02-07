@@ -4,7 +4,6 @@ from rest_framework.response import Response
 from rest_framework import status, filters
 from .models import Purchase, PurchaseOrder
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from .purchase_order import PurchaseOrderFieldsCalculator
 from .paginations import PurchaseOrderPagination
 from django.db.models import OuterRef, Subquery, Func, Count
 import datetime, pytz
@@ -32,7 +31,6 @@ class ListCreatePurchaseOrderAPIView(ListCreateAPIView):
 
         response_data = serializer.data
         response_data['id'] = saved_purchase_order.id
-        response_data = PurchaseOrderFieldsCalculator.add_calculated_fields(response_data)
         return Response(response_data, status=status.HTTP_201_CREATED)
 
     def get_queryset(self):
@@ -143,8 +141,7 @@ class RetrieveUpdateDestroyPurchaseOrderAPIView(RetrieveUpdateDestroyAPIView):
             return invalid_id_response
         (purchase_order,) = self.get_queryset()
         serializer = self.get_serializer(purchase_order)
-        purchase_order_data = PurchaseOrderFieldsCalculator.add_calculated_fields(serializer.data)
-        return Response(purchase_order_data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def update(self, request, *args, **kwargs):
         invalid_id_response = self.verify_existance()
@@ -155,8 +152,7 @@ class RetrieveUpdateDestroyPurchaseOrderAPIView(RetrieveUpdateDestroyAPIView):
         serializer = self.get_serializer(purchase_order, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        purchase_order_data = PurchaseOrderFieldsCalculator.add_calculated_fields(serializer.data)
-        return Response(purchase_order_data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def verify_existance(self):
         if (len(self.get_queryset()) == 0):

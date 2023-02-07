@@ -16,10 +16,12 @@ import os
 
 # Initialize environment variables
 env = environ.Env()
-environ.Env.read_env()
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+# Set the project base directory
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Take environment variables from .env file
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
@@ -28,10 +30,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('DEBUG')
+DEBUG = env('DEBUG').lower() == 'true'
 
-# ALLOWED_HOSTS = ['books.colab.duke.edu']
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['books.colab.duke.edu', 'books-dev.colab.duke.edu']
+# ALLOWED_HOSTS = ['*']
 
 # Application definition
 

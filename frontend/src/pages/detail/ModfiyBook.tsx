@@ -302,6 +302,7 @@ export default function BookDetail() {
               }}
               disabled={!isModifiable}
               label={"Submit"}
+              className=""
             />
           </div>
         </div>

@@ -41,7 +41,7 @@ export default function GenreDetail() {
         ></link>
         <div className="col-5">
           <div className="py-5">
-            <h1 className="text-center text-900 color: var(--surface-800);">
+            <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
               Modify Genre
             </h1>
           </div>
@@ -61,7 +61,10 @@ export default function GenreDetail() {
 
             <div className="flex flex-row justify-content-center card-container col-12">
               <div className="pt-2 pr-2">
-                <label className="text-xl" htmlFor="genre">
+                <label
+                  className="text-xl p-component text-teal-800 p-text-secondary"
+                  htmlFor="genre"
+                >
                   Genre
                 </label>
               </div>

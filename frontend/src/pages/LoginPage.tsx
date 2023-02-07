@@ -81,7 +81,7 @@ class LoginPage extends React.Component<LoginProps, LoginState> {
         ></link>
         <div className="col-5">
           <div className="py-5">
-            <h1 className="text-center text-900 color: var(--surface-800);">
+            <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
               Login Page
             </h1>
           </div>

@@ -208,11 +208,11 @@ export default function PODetail() {
         <div className="col-11">
           <div className="pt-2">
             {isAddPage ? (
-              <h1 className="text-center text-900 color: var(--surface-800);">
+              <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
                 Add Purchase Order
               </h1>
             ) : (
-              <h1 className="text-center text-900 color: var(--surface-800);">
+              <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
                 Modify Purchase Order
               </h1>
             )}
@@ -236,7 +236,10 @@ export default function PODetail() {
 
             <div className="flex pb-2 flex-row justify-content-evenly card-container col-12">
               <div>
-                <label htmlFor="date" className="pt-2 pr-2">
+                <label
+                  htmlFor="date"
+                  className="pt-2 pr-2 p-component text-teal-800 p-text-secondary"
+                >
                   Date
                 </label>
                 <Calendar
@@ -251,7 +254,10 @@ export default function PODetail() {
               </div>
 
               <div>
-                <label htmlFor="vendor" className="pt-2 pr-2">
+                <label
+                  htmlFor="vendor"
+                  className="pt-2 pr-2 p-component text-teal-800 p-text-secondary"
+                >
                   Vendor
                 </label>
                 <Dropdown

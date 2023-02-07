@@ -21,13 +21,16 @@ export default function GenreAdd() {
       ></link>
       <div className="col-5">
         <div className="py-5">
-          <h1 className="text-center text-900 color: var(--surface-800);">
+          <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
             Add Genre Page
           </h1>
         </div>
         <form onSubmit={onSubmit}>
           <div className="py-2">
-            <label className="text-xl" htmlFor="addgenre">
+            <label
+              className="text-xl p-component text-teal-800 p-text-secondary"
+              htmlFor="addgenre"
+            >
               Add Genre
             </label>
           </div>

@@ -26,6 +26,7 @@ class ListCreateVendorAPIView(ListCreateAPIView):
         else:
             return super().paginate_queryset(queryset)
 
+
 class RetrieveUpdateDestroyVendorAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = VendorSerializer
     queryset = Vendor.objects.all()

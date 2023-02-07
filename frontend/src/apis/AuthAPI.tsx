@@ -27,13 +27,13 @@ export const AUTH_API = {
   },
 
   tokenRefresh: async function (failedRequest: any) {
-    const accessToken = localStorage.getItem("refreshToken");
+    const refreshToken = localStorage.getItem("refreshToken");
 
     API.request({
       url: AUTH_EXTENSION.concat("/token/refresh"),
       method: METHOD_POST,
       data: {
-        refresh: accessToken,
+        refresh: refreshToken,
       },
     }).then((response) => {
       localStorage.setItem("accessToken", response.data.access);

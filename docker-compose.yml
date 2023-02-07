@@ -4,7 +4,7 @@ services:
     image: frontend-image
     build: ./frontend
     ports: 
-      - 80:3000
+      - 3000:3000
     environment:
       env_file: ./frontend/.env.development
   frontend-hot-reload:
@@ -20,4 +20,4 @@ services:
     image: backend-image
     build: ./backend
     ports:
-      - "8000:8000"
+      - 8000:8000

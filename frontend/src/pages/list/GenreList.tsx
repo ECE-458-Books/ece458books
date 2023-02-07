@@ -1,3 +1,4 @@
+import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import {
   DataTable,
@@ -6,12 +7,12 @@ import {
   DataTablePageEvent,
   DataTableSortEvent,
 } from "primereact/datatable";
+import React from "react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GENRES_API, GetGenresResp } from "../../apis/GenresAPI";
 import DeletePopup from "../../components/DeletePopup";
 import { TableColumn } from "../../components/Table";
-import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import { logger } from "../../util/Logger";
 import { GenreDetailState } from "../detail/GenreDetail";
 import { NUM_ROWS } from "./BookList";
@@ -21,6 +22,10 @@ export interface Genre {
   id: number;
   name: string;
   book_cnt: number;
+}
+
+interface GenreRow extends Genre {
+  isDeletable: boolean;
 }
 
 // Properties of each column that change, the rest are set below when creating the actual Columns to be rendered
@@ -170,10 +175,23 @@ export default function GenreList() {
   // ----------------- TEMPLATES/VISIBLE COMPONENTS -----------------
 
   // Edit/Delete Cell Template
-  const editDeleteCellTemplate = EditDeleteTemplate<Genre>({
-    onEdit: (rowData) => editGenre(rowData),
-    onDelete: (rowData) => deleteGenrePopup(rowData),
-  });
+  const editDeleteCellTemplate = (rowData: Genre) => {
+    return (
+      <React.Fragment>
+        <Button
+          icon="pi pi-pencil"
+          className="p-button-rounded p-button-success mr-2"
+          onClick={() => editGenre(rowData)}
+        />
+        <Button
+          icon="pi pi-trash"
+          className="p-button-rounded p-button-danger"
+          onClick={() => deleteGenrePopup(rowData)}
+          disabled={rowData.book_cnt > 0}
+        />
+      </React.Fragment>
+    );
+  };
 
   // The delete popup
   const deletePopup = (
@@ -235,7 +253,10 @@ export default function GenreList() {
         filters={filterParams.filters}
       >
         {dynamicColumns}
-        <Column body={editDeleteCellTemplate} style={{ minWidth: "16rem" }} />
+        <Column
+          body={(rowData) => editDeleteCellTemplate(rowData)}
+          style={{ minWidth: "16rem" }}
+        />
       </DataTable>
       {deletePopupVisible && deletePopup}
     </>

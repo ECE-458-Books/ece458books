@@ -4,7 +4,7 @@ import { logger } from "../util/Logger";
 import { AUTH_API } from "./AuthAPI";
 import createAuthRefreshInterceptor from "axios-auth-refresh";
 
-export const BACKEND_ENDPOINT = "http://books-dev.colab.duke.edu:8000/api/v1/";
+export const BACKEND_ENDPOINT = process.env.REACT_APP_BACKEND_ENDPOINT;
 export const JSON_HEADER = { "Content-Type": "application/json" };
 export const METHOD_POST = "POST";
 export const METHOD_GET = "GET";

@@ -84,7 +84,7 @@ class RetrieveUpdateDestroyGenreAPIView(RetrieveUpdateDestroyAPIView):
         associated_book_cnt = len(instance.book_set.all())
         if(associated_book_cnt != 0):
             error_msg = {"error": f"{associated_book_cnt} book(s) associated with genre:{instance.name}"}
-            return Response(error_msg, status=status.HTTP_400_BAD_REQUEST)
+            return Response(error_msg, status=status.HTTP_409_CONFLICT)
 
         # Perform destroy of instance
         self.perform_destroy(instance)

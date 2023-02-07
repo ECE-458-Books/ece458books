@@ -13,6 +13,7 @@
     "axios": "^1.2.5",
     "formik": "^2.2.9",
     "fs": "^0.0.1-security",
+    "primeflex": "^3.3.0",
     "primeicons": "^6.0.1",
     "primereact": "^9.0.0-beta.1",
     "react": "^18.2.0",

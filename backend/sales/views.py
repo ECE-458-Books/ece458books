@@ -1,12 +1,16 @@
 from rest_framework.permissions import IsAuthenticated
-from .serializers import SalesReconciliationSerializer
+from .serializers import SalesReconciliationSerializer, SalesReportSerializer
 from rest_framework.response import Response
 from rest_framework import status, filters
+from rest_framework.views import APIView
 from .models import SalesReconciliation, Sale
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView
 from .paginations import SalesReconciliationPagination
 from django.db.models import OuterRef, Subquery, Func, Count
+from purchase_orders.models import Purchase, PurchaseOrder
+from purchase_orders.serializers import PurchaseOrderSerializer
 import datetime, pytz
+from datetime import datetime, timedelta
 
 
 class ListCreateSalesReconciliationAPIView(ListCreateAPIView):
@@ -158,3 +162,61 @@ class RetrieveUpdateDestroySalesReconciliationAPIView(RetrieveUpdateDestroyAPIVi
         if (len(self.get_queryset()) == 0):
             return Response({"id": "No sales reconciliation with queried id."}, status=status.HTTP_400_BAD_REQUEST)
         return None
+
+class RetrieveSalesReportAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = SalesReportSerializer
+
+    def get(self, request, start_date, end_date):
+        daily_revenues = {}
+        daily_costs = {}
+        daily_profits = {}
+
+        # Get range of dates from starting date to ending date
+        dates = self.dates_range(start_date, end_date)
+
+        for date in dates:
+            date_str = date.strftime("%Y-%m-%d")
+            self.get_daily_revenues(daily_revenues, date_str)
+            self.get_daily_costs(daily_costs, date_str)
+            daily_profits[date_str] = daily_revenues[date_str] - daily_costs[date_str]
+
+        total_cost = sum(daily_costs.values())
+        total_revenue = sum(daily_revenues.values())
+        total_profit = total_revenue - total_cost
+
+        return Response({
+            "daily_costs": daily_costs,
+            "daily_revenues": daily_revenues,
+            "daily_profits": daily_profits,
+            "total_cost": total_cost,
+            "total_revenue": total_revenue,
+            "total_profit": total_profit,
+        })
+
+    def get_daily_costs(self, daily_costs, date: str):
+        purchase_orders = PurchaseOrder.objects.filter(date=date)
+        if len(purchase_orders) == 0:
+            daily_costs[date] = 0
+            return
+        for purchase_order in purchase_orders:
+            serializer = PurchaseOrderSerializer(purchase_order)
+            daily_costs[date] = serializer.data['total_cost']
+
+    def get_daily_revenues(self, daily_revenues, date: str):
+        sales_reconciliations = SalesReconciliation.objects.filter(date=date)
+        if len(sales_reconciliations) == 0:
+            daily_revenues[date] = 0
+            return
+        for sales_reconciliation in sales_reconciliations:
+            serializer = SalesReconciliationSerializer(sales_reconciliation)
+            daily_revenues[date] = serializer.data['total_revenue']
+
+    def dates_range(self, start: str, end: str):
+        date_format = "%Y-%m-%d"
+        start_date = datetime.strptime(start, date_format)
+        end_date = datetime.strptime(end, date_format)
+        delta = end_date - start_date
+        days = [start_date + timedelta(days=num_days) for num_days in range(delta.days+1)]
+        return days
+

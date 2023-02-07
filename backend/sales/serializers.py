@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from books.models import Book
 from .models import Sale, SalesReconciliation
+from purchase_orders.models import Purchase, PurchaseOrder
 
 
 class SaleSerializer(serializers.ModelSerializer):
@@ -85,3 +86,23 @@ class SalesReconciliationSerializer(serializers.ModelSerializer):
         sale.quantity = sale_data.get('quantity', sale.quantity)
         sale.unit_retail_price = sale_data.get('unit_retail_price', sale.unit_retail_price)
         sale.save()
+
+# class SalesReportSerializer(serializers.Serializer):
+#     total_cost = serializers.FloatField(min_value=0)
+#     total_revenue = serializers.FloatField(min_value=0)
+#     total_profit = serializers.FloatField()
+#     daily_revenues = serializers.ListField(child=serializers.FloatField(min_value=0))
+#     daily_costs = serializers.ListField(child=serializers.FloatField(min_value=0))
+#     daily_profits = serializers.ListField(child=serializers.FloatField())
+
+class SalesReportSerializer(serializers.ModelSerializer):
+    total_cost = serializers.SerializerMethodField()
+    total_revenue = serializers.SerializerMethodField()
+    total_profit = serializers.SerializerMethodField()
+    daily_revenues = serializers.SerializerMethodField()
+    daily_costs = serializers.SerializerMethodField()
+    daily_profits = serializers.SerializerMethodField()
+
+    def get_total_cost(self, instance):
+        print(instance.id)
+

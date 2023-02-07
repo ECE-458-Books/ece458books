@@ -2,6 +2,12 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.utils.urls import remove_query_param, replace_query_param
 
 class HTTPSNoPortPagination(PageNumberPagination):
+    """Custom Pagination Class that overrides the django PageNumberPagination
+       
+       The default get_next_link, get_previous_link returns the url with http and port number added
+
+       This class is changing the header to HTTPS and remove explicit port numbering
+    """
     page_size = 10
     page_size_query_param = 'page_size'
 

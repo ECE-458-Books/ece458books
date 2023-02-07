@@ -25,9 +25,33 @@ class ListCreateGenreAPIView(ListCreateAPIView):
             return None
         else:
             return super().paginate_queryset(queryset)
+    
+    def filter_queryset(self, request, queryset):
+        """Override the filter_queryset to add custom ordering for annotated fields
+
+        Note* This can be a feature to add to DRF (Django Rest Framework)
+        so that the queryset can be filtered by annotated fields
+
+        """
+        for backend in list(self.filter_backends):
+            queryset = backend().filter_queryset(self.request, queryset, self)
+
+        ordering = self.request.GET.get("ordering", None)
+
+        if ordering == 'book_cnt':
+            queryset = queryset.annotate(
+                book_cnt=Count('book')
+            ).order_by('book_cnt')
+        elif ordering == '-book_cnt':
+            queryset = queryset.annotate(
+                book_cnt=Count('book')
+            ).order_by('-book_cnt')
+        
+        return queryset
+
 
     def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
+        queryset = self.filter_queryset(request, self.get_queryset())
 
         # Might not scale?
         queryset = queryset.annotate(
@@ -62,5 +86,6 @@ class RetrieveUpdateDestroyGenreAPIView(RetrieveUpdateDestroyAPIView):
             error_msg = {"error": f"{associated_book_cnt} book(s) associated with genre:{instance.name}"}
             return Response(error_msg, status=status.HTTP_400_BAD_REQUEST)
 
+        # Perform destroy of instance
         self.perform_destroy(instance)
         return Response({"destroy": "success"}, status=status.HTTP_204_NO_CONTENT)

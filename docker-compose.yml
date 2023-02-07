@@ -15,7 +15,7 @@ services:
     volumes:
       - ./frontend/src:/app/src
     environment:
-      env_file: ./frontend/.env.test
+      env_file: ./frontend/.env.development
   backend:
     image: backend-image
     build: ./backend

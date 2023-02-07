@@ -330,7 +330,6 @@ export default function BookList() {
 
   // Called when the paginator page is switched
   const onPage = (event: DataTablePageEvent) => {
-    console.log(event.page);
     logger.debug("Page Applied", event);
     setLoading(true);
     setPageParams(event);

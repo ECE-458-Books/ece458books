@@ -120,7 +120,6 @@ export default function GenreList() {
     logger.debug("Filter Applied", event);
     setLoading(true);
     setFilterParams(event);
-    callAPI();
   };
 
   // Called when any of the columns are selected to be sorted
@@ -128,7 +127,6 @@ export default function GenreList() {
     logger.debug("Sort Applied", event);
     setLoading(true);
     setSortParams(event);
-    callAPI();
   };
 
   // Called when the paginator page is switched
@@ -136,11 +134,10 @@ export default function GenreList() {
     logger.debug("Page Applied", event);
     setLoading(true);
     setPageParams(event);
-    callAPI();
   };
 
   // API call on page load
-  useEffect(() => callAPI(), []);
+  useEffect(() => callAPI(), [sortParams, pageParams, filterParams]);
 
   // Calls the Genres API
   const callAPI = () => {

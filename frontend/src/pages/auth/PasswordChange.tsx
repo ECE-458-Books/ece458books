@@ -1,57 +1,67 @@
-import { createRef, FormEvent, useState } from "react";
-import axios from "axios";
+import { createRef, FormEvent, useRef, useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import { Messages } from "primereact/messages";
-import { useNavigate } from "react-router-dom";
-import { API } from "../../apis/Config";
 import { AUTH_API } from "../../apis/AuthAPI";
+import { Toast } from "primereact/toast";
+import { logger } from "../../util/Logger";
 
 export default function PasswordChangePage() {
-  const navigate = useNavigate();
   const wrongPasswordRef = createRef<Messages>();
-  const [password, setPassword] = useState("");
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword1, setNewPassword1] = useState("");
+  const [newPassword2, setNewPassword2] = useState("");
 
-  // Sets the default auth token used by axios
-  const setAuthToken = (token: string) => {
-    API.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  // Toast is used for showing success/error messages
+  const toast = useRef<Toast>(null);
+
+  const showSuccess = () => {
+    toast.current?.show({ severity: "success", summary: "Password Changed" });
   };
 
-  // On password change
-  const onChange = (event: FormEvent<HTMLInputElement>): void => {
-    setPassword(event.currentTarget.value);
+  const showFailure = (message: string) => {
+    toast.current?.show({ severity: "error", summary: message });
   };
 
-  // Hits the token endpoint, and stores the token in local storage. Displays incorrect password text if error returned from endpoint
   const onSubmit = (event: FormEvent<HTMLFormElement>): void => {
-    // Make the request, and show error message if password is wrong
-    AUTH_API.login(password)
-      .then((response) => {
-        if (response.data.access) {
-          setAuthToken(response.data.access);
-          navigate("/books");
+    logger.debug("Password Change Clicked");
+    AUTH_API.passwordChange(oldPassword, newPassword1, newPassword2).then(
+      (response) => {
+        // TODO: Refactor this
+        if (response && response.data.status) {
+          showSuccess();
         } else {
-          delete axios.defaults.headers.common["Authorization"];
+          showFailure("Error");
         }
-      })
-      .catch(() => {
-        wrongPasswordRef.current?.show([
-          {
-            sticky: false,
-            severity: "error",
-            summary: "Error: Incorrect Password",
-            closable: false,
-            life: 3000,
-          },
-        ]);
-      });
-
+      }
+    );
     event.preventDefault();
   };
 
   return (
     <form onSubmit={onSubmit}>
-      <InputText value={password} onChange={onChange} />
+      <Toast ref={toast} />
+
+      <InputText
+        value={oldPassword}
+        onChange={(event: FormEvent<HTMLInputElement>) =>
+          setOldPassword(event.currentTarget.value)
+        }
+      />
+
+      <InputText
+        value={newPassword1}
+        onChange={(event: FormEvent<HTMLInputElement>) =>
+          setNewPassword1(event.currentTarget.value)
+        }
+      />
+
+      <InputText
+        value={newPassword2}
+        onChange={(event: FormEvent<HTMLInputElement>) =>
+          setNewPassword2(event.currentTarget.value)
+        }
+      />
       <Button type="submit" label="Submit" aria-label="Submit" />
       <Messages ref={wrongPasswordRef} />
     </form>

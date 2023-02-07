@@ -28,7 +28,7 @@ export default function PasswordChangePage() {
     AUTH_API.passwordChange(oldPassword, newPassword1, newPassword2).then(
       (response) => {
         // TODO: Refactor this
-        if (response && response.data.status) {
+        if (response.data?.status) {
           showSuccess();
         } else {
           showFailure("Error");

@@ -25,4 +25,21 @@ export const AUTH_API = {
       },
     });
   },
+
+  tokenRefresh: async function (failedRequest: any) {
+    const accessToken = localStorage.getItem("refreshToken");
+
+    API.request({
+      url: AUTH_EXTENSION.concat("/token/refresh"),
+      method: METHOD_POST,
+      data: {
+        refresh: accessToken,
+      },
+    }).then((response) => {
+      localStorage.setItem("accessToken", response.data.access);
+      failedRequest.response.config.headers["Authorization"] =
+        "Bearer " + response.data.access;
+      return Promise.resolve();
+    });
+  },
 };

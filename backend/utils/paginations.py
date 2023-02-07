@@ -1,6 +1,7 @@
-from rest_framework import pagination
+from rest_framework.pagination import PageNumberPagination 
+from rest_framework.utils.urls import remove_query_param, replace_query_param
 
-class CustomPagination(pagination.PageNumberPagination):
+class HTTPSNoPortPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = 'page_size'
 
@@ -43,6 +44,6 @@ class CustomPagination(pagination.PageNumberPagination):
         return reformat_url
     
     def get_port_number(self, url):
-        if(len(s.split(":"))<2):
+        if(len(url.split(":"))<2):
             return None
-        return s.split(":")[2].split("/")[0]
+        return url.split(":")[2].split("/")[0]

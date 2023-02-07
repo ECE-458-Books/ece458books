@@ -91,6 +91,17 @@ function NavigationBar() {
         },
       ],
     },
+    {
+      label: "Settings",
+      icon: "pi pi-fw pi-wrench",
+      items: [
+        {
+          label: "Change Password",
+          icon: "pi pi-fw pi-database",
+          command: () => navigate("/change-password"),
+        },
+      ],
+    },
   ];
 
   return <Menubar model={items} />;

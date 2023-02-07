@@ -8,6 +8,8 @@ export interface TableColumn {
   filterPlaceholder?: string;
   customFilter?: any;
   hidden?: boolean;
+  sortable?: boolean;
+  filterable?: boolean;
 }
 
 export interface TableProps<T extends object> {

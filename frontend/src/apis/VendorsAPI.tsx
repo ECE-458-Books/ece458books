@@ -12,9 +12,7 @@ const VENDORS_EXTENSION = "vendors";
 interface GetVendorsReq {
   page: number;
   page_size: number;
-  ordering_field: string | undefined;
-  ordering_ascending: number | null | undefined;
-  search: string;
+  ordering: string;
 }
 
 // The structure of the response for a vendor from the API
@@ -36,8 +34,7 @@ export const VENDORS_API = {
       params: {
         page: req.page + 1,
         page_size: req.page_size,
-        ordering: req.ordering_field,
-        search: req.search,
+        ordering: req.ordering,
       },
     });
 

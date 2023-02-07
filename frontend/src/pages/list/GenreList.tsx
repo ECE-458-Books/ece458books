@@ -19,31 +19,37 @@ import { NUM_ROWS } from "./BookList";
 // The Genre interface
 export interface Genre {
   id: number;
-  genre: string;
-  numGenres: number;
+  name: string;
+  book_cnt: number;
 }
 
 // Properties of each column that change, the rest are set below when creating the actual Columns to be rendered
 const COLUMNS: TableColumn[] = [
-  { field: "genre", header: "Genre", filterPlaceholder: "Search by Genre" },
   {
-    field: "numGenres",
-    header: "Number of Genres",
-    filterPlaceholder: "Search by Number of Genres",
+    field: "name",
+    header: "Genre",
+    filterPlaceholder: "Search by Genre",
+    filterable: false,
+  },
+  {
+    field: "book_cnt",
+    header: "Number of Books",
+    filterPlaceholder: "Search by Number of Books",
+    filterable: false,
   },
 ];
 
 // Define the column filters
 interface Filters {
   [id: string]: DataTableFilterMetaData;
-  genre: DataTableFilterMetaData;
-  numGenres: DataTableFilterMetaData;
+  name: DataTableFilterMetaData;
+  book_cnt: DataTableFilterMetaData;
 }
 
 // Empty genre, used to initialize state
 const emptyGenre = {
-  genre: "",
-  numGenres: 0,
+  name: "",
+  book_cnt: 0,
   id: 0,
 };
 
@@ -74,8 +80,8 @@ export default function GenreList() {
   const [filterParams, setFilterParams] = useState<any>({
     filters: {
       id: { value: "", matchMode: "contains" },
-      genre: { value: "", matchMode: "contains" },
-      numGenres: { value: "", matchMode: "contains" },
+      name: { value: "", matchMode: "contains" },
+      book_cnt: { value: "", matchMode: "contains" },
     } as Filters,
   });
 
@@ -88,7 +94,7 @@ export default function GenreList() {
     logger.debug("Edit Genre Clicked", genre);
     const detailState: GenreDetailState = {
       id: genre.id,
-      genre: genre.genre,
+      genre: genre.name,
       isModifiable: false,
       isConfirmationPopupVisible: false,
     };
@@ -141,12 +147,16 @@ export default function GenreList() {
 
   // Calls the Genres API
   const callAPI = () => {
+    // Invert sort order
+    let sortField = sortParams.sortField;
+    if (sortParams.sortOrder == -1) {
+      sortField = "-".concat(sortField);
+    }
+
     GENRES_API.getGenres({
       page: pageParams.page ?? 0,
       page_size: pageParams.rows,
-      ordering_field: sortParams.sortField,
-      ordering_ascending: sortParams.sortOrder,
-      search: filterParams.filters.genre.value,
+      ordering: sortField,
     }).then((response) => onAPIResponse(response));
   };
 
@@ -168,7 +178,7 @@ export default function GenreList() {
   // The delete popup
   const deletePopup = (
     <DeletePopup
-      deleteItemIdentifier={selectedDeleteGenre.genre}
+      deleteItemIdentifier={selectedDeleteGenre.name}
       onConfirm={() => deleteGenreFinal()}
       setIsVisible={setDeletePopupVisible}
     />
@@ -183,7 +193,7 @@ export default function GenreList() {
         field={col.field}
         header={col.header}
         // Filtering
-        filter
+        filter={col.filterable}
         filterElement={col.customFilter}
         //filterMatchMode={"contains"}
         filterPlaceholder={col.filterPlaceholder}

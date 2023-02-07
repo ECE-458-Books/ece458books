@@ -31,8 +31,8 @@ interface TableColumn {
 const GENRE_DATA: Genre[] = [
   {
     id: 3,
-    genre: "blah",
-    numGenres: 5,
+    name: "blah",
+    book_cnt: 5,
   },
 ];
 
@@ -92,11 +92,9 @@ export default function BookList() {
     GENRES_API.getGenres({
       page: 0,
       page_size: 30,
-      ordering_field: undefined,
-      ordering_ascending: undefined,
-      search: "",
+      ordering: "name",
     }).then((response) =>
-      setGenreList(response.genres.map((genre) => genre.genre))
+      setGenreList(response.genres.map((genre) => genre.name))
     );
   }, []);
 

@@ -28,6 +28,7 @@ const COLUMNS: TableColumn[] = [
     field: "name",
     header: "Vendor Name",
     filterPlaceholder: "Search by Name",
+    filterable: false,
   },
 ];
 
@@ -137,12 +138,16 @@ export default function VendorList() {
 
   // Calls the Vendors API
   const callAPI = () => {
+    // Invert sort order
+    let sortField = sortParams.sortField;
+    if (sortParams.sortOrder == -1) {
+      sortField = "-".concat(sortField);
+    }
+
     VENDORS_API.getVendors({
       page: pageParams.page ?? 0,
       page_size: pageParams.rows,
-      ordering_field: sortParams.sortField,
-      ordering_ascending: sortParams.sortOrder,
-      search: filterParams.filters.name.value,
+      ordering: sortField,
     }).then((response) => onAPIResponse(response));
   };
 
@@ -179,7 +184,7 @@ export default function VendorList() {
         field={col.field}
         header={col.header}
         // Filtering
-        filter
+        filter={col.filterable}
         filterElement={col.customFilter}
         //filterMatchMode={"contains"}
         filterPlaceholder={col.filterPlaceholder}

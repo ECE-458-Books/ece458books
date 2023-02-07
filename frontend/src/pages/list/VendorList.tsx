@@ -116,7 +116,6 @@ export default function VendorList() {
     logger.debug("Filter Applied", event);
     setLoading(true);
     setFilterParams(event);
-    callAPI();
   };
 
   // Called when any of the columns are selected to be sorted
@@ -124,7 +123,6 @@ export default function VendorList() {
     logger.debug("Sort Applied", event);
     setLoading(true);
     setSortParams(event);
-    callAPI();
   };
 
   // Called when the paginator page is switched
@@ -132,11 +130,10 @@ export default function VendorList() {
     logger.debug("Page Applied", event);
     setLoading(true);
     setPageParams(event);
-    callAPI();
   };
 
   // When any of the list of params are changed, useEffect is called to hit the API endpoint
-  useEffect(() => callAPI(), []);
+  useEffect(() => callAPI(), [sortParams, pageParams, filterParams]);
 
   // Calls the Vendors API
   const callAPI = () => {

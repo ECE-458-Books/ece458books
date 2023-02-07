@@ -4,7 +4,6 @@ from rest_framework.response import Response
 from rest_framework import status, filters
 from .models import SalesReconciliation, Sale
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from .sales_reconciliation import SalesReconciliationFieldsCalculator
 from .paginations import SalesReconciliationPagination
 from django.db.models import OuterRef, Subquery, Func, Count
 import datetime, pytz
@@ -32,7 +31,6 @@ class ListCreateSalesReconciliationAPIView(ListCreateAPIView):
 
         response_data = serializer.data
         response_data['id'] = saved_sales_reconciliation.id
-        response_data = SalesReconciliationFieldsCalculator.add_calculated_fields(response_data)
         return Response(response_data, status=status.HTTP_201_CREATED)
 
     def get_queryset(self):
@@ -143,8 +141,7 @@ class RetrieveUpdateDestroySalesReconciliationAPIView(RetrieveUpdateDestroyAPIVi
             return invalid_id_response
         (sales_reconciliation,) = self.get_queryset()
         serializer = self.get_serializer(sales_reconciliation)
-        sales_reconciliation_data = SalesReconciliationFieldsCalculator.add_calculated_fields(serializer.data)
-        return Response(sales_reconciliation_data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def update(self, request, *args, **kwargs):
         invalid_id_response = self.verify_existance()
@@ -155,8 +152,7 @@ class RetrieveUpdateDestroySalesReconciliationAPIView(RetrieveUpdateDestroyAPIVi
         serializer = self.get_serializer(sales_reconciliation, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        sales_reconciliation_data = SalesReconciliationFieldsCalculator.add_calculated_fields(serializer.data)
-        return Response(sales_reconciliation_data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def verify_existance(self):
         if (len(self.get_queryset()) == 0):

@@ -19,5 +19,5 @@ services:
   backend:
     image: backend-image
     build: ./backend
-    ports:
+    ports: 
       - 8000:8000

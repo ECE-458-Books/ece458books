@@ -1,4 +1,4 @@
-from django.db.models import Count
+from django.db.models import Count, OuterRef, Subquery, Func
 
 from rest_framework import filters, status
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
@@ -25,6 +25,24 @@ class ListCreateVendorAPIView(ListCreateAPIView):
             return None
         else:
             return super().paginate_queryset(queryset)
+    
+    def get_queryset(self):
+        default_query_set = Vendor.objects.all()
+
+        default_query_set = default_query_set.annotate(
+            num_purchase_orders=Subquery(
+                PurchaseOrder.objects.filter(
+                    vendor=OuterRef('id')
+                ).values_list(
+                    Func(
+                        'id',
+                        function='COUNT',
+                    ),
+                )
+            )
+        )
+        
+        return default_query_set
 
 
 class RetrieveUpdateDestroyVendorAPIView(RetrieveUpdateDestroyAPIView):

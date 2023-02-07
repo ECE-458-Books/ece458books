@@ -16,6 +16,7 @@ import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import { logger } from "../../util/Logger";
 import { BookDetailState } from "../detail/ModfiyBook";
 import { useNavigate } from "react-router-dom";
+import { GENRES_API } from "../../apis/GenresAPI";
 
 export const NUM_ROWS = 3;
 
@@ -84,13 +85,26 @@ export default function BookList() {
   };
 
   // Custom dropdown selector for Genre
+  const [genreList, setGenreList] = useState<string[]>([]);
   const [selectedGenre, setSelectedGenre] = useState<string>("");
+
+  useEffect(() => {
+    GENRES_API.getGenres({
+      page: 0,
+      page_size: 30,
+      ordering_field: undefined,
+      ordering_ascending: undefined,
+      search: "",
+    }).then((response) =>
+      setGenreList(response.genres.map((genre) => genre.genre))
+    );
+  }, []);
 
   const genreFilter = () => {
     return (
       <Dropdown
         value={selectedGenre}
-        options={GENRE_DATA.map((genreRow) => genreRow.genre)}
+        options={genreList}
         appendTo={"self"}
         onChange={(e) => setSelectedGenre(e.value)}
         placeholder={"Select Genre"}

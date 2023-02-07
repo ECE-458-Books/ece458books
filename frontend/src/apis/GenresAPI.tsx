@@ -7,7 +7,7 @@ import {
   METHOD_POST,
 } from "./Config";
 
-const GENRES_EXTENSION = "genres/";
+const GENRES_EXTENSION = "genres";
 
 interface GetGenresReq {
   page: number;

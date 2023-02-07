@@ -152,12 +152,19 @@ export default function BookAdd() {
     event.preventDefault();
   };
 
+  const validateRow = (book: BookWithDBTag) => {
+    return book.retailPrice && book.genres;
+  };
+
   const onFinalSubmit = (): void => {
     logger.debug("Submitting Final Book Add", books);
     for (const book of books) {
-      if (!book.fromDB) {
-        BOOKS_API.addBookFinal(book);
-      }
+      if (validateRow(book))
+        if (!book.fromDB) {
+          BOOKS_API.addBookFinal(book);
+        } else {
+          BOOKS_API.modifyBook(book);
+        }
     }
   };
 

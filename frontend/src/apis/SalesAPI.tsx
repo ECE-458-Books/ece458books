@@ -7,7 +7,7 @@ import {
   METHOD_POST,
 } from "./Config";
 
-const SALES_EXTENSION = "sales";
+const SALES_EXTENSION = "sales/sales_reconciliation/";
 
 interface GetSalesReconciliationsReq {
   page: number;
@@ -19,8 +19,10 @@ interface GetSalesReconciliationsReq {
 
 // The structure of the response for a SR from the API
 interface APISalesReconciliation {
-  id: number;
-  name: string;
+  next: string;
+  previous: string;
+  count: number;
+  results: any;
 }
 
 export interface GetSalesReconciliationsResp {
@@ -29,39 +31,62 @@ export interface GetSalesReconciliationsResp {
 }
 
 export const SALES_API = {
-  getSalesReconciliations: async function (
-    req: GetSalesReconciliationsReq
-  ): Promise<GetSalesReconciliationsResp> {
-    const response = await API.request({
-      url: SALES_EXTENSION,
-      method: METHOD_GET,
-      params: {
-        page: req.page + 1,
-        page_size: req.page_size,
-        ordering: req.ordering_field,
-        search: req.search,
-      },
-    });
+  getSalesReconciliations:
+    async function (): Promise<GetSalesReconciliationsResp> {
+      const response = await API.request({
+        url: SALES_EXTENSION,
+        method: METHOD_GET,
+      });
 
-    // Convert response to internal data type (not strictly necessary, but I think good practice)
-    const sales = response.data.results.map((sr: APISalesReconciliation) => {
-      return {
-        id: sr.id,
-        name: sr.name,
-      };
-    });
+      // Convert response to internal data type (not strictly necessary, but I think good practice)
+      const sales = response.data.results.map((sr: APISalesReconciliation) => {
+        return {
+          next: sr.next,
+          previous: sr.previous,
+          count: sr.count,
+          results: sr.results,
+        };
+      });
 
-    return Promise.resolve({
-      salesReconciliations: sales,
-      numberOfSalesReconciliations: response.data.count,
-    });
-  },
+      return Promise.resolve({
+        salesReconciliations: sales,
+        numberOfSalesReconciliations: response.data.count,
+      });
+    },
+
+  // getSalesReconciliations: async function (
+  //   req: GetSalesReconciliationsReq
+  // ): Promise<GetSalesReconciliationsResp> {
+  //   const response = await API.request({
+  //     url: SALES_EXTENSION,
+  //     method: METHOD_GET,
+  //     params: {
+  //       page: req.page + 1,
+  //       page_size: req.page_size,
+  //       ordering: req.ordering_field,
+  //       search: req.search,
+  //     },
+  //   });
+
+  //   // Convert response to internal data type (not strictly necessary, but I think good practice)
+  //   const sales = response.data.results.map((sr: APISalesReconciliation) => {
+  //     return {
+  //       id: sr.id,
+  //       name: sr.name,
+  //     };
+  //   });
+
+  //   return Promise.resolve({
+  //     salesReconciliations: sales,
+  //     numberOfSalesReconciliations: response.data.count,
+  //   });
+  // },
 
   // Everything below this point has not been tested
 
   deleteSalesReconciliation: async function (id: string) {
     await API.request({
-      url: SALES_EXTENSION.concat("/".concat(id)),
+      url: SALES_EXTENSION.concat(id),
       method: METHOD_DELETE,
     });
   },
@@ -72,7 +97,7 @@ export const SALES_API = {
     };
 
     await API.request({
-      url: SALES_EXTENSION.concat("/".concat(sr.id.toString())),
+      url: SALES_EXTENSION.concat(sr.id.toString()),
       method: METHOD_PATCH,
       data: srParams,
     });

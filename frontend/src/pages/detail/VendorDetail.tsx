@@ -35,47 +35,70 @@ export default function VendorDetail() {
 
   return (
     <div>
-      <h1>Modify Vendor</h1>
-      <form onSubmit={onSubmit}>
-        <ToggleButton
-          id="modifyVendorToggle"
-          name="modifyVendorToggle"
-          onLabel="Modifiable"
-          offLabel="Modify"
-          onIcon="pi pi-check"
-          offIcon="pi pi-times"
-          checked={isModifiable}
-          onChange={() => setIsModifiable(!isModifiable)}
-        />
+      <div className="grid flex justify-content-center">
+        <link
+          rel="stylesheet"
+          href="https://unpkg.com/primeflex@3.1.2/primeflex.css"
+        ></link>
+        <div className="col-5">
+          <div className="py-5">
+            <h1 className="text-center text-900 color: var(--surface-800);">
+              Modify Vendor
+            </h1>
+          </div>
+          <form onSubmit={onSubmit}>
+            <div className="flex pb-8 flex-row justify-content-center card-container col-12">
+              <ToggleButton
+                id="modifyVendorToggle"
+                name="modifyVendorToggle"
+                onLabel="Modifiable"
+                offLabel="Modify"
+                onIcon="pi pi-check"
+                offIcon="pi pi-times"
+                checked={isModifiable}
+                onChange={() => setIsModifiable(!isModifiable)}
+              />
+            </div>
 
-        <label htmlFor="vendor">Vendor</label>
-        <InputText
-          id="vendor"
-          className="p-inputtext-sm"
-          name="vendor"
-          value={vendor}
-          disabled={!isModifiable}
-          onChange={(event: FormEvent<HTMLInputElement>): void => {
-            setVendor(event.currentTarget.value);
-          }}
-        />
+            <div className="flex flex-row justify-content-center card-container col-12">
+              <div className="pt-2 pr-2">
+                <label className="text-xl" htmlFor="vendor">
+                  Genre
+                </label>
+              </div>
+              <InputText
+                id="vendor"
+                className="p-inputtext-sm"
+                name="vendor"
+                value={vendor}
+                disabled={!isModifiable}
+                onChange={(event: FormEvent<HTMLInputElement>): void => {
+                  setVendor(event.currentTarget.value);
+                }}
+              />
+            </div>
 
-        <ConfirmButton
-          isVisible={isConfirmationPopupVisible}
-          hideFunc={() => setIsConfirmationPopupVisible(false)}
-          acceptFunc={onSubmit}
-          rejectFunc={() => {
-            console.log("reject");
-          }}
-          buttonClickFunc={() => {
-            setIsConfirmationPopupVisible(true);
-          }}
-          disabled={!isModifiable}
-          label={"Submit"}
-        />
-        {/* Maybe be needed in case the confrim button using the popup breaks */}
-        {/* <Button disabled={!this.state.isModifiable} label="submit" type="submit" /> */}
-      </form>
+            <div className="flex flex-row justify-content-center card-container col-12">
+              <ConfirmButton
+                isVisible={isConfirmationPopupVisible}
+                hideFunc={() => setIsConfirmationPopupVisible(false)}
+                acceptFunc={onSubmit}
+                rejectFunc={() => {
+                  console.log("reject");
+                }}
+                buttonClickFunc={() => {
+                  setIsConfirmationPopupVisible(true);
+                }}
+                disabled={!isModifiable}
+                label={"Submit"}
+                className="p-button-success p-button-raised"
+              />
+            </div>
+            {/* Maybe be needed in case the confrim button using the popup breaks */}
+            {/* <Button disabled={!this.state.isModifiable} label="submit" type="submit" /> */}
+          </form>
+        </div>
+      </div>
     </div>
   );
 }

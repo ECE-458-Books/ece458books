@@ -74,11 +74,28 @@ class LoginPage extends React.Component<LoginProps, LoginState> {
 
   render() {
     return (
-      <form onSubmit={this.onSubmit}>
-        <InputText value={this.state.password} onChange={this.onChange} />
-        <Button type="submit" label="Submit" aria-label="Submit" />
-        <Messages ref={this.wrongPasswordRef} />
-      </form>
+      <div className="grid flex justify-content-center">
+        <link
+          rel="stylesheet"
+          href="https://unpkg.com/primeflex@3.1.2/primeflex.css"
+        ></link>
+        <div className="col-5">
+          <div className="py-5">
+            <h1 className="text-center text-900 color: var(--surface-800);">
+              Login Page
+            </h1>
+          </div>
+          <form onSubmit={this.onSubmit}>
+            <div className="flex flex-row justify-content-center card-container col-12">
+              <InputText value={this.state.password} onChange={this.onChange} />
+            </div>
+            <div className="flex flex-row justify-content-center card-container col-12">
+              <Button type="submit" label="Sign In" aria-label="Log" />
+            </div>
+            <Messages ref={this.wrongPasswordRef} />
+          </form>
+        </div>
+      </div>
     );
   }
 }

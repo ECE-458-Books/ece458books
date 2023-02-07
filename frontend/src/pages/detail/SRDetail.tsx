@@ -130,7 +130,7 @@ export default function SRDetail() {
         <Button
           type="button"
           icon="pi pi-trash"
-          className="p-button-rounded p-button-warning"
+          className="p-button-rounded p-button-danger"
           onClick={() => deleteProduct(rowData)}
           disabled={!isModifiable}
         />
@@ -145,9 +145,30 @@ export default function SRDetail() {
           type="button"
           label="New"
           icon="pi pi-plus"
-          className="p-button-success mr-2"
+          className="p-button-info mr-2"
           onClick={openNew}
           disabled={!isModifiable}
+        />
+      </React.Fragment>
+    );
+  };
+
+  const rightToolbarTemplate = () => {
+    return (
+      <React.Fragment>
+        <ConfirmButton
+          isVisible={isConfirmationPopupVisible}
+          hideFunc={() => setIsConfirmationPopupVisible(false)}
+          acceptFunc={onSubmit}
+          rejectFunc={() => {
+            console.log("reject");
+          }}
+          buttonClickFunc={() => {
+            setIsConfirmationPopupVisible(true);
+          }}
+          disabled={!isModifiable}
+          label={"Update"}
+          className="p-button-success p-button-raised"
         />
       </React.Fragment>
     );
@@ -163,79 +184,94 @@ export default function SRDetail() {
 
   return (
     <div>
-      {isAddPage ? (
-        <h1>Add Sales Reconciliation</h1>
-      ) : (
-        <h1>Modify Sales Reconciliation</h1>
-      )}
-      <form id="localForm">
-        {!isAddPage && (
-          <ToggleButton
-            id="modifySRToggle"
-            name="modifySRToggle"
-            onLabel="Modifiable"
-            offLabel="Modify"
-            onIcon="pi pi-check"
-            offIcon="pi pi-times"
-            checked={isModifiable}
-            disabled={isAddPage}
-            onChange={() => setIsModifiable(!isModifiable)}
-          />
-        )}
+      <div className="grid flex justify-content-center">
+        <link
+          rel="stylesheet"
+          href="https://unpkg.com/primeflex@3.1.2/primeflex.css"
+        ></link>
+        <div className="col-11">
+          <div className="pt-2">
+            {isAddPage ? (
+              <h1 className="text-center text-900 color: var(--surface-800);">
+                Add Sales Reconciliation
+              </h1>
+            ) : (
+              <h1 className="text-center text-900 color: var(--surface-800);">
+                Modify Sales Reconciliation
+              </h1>
+            )}
+          </div>
+          <form id="localForm">
+            <div className="flex flex-row justify-content-center card-container col-12">
+              {!isAddPage && (
+                <ToggleButton
+                  id="modifySRToggle"
+                  name="modifySRToggle"
+                  onLabel="Modifiable"
+                  offLabel="Modify"
+                  onIcon="pi pi-check"
+                  offIcon="pi pi-times"
+                  checked={isModifiable}
+                  disabled={isAddPage}
+                  onChange={() => setIsModifiable(!isModifiable)}
+                />
+              )}
+            </div>
 
-        <label htmlFor="date">Date</label>
-        <Calendar
-          id="date"
-          disabled={!isModifiable}
-          value={date}
-          readOnlyInput
-          onChange={(event: CalendarProps): void => {
-            setDate(event.value);
-          }}
-        />
-        <Toolbar className="mb-4" left={leftToolbarTemplate} />
-        <DataTable
-          value={data}
-          className="editable-cells-table"
-          responsiveLayout="scroll"
-          editMode="cell"
-        >
-          {COLUMNS.map(({ field, header }) => {
-            return (
+            <div className="flex pb-2 flex-row justify-content-evenly card-container col-12">
+              <div>
+                <label htmlFor="date" className="pt-2 pr-2">
+                  Date
+                </label>
+                <Calendar
+                  id="date"
+                  disabled={!isModifiable}
+                  value={date}
+                  readOnlyInput
+                  onChange={(event: CalendarProps): void => {
+                    setDate(event.value);
+                  }}
+                />
+              </div>
+            </div>
+
+            <Toolbar
+              className="mb-4"
+              left={leftToolbarTemplate}
+              right={rightToolbarTemplate}
+            />
+            <DataTable
+              value={data}
+              className="editable-cells-table"
+              responsiveLayout="scroll"
+              editMode="cell"
+            >
+              {COLUMNS.map(({ field, header }) => {
+                return (
+                  <Column
+                    key={field}
+                    field={field}
+                    header={header}
+                    style={{ width: "25%" }}
+                    body={field === "retailPrice" && priceBodyTemplate}
+                    editor={(options) => cellEditor(options)}
+                    onCellEditComplete={onCellEditComplete}
+                    hidden={field === "rowID"}
+                  />
+                );
+              })}
               <Column
-                key={field}
-                field={field}
-                header={header}
-                style={{ width: "25%" }}
-                body={field === "retailPrice" && priceBodyTemplate}
-                editor={(options) => cellEditor(options)}
-                onCellEditComplete={onCellEditComplete}
-                hidden={field === "rowID"}
-              />
-            );
-          })}
-          <Column
-            body={actionBodyTemplate}
-            exportable={false}
-            style={{ minWidth: "8rem" }}
-          ></Column>
-        </DataTable>
-        <ConfirmButton
-          isVisible={isConfirmationPopupVisible}
-          hideFunc={() => setIsConfirmationPopupVisible(false)}
-          acceptFunc={onSubmit}
-          rejectFunc={() => {
-            console.log("reject");
-          }}
-          buttonClickFunc={() => {
-            setIsConfirmationPopupVisible(true);
-          }}
-          disabled={!isModifiable}
-          label={"Submit"}
-        />
-        {/* Maybe be needed in case the confrim button using the popup breaks */}
-        {/* <Button type="submit" onClick={this.onSubmit} /> */}
-      </form>
+                body={actionBodyTemplate}
+                exportable={false}
+                style={{ minWidth: "8rem" }}
+              ></Column>
+            </DataTable>
+
+            {/* Maybe be needed in case the confrim button using the popup breaks */}
+            {/* <Button type="submit" onClick={this.onSubmit} /> */}
+          </form>
+        </div>
+      </div>
     </div>
   );
 }

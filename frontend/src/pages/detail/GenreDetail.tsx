@@ -34,46 +34,69 @@ export default function GenreDetail() {
 
   return (
     <div>
-      <h1>Modify Genre</h1>
-      <form onSubmit={onSubmit}>
-        <ToggleButton
-          id="modifyGenreToggle"
-          name="modifyGenreToggle"
-          onLabel="Modifiable"
-          offLabel="Modify"
-          onIcon="pi pi-check"
-          offIcon="pi pi-times"
-          checked={isModifiable}
-          onChange={() => setIsModifiable(!isModifiable)}
-        />
+      <div className="grid flex justify-content-center">
+        <link
+          rel="stylesheet"
+          href="https://unpkg.com/primeflex@3.1.2/primeflex.css"
+        ></link>
+        <div className="col-5">
+          <div className="py-5">
+            <h1 className="text-center text-900 color: var(--surface-800);">
+              Modify Genre
+            </h1>
+          </div>
+          <form onSubmit={onSubmit}>
+            <div className="flex pb-8 flex-row justify-content-center card-container col-12">
+              <ToggleButton
+                id="modifyGenreToggle"
+                name="modifyGenreToggle"
+                onLabel="Modifiable"
+                offLabel="Modify"
+                onIcon="pi pi-check"
+                offIcon="pi pi-times"
+                checked={isModifiable}
+                onChange={() => setIsModifiable(!isModifiable)}
+              />
+            </div>
 
-        <label htmlFor="genre">Genre</label>
-        <InputText
-          id="genre"
-          className="p-inputtext-sm"
-          name="genre"
-          value={genre}
-          disabled={!isModifiable}
-          onChange={(event: FormEvent<HTMLInputElement>): void => {
-            setGenre(event.currentTarget.value);
-          }}
-        />
+            <div className="flex flex-row justify-content-center card-container col-12">
+              <div className="pt-2 pr-2">
+                <label className="text-xl" htmlFor="genre">
+                  Genre
+                </label>
+              </div>
+              <InputText
+                id="genre"
+                className="p-inputtext-sm"
+                name="genre"
+                value={genre}
+                disabled={!isModifiable}
+                onChange={(event: FormEvent<HTMLInputElement>): void => {
+                  setGenre(event.currentTarget.value);
+                }}
+              />
+            </div>
 
-        <ConfirmButton
-          isVisible={isConfirmationPopVisible}
-          hideFunc={() => setIsConfirmationPopupVisible(false)}
-          acceptFunc={onSubmit}
-          rejectFunc={() => {
-            console.log("reject");
-          }}
-          buttonClickFunc={() => setIsConfirmationPopupVisible(true)}
-          disabled={!isModifiable}
-          label={"Submit"}
-        />
+            <div className="flex flex-row justify-content-center card-container col-12">
+              <ConfirmButton
+                isVisible={isConfirmationPopVisible}
+                hideFunc={() => setIsConfirmationPopupVisible(false)}
+                acceptFunc={onSubmit}
+                rejectFunc={() => {
+                  console.log("reject");
+                }}
+                buttonClickFunc={() => setIsConfirmationPopupVisible(true)}
+                disabled={!isModifiable}
+                label={"Update"}
+                className="p-button-success p-button-raised"
+              />
+            </div>
 
-        {/* Maybe be needed in case the confrim button using the popup breaks */}
-        {/* <Button disabled={!this.state.isModifiable} label="submit" type="submit" /> */}
-      </form>
+            {/* Maybe be needed in case the confrim button using the popup breaks */}
+            {/* <Button disabled={!this.state.isModifiable} label="submit" type="submit" /> */}
+          </form>
+        </div>
+      </div>
     </div>
   );
 }

@@ -184,6 +184,7 @@ export default function BookDetail() {
           }}
           disabled={!isModifiable}
           label={"Submit"}
+          className=""
         />
         {/* Maybe be needed in case the confrim button using the popup breaks */}
         {/* <Button disabled={!this.state.isModifiable} label="submit" type="submit" /> */}

@@ -15,7 +15,7 @@ import DeletePopup from "../../components/DeletePopup";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import { logger } from "../../util/Logger";
 import { BookDetailState } from "../detail/ModfiyBook";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { GENRES_API } from "../../apis/GenresAPI";
 
 export const NUM_ROWS = 3;
@@ -85,8 +85,10 @@ export default function BookList() {
   };
 
   // Custom dropdown selector for Genre
+  const location = useLocation();
+  const passedGenre = location.state?.genre ?? "";
   const [genreList, setGenreList] = useState<string[]>([]);
-  const [selectedGenre, setSelectedGenre] = useState<string>("");
+  const [selectedGenre, setSelectedGenre] = useState<string>(passedGenre);
 
   useEffect(() => {
     GENRES_API.getGenres({

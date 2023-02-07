@@ -5,6 +5,9 @@ import {
   DataTableFilterEvent,
   DataTableFilterMetaData,
   DataTablePageEvent,
+  DataTableRowClickEvent,
+  DataTableSelection,
+  DataTableSelectionChangeEvent,
   DataTableSortEvent,
 } from "primereact/datatable";
 import React from "react";
@@ -100,7 +103,7 @@ export default function GenreList() {
     const detailState: GenreDetailState = {
       id: genre.id,
       genre: genre.name,
-      isModifiable: false,
+      isModifiable: true,
       isConfirmationPopupVisible: false,
     };
 
@@ -145,6 +148,15 @@ export default function GenreList() {
     logger.debug("Page Applied", event);
     setLoading(true);
     setPageParams(event);
+  };
+
+  const onRowClick = (event: DataTableRowClickEvent) => {
+    // I couldn't figure out a better way to do this...
+    // It takes the current index as the table knows it and calculates the actual index in the genres array
+    const index = event.index - NUM_ROWS * (pageParams.page ?? 0);
+    const genre = genres[index];
+    logger.debug("Genre Row Clicked", genre);
+    navigate("/books", { state: { genre: genre.name } });
   };
 
   // API call on page load
@@ -237,6 +249,10 @@ export default function GenreList() {
         responsiveLayout="scroll"
         filterDisplay="row"
         loading={loading}
+        // Operations on rows
+        rowHover
+        selectionMode={"single"}
+        onRowClick={(event) => onRowClick(event)}
         // Paginator
         paginator
         first={pageParams.first}

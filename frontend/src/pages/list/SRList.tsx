@@ -164,14 +164,20 @@ export default function SalesReconciliationList() {
   useEffect(() => callAPI(), [sortParams, pageParams, filterParams]);
 
   // Calls the Vendors API
+  // const callAPI = () => {
+  //   SALES_API.getSalesReconciliations({
+  //     page: pageParams.page ?? 0,
+  //     page_size: pageParams.rows,
+  //     ordering_field: sortParams.sortField,
+  //     ordering_ascending: sortParams.sortOrder,
+  //     search: filterParams.filters.name.value,
+  //   }).then((response) => onAPIResponse(response));
+  // };
+
   const callAPI = () => {
-    /*SALES_API.getSalesReconciliations({
-      page: pageParams.page ?? 0,
-      page_size: pageParams.rows,
-      ordering_field: sortParams.sortField,
-      ordering_ascending: sortParams.sortOrder,
-      search: filterParams.filters.name.value,
-    }).then((response) => onAPIResponse(response));*/
+    SALES_API.getSalesReconciliations().then((response) =>
+      onAPIResponse(response)
+    );
   };
 
   // Set state when response to API call is received

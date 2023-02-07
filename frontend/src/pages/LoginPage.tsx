@@ -52,10 +52,27 @@ export default function LoginPage() {
   };
 
   return (
-    <form onSubmit={onSubmit}>
-      <InputText value={password} onChange={onChange} />
-      <Button type="submit" label="Submit" aria-label="Submit" />
-      <Messages ref={wrongPasswordRef} />
-    </form>
+    <div className="grid flex justify-content-center">
+      <link
+        rel="stylesheet"
+        href="https://unpkg.com/primeflex@3.1.2/primeflex.css"
+      ></link>
+      <div className="col-5">
+        <div className="py-5">
+          <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
+            Login Page
+          </h1>
+        </div>
+        <form onSubmit={onSubmit}>
+          <div className="flex flex-row justify-content-center card-container col-12">
+            <InputText value={password} onChange={onChange} />
+          </div>
+          <div className="flex flex-row justify-content-center card-container col-12">
+            <Button type="submit" label="Submit" aria-label="Submit" />
+          </div>
+          <Messages ref={wrongPasswordRef} />
+        </form>
+      </div>
+    </div>
   );
 }

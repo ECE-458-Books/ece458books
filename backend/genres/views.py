@@ -49,7 +49,12 @@ class RetrieveUpdateDestroyGenreAPIView(RetrieveUpdateDestroyAPIView):
     lookup_url_kwarg = 'id'
 
     def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
+        
+        # Check if the request url is valid
+        try:
+            instance = self.get_object()
+        except Exception as e:
+            return Response({"error": f"{e}"}, status=status.HTTP_204_NO_CONTENT)
         
         # Check to see if the Genre has no books associated
         associated_book_cnt = len(instance.book_set.all())

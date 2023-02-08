@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from books.models import Book
 from .models import Sale, SalesReconciliation
+from purchase_orders.models import Purchase, PurchaseOrder
 
 
 class SaleSerializer(serializers.ModelSerializer):
@@ -85,3 +86,4 @@ class SalesReconciliationSerializer(serializers.ModelSerializer):
         sale.quantity = sale_data.get('quantity', sale.quantity)
         sale.unit_retail_price = sale_data.get('unit_retail_price', sale.unit_retail_price)
         sale.save()
+

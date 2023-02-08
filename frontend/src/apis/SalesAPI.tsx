@@ -93,7 +93,7 @@ export const SALES_API = {
 
   modifySalesReconciliation: async function (sr: APISRModify) {
     await API.request({
-      url: SALES_EXTENSION.concat(sr.id.toString()),
+      url: SALES_EXTENSION.concat("/").concat(sr.id.toString()),
       method: METHOD_PATCH,
       data: sr,
     });

@@ -75,6 +75,11 @@ export default function SRDetail() {
     isModifiable: true,
     isConfirmationPopupVisible: false,
   };
+
+  for (const sale of detailState.sales) {
+    sale.isNewRow = false;
+  }
+
   const [date, setDate] = useState(detailState.date);
   const [sales, setSales] = useState(detailState.sales);
   const [salesReconciliationID, setSalesReconciliationID] = useState(
@@ -129,8 +134,8 @@ export default function SRDetail() {
     setSales(_data);
   };
 
-  const deleteProduct = (rowData: any) => {
-    const _data = sales.filter((val) => val.id !== rowData.rowID);
+  const deleteProduct = (rowData: SRSaleRow) => {
+    const _data = sales.filter((val) => val.id !== rowData.id);
     setSales(_data);
   };
 

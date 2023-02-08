@@ -30,21 +30,25 @@ const COLUMNS: TableColumn[] = [
     field: "date",
     header: "Date (YYYY-MM-DD)",
     filterPlaceholder: "Search by Total Date",
+    filterable: false,
   },
   {
     field: "num_unique_books",
     header: "Unique Books",
     filterPlaceholder: "Search by Unique Books",
+    filterable: false,
   },
   {
     field: "num_books",
     header: "Total Books",
     filterPlaceholder: "Search by Total Books",
+    filterable: false,
   },
   {
     field: "total_revenue",
     header: "Total Revenue ($)",
     filterPlaceholder: "Search by Total Revenue",
+    filterable: false,
   },
 ];
 
@@ -174,17 +178,6 @@ export default function SalesReconciliationList() {
   // When any of the list of params are changed, useEffect is called to hit the API endpoint
   useEffect(() => callAPI(), [sortParams, pageParams, filterParams]);
 
-  // Calls the Vendors API
-  // const callAPI = () => {
-  //   SALES_API.getSalesReconciliations({
-  //     page: pageParams.page ?? 0,
-  //     page_size: pageParams.rows,
-  //     ordering_field: sortParams.sortField,
-  //     ordering_ascending: sortParams.sortOrder,
-  //     search: filterParams.filters.name.value,
-  //   }).then((response) => onAPIResponse(response));
-  // };
-
   const callAPI = () => {
     // Invert sort order
     let sortField = sortParams.sortField;
@@ -232,7 +225,7 @@ export default function SalesReconciliationList() {
         field={col.field}
         header={col.header}
         // Filtering
-        filter
+        filter={col.filterable}
         filterElement={col.customFilter}
         //filterMatchMode={"contains"}
         filterPlaceholder={col.filterPlaceholder}

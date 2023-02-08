@@ -44,6 +44,11 @@ interface APIBookFromAdd extends APIBook {
   fromDB: boolean;
 }
 
+interface AddBooksInitialLookupResp {
+  books: BookWithDBTag[];
+  invalidISBNS: string[];
+}
+
 export interface GetBooksResp {
   books: Book[];
   numberOfBooks: number;
@@ -127,7 +132,7 @@ export const BOOKS_API = {
 
   addBookInitialLookup: async function (
     isbns: string
-  ): Promise<BookWithDBTag[]> {
+  ): Promise<AddBooksInitialLookupResp> {
     const response = await API.request({
       url: BOOKS_EXTENSION.concat("/isbns"),
       method: METHOD_POST,
@@ -154,15 +159,18 @@ export const BOOKS_API = {
       } as BookWithDBTag;
     });
 
-    return Promise.resolve(books);
+    return Promise.resolve({
+      books: books,
+      invalidISBNS: response.data.invalid_isbns,
+    });
   },
 
   addBookFinal: async function (book: Book) {
     const bookParams = {
       id: book.id,
       title: book.title,
-      authors: book.author,
-      genres: book.genres,
+      authors: CommaSeparatedStringToArray(book.author),
+      genres: CommaSeparatedStringToArray(book.genres),
       isbn_13: book.isbn_13,
       isbn_10: book.isbn10,
       publisher: book.publisher,

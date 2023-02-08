@@ -26,15 +26,9 @@ interface TableColumn {
   filterPlaceholder?: string;
   customFilter?: () => JSX.Element;
   hidden?: boolean;
+  sortable?: boolean;
+  filterable?: boolean;
 }
-
-const GENRE_DATA: Genre[] = [
-  {
-    id: 3,
-    name: "blah",
-    book_cnt: 5,
-  },
-];
 
 export interface Book {
   id: number;
@@ -115,7 +109,12 @@ export default function BookList() {
 
   // Properties of each column that change, the rest are set below when creating the actual Columns to be rendered
   const COLUMNS: TableColumn[] = [
-    { field: "id", header: "ID", filterPlaceholder: "Search by ID" },
+    {
+      field: "id",
+      header: "ID",
+      filterPlaceholder: "Search by ID",
+      hidden: true,
+    },
     { field: "title", header: "Title", filterPlaceholder: "Search by Title" },
     {
       field: "author",
@@ -127,6 +126,7 @@ export default function BookList() {
       header: "Genre",
       filterPlaceholder: "Search by Genre",
       customFilter: genreFilter,
+      sortable: false,
     },
     { field: "isbn_13", header: "ISBN", filterPlaceholder: "Search by ISBN" },
     {
@@ -354,7 +354,7 @@ export default function BookList() {
         //filterMatchMode={"contains"}
         filterPlaceholder={col.filterPlaceholder}
         // Sorting
-        sortable
+        sortable={col.sortable ?? true}
         //sortField={col.field}
         // Hiding Fields
         showFilterMenuOptions={false}

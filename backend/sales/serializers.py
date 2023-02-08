@@ -1,6 +1,9 @@
 from rest_framework import serializers
-from books.models import Book
+from rest_framework.exceptions import APIException
+
 from .models import Sale, SalesReconciliation
+
+from books.models import Book
 from purchase_orders.models import Purchase, PurchaseOrder
 
 
@@ -51,6 +54,13 @@ class SalesReconciliationSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         sales_data = validated_data.pop('sales')
+
+        # Sanity check if there exists at least one sale in SR
+        if(len(sales_data) < 1):
+            raise APIException({
+                "error": "There must be at least one sales in sales reconciliation."
+            })
+
         sales_reconciliation = SalesReconciliation.objects.create(**validated_data)
         for sale_data in sales_data:
             Sale.objects.create(sales_reconciliation=sales_reconciliation, **sale_data)

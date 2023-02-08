@@ -4,13 +4,13 @@ from .models import Sale, SalesReconciliation
 
 
 class SaleSerializer(serializers.ModelSerializer):
-    book_id = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all())
+    book = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all())
     book_title = serializers.SerializerMethodField()
     id = serializers.IntegerField(required=False)
 
     class Meta:
         model = Sale
-        fields = ['id', 'book_id', 'book_title', 'quantity', 'unit_retail_price']
+        fields = ['id', 'book', 'book_title', 'quantity', 'unit_retail_price']
     
     def get_book_title(self, instance):
         return instance.book.title

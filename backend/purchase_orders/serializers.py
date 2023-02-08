@@ -2,15 +2,16 @@ from rest_framework import serializers
 from books.models import Book
 from .models import Purchase, PurchaseOrder
 from vendors.models import Vendor
+from vendors.serializers import VendorSerializer
 
 class PurchaseSerializer(serializers.ModelSerializer):
-    book_id = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all())
+    book = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all())
     book_title = serializers.SerializerMethodField()
     id = serializers.IntegerField(required=False)
 
     class Meta:
         model = Purchase
-        fields = ['id', 'book_id', 'book_title', 'quantity', 'unit_wholesale_price']
+        fields = ['id', 'book', 'book_title', 'quantity', 'unit_wholesale_price']
 
     def get_book_title(self, instance):
         return instance.book.title
@@ -24,7 +25,7 @@ class PurchaseOrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PurchaseOrder
-        fields = ['id', 'date', 'purchases', 'vendor_id', 'vendor_name', 'num_books', 'num_unique_books', 'total_cost']
+        fields = ['id', 'date', 'purchases', 'vendor', 'vendor_name', 'num_books', 'num_unique_books', 'total_cost']
         read_only_fields = ['id']
 
     def get_num_books(self, instance):
@@ -49,10 +50,9 @@ class PurchaseOrderSerializer(serializers.ModelSerializer):
         return round(total_cost, 2)
     
     def get_vendor_name(self, instance):
-        return Vendor.objects.filter(id=instance.vendor_id).get().name
+        return instance.vendor.name
 
     def create(self, validated_data):
-        print(validated_data)
         purchases_data = validated_data.pop('purchases')
         purchase_order = PurchaseOrder.objects.create(**validated_data)
         for purchase_data in purchases_data:
@@ -81,7 +81,7 @@ class PurchaseOrderSerializer(serializers.ModelSerializer):
 
     def update_non_nested_fields(self, instance, validated_data):
         instance.date = validated_data.get('date', instance.date)
-        instance.vendor_id = validated_data.get('vendor_id', instance.vendor_id)
+        instance.vendor = validated_data.get('vendor', instance.vendor)
         instance.save()
 
     def update_purchase(self, instance, purchase_data, purchase_id):

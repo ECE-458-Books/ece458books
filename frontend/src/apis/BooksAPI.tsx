@@ -121,7 +121,7 @@ export const BOOKS_API = {
     const _books = response.data.map((book: APIBookSimplified) => {
       return {
         id: book.id,
-        name: book.title,
+        title: book.title,
       };
     });
 

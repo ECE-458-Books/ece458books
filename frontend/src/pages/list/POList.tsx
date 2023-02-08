@@ -6,7 +6,8 @@ import {
   DataTablePageEvent,
   DataTableSortEvent,
 } from "primereact/datatable";
-import { useEffect, useState } from "react";
+import { Toast } from "primereact/toast";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GetPurchaseOrdersResp, PURCHASES_API } from "../../apis/PurchasesAPI";
 import DeletePopup from "../../components/DeletePopup";
@@ -19,39 +20,58 @@ import { NUM_ROWS } from "./BookList";
 export interface PurchaseOrder {
   id: number;
   date: string;
-  vendorName: string;
-  vendorID: number;
-  uniqueBooks: number;
-  totalBooks: number;
-  totalCost: number;
+  vendor_name: string;
+  vendor_id: number;
+  num_unique_books: number;
+  num_books: number;
+  total_cost: number;
   purchases: POPurchaseRow[];
 }
 
 const COLUMNS: TableColumn[] = [
   {
+    field: "id",
+    header: "ID",
+    filterPlaceholder: "Search by ID",
+    hidden: true,
+    filterable: false,
+  },
+  {
     field: "date",
     header: "Date (YYYY-MM-DD)",
     filterPlaceholder: "Search by Date",
+    filterable: false,
   },
   {
-    field: "vendorName",
+    field: "vendor_name",
     header: "Vendor Name",
     filterPlaceholder: "Search by Name",
+    filterable: false,
   },
   {
-    field: "uniqueBooks",
+    field: "vendor_id",
+    header: "Vendor ID",
+    filterPlaceholder: "Search by Name",
+    hidden: true,
+    filterable: false,
+  },
+  {
+    field: "num_unique_books",
     header: "Unique Books",
     filterPlaceholder: "Search by Unique Books",
+    filterable: false,
   },
   {
-    field: "totalBooks",
+    field: "num_books",
     header: "Total Books",
     filterPlaceholder: "Search by Total Books",
+    filterable: false,
   },
   {
-    field: "totalCost",
+    field: "total_cost",
     header: "Total Cost ($)",
     filterPlaceholder: "Search by Total Cost",
+    filterable: false,
   },
 ];
 
@@ -59,21 +79,21 @@ const COLUMNS: TableColumn[] = [
 interface Filters {
   [id: string]: DataTableFilterMetaData;
   date: DataTableFilterMetaData;
-  vendorName: DataTableFilterMetaData;
-  uniqueBooks: DataTableFilterMetaData;
-  totalBooks: DataTableFilterMetaData;
-  totalCost: DataTableFilterMetaData;
+  vendor_name: DataTableFilterMetaData;
+  num_unique_books: DataTableFilterMetaData;
+  num_books: DataTableFilterMetaData;
+  total_cost: DataTableFilterMetaData;
 }
 
 // Empty purchase order, used to initialize state
 const emptyPurchaseOrder = {
   id: 0,
   date: "",
-  vendorName: "",
-  vendorID: 0,
-  uniqueBooks: 0,
-  totalBooks: 0,
-  totalCost: 0,
+  vendor_name: "",
+  vendor_id: 0,
+  num_unique_books: 0,
+  num_books: 0,
+  total_cost: 0,
   purchases: [],
 };
 
@@ -105,11 +125,10 @@ export default function PurchaseOrderList() {
     filters: {
       id: { value: "", matchMode: "contains" },
       date: { value: "", matchMode: "contains" },
-      vendorName: { value: "", matchMode: "contains" },
-      vendorID: { value: "", matchMode: "contains" },
-      uniqueBooks: { value: "", matchMode: "contains" },
-      totalBooks: { value: "", matchMode: "contains" },
-      totalCost: { value: "", matchMode: "contains" },
+      vendor_name: { value: "", matchMode: "contains" },
+      num_unique_books: { value: "", matchMode: "contains" },
+      num_books: { value: "", matchMode: "contains" },
+      total_cost: { value: "", matchMode: "contains" },
     } as Filters,
   });
 
@@ -123,10 +142,10 @@ export default function PurchaseOrderList() {
     logger.debug("Edit Purchase Order Clicked", po);
     const detailState: PODetailState = {
       date: new Date(po.date.replace("-", "/")),
-      data: po.purchases,
+      purchases: po.purchases,
       id: po.id,
-      vendorName: po.vendorName,
-      vendorID: po.vendorID,
+      vendorName: po.vendor_name,
+      vendorID: po.vendor_id,
       isAddPage: false,
       isModifiable: false,
       isConfirmationPopupVisible: false,
@@ -145,14 +164,21 @@ export default function PurchaseOrderList() {
   // Call to actually delete the element
   const deletePurchaseOrderFinal = () => {
     logger.debug("Edit Purchase Order Finalized", selectedDeletePurchaseOrder);
+    setDeletePopupVisible(false);
     PURCHASES_API.deletePurchaseOrder(
       selectedDeletePurchaseOrder.id.toString()
-    );
+    ).then((response) => {
+      if (response.status == 204) {
+        showSuccess();
+      } else {
+        showFailure();
+        return;
+      }
+    });
     const _purchaseOrders = purchaseOrders.filter(
       (selectPO) => selectedDeletePurchaseOrder.id != selectPO.id
     );
     setPurchaseOrders(_purchaseOrders);
-    setDeletePopupVisible(false);
     setSelectedDeletePurchaseOrder(emptyPurchaseOrder);
   };
 
@@ -182,30 +208,44 @@ export default function PurchaseOrderList() {
 
   // Calls the Vendors API
   const callAPI = () => {
+    // Invert sort order
+    let sortField = sortParams.sortField;
+    if (sortParams.sortOrder == -1) {
+      sortField = "-".concat(sortField);
+    }
+
     PURCHASES_API.getPurchaseOrders({
       page: pageParams.page ?? 0,
       page_size: pageParams.rows,
+      ordering: sortField,
     }).then((response) => {
       return onAPIResponse(response);
     });
   };
-
-  // Calls the Vendors API
-  //const callAPI = () => {
-  /*PURCHASES_API.getPurchaseOrders({
-      page: pageParams.page ?? 0,
-      page_size: pageParams.rows,
-      ordering_field: sortParams.sortField,
-      ordering_ascending: sortParams.sortOrder,
-      search: filterParams.filters.name.value,
-    }).then((response) => onAPIResponse(response));*/
-  //};
 
   // Set state when response to API call is received
   const onAPIResponse = (response: GetPurchaseOrdersResp) => {
     setPurchaseOrders(response.purchaseOrders);
     setNumberOfPurchaseOrders(response.numberOfPurchaseOrders);
     setLoading(false);
+  };
+
+  // Toast is used for showing success/error messages
+  const toast = useRef<Toast>(null);
+
+  const showSuccess = () => {
+    toast.current?.show({
+      severity: "success",
+      summary: "Purchase order deleted",
+    });
+  };
+
+  const showFailure = () => {
+    toast.current?.show({
+      severity: "error",
+      summary:
+        "Purchase order could not be deleted, not all book inventory counts are 0",
+    });
   };
 
   // ----------------- TEMPLATES/VISIBLE COMPONENTS -----------------
@@ -253,6 +293,7 @@ export default function PurchaseOrderList() {
 
   return (
     <div className="card pt-5 px-2">
+      <Toast ref={toast} />
       <DataTable
         // General Settings
         value={purchaseOrders}

@@ -4,7 +4,7 @@ import { Calendar, CalendarProps } from "primereact/calendar";
 import { Dropdown, DropdownProps } from "primereact/dropdown";
 import { DataTable } from "primereact/datatable";
 import { TableColumn } from "../../components/Table";
-import { Column, ColumnEditorOptions } from "primereact/column";
+import { Column, ColumnEditorOptions, ColumnEvent } from "primereact/column";
 import ConfirmButton from "../../components/ConfirmButton";
 import { Button } from "primereact/button";
 import { Toolbar } from "primereact/toolbar";
@@ -19,8 +19,10 @@ import {
 import { useLocation } from "react-router-dom";
 import {
   GetPurchaseResp,
-  POPurchRowSubmit,
+  APIPOPurchaseRow,
   PURCHASES_API,
+  APIPOCreate,
+  APIPOModify,
 } from "../../apis/PurchasesAPI";
 import { VENDORS_API } from "../../apis/VendorsAPI";
 import { Vendor } from "../list/VendorList";
@@ -29,7 +31,7 @@ import { BOOKS_API } from "../../apis/BooksAPI";
 export interface PODetailState {
   id: number;
   date: any;
-  data: POPurchaseRow[];
+  purchases: POPurchaseRow[];
   vendorName: string;
   vendorID: number;
   isAddPage: boolean;
@@ -38,39 +40,24 @@ export interface PODetailState {
 }
 
 export interface POPurchaseRow {
-  rowID: string;
+  isNewRow: boolean; // true if the user added this row, false if it already existed
+  id: string;
   book_id: number;
   book_title: string;
   quantity: number;
   unit_wholesale_price: number;
 }
 
-// Below placeholders need to be removed
-interface Vendors {
-  name: string;
-  id: number;
-}
-
 // The books Interface lol no
 export interface BooksList {
   id: number;
-  name: string;
+  title: string;
 }
-
-const columns: TableColumn[] = [
-  { field: "book_id", header: "ID", filterPlaceholder: "ID" },
-  { field: "book_title", header: "Books", filterPlaceholder: "Books" },
-  { field: "quantity", header: "Quantity", filterPlaceholder: "Quantity" },
-  {
-    field: "unit_wholesale_price",
-    header: "Unit Retail Price ($)",
-    filterPlaceholder: "Price",
-  },
-];
 
 export default function PODetail() {
   const emptyProduct = {
-    rowID: uuid(),
+    isNewRow: true,
+    id: uuid(),
     book_id: 0,
     book_title: "",
     quantity: 1,
@@ -80,12 +67,14 @@ export default function PODetail() {
   const location = useLocation();
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const detailState = (location.state! as PODetailState) ?? {
+    id: -1,
     date: new Date(),
     vendorName: "",
     vendorID: 0,
-    data: [
+    purchases: [
       {
-        rowID: uuid(),
+        isNewRow: true,
+        id: uuid(),
         book_title: "",
         book_id: 0,
         quantity: 1,
@@ -96,93 +85,136 @@ export default function PODetail() {
     isModifiable: true,
     isConfirmationPopupVisible: false,
   };
+
+  for (const purchase of detailState.purchases) {
+    purchase.isNewRow = false;
+  }
+  const bookMap = new Map<string, number>();
+
   const [date, setDate] = useState(detailState.date);
   const [vendorName, setVendorName] = useState(detailState.vendorName);
   const [vendorID, setVendorID] = useState(detailState.vendorID);
-  const [data, setData] = useState(detailState.data);
-  const [id, setId] = useState(detailState.id);
+  const [purchases, setPurchases] = useState<POPurchaseRow[]>(
+    detailState.purchases
+  );
+  const [purchaseOrderID, setPurchaseOrderID] = useState(detailState.id);
   const [lineData, setLineData] = useState(emptyProduct);
   const [vendorsData, setVendorsData] = useState<Vendor[]>();
-  const [booksData, setBooksData] = useState<BooksList[]>();
-  const [isAddPage, setisAddPage] = useState(detailState.isAddPage);
+  const [bookList, setBookTitlesList] = useState<string[]>();
+  const [isPOAddPage, setisAddPage] = useState(detailState.isAddPage); // If false, this is an edit page
   const [isModifiable, setIsModifiable] = useState(detailState.isModifiable);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] = useState(
     detailState.isConfirmationPopupVisible
   );
 
-  const openNew = () => {
+  const columns: TableColumn[] = [
+    {
+      field: "book_id",
+      header: "ID",
+      filterPlaceholder: "ID",
+    },
+    {
+      field: "book_title",
+      header: "Books",
+      filterPlaceholder: "Books",
+      cellEditor: (options: ColumnEditorOptions) =>
+        booksDropDownEditor(options),
+    },
+    {
+      field: "quantity",
+      header: "Quantity",
+      filterPlaceholder: "Quantity",
+      cellEditValidator: (event: ColumnEvent) =>
+        isPositiveInteger(event.newValue),
+      cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
+    },
+    {
+      field: "unit_wholesale_price",
+      header: "Unit Retail Price ($)",
+      filterPlaceholder: "Price",
+      cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
+      cellEditor: (options: ColumnEditorOptions) => priceEditor(options),
+    },
+  ];
+
+  const onCellEditComplete = (event: ColumnEvent) => {
+    event.rowData[event.field] = event.newValue;
+  };
+
+  // Adds a row to the PO
+  const addNewPurchase = () => {
     setLineData(emptyProduct);
     const _lineData = lineData;
-    _lineData.rowID = uuid();
+    _lineData.id = uuid();
     setLineData(_lineData);
-    const _data = [...data];
+    const _data = [...purchases];
     _data.push({ ...lineData });
-    setData(_data);
+    setPurchases(_data);
   };
 
-  const deleteProduct = (rowData: any) => {
-    const _data = data.filter((val) => val.rowID !== rowData.rowID);
-    setData(_data);
+  // Deletes a row from the PO
+  const deletePurchase = (rowData: POPurchaseRow) => {
+    const _data = purchases.filter((val) => val.id !== rowData.id);
+    setPurchases(_data);
   };
 
-  const onCellEditComplete = (e: {
-    rowData: any;
-    newValue: any;
-    field: string;
-    originalEvent: React.SyntheticEvent;
-  }) => {
-    const { rowData, newValue, field, originalEvent: event } = e;
+  // Populate the vendors/book list on page load
+  useEffect(() => {
+    VENDORS_API.getVendorsNOPaging().then((response) => {
+      return setVendorsData(response.vendors);
+    });
 
-    switch (field) {
-      case "book_id":
-        break;
-      case "book_title":
-        rowData[field] = newValue.name;
-        rowData["book_id"] = newValue.id;
-        break;
-      case "quantity":
-        if (isPositiveInteger(newValue)) rowData[field] = newValue;
-        else event.preventDefault();
-        break;
-      case "unit_wholesale_price":
-        if (isPositiveInteger(newValue)) rowData[field] = newValue;
-        else event.preventDefault();
-        break;
+    BOOKS_API.getBooksNOPaging().then((response) => {
+      for (const book of response.books) {
+        bookMap.set(book.title, book.id);
+      }
+      setBookTitlesList(response.books.map((book) => book.title));
+    });
+  }, []);
 
-      default:
-        if (newValue.trim().length > 0) rowData[field] = newValue;
-        else event.preventDefault();
-        break;
+  // On submission of the PO, we either add/edit depending on the page type
+  const onSubmit = (): void => {
+    if (isPOAddPage) {
+      const apiPurchases = purchases.map((purchase) => {
+        return {
+          book_id: bookMap.get(purchase.book_title),
+          quantity: purchase.quantity,
+          unit_wholesale_price: purchase.unit_wholesale_price,
+        };
+      });
+
+      const purchaseOrder = {
+        date: date,
+        vendor_id: vendorID,
+        purchases: apiPurchases,
+      } as APIPOCreate;
+
+      PURCHASES_API.addPurchaseOrder(purchaseOrder);
+    } else {
+      // Otherwise, it is a modify page
+      const apiPurchases = purchases.map((purchase) => {
+        return {
+          id: purchase.isNewRow ? undefined : purchase.id,
+          book_id: purchase.isNewRow
+            ? bookMap.get(purchase.book_title)
+            : purchase.book_id,
+          quantity: purchase.quantity,
+          unit_wholesale_price: purchase.unit_wholesale_price,
+        };
+      });
+
+      const purchaseOrder = {
+        id: purchaseOrderID,
+        date: date,
+        vendor_id: vendorID,
+        purchases: apiPurchases,
+      } as APIPOModify;
+
+      PURCHASES_API.modifyPurchaseOrder(purchaseOrder);
     }
   };
 
-  const cellEditor = (options: ColumnEditorOptions) => {
-    if (isModifiable) {
-      if (options.field === "book_title") return dropDownEditor(options);
-      if (options.field === "unit_wholesale_price") return priceEditor(options);
-      if (options.field === "quantity") return numberEditor(options);
-      else return textEditor(options);
-    }
-  };
-
-  const dropDownEditor = (options: ColumnEditorOptions) => {
-    return (
-      <Dropdown
-        value={options.value}
-        options={booksData}
-        filter
-        appendTo={"self"}
-        placeholder="Select a Book"
-        optionLabel="name"
-        className="z-5"
-        onChange={(e) => {
-          options.editorCallback?.(e.target.value);
-        }}
-        showClear
-        virtualScrollerOptions={{ itemSize: 35 }}
-      />
-    );
-  };
+  // -------- TEMPLATES/VISUAL ELEMENTS --------
 
   const actionBodyTemplate = (rowData: any) => {
     return (
@@ -191,7 +223,7 @@ export default function PODetail() {
           type="button"
           icon="pi pi-trash"
           className="p-button-rounded p-button-danger"
-          onClick={() => deleteProduct(rowData)}
+          onClick={() => deletePurchase(rowData)}
           disabled={!isModifiable}
         />
       </React.Fragment>
@@ -206,7 +238,7 @@ export default function PODetail() {
           label="New"
           className="p-button-info mr-2"
           icon="pi pi-plus"
-          onClick={openNew}
+          onClick={addNewPurchase}
           disabled={!isModifiable}
         />
       </React.Fragment>
@@ -232,80 +264,42 @@ export default function PODetail() {
     );
   };
 
-  // When any of the list of params are changed, useEffect is called to hit the API endpoint
-  useEffect(() => callAPI(), [id]);
-
-  // Calls the Vendors API
-  const callAPI = () => {
-    if (!isAddPage) {
-      PURCHASES_API.getPurchase(id).then((response) => {
-        return onDATAPIResponse(response);
-      });
-    }
-
-    VENDORS_API.getVendorsNOPaging().then((response) => {
-      console.log(response.vendors);
-      return setVendorsData(response.vendors);
-    });
-
-    BOOKS_API.getBooksNOPaging().then((response) => {
-      console.log(response.books);
-      return setBooksData(response.books);
-    });
+  const booksDropDownEditor = (options: ColumnEditorOptions) => {
+    return (
+      <div style={{ zIndex: 9999 }}>
+        <Dropdown
+          value={options.value}
+          options={bookList}
+          filter
+          appendTo={"self"}
+          placeholder="Select a Book"
+          className="z-5"
+          onChange={(e) => {
+            options.editorCallback?.(e.target.value);
+          }}
+          showClear
+          virtualScrollerOptions={{ itemSize: 35 }}
+        />
+      </div>
+    );
   };
 
-  // Set state when response to API call is received
-  const onDATAPIResponse = (response: GetPurchaseResp) => {
-    const _data = response.purchase.map((po: POPurchaseRow) => {
-      return {
-        rowID: uuid(),
-        book_id: po.book_id,
-        book_title: po.book_title,
-        quantity: po.quantity,
-        unit_wholesale_price: po.unit_wholesale_price,
-      };
-    });
-    setData(_data);
-  };
-
-  const onSubmit = (): void => {
-    if (isAddPage) {
-      const _purchasesCorrected: POPurchRowSubmit[] = data.map(
-        (purchase: POPurchaseRow) => {
-          return {
-            book_id: purchase.book_id,
-            quantity: purchase.quantity,
-            unit_wholesale_price: purchase.unit_wholesale_price,
-          };
+  const tableColumns = columns.map((col) => {
+    return (
+      <Column
+        key={col.field}
+        field={col.field}
+        header={col.header}
+        style={{ width: "25%" }}
+        body={
+          col.field === "unit_wholesale_price" && priceBodyTemplateWholesale
         }
-      );
-      console.log("Add Page is submitted");
-      const _POs = {
-        date:
-          date.getFullYear() +
-          "-" +
-          (date.getMonth() + 1) +
-          "-" +
-          date.getDate(),
-        vendor_id: vendorID,
-        purchases: _purchasesCorrected,
-      };
-      //console.log(date.toString());
-      console.log(_POs);
-
-      PURCHASES_API.addPurchaseOrder(_POs);
-      //console.log(vendorID);
-      //console.log(vendorName);
-      //console.log(data);
-      //PURCHASES_API.addPurchaseOrder("");
-    } else {
-      setIsModifiable(false);
-      console.log(date);
-      console.log(vendorID);
-      console.log(vendorName);
-      console.log(data);
-    }
-  };
+        editor={col.cellEditor}
+        cellEditValidator={col.cellEditValidator}
+        onCellEditComplete={onCellEditComplete}
+      />
+    );
+  });
 
   return (
     <div>
@@ -316,7 +310,7 @@ export default function PODetail() {
         ></link>
         <div className="col-11">
           <div className="pt-2">
-            {isAddPage ? (
+            {isPOAddPage ? (
               <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
                 Add Purchase Order
               </h1>
@@ -328,7 +322,7 @@ export default function PODetail() {
           </div>
           <form onSubmit={onSubmit}>
             <div className="flex flex-row justify-content-center card-container col-12">
-              {!isAddPage && (
+              {!isPOAddPage && (
                 <ToggleButton
                   id="modifyPOToggle"
                   name="modifyPOToggle"
@@ -336,7 +330,7 @@ export default function PODetail() {
                   offLabel="Modify"
                   onIcon="pi pi-check"
                   offIcon="pi pi-times"
-                  disabled={isAddPage}
+                  disabled={isPOAddPage}
                   checked={isModifiable}
                   onChange={() => setIsModifiable(!isModifiable)}
                 />
@@ -392,27 +386,13 @@ export default function PODetail() {
             />
 
             <DataTable
-              value={data}
+              value={purchases}
               className="editable-cells-table"
               responsiveLayout="scroll"
               editMode="cell"
+              footer="b"
             >
-              {columns.map(({ field, header }) => {
-                return (
-                  <Column
-                    key={field}
-                    field={field}
-                    header={header}
-                    style={{ width: "25%" }}
-                    body={
-                      field === "unit_wholesale_price" &&
-                      priceBodyTemplateWholesale
-                    }
-                    editor={(options) => cellEditor(options)}
-                    onCellEditComplete={onCellEditComplete}
-                  />
-                );
-              })}
+              {tableColumns}
               <Column
                 body={actionBodyTemplate}
                 exportable={false}

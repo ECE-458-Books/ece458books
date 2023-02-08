@@ -6,7 +6,7 @@ import { Column, ColumnEditorOptions, ColumnEvent } from "primereact/column";
 import {
   isPositiveInteger,
   numberEditor,
-  priceBodyTemplate,
+  priceBodyTemplateRetailPrice,
   priceEditor,
 } from "../../util/TableCellEditFuncs";
 import { BOOKS_API } from "../../apis/BooksAPI";
@@ -133,7 +133,7 @@ export default function BookAdd() {
       field: "retailPrice",
       header: "Retail Price",
       filterPlaceholder: "Search by Price",
-      customBody: priceBodyTemplate,
+      customBody: priceBodyTemplateRetailPrice,
       cellEditValidator: (event: ColumnEvent) =>
         isPositiveInteger(event.newValue),
       cellEditor: (options: ColumnEditorOptions) => numberEditor(options),

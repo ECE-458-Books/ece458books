@@ -26,7 +26,11 @@ export interface SalesReconciliation {
 }
 
 const COLUMNS: TableColumn[] = [
-  { field: "date", header: "Date", filterPlaceholder: "Search by Total Date" },
+  {
+    field: "date",
+    header: "Date (YYYY-MM-DD)",
+    filterPlaceholder: "Search by Total Date",
+  },
   {
     field: "uniqueBooks",
     header: "Unique Books",
@@ -39,7 +43,7 @@ const COLUMNS: TableColumn[] = [
   },
   {
     field: "totalRevenue",
-    header: "Total Revenue",
+    header: "Total Revenue ($)",
     filterPlaceholder: "Search by Total Revenue",
   },
 ];
@@ -57,7 +61,6 @@ interface Filters {
 const emptySalesReconciliation = {
   id: 0,
   date: "",
-  vendorName: "",
   sales: [],
   uniqueBooks: 0,
   totalBooks: 0,
@@ -112,8 +115,9 @@ export default function SalesReconciliationList() {
   const editSalesReconciliation = (sr: SalesReconciliation) => {
     logger.debug("Edit Sales Reconciliation Clicked", sr);
     const detailState: SRDetailState = {
-      date: sr.date,
+      date: new Date(sr.date.replace("-", "/")),
       data: sr.sales,
+      id: sr.id,
       isAddPage: false,
       isModifiable: false,
       isConfirmationPopupVisible: false,
@@ -175,9 +179,10 @@ export default function SalesReconciliationList() {
   // };
 
   const callAPI = () => {
-    SALES_API.getSalesReconciliations().then((response) =>
-      onAPIResponse(response)
-    );
+    SALES_API.getSalesReconciliations({
+      page: pageParams.page ?? 0,
+      page_size: pageParams.rows,
+    }).then((response) => onAPIResponse(response));
   };
 
   // Set state when response to API call is received
@@ -231,7 +236,7 @@ export default function SalesReconciliationList() {
   });
 
   return (
-    <>
+    <div className="card pt-5 px-2">
       <DataTable
         // General Settings
         value={salesReconciliations}
@@ -258,6 +263,6 @@ export default function SalesReconciliationList() {
         <Column body={editDeleteCellTemplate} style={{ minWidth: "16rem" }} />
       </DataTable>
       {deletePopupVisible && deletePopup}
-    </>
+    </div>
   );
 }

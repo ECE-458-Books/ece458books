@@ -197,7 +197,7 @@ export default function VendorList() {
   });
 
   return (
-    <>
+    <div className="card pt-5 px-2">
       <DataTable
         // General Settings
         value={vendors}
@@ -224,6 +224,6 @@ export default function VendorList() {
         <Column body={editDeleteCellTemplate} style={{ minWidth: "16rem" }} />
       </DataTable>
       {deletePopupVisible && deletePopup}
-    </>
+    </div>
   );
 }

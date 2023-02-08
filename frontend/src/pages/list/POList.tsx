@@ -27,7 +27,11 @@ export interface PurchaseOrder {
 }
 
 const COLUMNS: TableColumn[] = [
-  { field: "date", header: "Date", filterPlaceholder: "Search by Date" },
+  {
+    field: "date",
+    header: "Date (YYYY-MM-DD)",
+    filterPlaceholder: "Search by Date",
+  },
   {
     field: "vendorName",
     header: "Vendor Name",
@@ -45,7 +49,7 @@ const COLUMNS: TableColumn[] = [
   },
   {
     field: "totalCost",
-    header: "TotalCost",
+    header: "Total Cost ($)",
     filterPlaceholder: "Search by Total Cost",
   },
 ];
@@ -115,8 +119,9 @@ export default function PurchaseOrderList() {
   const editPurchaseOrder = (po: PurchaseOrder) => {
     logger.debug("Edit Purchase Order Clicked", po);
     const detailState: PODetailState = {
-      date: po.date,
+      date: new Date(po.date.replace("-", "/")),
       data: po.purchases,
+      id: po.id,
       vendor: po.vendorName,
       isAddPage: false,
       isModifiable: false,
@@ -166,14 +171,24 @@ export default function PurchaseOrderList() {
 
   // Calls the Vendors API
   const callAPI = () => {
-    /*PURCHASES_API.getPurchaseOrders({
+    PURCHASES_API.getPurchaseOrders({
+      page: pageParams.page ?? 0,
+      page_size: pageParams.rows,
+    }).then((response) => {
+      return onAPIResponse(response);
+    });
+  };
+
+  // Calls the Vendors API
+  //const callAPI = () => {
+  /*PURCHASES_API.getPurchaseOrders({
       page: pageParams.page ?? 0,
       page_size: pageParams.rows,
       ordering_field: sortParams.sortField,
       ordering_ascending: sortParams.sortOrder,
       search: filterParams.filters.name.value,
     }).then((response) => onAPIResponse(response));*/
-  };
+  //};
 
   // Set state when response to API call is received
   const onAPIResponse = (response: GetPurchaseOrdersResp) => {
@@ -226,7 +241,7 @@ export default function PurchaseOrderList() {
   });
 
   return (
-    <>
+    <div className="card pt-5 px-2">
       <DataTable
         // General Settings
         value={purchaseOrders}
@@ -253,6 +268,6 @@ export default function PurchaseOrderList() {
         <Column body={editDeleteCellTemplate} style={{ minWidth: "16rem" }} />
       </DataTable>
       {deletePopupVisible && deletePopup}
-    </>
+    </div>
   );
 }

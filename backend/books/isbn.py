@@ -8,12 +8,18 @@ class ISBNTools:
         self,
     ):
         self._base_url = "https://www.googleapis.com/books/v1/volumes?q=isbn:"
+    
+    def is_valid_isbn(
+        self,
+        isbn: str,
+    ):
+        return is_isbn10(isbn) or is_isbn13(isbn)
 
     def fetch_isbn_data(
         self,
         isbn: str = None,
-        ):
-        if not (is_isbn10(isbn) or is_isbn13(isbn)):
+    ):
+        if not self.is_valid_isbn(isbn):
             return {"Invalid ISBN": isbn}
 
         parsed_isbn = self.parse_isbn(isbn)
@@ -35,10 +41,11 @@ class ISBNTools:
         response: dict,
         isbn: str,
     ):
+        if (response['totalItems'] == 0):
+            return {"Invalid ISBN": isbn}
+
         ret = {}
 
-        if (response['totalItems'] == 0):
-            return ret
         selfLink = response['items'][0]['selfLink']
 
         # Google Books are represented differently and for more data need to make a second request
@@ -104,4 +111,4 @@ class ISBNTools:
             list: The parsed ISBN list formatted to ISBN13.
 
         """
-        return [self.parse_isbn(raw_isbn) if raw_isbn.isdigit() else raw_isbn for raw_isbn in isbn_list]
+        return [self.parse_isbn(raw_isbn) if self.is_valid_isbn(raw_isbn) else raw_isbn for raw_isbn in isbn_list]

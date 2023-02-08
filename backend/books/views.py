@@ -8,7 +8,7 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
-from .serializers import BookAddSerializer, BookSerializer, ISBNSerializer
+from .serializers import BookListAddSerializer, BookSerializer, ISBNSerializer
 from .isbn import ISBNTools
 from .models import Book, Author
 from .paginations import BookPagination
@@ -79,7 +79,7 @@ class ISBNSearchView(APIView):
 
 
 class ListCreateBookAPIView(ListCreateAPIView):
-    serializer_class = BookAddSerializer
+    serializer_class = BookListAddSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = BookPagination
     filter_backends = [filters.OrderingFilter, CustomSearchFilter]
@@ -112,7 +112,7 @@ class ListCreateBookAPIView(ListCreateAPIView):
             )
     
     def get_queryset(self):
-        default_query_set = Book.objects.all()
+        default_query_set = Book.objects.filter(isGhost=False)
         # Books have a ManyToMany relationship with Author & Genre
         # A book can have many authors and genres.
         # We need to define sorting behavior for these fields
@@ -151,3 +151,25 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Book.objects.all()
     permission_classes = [IsAuthenticated]
     lookup_url_kwarg = 'id'
+
+    def destroy(self, request, *args, **kwargs):
+
+        # Check if the request url is valid
+        try:
+            instance = self.get_object()
+        except Exception as e:
+            return Response({"error": f"{e}"}, status=status.HTTP_204_NO_CONTENT)
+
+        # At this point we know the book exists in DB
+
+        # check if book can be destroyed by inventory count
+
+        # If book can be destroyed, we just make the isGhost=True and do not delete in database
+        partial = True
+        data = {"isGhost": True}
+        serializer = self.get_serializer(instance, data=data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response({"status" : f"Book: {instance.title}(id:{instance.id}) is now a ghost"}, status=status.HTTP_204_NO_CONTENT)
+

@@ -100,7 +100,7 @@ export const BOOKS_API = {
   // Everything below this point has not been tested
 
   deleteBook: async function (id: number) {
-    await API.request({
+    return await API.request({
       url: BOOKS_EXTENSION.concat("/".concat(id.toString())),
       method: METHOD_DELETE,
     });
@@ -123,7 +123,7 @@ export const BOOKS_API = {
       retail_price: book.retailPrice,
     } as APIBook;
 
-    await API.request({
+    return await API.request({
       url: BOOKS_EXTENSION.concat("/".concat(book.id.toString())),
       method: METHOD_PATCH,
       data: bookParams,
@@ -182,7 +182,7 @@ export const BOOKS_API = {
       retail_price: book.retailPrice,
     };
 
-    await API.request({
+    return await API.request({
       url: BOOKS_EXTENSION,
       method: METHOD_POST,
       data: bookParams,

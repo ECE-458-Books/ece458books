@@ -10,7 +10,8 @@ import {
   DataTableSelectionChangeEvent,
   DataTableSortEvent,
 } from "primereact/datatable";
-import React from "react";
+import { Toast } from "primereact/toast";
+import React, { useRef } from "react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GENRES_API, GetGenresResp } from "../../apis/GenresAPI";
@@ -120,12 +121,19 @@ export default function GenreList() {
   // Call to actually delete the element
   const deleteGenreFinal = () => {
     logger.debug("Delete Genre Finalized", selectedDeleteGenre);
-    GENRES_API.deleteGenre(selectedDeleteGenre.id);
+    setDeletePopupVisible(false);
+    GENRES_API.deleteGenre(selectedDeleteGenre.id).then((response) => {
+      if (response.status == 204) {
+        showSuccess();
+      } else {
+        showFailure();
+        return;
+      }
+    });
     const _genres = genres.filter(
       (selectGenre) => selectedDeleteGenre.id != selectGenre.id
     );
     setGenres(_genres);
-    setDeletePopupVisible(false);
     setSelectedDeleteGenre(emptyGenre);
   };
 
@@ -214,6 +222,20 @@ export default function GenreList() {
     />
   );
 
+  // Toast is used for showing success/error messages
+  const toast = useRef<Toast>(null);
+
+  const showSuccess = () => {
+    toast.current?.show({ severity: "success", summary: "Genre deleted" });
+  };
+
+  const showFailure = () => {
+    toast.current?.show({
+      severity: "error",
+      summary: "Genre could not be deleted",
+    });
+  };
+
   // Map column objects to actual columns
   const dynamicColumns = COLUMNS.map((col) => {
     return (
@@ -242,6 +264,7 @@ export default function GenreList() {
 
   return (
     <>
+      <Toast ref={toast} />
       <DataTable
         // General Settings
         value={genres}

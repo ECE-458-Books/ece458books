@@ -8,7 +8,7 @@ import {
 } from "primereact/datatable";
 import { Column } from "primereact/column";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DataTableFilterMetaData } from "primereact/datatable";
 import { Genre } from "./GenreList";
 import DeletePopup from "../../components/DeletePopup";
@@ -17,6 +17,7 @@ import { logger } from "../../util/Logger";
 import { BookDetailState } from "../detail/ModfiyBook";
 import { useLocation, useNavigate } from "react-router-dom";
 import { GENRES_API } from "../../apis/GenresAPI";
+import { Toast } from "primereact/toast";
 
 export const NUM_ROWS = 3;
 
@@ -209,13 +210,19 @@ export default function BookList() {
 
   const deleteBookFinal = () => {
     logger.debug("Delete Book Finalized", selectedDeleteBook);
-    BOOKS_API.deleteBook(selectedDeleteBook.id);
+    setDeletePopupVisible(false);
+    BOOKS_API.deleteBook(selectedDeleteBook.id).then((response) => {
+      if (response.status == 204) {
+        showSuccess();
+      } else {
+        showFailure();
+        return;
+      }
+    });
     // TODO: Show error if book is not actually deleted
     const _books = books.filter((book) => selectedDeleteBook.id != book.id);
     setBooks(_books);
-    setDeletePopupVisible(false);
     setSelectedDeleteBook(emptyBook);
-    console.log(selectedDeleteBook);
   };
 
   // Buttons for the delete Dialogue Popup
@@ -340,6 +347,20 @@ export default function BookList() {
     callAPI();
   }, [sortParams, pageParams, filterParams, selectedGenre]);
 
+  // Toast is used for showing success/error messages
+  const toast = useRef<Toast>(null);
+
+  const showSuccess = () => {
+    toast.current?.show({ severity: "success", summary: "Genre modified" });
+  };
+
+  const showFailure = () => {
+    toast.current?.show({
+      severity: "error",
+      summary: "Genre could not be modified",
+    });
+  };
+
   // Map column objects to actual columns
   const dynamicColumns = COLUMNS.map((col) => {
     return (
@@ -368,6 +389,7 @@ export default function BookList() {
 
   return (
     <>
+      <Toast ref={toast} />
       <DataTable
         // General Settings
         value={books}

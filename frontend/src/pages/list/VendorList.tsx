@@ -6,7 +6,8 @@ import {
   DataTablePageEvent,
   DataTableSortEvent,
 } from "primereact/datatable";
-import { useEffect, useState } from "react";
+import { Toast } from "primereact/toast";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GetVendorsResp, VENDORS_API } from "../../apis/VendorsAPI";
 import DeletePopup from "../../components/DeletePopup";
@@ -103,12 +104,21 @@ export default function VendorList() {
   // Call to actually delete the element
   const deleteVendorFinal = () => {
     logger.debug("Delete Vendor Finalized", selectedDeleteVendor);
-    VENDORS_API.deleteVendor(selectedDeleteVendor.id.toString());
+    setDeletePopupVisible(false);
+    VENDORS_API.deleteVendor(selectedDeleteVendor.id.toString()).then(
+      (response) => {
+        if (response.status == 204) {
+          showSuccess();
+        } else {
+          showFailure();
+          return;
+        }
+      }
+    );
     const _vendors = vendors.filter(
       (selectVendor) => selectedDeleteVendor.id != selectVendor.id
     );
     setVendors(_vendors);
-    setDeletePopupVisible(false);
     setSelectedDeleteVendor(emptyVendor);
   };
 
@@ -175,6 +185,20 @@ export default function VendorList() {
     />
   );
 
+  // Toast is used for showing success/error messages
+  const toast = useRef<Toast>(null);
+
+  const showSuccess = () => {
+    toast.current?.show({ severity: "success", summary: "Vendor Deleted" });
+  };
+
+  const showFailure = () => {
+    toast.current?.show({
+      severity: "error",
+      summary: "Vendor could not be deleted",
+    });
+  };
+
   // Map column objects to actual columns
   const dynamicColumns = COLUMNS.map((col) => {
     return (
@@ -203,6 +227,7 @@ export default function VendorList() {
 
   return (
     <>
+      <Toast ref={toast} />
       <DataTable
         // General Settings
         value={vendors}

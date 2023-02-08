@@ -109,16 +109,16 @@ function NavigationBar() {
     },
   ];
 
-  // const start = (
-  //   <img
-  //     alt="logo"
-  //     src={require("../ImaginarySoftwareLogo.jpeg")}
-  //     height="40"
-  //     className="mr-2"
-  //   ></img>
-  // );
+  const start = (
+    <img
+      alt="logo"
+      src={require("../ImaginarySoftwareLogo.jpeg")}
+      height="40"
+      className="mr-2"
+    ></img>
+  );
 
-  return <Menubar model={items} />;
+  return <Menubar model={items} start={start} />;
 }
 
 export default NavigationBar;

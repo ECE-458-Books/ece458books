@@ -10,7 +10,7 @@ import {
   containsLowercase,
   containsNumber,
   containsUppercase,
-} from "../../util/passwordChecks";
+} from "../../util/PasswordChecks";
 
 export default function PasswordChangePage() {
   const wrongPasswordRef = createRef<Messages>();
@@ -57,16 +57,18 @@ export default function PasswordChangePage() {
           ) {
             if (containsNumber(newPassword1) && containsNumber(newPassword2)) {
               console.log("Password Changed");
-              // AUTH_API.passwordChange(oldPassword, newPassword1, newPassword2).then(
-              //   (response) => {
-              //     // TODO: Refactor this
-              //     if (response.data?.status) {
-              //       showSuccess();
-              //     } else {
-              //       showFailure("Error");
-              //     }
-              //   }
-              // );
+              AUTH_API.passwordChange(
+                oldPassword,
+                newPassword1,
+                newPassword2
+              ).then((response) => {
+                // TODO: Refactor this
+                if (response.data?.status) {
+                  showSuccess();
+                } else {
+                  showFailure("Error");
+                }
+              });
             } else {
               showFailure("New Password does not contain number");
             }

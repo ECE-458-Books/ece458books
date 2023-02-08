@@ -1,7 +1,6 @@
 import {
   salesReportDailyRow,
   salesReportTopBooksRow,
-  salesReportTotalRow,
 } from "../pages/list/SalesReport";
 import {
   API,
@@ -19,7 +18,9 @@ interface GetSalesReportReq {
 }
 
 export interface GetSalesReportResp {
-  total_summary: salesReportTotalRow[];
+  revenue: number;
+  cost: number;
+  profit: number;
   daily_summary: salesReportDailyRow[];
   top_books: salesReportTopBooksRow[];
 }
@@ -29,25 +30,23 @@ export const SALES_REPORT_API = {
     req: GetSalesReportReq
   ): Promise<GetSalesReportResp> {
     const response = await API.request({
-      url: SALES_REPORT_EXTENTSION,
+      url: SALES_REPORT_EXTENTSION.concat(
+        "start:" + req.start + "end:" + req.end
+      ),
       method: METHOD_GET,
-      params: {
-        start: req.start,
-        end: req.end,
-      },
     });
 
-    // Convert response to internal data type (not strictly necessary, but I think good practice)
-    const total = response.data.total_summary.map((sr: salesReportTotalRow) => {
-      return {
-        revenue: sr.revenue,
-        cost: sr.cost,
-        profit: sr.profit,
-      };
-    });
+    // // Convert response to internal data type (not strictly necessary, but I think good practice)
+    // const total = response.data.total_summary.map((sr: salesReportTotalRow) => {
+    //   return {
+    //     revenue: sr.revenue,
+    //     cost: sr.cost,
+    //     profit: sr.profit,
+    //   };
+    // });
 
     // Convert response to internal data type (not strictly necessary, but I think good practice)
-    const daily = response.data.total_summary.map((sr: salesReportDailyRow) => {
+    const daily = response.data.daily_summary.map((sr: salesReportDailyRow) => {
       return {
         date: sr.date,
         revenue: sr.revenue,
@@ -57,21 +56,21 @@ export const SALES_REPORT_API = {
     });
 
     // Convert response to internal data type (not strictly necessary, but I think good practice)
-    const top = response.data.total_summary.map(
-      (sr: salesReportTopBooksRow) => {
-        return {
-          book_id: sr.book_id,
-          num_books_sold: sr.num_books_sold,
-          book_revenue: sr.book_revenue,
-          total_cost_most_recent: sr.total_cost_most_recent,
-          book_title: sr.book_title,
-          book_profit: sr.book_profit,
-        };
-      }
-    );
+    const top = response.data.top_books.map((sr: salesReportTopBooksRow) => {
+      return {
+        book_id: sr.book_id,
+        num_books_sold: sr.num_books_sold,
+        book_revenue: sr.book_revenue,
+        total_cost_most_recent: sr.total_cost_most_recent,
+        book_title: sr.book_title,
+        book_profit: sr.book_profit,
+      };
+    });
 
     return Promise.resolve({
-      total_summary: total,
+      revenue: response.data.total_summary.revenue,
+      cost: response.data.total_summary.cost,
+      profit: response.data.total_summary.profit,
       daily_summary: daily,
       top_books: top,
     });

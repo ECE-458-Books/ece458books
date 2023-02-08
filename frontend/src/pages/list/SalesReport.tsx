@@ -57,7 +57,7 @@ const COLUMNS_TOP_BOOKS: TableColumnSales[] = [
 ];
 
 export default function SalesReport() {
-  const [totalsData, setTotalsData] = useState<salesReportTotalRow[]>([]);
+  const [totalsData, setTotalsData] = useState<salesReportTotalRow>();
   const [dailyData, setDailyData] = useState<salesReportDailyRow[]>([]);
   const [topBooksData, setTopBooksData] = useState<salesReportTopBooksRow[]>(
     []
@@ -67,7 +67,11 @@ export default function SalesReport() {
     useState(false);
 
   const onAPIResponse = (response: GetSalesReportResp) => {
-    setTotalsData(response.total_summary);
+    setTotalsData({
+      revenue: response.revenue,
+      cost: response.cost,
+      profit: response.profit,
+    });
     setDailyData(response.daily_summary);
     setTopBooksData(response.top_books);
   };

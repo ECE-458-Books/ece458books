@@ -1,3 +1,4 @@
+import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import {
   DataTable,
@@ -7,6 +8,7 @@ import {
   DataTableSortEvent,
 } from "primereact/datatable";
 import { Toast } from "primereact/toast";
+import React from "react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GetVendorsResp, VENDORS_API } from "../../apis/VendorsAPI";
@@ -16,11 +18,13 @@ import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import { logger } from "../../util/Logger";
 import { VendorDetailState } from "../detail/VendorDetail";
 import { NUM_ROWS } from "./BookList";
+import { Genre } from "./GenreList";
 
 // The Vendor Interface
 export interface Vendor {
   id: number;
   name: string;
+  numPO: number;
 }
 
 // Properties of each column that change, the rest are set below when creating the actual Columns to be rendered
@@ -43,6 +47,7 @@ interface Filters {
 const emptyVendor = {
   id: 0,
   name: "",
+  numPO: 0,
 };
 
 export default function VendorList() {
@@ -171,10 +176,23 @@ export default function VendorList() {
   // ----------------- TEMPLATES/VISIBLE COMPONENTS -----------------
 
   // Edit/Delete Cell Template
-  const editDeleteCellTemplate = EditDeleteTemplate<Vendor>({
-    onEdit: (rowData) => editVendor(rowData),
-    onDelete: (rowData) => deleteVendorPopup(rowData),
-  });
+  const editDeleteCellTemplate = (rowData: Vendor) => {
+    return (
+      <React.Fragment>
+        <Button
+          icon="pi pi-pencil"
+          className="p-button-rounded p-button-success mr-2"
+          onClick={() => editVendor(rowData)}
+        />
+        <Button
+          icon="pi pi-trash"
+          className="p-button-rounded p-button-danger"
+          onClick={() => deleteVendorPopup(rowData)}
+          disabled={rowData.numPO > 0}
+        />
+      </React.Fragment>
+    );
+  };
 
   // The delete popup
   const deletePopup = (

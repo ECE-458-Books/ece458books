@@ -19,6 +19,7 @@ interface GetVendorsReq {
 interface APIVendor {
   id: number;
   name: string;
+  num_purchase_orders: number;
 }
 
 export interface GetVendorsResp {
@@ -43,6 +44,7 @@ export const VENDORS_API = {
       return {
         id: vendor.id,
         name: vendor.name,
+        numPO: vendor.num_purchase_orders,
       };
     });
 

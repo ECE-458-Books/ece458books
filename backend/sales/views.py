@@ -1,5 +1,5 @@
 from rest_framework.permissions import IsAuthenticated
-from .serializers import SalesReconciliationSerializer, SalesReportSerializer
+from .serializers import SalesReconciliationSerializer
 from rest_framework.response import Response
 from rest_framework import status, filters
 from rest_framework.views import APIView
@@ -166,7 +166,6 @@ class RetrieveUpdateDestroySalesReconciliationAPIView(RetrieveUpdateDestroyAPIVi
 
 class RetrieveSalesReportAPIView(APIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = SalesReportSerializer
 
     def get(self, request, start_date, end_date):
         daily_revenues = {}
@@ -194,7 +193,7 @@ class RetrieveSalesReportAPIView(APIView):
         for i in [x for x in books_sold_quantities]:
             most_recent_unit_wholesale_price = PurchaseOrder.objects.filter(date__lte=end_date).order_by('-date', '-id').annotate(book_wholesale_price=Subquery(Purchase.objects.filter(purchase_order=OuterRef('id')).filter(book=i['book_id']).values('unit_wholesale_price'))).values('book_wholesale_price').exclude(book_wholesale_price=None).first()['book_wholesale_price']
 
-            i['book_cost'] = round(most_recent_unit_wholesale_price * book_id_to_num_purchased_dict[i['book_id']], 2)
+            i['total_cost_most_recent'] = round(most_recent_unit_wholesale_price * book_id_to_num_purchased_dict[i['book_id']], 2)
         
         for i in books_sold_quantities:
             i['book_title'] = Book.objects.filter(id=i['book_id']).get().title

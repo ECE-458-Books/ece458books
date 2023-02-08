@@ -3,12 +3,16 @@ from books.models import Book
 from .models import Purchase, PurchaseOrder
 
 class PurchaseSerializer(serializers.ModelSerializer):
-    book = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all())
+    book_id = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all())
+    book_title = serializers.SerializerMethodField()
     id = serializers.IntegerField(required=False)
 
     class Meta:
         model = Purchase
-        fields = ['id', 'book', 'quantity', 'unit_wholesale_price']
+        fields = ['id', 'book_id', 'book_title', 'quantity', 'unit_wholesale_price']
+
+    def get_book_title(self, instance):
+        return instance.book.title
 
 class PurchaseOrderSerializer(serializers.ModelSerializer):
     purchases = PurchaseSerializer(many=True)

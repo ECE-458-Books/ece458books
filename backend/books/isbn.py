@@ -41,6 +41,7 @@ class ISBNTools:
         response: dict,
         isbn: str,
     ):
+        # This is the case where GoogleBooks gives us a item count of zero for that isbn
         if (response['totalItems'] == 0):
             return {"Invalid ISBN": isbn}
 
@@ -103,6 +104,7 @@ class ISBNTools:
         isbn_list
     ):
         """Return parsed ISBN list 
+        If the ISBN isn't valid we return the raw_isbn without formatting
 
         Args:
             isbn_list: List of raw isbns

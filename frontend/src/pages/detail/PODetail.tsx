@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { ToggleButton } from "primereact/togglebutton";
 import { Calendar, CalendarProps } from "primereact/calendar";
-import { Dropdown, DropdownProps } from "primereact/dropdown";
+import {
+  Dropdown,
+  DropdownChangeEvent,
+  DropdownProps,
+} from "primereact/dropdown";
 import { DataTable } from "primereact/datatable";
 import { TableColumn } from "../../components/Table";
 import { Column, ColumnEditorOptions } from "primereact/column";
@@ -18,12 +22,14 @@ import {
 } from "../../util/TableCellEditFuncs";
 import { useLocation } from "react-router-dom";
 import { GetPurchaseResp, PURCHASES_API } from "../../apis/PurchasesAPI";
+import { VENDORS_API } from "../../apis/VendorsAPI";
+import VendorList, { Vendor } from "../list/VendorList";
 
 export interface PODetailState {
   id: number;
   date: any;
   data: POPurchaseRow[];
-  vendor: string;
+  vendor: Vendor;
   isAddPage: boolean;
   isModifiable: boolean;
   isConfirmationPopupVisible: boolean;
@@ -42,14 +48,6 @@ interface Vendors {
   name: string;
   code: string;
 }
-
-const DATAVENDORS: Vendors[] = [
-  { name: "New York", code: "NY" },
-  { name: "Rome", code: "RM" },
-  { name: "London", code: "LDN" },
-  { name: "Istanbul", code: "IST" },
-  { name: "Paris", code: "PRS" },
-];
 
 const columns: TableColumn[] = [
   { field: "books", header: "Books", filterPlaceholder: "Books" },
@@ -74,7 +72,7 @@ export default function PODetail() {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const detailState = (location.state! as PODetailState) ?? {
     date: new Date(),
-    vendor: "",
+    vendor: { name: "", id: 0 },
     data: [
       {
         rowID: uuid(),
@@ -93,6 +91,7 @@ export default function PODetail() {
   const [data, setData] = useState(detailState.data);
   const [id, setId] = useState(detailState.id);
   const [lineData, setLineData] = useState(emptyProduct);
+  const [vendorsData, setVendorsData] = useState<Vendor[]>();
   const [isAddPage, setisAddPage] = useState(detailState.isAddPage);
   const [isModifiable, setIsModifiable] = useState(detailState.isModifiable);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] = useState(
@@ -202,13 +201,17 @@ export default function PODetail() {
   const callAPI = () => {
     if (!isAddPage) {
       PURCHASES_API.getPurchase(id).then((response) => {
-        return onAPIResponse(response);
+        return onDATAPIResponse(response);
       });
     }
+
+    VENDORS_API.getVendorsNOPaging().then((response) => {
+      return setVendorsData(response.vendors);
+    });
   };
 
   // Set state when response to API call is received
-  const onAPIResponse = (response: GetPurchaseResp) => {
+  const onDATAPIResponse = (response: GetPurchaseResp) => {
     const _data = response.purchase.map((po: POPurchaseRow) => {
       return {
         rowID: uuid(),
@@ -224,6 +227,7 @@ export default function PODetail() {
   const onSubmit = (): void => {
     if (isAddPage) {
       console.log("Add Page is submitted");
+      console.log(vendor);
     } else {
       setIsModifiable(false);
     }
@@ -293,13 +297,14 @@ export default function PODetail() {
                 </label>
                 <Dropdown
                   value={vendor}
-                  placeholder={vendor}
-                  options={DATAVENDORS}
+                  options={vendorsData}
+                  placeholder="Select a Vendor"
+                  optionLabel="name"
+                  filter
                   disabled={!isModifiable}
                   onChange={(event: DropdownProps): void => {
-                    setVendor(event.value.name);
+                    setVendor(event.value);
                   }}
-                  optionLabel="name"
                 />
               </div>
             </div>

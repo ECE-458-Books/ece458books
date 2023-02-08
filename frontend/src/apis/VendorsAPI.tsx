@@ -28,6 +28,10 @@ export interface GetVendorsResp {
   numberOfVendors: number;
 }
 
+export interface GetVendorsNoCountResp {
+  vendors: Vendor[];
+}
+
 export const VENDORS_API = {
   getVendors: async function (req: GetVendorsReq): Promise<GetVendorsResp> {
     const response = await API.request({
@@ -52,6 +56,28 @@ export const VENDORS_API = {
     return Promise.resolve({
       vendors: vendors,
       numberOfVendors: response.data.count,
+    });
+  },
+
+  getVendorsNOPaging: async function (): Promise<GetVendorsNoCountResp> {
+    const response = await API.request({
+      url: VENDORS_EXTENSION,
+      method: METHOD_GET,
+      params: {
+        nopagination: true,
+      },
+    });
+
+    // Convert response to internal data type (not strictly necessary, but I think good practice)
+    const vendors = response.data.results.map((vendor: APIVendor) => {
+      return {
+        id: vendor.id,
+        name: vendor.name,
+      };
+    });
+
+    return Promise.resolve({
+      vendors: vendors,
     });
   },
 

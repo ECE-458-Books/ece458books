@@ -27,6 +27,7 @@ import {
 import { VENDORS_API } from "../../apis/VendorsAPI";
 import { Vendor } from "../list/VendorList";
 import { BOOKS_API } from "../../apis/BooksAPI";
+import { toYYYYMMDDWithDash } from "../../util/DateOperations";
 
 export interface PODetailState {
   id: number;
@@ -89,7 +90,7 @@ export default function PODetail() {
   for (const purchase of detailState.purchases) {
     purchase.isNewRow = false;
   }
-  const bookMap = new Map<string, number>();
+  const [bookMap, setBookMap] = useState<Map<string, number>>(new Map());
 
   const [date, setDate] = useState(detailState.date);
   const [vendorName, setVendorName] = useState(detailState.vendorName);
@@ -165,9 +166,11 @@ export default function PODetail() {
     });
 
     BOOKS_API.getBooksNOPaging().then((response) => {
+      const tempBookMap = new Map<string, number>();
       for (const book of response.books) {
-        bookMap.set(book.title, book.id);
+        tempBookMap.set(book.title, book.id);
       }
+      setBookMap(tempBookMap);
       setBookTitlesList(response.books.map((book) => book.title));
     });
   }, []);
@@ -184,7 +187,7 @@ export default function PODetail() {
       });
 
       const purchaseOrder = {
-        date: date,
+        date: toYYYYMMDDWithDash(date),
         vendor_id: vendorID,
         purchases: apiPurchases,
       } as APIPOCreate;
@@ -192,7 +195,10 @@ export default function PODetail() {
       PURCHASES_API.addPurchaseOrder(purchaseOrder);
     } else {
       // Otherwise, it is a modify page
+      console.log(bookMap);
       const apiPurchases = purchases.map((purchase) => {
+        console.log(purchase);
+        console.log(bookMap.get(purchase.book_title));
         return {
           id: purchase.isNewRow ? undefined : purchase.id,
           book_id: purchase.isNewRow
@@ -205,7 +211,7 @@ export default function PODetail() {
 
       const purchaseOrder = {
         id: purchaseOrderID,
-        date: date,
+        date: toYYYYMMDDWithDash(date),
         vendor_id: vendorID,
         purchases: apiPurchases,
       } as APIPOModify;
@@ -266,21 +272,18 @@ export default function PODetail() {
 
   const booksDropDownEditor = (options: ColumnEditorOptions) => {
     return (
-      <div style={{ zIndex: 9999 }}>
-        <Dropdown
-          value={options.value}
-          options={bookList}
-          filter
-          appendTo={"self"}
-          placeholder="Select a Book"
-          className="z-5"
-          onChange={(e) => {
-            options.editorCallback?.(e.target.value);
-          }}
-          showClear
-          virtualScrollerOptions={{ itemSize: 35 }}
-        />
-      </div>
+      <Dropdown
+        value={options.value}
+        options={bookList}
+        filter
+        appendTo={"self"}
+        placeholder="Select a Book"
+        onChange={(e) => {
+          options.editorCallback?.(e.target.value);
+        }}
+        showClear
+        virtualScrollerOptions={{ itemSize: 35 }}
+      />
     );
   };
 

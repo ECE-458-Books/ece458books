@@ -6,11 +6,12 @@ from rest_framework.views import APIView
 from .models import SalesReconciliation, Sale
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView
 from .paginations import SalesReconciliationPagination
-from django.db.models import OuterRef, Subquery, Func, Count
+from django.db.models import OuterRef, Subquery, Func, Count, Sum, F
 from purchase_orders.models import Purchase, PurchaseOrder
 from purchase_orders.serializers import PurchaseOrderSerializer
 import datetime, pytz
 from datetime import datetime, timedelta
+from books.models import Book
 
 
 class ListCreateSalesReconciliationAPIView(ListCreateAPIView):
@@ -185,13 +186,31 @@ class RetrieveSalesReportAPIView(APIView):
         total_revenue = sum(daily_revenues.values())
         total_profit = total_revenue - total_cost
 
+        books_sold_quantities = list(SalesReconciliation.objects.filter(date__range=(start_date, end_date)).values(book_id=F('sales__book')).annotate(num_books_sold=Sum('sales__quantity')).annotate(book_revenue=Sum('sales__revenue')).order_by('-num_books_sold'))
+
+        # order by date, then by id, since higher id means was entered later than lower id, so could mean more recent price... just need any way to decide on one price if two separate purchases are logged on same day of same book to know which unit wholesale price to use
+        books_purchased_quantities = list(PurchaseOrder.objects.filter(date__lte=end_date).values('purchases__book').annotate(num_books_purchased=Sum('purchases__quantity')).values('purchases__book', 'num_books_purchased'))
+        book_id_to_num_purchased_dict = {x['purchases__book']:x['num_books_purchased'] for x in books_purchased_quantities}
+        for i in [x for x in books_sold_quantities]:
+            most_recent_unit_wholesale_price = PurchaseOrder.objects.filter(date__lte=end_date).order_by('-date', '-id').annotate(book_wholesale_price=Subquery(Purchase.objects.filter(purchase_order=OuterRef('id')).filter(book=i['book_id']).values('unit_wholesale_price'))).values('book_wholesale_price').exclude(book_wholesale_price=None).first()['book_wholesale_price']
+
+            i['book_cost'] = round(most_recent_unit_wholesale_price * book_id_to_num_purchased_dict[i['book_id']], 2)
+        
+        for i in books_sold_quantities:
+            i['book_title'] = Book.objects.filter(id=i['book_id']).get().title
+
         return Response({
-            "daily_costs": daily_costs,
-            "daily_revenues": daily_revenues,
-            "daily_profits": daily_profits,
-            "total_cost": total_cost,
-            "total_revenue": total_revenue,
-            "total_profit": total_profit,
+            "total_summary":{
+                "revenue": total_revenue,
+                "cost": total_cost,
+                "profit": total_profit,
+            },
+            "daily_summary":  # date, revenue, cost, profit
+                [{"date": date, "revenue": revenue, "cost": cost, "profit": profit } for (date, revenue, cost, profit) in zip(daily_revenues.keys(), daily_revenues.values(), daily_costs.values(), daily_profits.values())]
+            ,
+            "top_books":  # title, quantity, total_revenue, total_cost, total_profit
+            books_sold_quantities
+            
         })
 
     def get_daily_costs(self, daily_costs, date: str):

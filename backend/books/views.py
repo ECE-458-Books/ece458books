@@ -99,7 +99,19 @@ class ListCreateBookAPIView(ListCreateAPIView):
         self.getOrCreateModel(request.data['authors'], Author)
         self.getOrCreateModel(request.data['genres'], Genre)
 
-        serializer = self.get_serializer(data=request.data)
+        # Handle the isbn that is already in DB
+        try:
+            obj = Book.objects.get(isbn_13=request.data['isbn_13'])
+        except Exception as e:
+            obj = None
+
+        if obj is not None:
+            partial = True
+            data = {"isGhost": False}
+            serializer = self.get_serializer(obj, data=data, partial=partial)
+        else:
+            serializer = self.get_serializer(data=request.data)
+
         serializer.is_valid(raise_exception=True)
         serializer.save()
         headers = self.get_success_headers(serializer.data)

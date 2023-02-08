@@ -85,14 +85,14 @@ export const SALES_API = {
   },
 
   deleteSalesReconciliation: async function (id: string) {
-    await API.request({
+    return await API.request({
       url: SALES_EXTENSION.concat("/").concat(id),
       method: METHOD_DELETE,
     });
   },
 
   modifySalesReconciliation: async function (sr: APISRModify) {
-    await API.request({
+    return await API.request({
       url: SALES_EXTENSION.concat("/").concat(sr.id.toString()),
       method: METHOD_PATCH,
       data: sr,
@@ -100,7 +100,7 @@ export const SALES_API = {
   },
 
   addSalesReconciliation: async function (sr: APISRCreate) {
-    await API.request({
+    return await API.request({
       url: SALES_EXTENSION,
       method: METHOD_POST,
       data: sr,

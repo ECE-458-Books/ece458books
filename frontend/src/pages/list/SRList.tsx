@@ -4,6 +4,7 @@ import {
   DataTableFilterEvent,
   DataTableFilterMetaData,
   DataTablePageEvent,
+  DataTableRowClickEvent,
   DataTableSortEvent,
 } from "primereact/datatable";
 import { useEffect, useState } from "react";
@@ -116,14 +117,14 @@ export default function SalesReconciliationList() {
   const navigate = useNavigate();
 
   // Callback functions for edit/delete buttons
-  const editSalesReconciliation = (sr: SalesReconciliation) => {
+  const toDetailPage = (sr: SalesReconciliation, isModifiable: boolean) => {
     logger.debug("Edit Sales Reconciliation Clicked", sr);
     const detailState: SRDetailState = {
       date: new Date(sr.date.replace("-", "/")),
       sales: sr.sales,
       id: sr.id,
       isAddPage: false,
-      isModifiable: false,
+      isModifiable: isModifiable,
       isConfirmationPopupVisible: false,
     };
 
@@ -175,6 +176,15 @@ export default function SalesReconciliationList() {
     setPageParams(event);
   };
 
+  const onRowClick = (event: DataTableRowClickEvent) => {
+    // I couldn't figure out a better way to do this...
+    // It takes the current index as the table knows it and calculates the actual index in the genres array
+    const index = event.index - NUM_ROWS * (pageParams.page ?? 0);
+    const salesReconciliation = salesReconciliations[index];
+    logger.debug("Sales Reconciliation Row Clicked", salesReconciliation);
+    toDetailPage(salesReconciliation, false);
+  };
+
   // When any of the list of params are changed, useEffect is called to hit the API endpoint
   useEffect(() => callAPI(), [sortParams, pageParams, filterParams]);
 
@@ -203,7 +213,7 @@ export default function SalesReconciliationList() {
 
   // Edit/Delete Cell Template
   const editDeleteCellTemplate = EditDeleteTemplate<SalesReconciliation>({
-    onEdit: (rowData) => editSalesReconciliation(rowData),
+    onEdit: (rowData) => toDetailPage(rowData, true),
     onDelete: (rowData) => deleteSalesReconciliationPopup(rowData),
   });
 
@@ -251,6 +261,10 @@ export default function SalesReconciliationList() {
         responsiveLayout="scroll"
         filterDisplay="row"
         loading={loading}
+        // Row clicking
+        rowHover
+        selectionMode={"single"}
+        onRowClick={(event) => onRowClick(event)}
         // Paginator
         paginator
         first={pageParams.first}

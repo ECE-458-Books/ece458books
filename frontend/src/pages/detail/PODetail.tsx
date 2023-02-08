@@ -43,7 +43,7 @@ export interface PODetailState {
 export interface POPurchaseRow {
   isNewRow: boolean; // true if the user added this row, false if it already existed
   id: string;
-  book_id: number;
+  book: number;
   book_title: string;
   quantity: number;
   unit_wholesale_price: number;
@@ -59,7 +59,7 @@ export default function PODetail() {
   const emptyProduct = {
     isNewRow: true,
     id: uuid(),
-    book_id: 0,
+    book: 0,
     book_title: "",
     quantity: 1,
     unit_wholesale_price: 0,
@@ -77,7 +77,7 @@ export default function PODetail() {
         isNewRow: true,
         id: uuid(),
         book_title: "",
-        book_id: 0,
+        book: 0,
         quantity: 1,
         unit_wholesale_price: 0,
       },
@@ -176,7 +176,6 @@ export default function PODetail() {
   }, []);
 
   const validateSubmission = (po: POPurchaseRow[]) => {
-    // Validate
     for (const purchase of po) {
       if (
         !purchase.book_title ||
@@ -228,15 +227,12 @@ export default function PODetail() {
       });
     } else {
       // Otherwise, it is a modify page
-      console.log(bookMap);
       const apiPurchases = purchases.map((purchase) => {
-        console.log(purchase);
-        console.log(bookMap.get(purchase.book_title));
         return {
           id: purchase.isNewRow ? undefined : purchase.id,
           book: purchase.isNewRow
             ? bookMap.get(purchase.book_title)
-            : purchase.book_id,
+            : purchase.book,
           quantity: purchase.quantity,
           unit_wholesale_price: purchase.unit_wholesale_price,
         } as APIPOPurchaseRow;

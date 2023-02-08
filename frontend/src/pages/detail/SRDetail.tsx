@@ -40,7 +40,7 @@ export interface SRDetailState {
 export interface SRSaleRow {
   isNewRow: boolean;
   id: string;
-  book_id: number;
+  book: number;
   book_title: string;
   quantity: number;
   unit_retail_price: number;
@@ -50,7 +50,7 @@ export default function SRDetail() {
   const emptyProduct = {
     isNewRow: true,
     id: uuid(),
-    book_id: 0,
+    book: 0,
     book_title: "",
     quantity: 1,
     unit_retail_price: 0,
@@ -65,7 +65,7 @@ export default function SRDetail() {
       {
         isNewRow: true,
         id: uuid(),
-        book_id: 0,
+        book: 0,
         book_title: "",
         quantity: 1,
         unit_retail_price: 0,
@@ -95,7 +95,7 @@ export default function SRDetail() {
   );
 
   const COLUMNS: TableColumn[] = [
-    { field: "book_id", header: "ID", filterPlaceholder: "ID" },
+    { field: "book", header: "ID", filterPlaceholder: "ID" },
     {
       field: "book_title",
       header: "Books",
@@ -151,7 +151,32 @@ export default function SRDetail() {
     });
   }, []);
 
+  // Validate submission before making API req
+  const validateSubmission = (sr: SRSaleRow[]) => {
+    for (const sale of sr) {
+      if (
+        !sale.book_title ||
+        !(sale.unit_retail_price >= 0) ||
+        !sale.quantity
+      ) {
+        showFailure("All fields are required");
+        return false;
+      }
+    }
+
+    if (!date) {
+      showFailure("All fields are required");
+      return false;
+    }
+
+    return true;
+  };
+
   const onSubmit = (): void => {
+    if (!validateSubmission(sales)) {
+      return;
+    }
+
     if (isSRAddPage) {
       const apiSales = sales.map((sale) => {
         return {
@@ -166,14 +191,20 @@ export default function SRDetail() {
         sales: apiSales,
       } as APISRCreate;
 
-      SALES_API.addSalesReconciliation(salesReconciliation);
+      SALES_API.addSalesReconciliation(salesReconciliation).then((response) => {
+        if (response.status == 201) {
+          showSuccess("Sales reconciliation added successfully");
+        } else {
+          showFailure("Could not add sales reconciliation");
+          return;
+        }
+      });
     } else {
       // Otherwise, it is a modify page
-      console.log(bookMap);
       const apiSales = sales.map((sale) => {
         return {
           id: sale.isNewRow ? undefined : sale.id,
-          book: sale.isNewRow ? bookMap.get(sale.book_title) : sale.book_id,
+          book: sale.isNewRow ? bookMap.get(sale.book_title) : sale.book,
           quantity: sale.quantity,
           unit_retail_price: sale.unit_retail_price,
         } as APISRSaleRow;
@@ -185,7 +216,16 @@ export default function SRDetail() {
         sales: apiSales,
       } as APISRModify;
 
-      SALES_API.modifySalesReconciliation(salesReconciliation);
+      SALES_API.modifySalesReconciliation(salesReconciliation).then(
+        (response) => {
+          if (response.status == 200) {
+            showSuccess("Sales reconciliation edited successfully");
+          } else {
+            showFailure("Could not edit sales reconciliation");
+            return;
+          }
+        }
+      );
     }
   };
 
@@ -194,14 +234,14 @@ export default function SRDetail() {
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
 
-  const showSuccess = () => {
-    toast.current?.show({ severity: "success", summary: "Genre added" });
+  const showSuccess = (message: string) => {
+    toast.current?.show({ severity: "success", summary: message });
   };
 
-  const showFailure = () => {
+  const showFailure = (message: string) => {
     toast.current?.show({
       severity: "error",
-      summary: "Genre could not be added",
+      summary: message,
     });
   };
 

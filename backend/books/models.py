@@ -32,4 +32,4 @@ class Book(models.Model):
     genres = models.ManyToManyField('genres.Genre') 
 
     # Ghost Column to check if Book is Deleted but Still Can Reference
-    isGhost = models.BooleanField(default=False)
+    isGhost = models.BooleanField(default=False, null=True, blank=True)

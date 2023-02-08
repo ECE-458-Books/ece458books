@@ -64,7 +64,7 @@ export const VENDORS_API = {
       url: VENDORS_EXTENSION,
       method: METHOD_GET,
       params: {
-        nopagination: true,
+        no_pagination: true,
       },
     });
 

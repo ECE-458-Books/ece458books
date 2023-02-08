@@ -122,7 +122,7 @@ export default function PurchaseOrderList() {
       date: new Date(po.date.replace("-", "/")),
       data: po.purchases,
       id: po.id,
-      vendor: po.vendorName,
+      vendor: { name: po.vendorName, id: 1 },
       isAddPage: false,
       isModifiable: false,
       isConfirmationPopupVisible: false,

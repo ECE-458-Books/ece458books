@@ -24,6 +24,7 @@ import { useLocation } from "react-router-dom";
 import { GetPurchaseResp, PURCHASES_API } from "../../apis/PurchasesAPI";
 import { VENDORS_API } from "../../apis/VendorsAPI";
 import VendorList, { Vendor } from "../list/VendorList";
+import { BOOKS_API } from "../../apis/BooksAPI";
 
 export interface PODetailState {
   id: number;
@@ -49,7 +50,14 @@ interface Vendors {
   code: string;
 }
 
+// The books Interface lol no
+export interface BooksList {
+  id: number;
+  name: string;
+}
+
 const columns: TableColumn[] = [
+  { field: "id", header: "ID", filterPlaceholder: "ID" },
   { field: "books", header: "Books", filterPlaceholder: "Books" },
   { field: "quantity", header: "Quantity", filterPlaceholder: "Quantity" },
   {
@@ -92,6 +100,7 @@ export default function PODetail() {
   const [id, setId] = useState(detailState.id);
   const [lineData, setLineData] = useState(emptyProduct);
   const [vendorsData, setVendorsData] = useState<Vendor[]>();
+  const [booksData, setBooksData] = useState<BooksList[]>();
   const [isAddPage, setisAddPage] = useState(detailState.isAddPage);
   const [isModifiable, setIsModifiable] = useState(detailState.isModifiable);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] = useState(
@@ -122,6 +131,10 @@ export default function PODetail() {
     const { rowData, newValue, field, originalEvent: event } = e;
 
     switch (field) {
+      case "books":
+        rowData[field] = newValue;
+        rowData["id"] = booksData?.at(booksData?.indexOf(newValue))?.id;
+        break;
       case "quantity":
         if (isPositiveInteger(newValue)) rowData[field] = newValue;
         else event.preventDefault();
@@ -140,10 +153,29 @@ export default function PODetail() {
 
   const cellEditor = (options: ColumnEditorOptions) => {
     if (isModifiable) {
+      if (options.field === "books") return dropDownEditor(options);
       if (options.field === "unit_wholesale_price") return priceEditor(options);
       if (options.field === "quantity") return numberEditor(options);
       else return textEditor(options);
     }
+  };
+
+  const dropDownEditor = (options: ColumnEditorOptions) => {
+    return (
+      <Dropdown
+        value={options.value}
+        options={booksData}
+        appendTo={"self"}
+        placeholder="Select a Book"
+        optionLabel="name"
+        className="z-5"
+        onChange={(e) => {
+          options.editorCallback?.(e.target.value.name);
+        }}
+        showClear
+        virtualScrollerOptions={{ itemSize: 35 }}
+      />
+    );
   };
 
   const actionBodyTemplate = (rowData: any) => {
@@ -206,7 +238,12 @@ export default function PODetail() {
     }
 
     VENDORS_API.getVendorsNOPaging().then((response) => {
+      console.log(response.vendors);
       return setVendorsData(response.vendors);
+    });
+
+    BOOKS_API.getBooksNOPaging().then((response) => {
+      return setBooksData(response.books);
     });
   };
 
@@ -227,7 +264,7 @@ export default function PODetail() {
   const onSubmit = (): void => {
     if (isAddPage) {
       console.log("Add Page is submitted");
-      console.log(vendor);
+      console.log(data);
     } else {
       setIsModifiable(false);
     }
@@ -305,6 +342,7 @@ export default function PODetail() {
                   onChange={(event: DropdownProps): void => {
                     setVendor(event.value);
                   }}
+                  virtualScrollerOptions={{ itemSize: 35 }}
                 />
               </div>
             </div>

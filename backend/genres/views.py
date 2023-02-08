@@ -25,9 +25,33 @@ class ListCreateGenreAPIView(ListCreateAPIView):
             return None
         else:
             return super().paginate_queryset(queryset)
+    
+    def filter_queryset(self, request, queryset):
+        """Override the filter_queryset to add custom ordering for annotated fields
+
+        Note* This can be a feature to add to DRF (Django Rest Framework)
+        so that the queryset can be filtered by annotated fields
+
+        """
+        for backend in list(self.filter_backends):
+            queryset = backend().filter_queryset(self.request, queryset, self)
+
+        ordering = self.request.GET.get("ordering", None)
+
+        if ordering == 'book_cnt':
+            queryset = queryset.annotate(
+                book_cnt=Count('book')
+            ).order_by('book_cnt')
+        elif ordering == '-book_cnt':
+            queryset = queryset.annotate(
+                book_cnt=Count('book')
+            ).order_by('-book_cnt')
+        
+        return queryset
+
 
     def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
+        queryset = self.filter_queryset(request, self.get_queryset())
 
         # Might not scale?
         queryset = queryset.annotate(
@@ -49,13 +73,19 @@ class RetrieveUpdateDestroyGenreAPIView(RetrieveUpdateDestroyAPIView):
     lookup_url_kwarg = 'id'
 
     def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
+        
+        # Check if the request url is valid
+        try:
+            instance = self.get_object()
+        except Exception as e:
+            return Response({"error": f"{e}"}, status=status.HTTP_204_NO_CONTENT)
         
         # Check to see if the Genre has no books associated
         associated_book_cnt = len(instance.book_set.all())
         if(associated_book_cnt != 0):
             error_msg = {"error": f"{associated_book_cnt} book(s) associated with genre:{instance.name}"}
-            return Response(error_msg, status=status.HTTP_400_BAD_REQUEST)
+            return Response(error_msg, status=status.HTTP_409_CONFLICT)
 
+        # Perform destroy of instance
         self.perform_destroy(instance)
         return Response({"destroy": "success"}, status=status.HTTP_204_NO_CONTENT)

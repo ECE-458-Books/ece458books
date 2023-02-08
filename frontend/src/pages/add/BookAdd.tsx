@@ -12,7 +12,7 @@ import { Column, ColumnEditorOptions, ColumnEvent } from "primereact/column";
 import {
   isPositiveInteger,
   numberEditor,
-  priceBodyTemplate,
+  priceBodyTemplateRetailPrice,
   priceEditor,
 } from "../../util/TableCellEditFuncs";
 import { BOOKS_API } from "../../apis/BooksAPI";
@@ -61,22 +61,14 @@ export default function BookAdd() {
     );
   }, []);
 
-  const [seed, setSeed] = useState<number>(0);
-
-  const reloadDropdowns = () => {
-    setSeed(Math.random());
-  };
-
-  const genreDropdown = (rowData: BookWithDBTag) => {
+  const genreDropdown = (options: ColumnEditorOptions) => {
     return (
       <Dropdown
-        key={seed}
-        value={rowData.genres}
+        value={options.value}
         options={genreList}
         appendTo={"self"}
         onChange={(e) => {
-          rowData.genres = e.value;
-          reloadDropdowns();
+          options.editorCallback?.(e.target.value);
         }}
         placeholder={"Select Genre"}
         showClear
@@ -117,7 +109,7 @@ export default function BookAdd() {
       field: "genres",
       header: "Genre",
       filterPlaceholder: "Search by Genre",
-      customBody: genreDropdown,
+      cellEditor: (options) => genreDropdown(options),
     },
     {
       field: "isbn_13",
@@ -177,7 +169,7 @@ export default function BookAdd() {
       field: "retailPrice",
       header: "Retail Price",
       filterPlaceholder: "Search by Price",
-      customBody: priceBodyTemplate,
+      customBody: priceBodyTemplateRetailPrice,
       cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
       cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
     },

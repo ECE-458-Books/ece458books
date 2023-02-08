@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ToggleButton } from "primereact/togglebutton";
 import { Calendar, CalendarProps } from "primereact/calendar";
 import { DataTable } from "primereact/datatable";
@@ -9,15 +9,17 @@ import { v4 as uuid } from "uuid";
 import {
   isPositiveInteger,
   numberEditor,
-  priceBodyTemplate,
+  priceBodyTemplateUnit,
   priceEditor,
   textEditor,
 } from "../../util/TableCellEditFuncs";
 import { useLocation } from "react-router-dom";
 import { Toolbar } from "primereact/toolbar";
 import { Button } from "primereact/button";
+import { GetSaleResp, SALES_API } from "../../apis/SalesAPI";
 
 export interface SRDetailState {
+  id: number;
   date: any;
   data: SRSaleRow[];
   isAddPage: boolean;
@@ -27,18 +29,18 @@ export interface SRDetailState {
 
 export interface SRSaleRow {
   rowID: string;
-  books: string;
+  id: number;
+  book: string;
   quantity: number;
-  retailPrice: number;
+  unitRetailPrice: number;
 }
 
 const COLUMNS: TableColumn[] = [
-  { field: "rowID", header: "RowID", filterPlaceholder: "RowID" },
-  { field: "books", header: "Books", filterPlaceholder: "Books" },
+  { field: "book", header: "Books", filterPlaceholder: "book" },
   { field: "quantity", header: "Quantity", filterPlaceholder: "Quantity" },
   {
-    field: "retailPrice",
-    header: "Unit Retail Price",
+    field: "unitRetailPrice",
+    header: "Unit Retail Price ($)",
     filterPlaceholder: "Price",
   },
 ];
@@ -46,9 +48,10 @@ const COLUMNS: TableColumn[] = [
 export default function SRDetail() {
   const emptyProduct = {
     rowID: uuid(),
-    books: "",
+    id: 0,
+    book: "",
     quantity: 1,
-    retailPrice: 0,
+    unitRetailPrice: 0,
   };
 
   const location = useLocation();
@@ -58,9 +61,10 @@ export default function SRDetail() {
     data: [
       {
         rowID: uuid(),
-        books: "",
+        id: 0,
+        book: "",
         quantity: 1,
-        retailPrice: 0,
+        unitRetailPrice: 0,
       },
     ],
     isAddPage: true,
@@ -69,6 +73,7 @@ export default function SRDetail() {
   };
   const [date, setDate] = useState(detailState.date);
   const [data, setData] = useState(detailState.data);
+  const [id, setId] = useState(detailState.id);
   const [lineData, setLineData] = useState(emptyProduct);
   const [isAddPage, setisAddPage] = useState(detailState.isAddPage);
   const [isModifiable, setIsModifiable] = useState(detailState.isModifiable);
@@ -104,7 +109,7 @@ export default function SRDetail() {
         if (isPositiveInteger(newValue)) rowData[field] = newValue;
         else event.preventDefault();
         break;
-      case "retailPrice":
+      case "unitRetailPrice":
         if (isPositiveInteger(newValue)) rowData[field] = newValue;
         else event.preventDefault();
         break;
@@ -118,7 +123,7 @@ export default function SRDetail() {
 
   const cellEditor = (options: ColumnEditorOptions) => {
     if (isModifiable) {
-      if (options.field === "retailPrice") return priceEditor(options);
+      if (options.field === "unitRetailPrice") return priceEditor(options);
       if (options.field === "quantity") return numberEditor(options);
       else return textEditor(options);
     }
@@ -172,6 +177,32 @@ export default function SRDetail() {
         />
       </React.Fragment>
     );
+  };
+
+  // When any of the list of params are changed, useEffect is called to hit the API endpoint
+  useEffect(() => callAPI(), [id]);
+
+  // Calls the Vendors API
+  const callAPI = () => {
+    if (!isAddPage) {
+      SALES_API.getSale(id).then((response) => {
+        return onAPIResponse(response);
+      });
+    }
+  };
+
+  // Set state when response to API call is received
+  const onAPIResponse = (response: GetSaleResp) => {
+    const _data = response.sale.map((po: SRSaleRow) => {
+      return {
+        rowID: uuid(),
+        id: po.id,
+        book: po.book,
+        quantity: po.quantity,
+        unitRetailPrice: po.unitRetailPrice,
+      };
+    });
+    setData(_data);
   };
 
   const onSubmit = (): void => {
@@ -256,10 +287,9 @@ export default function SRDetail() {
                     field={field}
                     header={header}
                     style={{ width: "25%" }}
-                    body={field === "retailPrice" && priceBodyTemplate}
+                    body={field === "unitRetailPrice" && priceBodyTemplateUnit}
                     editor={(options) => cellEditor(options)}
                     onCellEditComplete={onCellEditComplete}
-                    hidden={field === "rowID"}
                   />
                 );
               })}

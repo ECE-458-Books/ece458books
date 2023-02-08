@@ -263,7 +263,7 @@ export default function GenreList() {
   });
 
   return (
-    <>
+    <div className="card pt-5 px-2">
       <Toast ref={toast} />
       <DataTable
         // General Settings
@@ -298,6 +298,6 @@ export default function GenreList() {
         />
       </DataTable>
       {deletePopupVisible && deletePopup}
-    </>
+    </div>
   );
 }

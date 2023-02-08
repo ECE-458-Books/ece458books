@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ToggleButton } from "primereact/togglebutton";
 import { Calendar, CalendarProps } from "primereact/calendar";
 import { Dropdown, DropdownProps } from "primereact/dropdown";
@@ -18,7 +18,6 @@ import {
 } from "../../util/TableCellEditFuncs";
 import { useLocation } from "react-router-dom";
 import {
-  GetPurchaseResp,
   APIPOPurchaseRow,
   PURCHASES_API,
   APIPOCreate,
@@ -28,6 +27,7 @@ import { VENDORS_API } from "../../apis/VendorsAPI";
 import { Vendor } from "../list/VendorList";
 import { BOOKS_API } from "../../apis/BooksAPI";
 import { toYYYYMMDDWithDash } from "../../util/DateOperations";
+import { Toast } from "primereact/toast";
 
 export interface PODetailState {
   id: number;
@@ -101,7 +101,7 @@ export default function PODetail() {
   const [purchaseOrderID, setPurchaseOrderID] = useState(detailState.id);
   const [lineData, setLineData] = useState(emptyProduct);
   const [vendorsData, setVendorsData] = useState<Vendor[]>();
-  const [bookList, setBookTitlesList] = useState<string[]>();
+  const [bookTitlesList, setBookTitlesList] = useState<string[]>();
   const [isPOAddPage, setisAddPage] = useState(detailState.isAddPage); // If false, this is an edit page
   const [isModifiable, setIsModifiable] = useState(detailState.isModifiable);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] = useState(
@@ -175,24 +175,57 @@ export default function PODetail() {
     });
   }, []);
 
+  const validateSubmission = (po: POPurchaseRow[]) => {
+    // Validate
+    for (const purchase of po) {
+      if (
+        !purchase.book_title ||
+        !(purchase.unit_wholesale_price >= 0) ||
+        !purchase.quantity
+      ) {
+        showFailure("All fields are required");
+        return false;
+      }
+    }
+
+    if (!date || !vendorName) {
+      showFailure("All fields are required");
+      return false;
+    }
+
+    return true;
+  };
+
   // On submission of the PO, we either add/edit depending on the page type
   const onSubmit = (): void => {
+    if (!validateSubmission(purchases)) {
+      return;
+    }
+
     if (isPOAddPage) {
+      // Create API Format
       const apiPurchases = purchases.map((purchase) => {
         return {
-          book_id: bookMap.get(purchase.book_title),
+          book: bookMap.get(purchase.book_title),
           quantity: purchase.quantity,
           unit_wholesale_price: purchase.unit_wholesale_price,
-        };
+        } as APIPOPurchaseRow;
       });
 
       const purchaseOrder = {
         date: toYYYYMMDDWithDash(date),
-        vendor_id: vendorID,
+        vendor: vendorID,
         purchases: apiPurchases,
       } as APIPOCreate;
 
-      PURCHASES_API.addPurchaseOrder(purchaseOrder);
+      PURCHASES_API.addPurchaseOrder(purchaseOrder).then((response) => {
+        if (response.status == 201) {
+          showSuccess("Purchase order added successfully");
+        } else {
+          showFailure("Could not add purchase order");
+          return;
+        }
+      });
     } else {
       // Otherwise, it is a modify page
       console.log(bookMap);
@@ -201,26 +234,47 @@ export default function PODetail() {
         console.log(bookMap.get(purchase.book_title));
         return {
           id: purchase.isNewRow ? undefined : purchase.id,
-          book_id: purchase.isNewRow
+          book: purchase.isNewRow
             ? bookMap.get(purchase.book_title)
             : purchase.book_id,
           quantity: purchase.quantity,
           unit_wholesale_price: purchase.unit_wholesale_price,
-        };
+        } as APIPOPurchaseRow;
       });
 
       const purchaseOrder = {
         id: purchaseOrderID,
         date: toYYYYMMDDWithDash(date),
-        vendor_id: vendorID,
+        vendor: vendorID,
         purchases: apiPurchases,
       } as APIPOModify;
 
-      PURCHASES_API.modifyPurchaseOrder(purchaseOrder);
+      PURCHASES_API.modifyPurchaseOrder(purchaseOrder).then((response) => {
+        if (response.status == 200) {
+          showSuccess("Purchase order edited successfully");
+        } else {
+          showFailure("Could not edit purchase order");
+          return;
+        }
+      });
     }
   };
 
   // -------- TEMPLATES/VISUAL ELEMENTS --------
+
+  // Toast is used for showing success/error messages
+  const toast = useRef<Toast>(null);
+
+  const showSuccess = (message: string) => {
+    toast.current?.show({ severity: "success", summary: message });
+  };
+
+  const showFailure = (message: string) => {
+    toast.current?.show({
+      severity: "error",
+      summary: message,
+    });
+  };
 
   const actionBodyTemplate = (rowData: any) => {
     return (
@@ -241,7 +295,7 @@ export default function PODetail() {
       <React.Fragment>
         <Button
           type="button"
-          label="New"
+          label="Add Book"
           className="p-button-info mr-2"
           icon="pi pi-plus"
           onClick={addNewPurchase}
@@ -263,7 +317,7 @@ export default function PODetail() {
           }}
           buttonClickFunc={() => setIsConfirmationPopupVisible(true)}
           disabled={!isModifiable}
-          label={"Update"}
+          label={"Submit"}
           className="p-button-success p-button-raised"
         />
       </React.Fragment>
@@ -274,7 +328,7 @@ export default function PODetail() {
     return (
       <Dropdown
         value={options.value}
-        options={bookList}
+        options={bookTitlesList}
         filter
         appendTo={"self"}
         placeholder="Select a Book"
@@ -306,6 +360,7 @@ export default function PODetail() {
 
   return (
     <div>
+      <Toast ref={toast} />
       <div className="grid flex justify-content-center">
         <link
           rel="stylesheet"
@@ -393,7 +448,6 @@ export default function PODetail() {
               className="editable-cells-table"
               responsiveLayout="scroll"
               editMode="cell"
-              footer="b"
             >
               {tableColumns}
               <Column

@@ -10,6 +10,8 @@ import {
 
 const PURCHASES_EXTENSION = "purchase_orders";
 
+// GET
+
 interface GetPurchaseOrdersReq {
   page: number;
   page_size: number;
@@ -28,9 +30,16 @@ interface APIPurchaseOrder {
   total_cost: number;
 }
 
+export interface GetPurchaseOrdersResp {
+  purchaseOrders: PurchaseOrder[];
+  numberOfPurchaseOrders: number;
+}
+
+// CREATE/MODIFY
+
 export interface APIPOCreate {
   date: string;
-  vendor_id: number;
+  vendor: number;
   purchases: APIPOPurchaseRow[];
 }
 
@@ -40,18 +49,9 @@ export interface APIPOModify extends APIPOCreate {
 
 export interface APIPOPurchaseRow {
   id?: number; // ID only for new rows, not already existing ones
-  book_id: number;
+  book: number;
   quantity: number;
   unit_wholesale_price: number;
-}
-
-export interface GetPurchaseOrdersResp {
-  purchaseOrders: PurchaseOrder[];
-  numberOfPurchaseOrders: number;
-}
-
-export interface GetPurchaseResp {
-  purchase: POPurchaseRow[];
 }
 
 export const PURCHASES_API = {
@@ -74,28 +74,17 @@ export const PURCHASES_API = {
         id: pr.id,
         date: pr.date,
         vendor_name: pr.vendor_name,
-        vendor_id: pr.vendor_id,
+        vendor: pr.vendor_id,
         purchases: pr.purchases,
         num_books: pr.num_books,
         num_unique_books: pr.num_unique_books,
         total_cost: pr.total_cost,
-      };
+      } as PurchaseOrder;
     });
 
     return Promise.resolve({
       purchaseOrders: purchases,
       numberOfPurchaseOrders: response.data.count,
-    });
-  },
-
-  getPurchase: async function (id: number): Promise<GetPurchaseResp> {
-    const response = await API.request({
-      url: PURCHASES_EXTENSION.concat("/").concat(id.toString()),
-      method: METHOD_GET,
-    });
-
-    return Promise.resolve({
-      purchase: response.data.purchases,
     });
   },
 

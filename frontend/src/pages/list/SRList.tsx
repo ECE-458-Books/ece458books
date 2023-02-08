@@ -20,9 +20,9 @@ export interface SalesReconciliation {
   id: number;
   date: string;
   sales: SRSaleRow[];
-  uniqueBooks: number;
-  totalBooks: number;
-  totalRevenue: number;
+  num_unique_books: number;
+  num_books: number;
+  total_revenue: number;
 }
 
 const COLUMNS: TableColumn[] = [
@@ -32,17 +32,17 @@ const COLUMNS: TableColumn[] = [
     filterPlaceholder: "Search by Total Date",
   },
   {
-    field: "uniqueBooks",
+    field: "num_unique_books",
     header: "Unique Books",
     filterPlaceholder: "Search by Unique Books",
   },
   {
-    field: "totalBooks",
+    field: "num_books",
     header: "Total Books",
     filterPlaceholder: "Search by Total Books",
   },
   {
-    field: "totalRevenue",
+    field: "total_revenue",
     header: "Total Revenue ($)",
     filterPlaceholder: "Search by Total Revenue",
   },
@@ -52,9 +52,9 @@ const COLUMNS: TableColumn[] = [
 interface Filters {
   [id: string]: DataTableFilterMetaData;
   date: DataTableFilterMetaData;
-  uniqueBooks: DataTableFilterMetaData;
-  totalBooks: DataTableFilterMetaData;
-  totalRevenue: DataTableFilterMetaData;
+  num_unique_books: DataTableFilterMetaData;
+  num_books: DataTableFilterMetaData;
+  total_revenue: DataTableFilterMetaData;
 }
 
 // Empty sales reconciliation, used to initialize state
@@ -62,9 +62,9 @@ const emptySalesReconciliation = {
   id: 0,
   date: "",
   sales: [],
-  uniqueBooks: 0,
-  totalBooks: 0,
-  totalRevenue: 0,
+  num_unique_books: 0,
+  num_books: 0,
+  total_revenue: 0,
 };
 
 export default function SalesReconciliationList() {
@@ -100,9 +100,9 @@ export default function SalesReconciliationList() {
     filters: {
       id: { value: "", matchMode: "contains" },
       date: { value: "", matchMode: "contains" },
-      uniqueBooks: { value: "", matchMode: "contains" },
-      totalBooks: { value: "", matchMode: "contains" },
-      totalRevenue: { value: "", matchMode: "contains" },
+      num_unique_books: { value: "", matchMode: "contains" },
+      num_books: { value: "", matchMode: "contains" },
+      total_revenue: { value: "", matchMode: "contains" },
     } as Filters,
   });
 
@@ -116,7 +116,7 @@ export default function SalesReconciliationList() {
     logger.debug("Edit Sales Reconciliation Clicked", sr);
     const detailState: SRDetailState = {
       date: new Date(sr.date.replace("-", "/")),
-      data: sr.sales,
+      sales: sr.sales,
       id: sr.id,
       isAddPage: false,
       isModifiable: false,
@@ -186,9 +186,16 @@ export default function SalesReconciliationList() {
   // };
 
   const callAPI = () => {
+    // Invert sort order
+    let sortField = sortParams.sortField;
+    if (sortParams.sortOrder == -1) {
+      sortField = "-".concat(sortField);
+    }
+
     SALES_API.getSalesReconciliations({
       page: pageParams.page ?? 0,
       page_size: pageParams.rows,
+      ordering: sortField,
     }).then((response) => onAPIResponse(response));
   };
 

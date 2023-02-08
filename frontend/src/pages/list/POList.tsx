@@ -4,6 +4,7 @@ import {
   DataTableFilterEvent,
   DataTableFilterMetaData,
   DataTablePageEvent,
+  DataTableRowClickEvent,
   DataTableSortEvent,
 } from "primereact/datatable";
 import { Toast } from "primereact/toast";
@@ -21,7 +22,7 @@ export interface PurchaseOrder {
   id: number;
   date: string;
   vendor_name: string;
-  vendor_id: number;
+  vendor: number;
   num_unique_books: number;
   num_books: number;
   total_cost: number;
@@ -49,7 +50,7 @@ const COLUMNS: TableColumn[] = [
     filterable: false,
   },
   {
-    field: "vendor_id",
+    field: "vendor",
     header: "Vendor ID",
     filterPlaceholder: "Search by Name",
     hidden: true,
@@ -90,7 +91,7 @@ const emptyPurchaseOrder = {
   id: 0,
   date: "",
   vendor_name: "",
-  vendor_id: 0,
+  vendor: 0,
   num_unique_books: 0,
   num_books: 0,
   total_cost: 0,
@@ -138,16 +139,16 @@ export default function PurchaseOrderList() {
   const navigate = useNavigate();
 
   // Callback functions for edit/delete buttons
-  const editPurchaseOrder = (po: PurchaseOrder) => {
+  const toDetailPage = (po: PurchaseOrder, isModifiable: boolean) => {
     logger.debug("Edit Purchase Order Clicked", po);
     const detailState: PODetailState = {
       date: new Date(po.date.replace("-", "/")),
       purchases: po.purchases,
       id: po.id,
       vendorName: po.vendor_name,
-      vendorID: po.vendor_id,
+      vendorID: po.vendor,
       isAddPage: false,
-      isModifiable: false,
+      isModifiable: isModifiable,
       isConfirmationPopupVisible: false,
     };
 
@@ -203,6 +204,15 @@ export default function PurchaseOrderList() {
     setPageParams(event);
   };
 
+  const onRowClick = (event: DataTableRowClickEvent) => {
+    // I couldn't figure out a better way to do this...
+    // It takes the current index as the table knows it and calculates the actual index in the genres array
+    const index = event.index - NUM_ROWS * (pageParams.page ?? 0);
+    const purchaseOrder = purchaseOrders[index];
+    logger.debug("Purchase Order Row Clicked", purchaseOrder);
+    toDetailPage(purchaseOrder, false);
+  };
+
   // When any of the list of params are changed, useEffect is called to hit the API endpoint
   useEffect(() => callAPI(), [sortParams, pageParams, filterParams]);
 
@@ -252,7 +262,7 @@ export default function PurchaseOrderList() {
 
   // Edit/Delete Cell Template
   const editDeleteCellTemplate = EditDeleteTemplate<PurchaseOrder>({
-    onEdit: (rowData) => editPurchaseOrder(rowData),
+    onEdit: (rowData) => toDetailPage(rowData, true),
     onDelete: (rowData) => deletePurchaseOrderPopup(rowData),
   });
 
@@ -274,7 +284,7 @@ export default function PurchaseOrderList() {
         field={col.field}
         header={col.header}
         // Filtering
-        filter
+        filter={col.filterable}
         filterElement={col.customFilter}
         //filterMatchMode={"contains"}
         filterPlaceholder={col.filterPlaceholder}
@@ -301,6 +311,10 @@ export default function PurchaseOrderList() {
         responsiveLayout="scroll"
         filterDisplay="row"
         loading={loading}
+        // Row clicking
+        rowHover
+        selectionMode={"single"}
+        onRowClick={(event) => onRowClick(event)}
         // Paginator
         paginator
         first={pageParams.first}

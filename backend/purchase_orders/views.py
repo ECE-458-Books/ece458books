@@ -27,10 +27,9 @@ class ListCreatePurchaseOrderAPIView(ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = PurchaseOrderSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        saved_purchase_order = serializer.save()
+        serializer.save()
 
         response_data = serializer.data
-        response_data['id'] = saved_purchase_order.id
         return Response(response_data, status=status.HTTP_201_CREATED)
 
     def get_queryset(self):

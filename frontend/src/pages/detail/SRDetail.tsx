@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ToggleButton } from "primereact/togglebutton";
 import { Calendar, CalendarProps } from "primereact/calendar";
+import { Dropdown, DropdownProps } from "primereact/dropdown";
 import { DataTable } from "primereact/datatable";
 import { Column, ColumnEditorOptions } from "primereact/column";
 import { TableColumn } from "../../components/Table";
@@ -17,6 +18,8 @@ import { useLocation } from "react-router-dom";
 import { Toolbar } from "primereact/toolbar";
 import { Button } from "primereact/button";
 import { GetSaleResp, SALES_API } from "../../apis/SalesAPI";
+import { BOOKS_API } from "../../apis/BooksAPI";
+import { BooksList } from "./PODetail";
 
 export interface SRDetailState {
   id: number;
@@ -29,17 +32,18 @@ export interface SRDetailState {
 
 export interface SRSaleRow {
   rowID: string;
-  id: number;
-  book: string;
+  book_id: number;
+  book_title: string;
   quantity: number;
-  unitRetailPrice: number;
+  unit_retail_price: number;
 }
 
 const COLUMNS: TableColumn[] = [
-  { field: "book", header: "Books", filterPlaceholder: "book" },
+  { field: "book_id", header: "ID", filterPlaceholder: "ID" },
+  { field: "book_title", header: "Books", filterPlaceholder: "book" },
   { field: "quantity", header: "Quantity", filterPlaceholder: "Quantity" },
   {
-    field: "unitRetailPrice",
+    field: "unit_retail_price",
     header: "Unit Retail Price ($)",
     filterPlaceholder: "Price",
   },
@@ -48,10 +52,10 @@ const COLUMNS: TableColumn[] = [
 export default function SRDetail() {
   const emptyProduct = {
     rowID: uuid(),
-    id: 0,
-    book: "",
+    book_id: 0,
+    book_title: "",
     quantity: 1,
-    unitRetailPrice: 0,
+    unit_retail_price: 0,
   };
 
   const location = useLocation();
@@ -61,10 +65,10 @@ export default function SRDetail() {
     data: [
       {
         rowID: uuid(),
-        id: 0,
-        book: "",
+        book_id: 0,
+        book_title: "",
         quantity: 1,
-        unitRetailPrice: 0,
+        unit_retail_price: 0,
       },
     ],
     isAddPage: true,
@@ -75,6 +79,7 @@ export default function SRDetail() {
   const [data, setData] = useState(detailState.data);
   const [id, setId] = useState(detailState.id);
   const [lineData, setLineData] = useState(emptyProduct);
+  const [booksData, setBooksData] = useState<BooksList[]>();
   const [isAddPage, setisAddPage] = useState(detailState.isAddPage);
   const [isModifiable, setIsModifiable] = useState(detailState.isModifiable);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] = useState(
@@ -105,11 +110,17 @@ export default function SRDetail() {
     const { rowData, newValue, field, originalEvent: event } = e;
 
     switch (field) {
+      case "book_id":
+        break;
+      case "book_title":
+        rowData[field] = newValue.name;
+        rowData["book_id"] = newValue.id;
+        break;
       case "quantity":
         if (isPositiveInteger(newValue)) rowData[field] = newValue;
         else event.preventDefault();
         break;
-      case "unitRetailPrice":
+      case "unit_retail_price":
         if (isPositiveInteger(newValue)) rowData[field] = newValue;
         else event.preventDefault();
         break;
@@ -123,10 +134,30 @@ export default function SRDetail() {
 
   const cellEditor = (options: ColumnEditorOptions) => {
     if (isModifiable) {
-      if (options.field === "unitRetailPrice") return priceEditor(options);
+      if (options.field === "book_title") return dropDownEditor(options);
+      if (options.field === "unit_retail_price") return priceEditor(options);
       if (options.field === "quantity") return numberEditor(options);
       else return textEditor(options);
     }
+  };
+
+  const dropDownEditor = (options: ColumnEditorOptions) => {
+    return (
+      <Dropdown
+        value={options.value}
+        options={booksData}
+        filter
+        appendTo={"self"}
+        placeholder="Select a Book"
+        optionLabel="name"
+        className="z-5"
+        onChange={(e) => {
+          options.editorCallback?.(e.target.value);
+        }}
+        showClear
+        virtualScrollerOptions={{ itemSize: 35 }}
+      />
+    );
   };
 
   const actionBodyTemplate = (rowData: any) => {
@@ -186,20 +217,25 @@ export default function SRDetail() {
   const callAPI = () => {
     if (!isAddPage) {
       SALES_API.getSale(id).then((response) => {
-        return onAPIResponse(response);
+        return onDATAPIResponse(response);
       });
     }
+
+    BOOKS_API.getBooksNOPaging().then((response) => {
+      console.log(response.books);
+      return setBooksData(response.books);
+    });
   };
 
   // Set state when response to API call is received
-  const onAPIResponse = (response: GetSaleResp) => {
+  const onDATAPIResponse = (response: GetSaleResp) => {
     const _data = response.sale.map((po: SRSaleRow) => {
       return {
         rowID: uuid(),
-        id: po.id,
-        book: po.book,
+        book_id: po.book_id,
+        book_title: po.book_title,
         quantity: po.quantity,
-        unitRetailPrice: po.unitRetailPrice,
+        unit_retail_price: po.unit_retail_price,
       };
     });
     setData(_data);
@@ -208,8 +244,12 @@ export default function SRDetail() {
   const onSubmit = (): void => {
     if (isAddPage) {
       console.log("Add page state submit");
+      console.log(date);
+      console.log(data);
     } else {
       setIsModifiable(false);
+      console.log(date);
+      console.log(data);
     }
   };
 
@@ -287,7 +327,9 @@ export default function SRDetail() {
                     field={field}
                     header={header}
                     style={{ width: "25%" }}
-                    body={field === "unitRetailPrice" && priceBodyTemplateUnit}
+                    body={
+                      field === "unit_retail_price" && priceBodyTemplateUnit
+                    }
                     editor={(options) => cellEditor(options)}
                     onCellEditComplete={onCellEditComplete}
                   />

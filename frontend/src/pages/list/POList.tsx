@@ -20,6 +20,7 @@ export interface PurchaseOrder {
   id: number;
   date: string;
   vendorName: string;
+  vendorID: number;
   uniqueBooks: number;
   totalBooks: number;
   totalCost: number;
@@ -69,6 +70,7 @@ const emptyPurchaseOrder = {
   id: 0,
   date: "",
   vendorName: "",
+  vendorID: 0,
   uniqueBooks: 0,
   totalBooks: 0,
   totalCost: 0,
@@ -104,6 +106,7 @@ export default function PurchaseOrderList() {
       id: { value: "", matchMode: "contains" },
       date: { value: "", matchMode: "contains" },
       vendorName: { value: "", matchMode: "contains" },
+      vendorID: { value: "", matchMode: "contains" },
       uniqueBooks: { value: "", matchMode: "contains" },
       totalBooks: { value: "", matchMode: "contains" },
       totalCost: { value: "", matchMode: "contains" },
@@ -122,7 +125,8 @@ export default function PurchaseOrderList() {
       date: new Date(po.date.replace("-", "/")),
       data: po.purchases,
       id: po.id,
-      vendor: { name: po.vendorName, id: 1 },
+      vendorName: po.vendorName,
+      vendorID: po.vendorID,
       isAddPage: false,
       isModifiable: false,
       isConfirmationPopupVisible: false,
@@ -141,6 +145,13 @@ export default function PurchaseOrderList() {
   // Call to actually delete the element
   const deletePurchaseOrderFinal = () => {
     logger.debug("Edit Purchase Order Finalized", selectedDeletePurchaseOrder);
+    PURCHASES_API.deletePurchaseOrder(
+      selectedDeletePurchaseOrder.id.toString()
+    );
+    const _purchaseOrders = purchaseOrders.filter(
+      (selectPO) => selectedDeletePurchaseOrder.id != selectPO.id
+    );
+    setPurchaseOrders(_purchaseOrders);
     setDeletePopupVisible(false);
     setSelectedDeletePurchaseOrder(emptyPurchaseOrder);
   };

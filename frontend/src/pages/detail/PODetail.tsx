@@ -1,11 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ToggleButton } from "primereact/togglebutton";
 import { Calendar, CalendarProps } from "primereact/calendar";
-import {
-  Dropdown,
-  DropdownChangeEvent,
-  DropdownProps,
-} from "primereact/dropdown";
+import { Dropdown, DropdownProps } from "primereact/dropdown";
 import { DataTable } from "primereact/datatable";
 import { TableColumn } from "../../components/Table";
 import { Column, ColumnEditorOptions } from "primereact/column";
@@ -21,16 +17,21 @@ import {
   textEditor,
 } from "../../util/TableCellEditFuncs";
 import { useLocation } from "react-router-dom";
-import { GetPurchaseResp, PURCHASES_API } from "../../apis/PurchasesAPI";
+import {
+  GetPurchaseResp,
+  POPurchRowSubmit,
+  PURCHASES_API,
+} from "../../apis/PurchasesAPI";
 import { VENDORS_API } from "../../apis/VendorsAPI";
-import VendorList, { Vendor } from "../list/VendorList";
+import { Vendor } from "../list/VendorList";
 import { BOOKS_API } from "../../apis/BooksAPI";
 
 export interface PODetailState {
   id: number;
   date: any;
   data: POPurchaseRow[];
-  vendor: Vendor;
+  vendorName: string;
+  vendorID: number;
   isAddPage: boolean;
   isModifiable: boolean;
   isConfirmationPopupVisible: boolean;
@@ -38,8 +39,8 @@ export interface PODetailState {
 
 export interface POPurchaseRow {
   rowID: string;
-  id: number;
-  book: string;
+  book_id: number;
+  book_title: string;
   quantity: number;
   unit_wholesale_price: number;
 }
@@ -47,7 +48,7 @@ export interface POPurchaseRow {
 // Below placeholders need to be removed
 interface Vendors {
   name: string;
-  code: string;
+  id: number;
 }
 
 // The books Interface lol no
@@ -57,8 +58,8 @@ export interface BooksList {
 }
 
 const columns: TableColumn[] = [
-  { field: "id", header: "ID", filterPlaceholder: "ID" },
-  { field: "books", header: "Books", filterPlaceholder: "Books" },
+  { field: "book_id", header: "ID", filterPlaceholder: "ID" },
+  { field: "book_title", header: "Books", filterPlaceholder: "Books" },
   { field: "quantity", header: "Quantity", filterPlaceholder: "Quantity" },
   {
     field: "unit_wholesale_price",
@@ -70,8 +71,8 @@ const columns: TableColumn[] = [
 export default function PODetail() {
   const emptyProduct = {
     rowID: uuid(),
-    id: 0,
-    book: "",
+    book_id: 0,
+    book_title: "",
     quantity: 1,
     unit_wholesale_price: 0,
   };
@@ -80,12 +81,13 @@ export default function PODetail() {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const detailState = (location.state! as PODetailState) ?? {
     date: new Date(),
-    vendor: { name: "", id: 0 },
+    vendorName: "",
+    vendorID: 0,
     data: [
       {
         rowID: uuid(),
-        book: "",
-        id: 0,
+        book_title: "",
+        book_id: 0,
         quantity: 1,
         unit_wholesale_price: 0,
       },
@@ -95,7 +97,8 @@ export default function PODetail() {
     isConfirmationPopupVisible: false,
   };
   const [date, setDate] = useState(detailState.date);
-  const [vendor, setVendor] = useState(detailState.vendor);
+  const [vendorName, setVendorName] = useState(detailState.vendorName);
+  const [vendorID, setVendorID] = useState(detailState.vendorID);
   const [data, setData] = useState(detailState.data);
   const [id, setId] = useState(detailState.id);
   const [lineData, setLineData] = useState(emptyProduct);
@@ -131,9 +134,11 @@ export default function PODetail() {
     const { rowData, newValue, field, originalEvent: event } = e;
 
     switch (field) {
-      case "books":
-        rowData[field] = newValue;
-        rowData["id"] = booksData?.at(booksData?.indexOf(newValue))?.id;
+      case "book_id":
+        break;
+      case "book_title":
+        rowData[field] = newValue.name;
+        rowData["book_id"] = newValue.id;
         break;
       case "quantity":
         if (isPositiveInteger(newValue)) rowData[field] = newValue;
@@ -153,7 +158,7 @@ export default function PODetail() {
 
   const cellEditor = (options: ColumnEditorOptions) => {
     if (isModifiable) {
-      if (options.field === "books") return dropDownEditor(options);
+      if (options.field === "book_title") return dropDownEditor(options);
       if (options.field === "unit_wholesale_price") return priceEditor(options);
       if (options.field === "quantity") return numberEditor(options);
       else return textEditor(options);
@@ -165,12 +170,13 @@ export default function PODetail() {
       <Dropdown
         value={options.value}
         options={booksData}
+        filter
         appendTo={"self"}
         placeholder="Select a Book"
         optionLabel="name"
         className="z-5"
         onChange={(e) => {
-          options.editorCallback?.(e.target.value.name);
+          options.editorCallback?.(e.target.value);
         }}
         showClear
         virtualScrollerOptions={{ itemSize: 35 }}
@@ -243,6 +249,7 @@ export default function PODetail() {
     });
 
     BOOKS_API.getBooksNOPaging().then((response) => {
+      console.log(response.books);
       return setBooksData(response.books);
     });
   };
@@ -252,8 +259,8 @@ export default function PODetail() {
     const _data = response.purchase.map((po: POPurchaseRow) => {
       return {
         rowID: uuid(),
-        id: po.id,
-        book: po.book,
+        book_id: po.book_id,
+        book_title: po.book_title,
         quantity: po.quantity,
         unit_wholesale_price: po.unit_wholesale_price,
       };
@@ -263,10 +270,40 @@ export default function PODetail() {
 
   const onSubmit = (): void => {
     if (isAddPage) {
+      const _purchasesCorrected: POPurchRowSubmit[] = data.map(
+        (purchase: POPurchaseRow) => {
+          return {
+            book_id: purchase.book_id,
+            quantity: purchase.quantity,
+            unit_wholesale_price: purchase.unit_wholesale_price,
+          };
+        }
+      );
       console.log("Add Page is submitted");
-      console.log(data);
+      const _POs = {
+        date:
+          date.getFullYear() +
+          "-" +
+          (date.getMonth() + 1) +
+          "-" +
+          date.getDate(),
+        vendor_id: vendorID,
+        purchases: _purchasesCorrected,
+      };
+      //console.log(date.toString());
+      console.log(_POs);
+
+      PURCHASES_API.addPurchaseOrder(_POs);
+      //console.log(vendorID);
+      //console.log(vendorName);
+      //console.log(data);
+      //PURCHASES_API.addPurchaseOrder("");
     } else {
       setIsModifiable(false);
+      console.log(date);
+      console.log(vendorID);
+      console.log(vendorName);
+      console.log(data);
     }
   };
 
@@ -333,14 +370,15 @@ export default function PODetail() {
                   Vendor
                 </label>
                 <Dropdown
-                  value={vendor}
+                  value={{ name: vendorName, id: vendorID }}
                   options={vendorsData}
                   placeholder="Select a Vendor"
                   optionLabel="name"
                   filter
                   disabled={!isModifiable}
                   onChange={(event: DropdownProps): void => {
-                    setVendor(event.value);
+                    setVendorName(event.value.name);
+                    setVendorID(event.value.id);
                   }}
                   virtualScrollerOptions={{ itemSize: 35 }}
                 />

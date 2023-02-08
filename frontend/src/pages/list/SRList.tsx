@@ -139,6 +139,13 @@ export default function SalesReconciliationList() {
       "Delete Sales Reconciliation Finalized",
       selectedDeleteSalesReconciliation
     );
+    SALES_API.deleteSalesReconciliation(
+      selectedDeleteSalesReconciliation.id.toString()
+    );
+    const _salesReconciliations = salesReconciliations.filter(
+      (selectSR) => selectedDeleteSalesReconciliation.id != selectSR.id
+    );
+    setSalesReconciliations(_salesReconciliations);
     setDeletePopupVisible(false);
     setSelectedDeleteSalesReconciliation(emptySalesReconciliation);
   };

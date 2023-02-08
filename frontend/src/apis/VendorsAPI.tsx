@@ -68,7 +68,7 @@ export const VENDORS_API = {
     });
 
     // Convert response to internal data type (not strictly necessary, but I think good practice)
-    const vendors = response.data.results.map((vendor: APIVendor) => {
+    const vendors = response.data.map((vendor: APIVendor) => {
       return {
         id: vendor.id,
         name: vendor.name,

@@ -20,13 +20,26 @@ interface GetPurchaseOrdersReq {
 
 // The structure of the response for a PO from the API
 interface APIPurchaseOrder {
+  vendor_name: string;
   id: number;
   date: string;
-  vendor: string;
-  purchases: any;
+  vendor_id: number;
+  purchases: POPurchaseRow[];
   num_books: number;
   num_unique_books: number;
   total_cost: number;
+}
+
+export interface APIPOSubmit {
+  date: string;
+  vendor_id: number;
+  purchases: POPurchRowSubmit[];
+}
+
+export interface POPurchRowSubmit {
+  book_id: number;
+  quantity: number;
+  unit_wholesale_price: number;
 }
 
 export interface GetPurchaseOrdersResp {
@@ -56,7 +69,8 @@ export const PURCHASES_API = {
       return {
         id: pr.id,
         date: pr.date,
-        vendorName: pr.vendor,
+        vendorName: pr.vendor_name,
+        vendorID: pr.vendor_id,
         puchases: pr.purchases,
         totalBooks: pr.num_books,
         uniqueBooks: pr.num_unique_books,
@@ -102,11 +116,15 @@ export const PURCHASES_API = {
     });
   },
 
-  addPurchaseOrder: async function (po: string) {
+  addPurchaseOrder: async function (po: APIPOSubmit) {
     await API.request({
       url: PURCHASES_EXTENSION,
       method: METHOD_POST,
-      data: { name: po },
+      data: {
+        date: po.date,
+        vendor_id: po.vendor_id,
+        purchases: po.purchases,
+      },
     });
   },
 };

@@ -118,7 +118,7 @@ export const BOOKS_API = {
     });
 
     // Convert response to internal data type (not strictly necessary, but I think good practice)
-    const _books = response.data.results.map((book: APIBookSimplified) => {
+    const _books = response.data.map((book: APIBookSimplified) => {
       return {
         id: book.id,
         name: book.title,

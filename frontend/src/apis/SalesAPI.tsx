@@ -111,7 +111,7 @@ export const SALES_API = {
 
   deleteSalesReconciliation: async function (id: string) {
     await API.request({
-      url: SALES_EXTENSION.concat(id),
+      url: SALES_EXTENSION.concat("/").concat(id),
       method: METHOD_DELETE,
     });
   },

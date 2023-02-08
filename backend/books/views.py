@@ -106,9 +106,8 @@ class ListCreateBookAPIView(ListCreateAPIView):
             obj = None
 
         if obj is not None:
-            partial = True
-            data = {"isGhost": False}
-            serializer = self.get_serializer(obj, data=data, partial=partial)
+            request.data['isGhost'] = False
+            serializer = self.get_serializer(obj, data=request.data, partial=False)
         else:
             serializer = self.get_serializer(data=request.data)
 

@@ -50,7 +50,7 @@ export default function VendorAdd() {
           <Toast ref={toast} />
           <div className="py-2">
             <label
-              className="text-xl p-component text-teal-800 p-text-secondary"
+              className="text-xl p-component text-teal-900 p-text-secondary"
               htmlFor="addvendor"
             >
               Add Vendor

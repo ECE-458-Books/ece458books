@@ -92,6 +92,11 @@ function NavigationBar() {
       ],
     },
     {
+      label: "Sales Report",
+      icon: "pi pi-dollar",
+      command: () => navigate("/sales-report"),
+    },
+    {
       label: "Settings",
       icon: "pi pi-fw pi-wrench",
       items: [
@@ -103,6 +108,15 @@ function NavigationBar() {
       ],
     },
   ];
+
+  // const start = (
+  //   <img
+  //     alt="logo"
+  //     src={require("../ImaginarySoftwareLogo.jpeg")}
+  //     height="40"
+  //     className="mr-2"
+  //   ></img>
+  // );
 
   return <Menubar model={items} />;
 }

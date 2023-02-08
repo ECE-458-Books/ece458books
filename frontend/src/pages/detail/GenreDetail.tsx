@@ -84,7 +84,7 @@ export default function GenreDetail() {
             <div className="flex flex-row justify-content-center card-container col-12">
               <div className="pt-2 pr-2">
                 <label
-                  className="text-xl p-component text-teal-800 p-text-secondary"
+                  className="text-xl p-component text-teal-900 p-text-secondary"
                   htmlFor="genre"
                 >
                   Genre

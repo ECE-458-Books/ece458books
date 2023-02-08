@@ -1,11 +1,11 @@
 import { createRef, FormEvent, useState } from "react";
 import axios from "axios";
-import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import { Messages } from "primereact/messages";
 import { useNavigate } from "react-router-dom";
 import { API } from "../apis/Config";
 import { AUTH_API } from "../apis/AuthAPI";
+import { Password } from "primereact/password";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -65,7 +65,12 @@ export default function LoginPage() {
         </div>
         <form onSubmit={onSubmit}>
           <div className="flex flex-row justify-content-center card-container col-12">
-            <InputText value={password} onChange={onChange} />
+            <Password
+              value={password}
+              onChange={onChange}
+              toggleMask
+              feedback={false}
+            />
           </div>
           <div className="flex flex-row justify-content-center card-container col-12">
             <Button type="submit" label="Submit" aria-label="Submit" />

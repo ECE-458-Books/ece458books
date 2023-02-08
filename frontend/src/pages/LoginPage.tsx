@@ -63,6 +63,14 @@ export default function LoginPage() {
             Login Page
           </h1>
         </div>
+        <div className="col-offset-4">
+          <img
+            alt="logo"
+            src={require("../ImaginarySoftwareLogo.jpeg")}
+            height="200"
+            className="mr-2"
+          ></img>
+        </div>
         <form onSubmit={onSubmit}>
           <div className="flex flex-row justify-content-center card-container col-12">
             <Password

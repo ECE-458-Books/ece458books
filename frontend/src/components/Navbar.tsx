@@ -113,8 +113,8 @@ function NavigationBar() {
     <img
       alt="logo"
       src={require("../ImaginarySoftwareLogo.jpeg")}
-      height="40"
-      className="mr-2"
+      height="50"
+      className="mr-2 px-3"
     ></img>
   );
 

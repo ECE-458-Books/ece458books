@@ -12,15 +12,14 @@ const VENDORS_EXTENSION = "vendors";
 interface GetVendorsReq {
   page: number;
   page_size: number;
-  ordering_field: string | undefined;
-  ordering_ascending: number | null | undefined;
-  search: string;
+  ordering: string;
 }
 
 // The structure of the response for a vendor from the API
 interface APIVendor {
   id: number;
   name: string;
+  num_purchase_orders: number;
 }
 
 export interface GetVendorsResp {
@@ -36,8 +35,7 @@ export const VENDORS_API = {
       params: {
         page: req.page + 1,
         page_size: req.page_size,
-        ordering: req.ordering_field,
-        search: req.search,
+        ordering: req.ordering,
       },
     });
 
@@ -46,6 +44,7 @@ export const VENDORS_API = {
       return {
         id: vendor.id,
         name: vendor.name,
+        numPO: vendor.num_purchase_orders,
       };
     });
 
@@ -58,7 +57,7 @@ export const VENDORS_API = {
   // Everything below this point has not been tested
 
   deleteVendor: async function (id: string) {
-    await API.request({
+    return await API.request({
       url: VENDORS_EXTENSION.concat("/".concat(id)),
       method: METHOD_DELETE,
     });
@@ -70,7 +69,7 @@ export const VENDORS_API = {
       name: vendor.name,
     };
 
-    await API.request({
+    return await API.request({
       url: VENDORS_EXTENSION.concat("/".concat(vendor.id.toString())),
       method: METHOD_PATCH,
       data: vendorParams,
@@ -78,7 +77,7 @@ export const VENDORS_API = {
   },
 
   addVendor: async function (vendor: string) {
-    await API.request({
+    return await API.request({
       url: VENDORS_EXTENSION,
       method: METHOD_POST,
       data: { name: vendor },

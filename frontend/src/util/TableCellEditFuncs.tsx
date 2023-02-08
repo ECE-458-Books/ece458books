@@ -36,6 +36,7 @@ export function numberEditor(options: ColumnEditorOptions) {
       value={options.value}
       onValueChange={(e) => options.editorCallback?.(e.target.value)}
       mode="decimal"
+      maxFractionDigits={2}
     />
   );
 }

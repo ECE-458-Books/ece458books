@@ -105,10 +105,14 @@ class ListCreateBookAPIView(ListCreateAPIView):
         except Exception as e:
             obj = None
 
+        # If the object with the specific isbn_13 is found we do the following:
+        # 1. add the isGhost field to the request data
+        # 2. update the already existing row in DB
         if obj is not None:
             request.data['isGhost'] = False
             serializer = self.get_serializer(obj, data=request.data, partial=False)
         else:
+            # This is different from the above serializer because this is creating a new row in the table
             serializer = self.get_serializer(data=request.data)
 
         serializer.is_valid(raise_exception=True)

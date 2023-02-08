@@ -1,15 +1,36 @@
-import React, { FormEvent, useState } from "react";
+import React, { FormEvent, useRef, useState } from "react";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Button } from "primereact/button";
 import { GENRES_API } from "../../apis/GenresAPI";
 import { logger } from "../../util/Logger";
+import { Toast } from "primereact/toast";
 
 export default function GenreAdd() {
   const [textBox, setTextBox] = useState("");
 
+  // Toast is used for showing success/error messages
+  const toast = useRef<Toast>(null);
+
+  const showSuccess = () => {
+    toast.current?.show({ severity: "success", summary: "Genre added" });
+  };
+
+  const showFailure = () => {
+    toast.current?.show({
+      severity: "error",
+      summary: "Genre could not be added",
+    });
+  };
+
   const onSubmit = (event: FormEvent<HTMLFormElement>): void => {
     logger.debug("Add Genre Submitted", textBox);
-    GENRES_API.addGenres(textBox);
+    GENRES_API.addGenres(textBox).then((response) => {
+      if (response.status == 201) {
+        showSuccess();
+      } else {
+        showFailure();
+      }
+    });
     event.preventDefault();
   };
 
@@ -26,6 +47,7 @@ export default function GenreAdd() {
           </h1>
         </div>
         <form onSubmit={onSubmit}>
+          <Toast ref={toast} />
           <div className="py-2">
             <label
               className="text-xl p-component text-teal-800 p-text-secondary"

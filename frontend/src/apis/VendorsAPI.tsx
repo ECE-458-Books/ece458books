@@ -55,7 +55,7 @@ export const VENDORS_API = {
   // Everything below this point has not been tested
 
   deleteVendor: async function (id: string) {
-    await API.request({
+    return await API.request({
       url: VENDORS_EXTENSION.concat("/".concat(id)),
       method: METHOD_DELETE,
     });
@@ -67,7 +67,7 @@ export const VENDORS_API = {
       name: vendor.name,
     };
 
-    await API.request({
+    return await API.request({
       url: VENDORS_EXTENSION.concat("/".concat(vendor.id.toString())),
       method: METHOD_PATCH,
       data: vendorParams,
@@ -75,7 +75,7 @@ export const VENDORS_API = {
   },
 
   addVendor: async function (vendor: string) {
-    await API.request({
+    return await API.request({
       url: VENDORS_EXTENSION,
       method: METHOD_POST,
       data: { name: vendor },

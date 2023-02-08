@@ -1,4 +1,4 @@
-import React, { FormEvent, useState } from "react";
+import React, { FormEvent, useRef, useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { ToggleButton } from "primereact/togglebutton";
 import ConfirmButton from "../../components/ConfirmButton";
@@ -6,6 +6,7 @@ import { useLocation } from "react-router-dom";
 import { GENRES_API } from "../../apis/GenresAPI";
 import { Genre } from "../list/GenreList";
 import { logger } from "../../util/Logger";
+import { Toast } from "primereact/toast";
 
 export interface GenreDetailState {
   id: number;
@@ -25,10 +26,30 @@ export default function GenreDetail() {
     detailState.isConfirmationPopupVisible
   );
 
+  // Toast is used for showing success/error messages
+  const toast = useRef<Toast>(null);
+
+  const showSuccess = () => {
+    toast.current?.show({ severity: "success", summary: "Genre modified" });
+  };
+
+  const showFailure = () => {
+    toast.current?.show({
+      severity: "error",
+      summary: "Genre could not be modified",
+    });
+  };
+
   const onSubmit = (): void => {
     const modifiedGenre: Genre = { id: id, name: genre, book_cnt: 0 };
     logger.debug("Edit Genre Submitted", modifiedGenre);
-    GENRES_API.modifyGenre(modifiedGenre);
+    GENRES_API.modifyGenre(modifiedGenre).then((response) => {
+      if (response.status == 200) {
+        showSuccess();
+      } else {
+        showFailure();
+      }
+    });
     setIsModifiable(false);
   };
 
@@ -46,6 +67,7 @@ export default function GenreDetail() {
             </h1>
           </div>
           <form onSubmit={onSubmit}>
+            <Toast ref={toast} />
             <div className="flex pb-8 flex-row justify-content-center card-container col-12">
               <ToggleButton
                 id="modifyGenreToggle"

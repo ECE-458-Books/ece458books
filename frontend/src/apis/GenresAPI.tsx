@@ -69,7 +69,7 @@ export const GENRES_API = {
       name: genre.name,
     };
 
-    await API.request({
+    return await API.request({
       url: GENRES_EXTENSION.concat("/".concat(genre.id.toString())),
       method: METHOD_PATCH,
       data: genreParams,
@@ -77,7 +77,7 @@ export const GENRES_API = {
   },
 
   addGenres: async function (genres: string) {
-    await API.request({
+    return await API.request({
       url: GENRES_EXTENSION,
       method: METHOD_POST,
       data: { name: genres },

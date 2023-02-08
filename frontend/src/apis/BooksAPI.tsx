@@ -144,7 +144,7 @@ export const BOOKS_API = {
       return {
         id: book.id,
         title: book.title,
-        author: book.authors.toString(), // changes from array to comma-separated string
+        author: (book.authors ?? "").toString(), // changes from array to comma-separated string
         genres: (book.genres ?? "").toString(), // Doesn't exist on new book, so can't call toString directly
         isbn_13: book.isbn_13,
         isbn10: book.isbn_10,

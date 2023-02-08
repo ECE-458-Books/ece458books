@@ -1,4 +1,4 @@
-import React, { FormEvent, useState } from "react";
+import React, { FormEvent, useRef, useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { ToggleButton } from "primereact/togglebutton";
 import ConfirmButton from "../../components/ConfirmButton";
@@ -7,6 +7,7 @@ import { VENDORS_API } from "../../apis/VendorsAPI";
 import { Vendor } from "../list/VendorList";
 import { InputNumber } from "primereact/inputnumber";
 import { logger } from "../../util/Logger";
+import { Toast } from "primereact/toast";
 
 export interface VendorDetailState {
   id: number;
@@ -26,10 +27,30 @@ export default function VendorDetail() {
     detailState.isConfirmationPopupVisible
   );
 
+  // Toast is used for showing success/error messages
+  const toast = useRef<Toast>(null);
+
+  const showSuccess = () => {
+    toast.current?.show({ severity: "success", summary: "Vendor modified" });
+  };
+
+  const showFailure = () => {
+    toast.current?.show({
+      severity: "error",
+      summary: "Vendor could not be modified",
+    });
+  };
+
   const onSubmit = (): void => {
     const modifiedVendor: Vendor = { id: id, name: vendor };
     logger.debug("Edit Vendor Submitted", modifiedVendor);
-    VENDORS_API.modifyVendor(modifiedVendor);
+    VENDORS_API.modifyVendor(modifiedVendor).then((response) => {
+      if (response.status == 200) {
+        showSuccess();
+      } else {
+        showFailure();
+      }
+    });
     setIsModifiable(false);
   };
 
@@ -47,6 +68,7 @@ export default function VendorDetail() {
             </h1>
           </div>
           <form onSubmit={onSubmit}>
+            <Toast ref={toast} />
             <div className="flex pb-8 flex-row justify-content-center card-container col-12">
               <ToggleButton
                 id="modifyVendorToggle"

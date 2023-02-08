@@ -1,15 +1,36 @@
-import React, { FormEvent, useState } from "react";
+import React, { FormEvent, useRef, useState } from "react";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Button } from "primereact/button";
 import { VENDORS_API } from "../../apis/VendorsAPI";
 import { logger } from "../../util/Logger";
+import { Toast } from "primereact/toast";
 
 export default function VendorAdd() {
   const [textBox, setTextBox] = useState("");
 
+  // Toast is used for showing success/error messages
+  const toast = useRef<Toast>(null);
+
+  const showSuccess = () => {
+    toast.current?.show({ severity: "success", summary: "Vendor added" });
+  };
+
+  const showFailure = () => {
+    toast.current?.show({
+      severity: "error",
+      summary: "Vendor could not be added",
+    });
+  };
+
   const onSubmit = (event: FormEvent<HTMLFormElement>): void => {
     logger.debug("Add Vendor Submitted", textBox);
-    VENDORS_API.addVendor(textBox);
+    VENDORS_API.addVendor(textBox).then((response) => {
+      if (response.status == 201) {
+        showSuccess();
+      } else {
+        showFailure();
+      }
+    });
     event.preventDefault();
   };
 
@@ -26,6 +47,7 @@ export default function VendorAdd() {
           </h1>
         </div>
         <form onSubmit={onSubmit}>
+          <Toast ref={toast} />
           <div className="py-2">
             <label
               className="text-xl p-component text-teal-800 p-text-secondary"

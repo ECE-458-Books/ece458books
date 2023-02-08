@@ -12,9 +12,7 @@ const GENRES_EXTENSION = "genres";
 interface GetGenresReq {
   page: number;
   page_size: number;
-  ordering_field: string | undefined;
-  ordering_ascending: number | null | undefined;
-  search: string;
+  ordering: string;
 }
 
 // The structure of the response for a genre from the API
@@ -37,8 +35,7 @@ export const GENRES_API = {
       params: {
         page: req.page + 1,
         page_size: req.page_size,
-        ordering: req.ordering_field,
-        search: req.search,
+        ordering: req.ordering,
       },
     });
 
@@ -46,9 +43,9 @@ export const GENRES_API = {
     const genres = response.data.results.map((genre: APIGenre) => {
       return {
         id: genre.id,
-        genre: genre.name,
-        numBooks: genre.book_cnt,
-      };
+        name: genre.name,
+        book_cnt: genre.book_cnt,
+      } as Genre;
     });
 
     return Promise.resolve({
@@ -60,7 +57,7 @@ export const GENRES_API = {
   // Everything below this point has not been tested
 
   deleteGenre: async function (id: number) {
-    await API.request({
+    return await API.request({
       url: GENRES_EXTENSION.concat("/".concat(id.toString())),
       method: METHOD_DELETE,
     });
@@ -69,10 +66,10 @@ export const GENRES_API = {
   modifyGenre: async function (genre: Genre) {
     const genreParams = {
       id: genre.id,
-      name: genre.genre,
+      name: genre.name,
     };
 
-    await API.request({
+    return await API.request({
       url: GENRES_EXTENSION.concat("/".concat(genre.id.toString())),
       method: METHOD_PATCH,
       data: genreParams,
@@ -80,7 +77,7 @@ export const GENRES_API = {
   },
 
   addGenres: async function (genres: string) {
-    await API.request({
+    return await API.request({
       url: GENRES_EXTENSION,
       method: METHOD_POST,
       data: { name: genres },

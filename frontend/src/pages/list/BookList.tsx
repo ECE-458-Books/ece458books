@@ -8,15 +8,16 @@ import {
 } from "primereact/datatable";
 import { Column } from "primereact/column";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DataTableFilterMetaData } from "primereact/datatable";
 import { Genre } from "./GenreList";
 import DeletePopup from "../../components/DeletePopup";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import { logger } from "../../util/Logger";
 import { BookDetailState } from "../detail/ModfiyBook";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { GENRES_API } from "../../apis/GenresAPI";
+import { Toast } from "primereact/toast";
 
 export const NUM_ROWS = 3;
 
@@ -26,15 +27,9 @@ interface TableColumn {
   filterPlaceholder?: string;
   customFilter?: () => JSX.Element;
   hidden?: boolean;
+  sortable?: boolean;
+  filterable?: boolean;
 }
-
-const GENRE_DATA: Genre[] = [
-  {
-    id: 3,
-    genre: "blah",
-    numGenres: 5,
-  },
-];
 
 export interface Book {
   id: number;
@@ -85,18 +80,18 @@ export default function BookList() {
   };
 
   // Custom dropdown selector for Genre
+  const location = useLocation();
+  const passedGenre = location.state?.genre ?? "";
   const [genreList, setGenreList] = useState<string[]>([]);
-  const [selectedGenre, setSelectedGenre] = useState<string>("");
+  const [selectedGenre, setSelectedGenre] = useState<string>(passedGenre);
 
   useEffect(() => {
     GENRES_API.getGenres({
       page: 0,
       page_size: 30,
-      ordering_field: undefined,
-      ordering_ascending: undefined,
-      search: "",
+      ordering: "name",
     }).then((response) =>
-      setGenreList(response.genres.map((genre) => genre.genre))
+      setGenreList(response.genres.map((genre) => genre.name))
     );
   }, []);
 
@@ -115,7 +110,12 @@ export default function BookList() {
 
   // Properties of each column that change, the rest are set below when creating the actual Columns to be rendered
   const COLUMNS: TableColumn[] = [
-    { field: "id", header: "ID", filterPlaceholder: "Search by ID" },
+    {
+      field: "id",
+      header: "ID",
+      filterPlaceholder: "Search by ID",
+      hidden: true,
+    },
     { field: "title", header: "Title", filterPlaceholder: "Search by Title" },
     {
       field: "author",
@@ -127,6 +127,7 @@ export default function BookList() {
       header: "Genre",
       filterPlaceholder: "Search by Genre",
       customFilter: genreFilter,
+      sortable: false,
     },
     { field: "isbn_13", header: "ISBN", filterPlaceholder: "Search by ISBN" },
     {
@@ -209,13 +210,19 @@ export default function BookList() {
 
   const deleteBookFinal = () => {
     logger.debug("Delete Book Finalized", selectedDeleteBook);
-    BOOKS_API.deleteBook(selectedDeleteBook.id);
+    setDeletePopupVisible(false);
+    BOOKS_API.deleteBook(selectedDeleteBook.id).then((response) => {
+      if (response.status == 204) {
+        showSuccess();
+      } else {
+        showFailure();
+        return;
+      }
+    });
     // TODO: Show error if book is not actually deleted
     const _books = books.filter((book) => selectedDeleteBook.id != book.id);
     setBooks(_books);
-    setDeletePopupVisible(false);
     setSelectedDeleteBook(emptyBook);
-    console.log(selectedDeleteBook);
   };
 
   // Buttons for the delete Dialogue Popup
@@ -340,6 +347,20 @@ export default function BookList() {
     callAPI();
   }, [sortParams, pageParams, filterParams, selectedGenre]);
 
+  // Toast is used for showing success/error messages
+  const toast = useRef<Toast>(null);
+
+  const showSuccess = () => {
+    toast.current?.show({ severity: "success", summary: "Genre modified" });
+  };
+
+  const showFailure = () => {
+    toast.current?.show({
+      severity: "error",
+      summary: "Genre could not be modified",
+    });
+  };
+
   // Map column objects to actual columns
   const dynamicColumns = COLUMNS.map((col) => {
     return (
@@ -354,7 +375,7 @@ export default function BookList() {
         //filterMatchMode={"contains"}
         filterPlaceholder={col.filterPlaceholder}
         // Sorting
-        sortable
+        sortable={col.sortable ?? true}
         //sortField={col.field}
         // Hiding Fields
         showFilterMenuOptions={false}
@@ -368,6 +389,7 @@ export default function BookList() {
 
   return (
     <div className="card pt-5 px-2">
+      <Toast ref={toast} />
       <DataTable
         // General Settings
         value={books}

@@ -1,4 +1,10 @@
-import React, { FormEvent, ReactNode, useState } from "react";
+import React, {
+  FormEvent,
+  ReactNode,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Button } from "primereact/button";
 import { DataTable } from "primereact/datatable";
@@ -13,6 +19,9 @@ import { BOOKS_API } from "../../apis/BooksAPI";
 import { Book } from "../list/BookList";
 import { Badge } from "primereact/badge";
 import { logger } from "../../util/Logger";
+import { Toast } from "primereact/toast";
+import { GENRES_API } from "../../apis/GenresAPI";
+import { Dropdown } from "primereact/dropdown";
 
 export interface BookWithDBTag extends Book {
   fromDB: boolean;
@@ -40,6 +49,34 @@ export default function BookAdd() {
     }
   };
 
+  // The dropdown configuration for each cell
+  const [genreList, setGenreList] = useState<string[]>([]);
+  useEffect(() => {
+    GENRES_API.getGenres({
+      page: 0,
+      page_size: 30,
+      ordering: "name",
+    }).then((response) =>
+      setGenreList(response.genres.map((genre) => genre.name))
+    );
+  }, []);
+
+  const genreDropdown = (options: ColumnEditorOptions) => {
+    return (
+      <Dropdown
+        value={options.value}
+        options={genreList}
+        appendTo={"self"}
+        onChange={(e) => {
+          options.editorCallback?.(e.target.value);
+        }}
+        placeholder={"Select Genre"}
+        showClear
+        virtualScrollerOptions={{ itemSize: 35 }}
+      />
+    );
+  };
+
   // Properties of each column that change, the rest are set below when creating the actual Columns to be rendered
   const COLUMNS: TableColumn[] = [
     {
@@ -53,6 +90,7 @@ export default function BookAdd() {
       field: "id",
       header: "ID",
       filterPlaceholder: "Search by ID",
+      hidden: true,
       cellEditValidator: () => false,
     },
     {
@@ -71,6 +109,7 @@ export default function BookAdd() {
       field: "genres",
       header: "Genre",
       filterPlaceholder: "Search by Genre",
+      cellEditor: (options) => genreDropdown(options),
     },
     {
       field: "isbn_13",
@@ -109,24 +148,21 @@ export default function BookAdd() {
       field: "width",
       header: "Width",
       filterPlaceholder: "Search by Width",
-      cellEditValidator: (event: ColumnEvent) =>
-        isPositiveInteger(event.newValue),
+      cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
       cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
     },
     {
       field: "height",
       header: "Height",
       filterPlaceholder: "Search by Height",
-      cellEditValidator: (event: ColumnEvent) =>
-        isPositiveInteger(event.newValue),
+      cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
       cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
     },
     {
       field: "thickness",
       header: "Thickness",
       filterPlaceholder: "Search by Thickness",
-      cellEditValidator: (event: ColumnEvent) =>
-        isPositiveInteger(event.newValue),
+      cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
       cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
     },
     {
@@ -134,8 +170,7 @@ export default function BookAdd() {
       header: "Retail Price",
       filterPlaceholder: "Search by Price",
       customBody: priceBodyTemplateRetailPrice,
-      cellEditValidator: (event: ColumnEvent) =>
-        isPositiveInteger(event.newValue),
+      cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
       cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
     },
   ];
@@ -146,44 +181,80 @@ export default function BookAdd() {
 
   const onISBNInitialSubmit = (event: FormEvent<HTMLFormElement>): void => {
     logger.debug("Submitting Initial Book Lookup", textBox);
-    BOOKS_API.addBookInitialLookup(textBox).then((response) =>
-      setBooks(response)
-    );
+    BOOKS_API.addBookInitialLookup(textBox).then((response) => {
+      setBooks(response.books);
+      if (response.invalidISBNS.length > 0) {
+        showFailure(
+          "The following ISBNs were not successfully added: ".concat(
+            response.invalidISBNS.toString()
+          )
+        );
+      }
+    });
+
     event.preventDefault();
   };
 
+  // Toast is used for showing success/error messages
+  const toast = useRef<Toast>(null);
+
+  const showSuccess = () => {
+    toast.current?.show({ severity: "success", summary: "Books Added" });
+  };
+
+  const showFailure = (message: string) => {
+    toast.current?.show({ severity: "error", summary: message });
+  };
+
   const validateRow = (book: BookWithDBTag) => {
-    return book.retailPrice && book.genres;
+    return book.retailPrice > 0 && book.genres;
   };
 
-  const onFinalSubmit = (): void => {
-    logger.debug("Submitting Final Book Add", books);
+  const onFinalSubmit = (event: FormEvent<HTMLFormElement>): void => {
+    // Validate before submitting any additions
     for (const book of books) {
-      if (validateRow(book))
-        if (!book.fromDB) {
-          BOOKS_API.addBookFinal(book);
-        } else {
-          BOOKS_API.modifyBook(book);
-        }
+      console.log(!validateRow(book));
+      if (!validateRow(book)) {
+        console.log("show fail");
+        showFailure(
+          "The following book does not have all required fields set: ".concat(
+            book.title
+          )
+        );
+        event.preventDefault();
+        return;
+      }
     }
+
+    logger.debug("Submitting Final Book Add", books);
+
+    for (const book of books) {
+      if (!book.fromDB) {
+        BOOKS_API.addBookFinal(book);
+      } else {
+        BOOKS_API.modifyBook(book);
+      }
+    }
+
+    event.preventDefault();
+    showSuccess();
   };
 
-  const columns = COLUMNS.map(
-    ({ field, header, customBody, cellEditValidator, cellEditor }) => {
-      return (
-        <Column
-          key={field}
-          field={field}
-          header={header}
-          style={{ width: "25%" }}
-          body={customBody}
-          cellEditValidator={cellEditValidator}
-          editor={cellEditor}
-          onCellEditComplete={onCellEditComplete}
-        />
-      );
-    }
-  );
+  const columns = COLUMNS.map((col) => {
+    return (
+      <Column
+        key={col.field}
+        field={col.field}
+        header={col.header}
+        style={{ width: "25%" }}
+        body={col.customBody}
+        cellEditValidator={col.cellEditValidator}
+        editor={col.cellEditor}
+        onCellEditComplete={onCellEditComplete}
+        hidden={col.hidden ?? false}
+      />
+    );
+  });
 
   //Two Forms exist in order for the seperate submission of two seperate types of data.
   //First one is the submission of ISBNS that need to be added
@@ -192,6 +263,7 @@ export default function BookAdd() {
   return (
     <div>
       <form onSubmit={onISBNInitialSubmit}>
+        <Toast ref={toast} />
         <label htmlFor="addbook">Add Books (ISBN'S)</label>
         <InputTextarea
           id="addbook"

@@ -367,7 +367,7 @@ export default function BookList() {
   });
 
   return (
-    <>
+    <div className="card pt-5 px-2">
       <DataTable
         // General Settings
         value={books}
@@ -394,6 +394,6 @@ export default function BookList() {
         <Column body={editDeleteCellTemplate} style={{ minWidth: "16rem" }} />
       </DataTable>
       {deletePopupVisible && deletePopup}
-    </>
+    </div>
   );
 }

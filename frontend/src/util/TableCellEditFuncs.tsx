@@ -52,9 +52,29 @@ export function priceEditor(options: ColumnEditorOptions) {
   );
 }
 
-export function priceBodyTemplate(rowData: { retailPrice: number | bigint }) {
+export function priceBodyTemplateWholesale(rowData: {
+  unit_wholesale_price: number | bigint;
+}) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(rowData.unit_wholesale_price);
+}
+
+export function priceBodyTemplateRetailPrice(rowData: {
+  retailPrice: number | bigint;
+}) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
   }).format(rowData.retailPrice);
+}
+
+export function priceBodyTemplateUnit(rowData: {
+  unitRetailPrice: number | bigint;
+}) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(rowData.unitRetailPrice);
 }

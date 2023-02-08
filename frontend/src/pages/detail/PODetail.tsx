@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ToggleButton } from "primereact/togglebutton";
 import { Calendar, CalendarProps } from "primereact/calendar";
 import { Dropdown, DropdownProps } from "primereact/dropdown";
@@ -12,13 +12,15 @@ import { v4 as uuid } from "uuid";
 import {
   isPositiveInteger,
   numberEditor,
-  priceBodyTemplate,
+  priceBodyTemplateWholesale,
   priceEditor,
   textEditor,
 } from "../../util/TableCellEditFuncs";
 import { useLocation } from "react-router-dom";
+import { GetPurchaseResp, PURCHASES_API } from "../../apis/PurchasesAPI";
 
 export interface PODetailState {
+  id: number;
   date: any;
   data: POPurchaseRow[];
   vendor: string;
@@ -29,9 +31,10 @@ export interface PODetailState {
 
 export interface POPurchaseRow {
   rowID: string;
-  books: string;
+  id: number;
+  book: string;
   quantity: number;
-  retailPrice: number;
+  unit_wholesale_price: number;
 }
 
 // Below placeholders need to be removed
@@ -49,12 +52,11 @@ const DATAVENDORS: Vendors[] = [
 ];
 
 const columns: TableColumn[] = [
-  { field: "rowID", header: "RowID", filterPlaceholder: "RowID" },
   { field: "books", header: "Books", filterPlaceholder: "Books" },
   { field: "quantity", header: "Quantity", filterPlaceholder: "Quantity" },
   {
-    field: "retailPrice",
-    header: "Unit Retail Price",
+    field: "unit_wholesale_price",
+    header: "Unit Retail Price ($)",
     filterPlaceholder: "Price",
   },
 ];
@@ -62,9 +64,10 @@ const columns: TableColumn[] = [
 export default function PODetail() {
   const emptyProduct = {
     rowID: uuid(),
-    books: "",
+    id: 0,
+    book: "",
     quantity: 1,
-    retailPrice: 0,
+    unit_wholesale_price: 0,
   };
 
   const location = useLocation();
@@ -75,9 +78,10 @@ export default function PODetail() {
     data: [
       {
         rowID: uuid(),
-        books: "",
+        book: "",
+        id: 0,
         quantity: 1,
-        retailPrice: 0,
+        unit_wholesale_price: 0,
       },
     ],
     isAddPage: true,
@@ -87,6 +91,7 @@ export default function PODetail() {
   const [date, setDate] = useState(detailState.date);
   const [vendor, setVendor] = useState(detailState.vendor);
   const [data, setData] = useState(detailState.data);
+  const [id, setId] = useState(detailState.id);
   const [lineData, setLineData] = useState(emptyProduct);
   const [isAddPage, setisAddPage] = useState(detailState.isAddPage);
   const [isModifiable, setIsModifiable] = useState(detailState.isModifiable);
@@ -122,7 +127,7 @@ export default function PODetail() {
         if (isPositiveInteger(newValue)) rowData[field] = newValue;
         else event.preventDefault();
         break;
-      case "retailPrice":
+      case "unit_wholesale_price":
         if (isPositiveInteger(newValue)) rowData[field] = newValue;
         else event.preventDefault();
         break;
@@ -136,7 +141,7 @@ export default function PODetail() {
 
   const cellEditor = (options: ColumnEditorOptions) => {
     if (isModifiable) {
-      if (options.field === "retailPrice") return priceEditor(options);
+      if (options.field === "unit_wholesale_price") return priceEditor(options);
       if (options.field === "quantity") return numberEditor(options);
       else return textEditor(options);
     }
@@ -188,6 +193,32 @@ export default function PODetail() {
         />
       </React.Fragment>
     );
+  };
+
+  // When any of the list of params are changed, useEffect is called to hit the API endpoint
+  useEffect(() => callAPI(), [id]);
+
+  // Calls the Vendors API
+  const callAPI = () => {
+    if (!isAddPage) {
+      PURCHASES_API.getPurchase(id).then((response) => {
+        return onAPIResponse(response);
+      });
+    }
+  };
+
+  // Set state when response to API call is received
+  const onAPIResponse = (response: GetPurchaseResp) => {
+    const _data = response.purchase.map((po: POPurchaseRow) => {
+      return {
+        rowID: uuid(),
+        id: po.id,
+        book: po.book,
+        quantity: po.quantity,
+        unit_wholesale_price: po.unit_wholesale_price,
+      };
+    });
+    setData(_data);
   };
 
   const onSubmit = (): void => {
@@ -292,10 +323,12 @@ export default function PODetail() {
                     field={field}
                     header={header}
                     style={{ width: "25%" }}
-                    body={field === "retailPrice" && priceBodyTemplate}
+                    body={
+                      field === "unit_wholesale_price" &&
+                      priceBodyTemplateWholesale
+                    }
                     editor={(options) => cellEditor(options)}
                     onCellEditComplete={onCellEditComplete}
-                    hidden={field === "rowID"}
                   />
                 );
               })}

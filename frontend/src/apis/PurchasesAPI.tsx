@@ -1,3 +1,4 @@
+import { POPurchaseRow } from "../pages/detail/PODetail";
 import { PurchaseOrder } from "../pages/list/POList";
 import {
   API,
@@ -7,25 +8,34 @@ import {
   METHOD_POST,
 } from "./Config";
 
-const PURCHASES_EXTENSION = "purchases";
+const PURCHASES_EXTENSION = "purchase_orders";
 
 interface GetPurchaseOrdersReq {
   page: number;
   page_size: number;
-  ordering_field: string | undefined;
-  ordering_ascending: number | null | undefined;
-  search: string;
+  // ordering_field: string | undefined;
+  // ordering_ascending: number | null | undefined;
+  // search: string;
 }
 
 // The structure of the response for a PO from the API
 interface APIPurchaseOrder {
   id: number;
-  name: string;
+  date: string;
+  vendor: string;
+  purchases: any;
+  num_books: number;
+  num_unique_books: number;
+  total_cost: number;
 }
 
 export interface GetPurchaseOrdersResp {
   purchaseOrders: PurchaseOrder[];
   numberOfPurchaseOrders: number;
+}
+
+export interface GetPurchaseResp {
+  purchase: POPurchaseRow[];
 }
 
 export const PURCHASES_API = {
@@ -38,8 +48,6 @@ export const PURCHASES_API = {
       params: {
         page: req.page + 1,
         page_size: req.page_size,
-        ordering: req.ordering_field,
-        search: req.search,
       },
     });
 
@@ -47,13 +55,29 @@ export const PURCHASES_API = {
     const purchases = response.data.results.map((pr: APIPurchaseOrder) => {
       return {
         id: pr.id,
-        name: pr.name,
+        date: pr.date,
+        vendorName: pr.vendor,
+        puchases: pr.purchases,
+        totalBooks: pr.num_books,
+        uniqueBooks: pr.num_unique_books,
+        totalCost: pr.total_cost,
       };
     });
 
     return Promise.resolve({
       purchaseOrders: purchases,
       numberOfPurchaseOrders: response.data.count,
+    });
+  },
+
+  getPurchase: async function (id: number): Promise<GetPurchaseResp> {
+    const response = await API.request({
+      url: PURCHASES_EXTENSION.concat("/").concat(id.toString()),
+      method: METHOD_GET,
+    });
+
+    return Promise.resolve({
+      purchase: response.data.purchases,
     });
   },
 

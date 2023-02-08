@@ -201,7 +201,7 @@ export default function GenreList() {
   });
 
   return (
-    <>
+    <div className="card pt-5 px-2">
       <DataTable
         // General Settings
         value={genres}
@@ -228,6 +228,6 @@ export default function GenreList() {
         <Column body={editDeleteCellTemplate} style={{ minWidth: "16rem" }} />
       </DataTable>
       {deletePopupVisible && deletePopup}
-    </>
+    </div>
   );
 }

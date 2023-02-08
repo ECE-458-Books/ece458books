@@ -39,31 +39,78 @@ export default function PasswordChangePage() {
   };
 
   return (
-    <form onSubmit={onSubmit}>
-      <Toast ref={toast} />
+    <div className="grid flex justify-content-center">
+      <div className="col-5">
+        <div className="py-5">
+          <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
+            Password Change
+          </h1>
+        </div>
+        <form onSubmit={onSubmit}>
+          <Toast ref={toast} />
 
-      <InputText
-        value={oldPassword}
-        onChange={(event: FormEvent<HTMLInputElement>) =>
-          setOldPassword(event.currentTarget.value)
-        }
-      />
+          <div className="flex flex-row justify-content-center card-container col-12">
+            <div className="pt-2 pr-2">
+              <label
+                className="text-xl p-component text-teal-800 p-text-secondary"
+                htmlFor="genre"
+              >
+                Old Password:
+              </label>
+            </div>
+            <InputText
+              value={oldPassword}
+              onChange={(event: FormEvent<HTMLInputElement>) =>
+                setOldPassword(event.currentTarget.value)
+              }
+            />
+          </div>
 
-      <InputText
-        value={newPassword1}
-        onChange={(event: FormEvent<HTMLInputElement>) =>
-          setNewPassword1(event.currentTarget.value)
-        }
-      />
+          <div className="flex flex-row justify-content-center card-container col-12">
+            <div className="pt-2 pr-2">
+              <label
+                className="text-xl p-component text-teal-800 p-text-secondary"
+                htmlFor="genre"
+              >
+                New Password:
+              </label>
+            </div>
+            <InputText
+              value={newPassword1}
+              onChange={(event: FormEvent<HTMLInputElement>) =>
+                setNewPassword1(event.currentTarget.value)
+              }
+            />
+          </div>
 
-      <InputText
-        value={newPassword2}
-        onChange={(event: FormEvent<HTMLInputElement>) =>
-          setNewPassword2(event.currentTarget.value)
-        }
-      />
-      <Button type="submit" label="Submit" aria-label="Submit" />
-      <Messages ref={wrongPasswordRef} />
-    </form>
+          <div className="flex flex-row justify-content-center card-container col-12">
+            <div className="pt-2 pr-2">
+              <label
+                className="text-xl p-component text-teal-800 p-text-secondary"
+                htmlFor="genre"
+              >
+                New Password Confirm:
+              </label>
+            </div>
+            <InputText
+              value={newPassword2}
+              onChange={(event: FormEvent<HTMLInputElement>) =>
+                setNewPassword2(event.currentTarget.value)
+              }
+            />
+          </div>
+          <div className="flex flex-row justify-content-center card-container col-12">
+            <Button
+              type="submit"
+              label="Submit"
+              aria-label="Submit"
+              className="p-button-raised"
+            />
+          </div>
+
+          <Messages ref={wrongPasswordRef} />
+        </form>
+      </div>
+    </div>
   );
 }

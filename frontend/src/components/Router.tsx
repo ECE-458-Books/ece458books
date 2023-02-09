@@ -16,7 +16,6 @@ import GenreDetail from "../pages/detail/GenreDetail";
 import VendorDetail from "../pages/detail/VendorDetail";
 import PurchaseOrderList from "../pages/list/POList";
 import PasswordChangePage from "../pages/auth/PasswordChange";
-import { redirect } from "react-router-dom";
 
 const WithNavBar = () => {
   return (

@@ -33,3 +33,6 @@ class Book(models.Model):
 
     # Ghost Column to check if Book is Deleted but Still Can Reference
     isGhost = models.BooleanField(default=False)
+
+    # Number of books left in stock
+    stock = models.PositiveIntegerField()

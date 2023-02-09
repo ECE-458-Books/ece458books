@@ -92,7 +92,7 @@ export default function BookDetail() {
         width: width,
         height: height,
         thickness: thickness,
-        inventory_count: 0,
+        stock: 0,
       };
       logger.debug("Submitting Book Modify", book);
       BOOKS_API.modifyBook(book);

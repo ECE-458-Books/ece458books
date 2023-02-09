@@ -47,7 +47,7 @@ export interface Book {
   height: number;
   thickness: number;
   retail_price: number;
-  inventory_count: number;
+  stock: number;
 }
 
 interface Filters {
@@ -80,7 +80,7 @@ export default function BookList() {
     height: 0,
     thickness: 0,
     retail_price: 0,
-    inventory_count: 0,
+    stock: 0,
   };
 
   // Custom dropdown selector for Genre
@@ -181,7 +181,7 @@ export default function BookList() {
       filterPlaceholder: "Search by Price",
     },
     {
-      field: "inventory_count",
+      field: "stock",
       header: "Inventory Count",
       filterPlaceholder: "Search by Inventory Count",
     },
@@ -205,7 +205,7 @@ export default function BookList() {
           icon="pi pi-trash"
           className="p-button-rounded p-button-danger"
           onClick={() => deleteBookPopup(rowData)}
-          disabled={rowData.inventory_count > 0}
+          disabled={rowData.stock > 0}
         />
       </React.Fragment>
     );

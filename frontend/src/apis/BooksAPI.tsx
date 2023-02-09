@@ -39,7 +39,7 @@ interface APIBook {
   height: number;
   thickness: number;
   retail_price: number;
-  inventory_count: number;
+  stock: number;
 }
 
 interface APIBookFromAdd extends APIBook {
@@ -100,7 +100,7 @@ export const BOOKS_API = {
         height: book.height,
         thickness: book.thickness,
         retail_price: book.retail_price,
-        inventory_count: book.inventory_count,
+        stock: book.stock,
       } as Book;
     });
 

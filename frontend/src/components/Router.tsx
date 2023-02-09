@@ -16,6 +16,7 @@ import GenreDetail from "../pages/detail/GenreDetail";
 import VendorDetail from "../pages/detail/VendorDetail";
 import PurchaseOrderList from "../pages/list/POList";
 import PasswordChangePage from "../pages/auth/PasswordChange";
+import { redirect } from "react-router-dom";
 
 const WithNavBar = () => {
   return (
@@ -36,6 +37,14 @@ const WithoutNavBar = () => {
 
 // Don't want the navigation bar on the login page
 export default function Router() {
+  const isLoggedIn = !!sessionStorage.getItem("accessToken");
+  const navigate = useNavigate();
+
+  if (!isLoggedIn) {
+    navigate("/");
+    return <LoginPage />;
+  }
+
   return (
     <Routes>
       <Route element={<WithoutNavBar />}>

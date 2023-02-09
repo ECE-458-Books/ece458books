@@ -27,7 +27,7 @@ export const AUTH_API = {
   },
 
   tokenRefresh: async function (failedRequest: any) {
-    const refreshToken = localStorage.getItem("refreshToken");
+    const refreshToken = sessionStorage.getItem("refreshToken");
 
     API.request({
       url: AUTH_EXTENSION.concat("/token/refresh"),
@@ -36,7 +36,7 @@ export const AUTH_API = {
         refresh: refreshToken,
       },
     }).then((response) => {
-      localStorage.setItem("accessToken", response.data.access);
+      sessionStorage.setItem("accessToken", response.data.access);
       failedRequest.response.config.headers["Authorization"] =
         "Bearer " + response.data.access;
       return Promise.resolve();

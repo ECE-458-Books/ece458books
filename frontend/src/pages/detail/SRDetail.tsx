@@ -27,10 +27,12 @@ import { BOOKS_API } from "../../apis/BooksAPI";
 import { BooksList } from "./PODetail";
 import { Toast } from "primereact/toast";
 import { toYYYYMMDDWithDash } from "../../util/DateOperations";
+import { InputNumber } from "primereact/inputnumber";
 
 export interface SRDetailState {
   id: number;
   date: any;
+  totalRevenue: number;
   sales: SRSaleRow[];
   isAddPage: boolean;
   isModifiable: boolean;
@@ -61,6 +63,7 @@ export default function SRDetail() {
   const detailState = (location.state! as SRDetailState) ?? {
     id: -1,
     date: new Date(),
+    totalRevenue: 0,
     sales: [
       {
         isNewRow: true,
@@ -87,6 +90,7 @@ export default function SRDetail() {
   );
   const [lineData, setLineData] = useState(emptyProduct);
   const [bookTitlesList, setBookTitlesList] = useState<string[]>();
+  const [totalRevenue, setTotalRevenue] = useState(detailState.totalRevenue);
   const [bookMap, setBookMap] = useState<Map<string, number>>(new Map());
   const [isSRAddPage, setIsSRAddPage] = useState(detailState.isAddPage);
   const [isModifiable, setIsModifiable] = useState(detailState.isModifiable);
@@ -351,6 +355,22 @@ export default function SRDetail() {
             </div>
 
             <div className="flex pb-2 flex-row justify-content-evenly card-container col-12">
+              <div>
+                <label
+                  className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
+                  htmlFor="totalrevenue"
+                >
+                  Total Revenue:
+                </label>
+                <InputNumber
+                  id="totalrevenue2"
+                  className="w-6"
+                  useGrouping={false}
+                  name="totalrevenue2"
+                  value={totalRevenue ?? 0}
+                  disabled={true}
+                />
+              </div>
               <div>
                 <label
                   htmlFor="date"

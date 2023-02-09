@@ -28,11 +28,13 @@ import { Vendor } from "../list/VendorList";
 import { BOOKS_API } from "../../apis/BooksAPI";
 import { toYYYYMMDDWithDash } from "../../util/DateOperations";
 import { Toast } from "primereact/toast";
+import { InputNumber } from "primereact/inputnumber";
 
 export interface PODetailState {
   id: number;
   date: any;
   purchases: POPurchaseRow[];
+  totalCost: number;
   vendorName: string;
   vendorID: number;
   isAddPage: boolean;
@@ -72,6 +74,7 @@ export default function PODetail() {
     date: new Date(),
     vendorName: "",
     vendorID: 0,
+    totalCost: 0,
     purchases: [
       {
         isNewRow: true,
@@ -98,6 +101,7 @@ export default function PODetail() {
   const [purchases, setPurchases] = useState<POPurchaseRow[]>(
     detailState.purchases
   );
+  const [totalCost, setTotalCost] = useState(detailState.totalCost);
   const [purchaseOrderID, setPurchaseOrderID] = useState(detailState.id);
   const [lineData, setLineData] = useState(emptyProduct);
   const [vendorsData, setVendorsData] = useState<Vendor[]>();
@@ -395,6 +399,22 @@ export default function PODetail() {
             </div>
 
             <div className="flex pb-2 flex-row justify-content-evenly card-container col-12">
+              <div>
+                <label
+                  className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
+                  htmlFor="totalcost"
+                >
+                  Total Cost:
+                </label>
+                <InputNumber
+                  id="totalcost2"
+                  className="w-6"
+                  useGrouping={false}
+                  name="totalcost2"
+                  value={totalCost ?? 0}
+                  disabled={true}
+                />
+              </div>
               <div>
                 <label
                   htmlFor="date"

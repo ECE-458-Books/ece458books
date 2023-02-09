@@ -40,6 +40,7 @@ export default function BookDetail() {
   const [width, setWidth] = useState(detailState.book.width);
   const [height, setHeight] = useState(detailState.book.height);
   const [thickness, setThickness] = useState(detailState.book.thickness);
+  const [stock, setStock] = useState(detailState.book.stock);
   const [isModifiable, setIsModifiable] = useState(detailState.isModifiable);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] = useState(
     detailState.isConfirmationPopupVisible
@@ -159,6 +160,7 @@ export default function BookDetail() {
               className="w-6"
               name="isbn13"
               value={isbn13}
+              useGrouping={false}
               disabled={true}
               onValueChange={(e: InputNumberValueChangeEvent) =>
                 setISBN13(e.value ?? 0)
@@ -177,6 +179,7 @@ export default function BookDetail() {
             <InputNumber
               id="isbn10"
               className="w-6"
+              useGrouping={false}
               name="isbn10"
               value={isbn10}
               disabled={true}
@@ -214,6 +217,7 @@ export default function BookDetail() {
               id="pubYear"
               className="w-4"
               name="pubYear"
+              useGrouping={false}
               value={pubYear}
               disabled={true}
               onValueChange={(e: InputNumberValueChangeEvent) =>
@@ -254,6 +258,7 @@ export default function BookDetail() {
               name="width"
               value={width}
               disabled={!isModifiable}
+              maxFractionDigits={15}
               onValueChange={(e: InputNumberValueChangeEvent) =>
                 setWidth(e.value ?? 0)
               }
@@ -271,6 +276,7 @@ export default function BookDetail() {
               className="w-4"
               name="height"
               value={height}
+              maxFractionDigits={15}
               disabled={!isModifiable}
               onValueChange={(e: InputNumberValueChangeEvent) =>
                 setHeight(e.value ?? 0)
@@ -284,13 +290,14 @@ export default function BookDetail() {
               className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
               htmlFor="thickness"
             >
-              Dimensions
+              Thickness
             </label>
             <InputNumber
               id="thickness"
               className="w-4"
               name="thickness"
               value={thickness}
+              maxFractionDigits={15}
               disabled={!isModifiable}
               onValueChange={(e: InputNumberValueChangeEvent) =>
                 setThickness(e.value ?? 0)
@@ -309,6 +316,7 @@ export default function BookDetail() {
               className="w-4"
               name="retail_price"
               value={price}
+              maxFractionDigits={15}
               disabled={!isModifiable}
               onValueChange={(e: InputNumberValueChangeEvent) =>
                 setPrice(e.value ?? 0)
@@ -331,6 +339,23 @@ export default function BookDetail() {
               onChange={(event: FormEvent<HTMLInputElement>): void => {
                 setGenre(event.currentTarget.value);
               }}
+            />
+          </div>
+        </div>
+        <div className="grid col-offset-1 col-11 justify-content-center">
+          <div className="col-4">
+            <label
+              className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
+              htmlFor="genre"
+            >
+              Inventory Count
+            </label>
+            <InputNumber
+              id="genre"
+              className="w-3"
+              name="genre"
+              value={stock}
+              disabled={true}
             />
           </div>
         </div>

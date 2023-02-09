@@ -122,6 +122,7 @@ export default function SalesReconciliationList() {
     const detailState: SRDetailState = {
       date: new Date(sr.date.replace("-", "/")),
       sales: sr.sales,
+      totalRevenue: sr.total_revenue,
       id: sr.id,
       isAddPage: false,
       isModifiable: isModifiable,

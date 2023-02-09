@@ -4,6 +4,7 @@ import {
   DataTable,
   DataTableFilterEvent,
   DataTablePageEvent,
+  DataTableRowClickEvent,
   DataTableSortEvent,
 } from "primereact/datatable";
 import { Column } from "primereact/column";
@@ -18,8 +19,10 @@ import { BookDetailState } from "../detail/ModfiyBook";
 import { useLocation, useNavigate } from "react-router-dom";
 import { GENRES_API } from "../../apis/GenresAPI";
 import { Toast } from "primereact/toast";
+import React from "react";
+import { Button } from "primereact/button";
 
-export const NUM_ROWS = 3;
+export const NUM_ROWS = 10;
 
 interface TableColumn {
   field: string;
@@ -44,7 +47,8 @@ export interface Book {
   width: number;
   height: number;
   thickness: number;
-  retailPrice: number;
+  retail_price: number;
+  stock: number;
 }
 
 interface Filters {
@@ -59,7 +63,7 @@ interface Filters {
   width: DataTableFilterMetaData;
   height: DataTableFilterMetaData;
   thickness: DataTableFilterMetaData;
-  retailPrice: DataTableFilterMetaData;
+  retail_price: DataTableFilterMetaData;
 }
 
 export default function BookList() {
@@ -76,7 +80,8 @@ export default function BookList() {
     width: 0,
     height: 0,
     thickness: 0,
-    retailPrice: 0,
+    retail_price: 0,
+    stock: 0,
   };
 
   // Custom dropdown selector for Genre
@@ -129,7 +134,11 @@ export default function BookList() {
       customFilter: genreFilter,
       sortable: false,
     },
-    { field: "isbn_13", header: "ISBN", filterPlaceholder: "Search by ISBN" },
+    {
+      field: "isbn_13",
+      header: "ISBN 13",
+      filterPlaceholder: "Search by ISBN",
+    },
     {
       field: "isbn10",
       header: "ISBN",
@@ -172,9 +181,14 @@ export default function BookList() {
       hidden: true,
     },
     {
-      field: "retailPrice",
+      field: "retail_price",
       header: "Retail Price",
       filterPlaceholder: "Search by Price",
+    },
+    {
+      field: "stock",
+      header: "Inventory Count",
+      filterPlaceholder: "Search by Inventory Count",
     },
   ];
 
@@ -184,18 +198,30 @@ export default function BookList() {
   // State to track the current book that has been selected to be deleted
   const [selectedDeleteBook, setSelectedDeleteBook] = useState<Book>(emptyBook);
 
-  // Custom body template for edit/delete buttons
-  const editDeleteCellTemplate = EditDeleteTemplate<Book>({
-    onEdit: (rowData) => editBook(rowData),
-    onDelete: (rowData) => deleteBookPopup(rowData),
-  });
+  const editDeleteCellTemplate = (rowData: Book) => {
+    return (
+      <React.Fragment>
+        <Button
+          icon="pi pi-pencil"
+          className="p-button-rounded p-button-success mr-2"
+          onClick={() => toDetailsPage(rowData, true)}
+        />
+        <Button
+          icon="pi pi-trash"
+          className="p-button-rounded p-button-danger"
+          onClick={() => deleteBookPopup(rowData)}
+          disabled={rowData.stock > 0}
+        />
+      </React.Fragment>
+    );
+  };
 
   // Callback functions for edit/delete buttons
-  const editBook = (book: Book) => {
+  const toDetailsPage = (book: Book, isModifiable: boolean) => {
     logger.debug("Edit Book Clicked", book);
     const detailState: BookDetailState = {
       book: book,
-      isModifiable: false,
+      isModifiable: isModifiable,
       isConfirmationPopupVisible: false,
     };
 
@@ -268,7 +294,7 @@ export default function BookList() {
       width: { value: "", matchMode: "contains" },
       height: { value: "", matchMode: "contains" },
       thickness: { value: "", matchMode: "contains" },
-      retailPrice: { value: "", matchMode: "contains" },
+      retail_price: { value: "", matchMode: "contains" },
     } as Filters,
   });
 
@@ -324,6 +350,11 @@ export default function BookList() {
   const onFilter = (event: DataTableFilterEvent) => {
     logger.debug("Filter Applied", event);
     setLoading(true);
+    setPageParams({
+      first: 0,
+      rows: NUM_ROWS,
+      page: 0,
+    });
     setFilterParams(event);
   };
 
@@ -340,6 +371,15 @@ export default function BookList() {
     logger.debug("Page Applied", event);
     setLoading(true);
     setPageParams(event);
+  };
+
+  const onRowClick = (event: DataTableRowClickEvent) => {
+    // I couldn't figure out a better way to do this...
+    // It takes the current index as the table knows it and calculates the actual index in the books array
+    const index = event.index - NUM_ROWS * (pageParams.page ?? 0);
+    const book = books[index];
+    logger.debug("Book Row Clicked", book);
+    toDetailsPage(book, false);
   };
 
   // Call endpoint on page load whenever any of these variables change
@@ -381,7 +421,7 @@ export default function BookList() {
         showFilterMenuOptions={false}
         showClearButton={false}
         // Other
-        style={{ minWidth: "16rem" }}
+        style={{ minWidth: "12rem" }}
         hidden={col.hidden}
       />
     );
@@ -397,6 +437,10 @@ export default function BookList() {
         responsiveLayout="scroll"
         filterDisplay="row"
         loading={loading}
+        // Row clicking
+        rowHover
+        selectionMode={"single"}
+        onRowClick={(event) => onRowClick(event)}
         // Paginator
         paginator
         first={pageParams.first}

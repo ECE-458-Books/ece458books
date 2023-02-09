@@ -52,7 +52,7 @@ export default function VendorAdd() {
       <div className="col-5">
         <div className="py-5">
           <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
-            Add Vendor Page
+            Add Vendor
           </h1>
         </div>
         <form onSubmit={onSubmit}>

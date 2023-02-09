@@ -92,7 +92,7 @@ export default function VendorList() {
     const detailState: VendorDetailState = {
       id: vendor.id,
       vendor: vendor.name,
-      isModifiable: false,
+      isModifiable: true,
       isConfirmationPopupVisible: false,
     };
 

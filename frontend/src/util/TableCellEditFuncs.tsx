@@ -63,12 +63,12 @@ export function priceBodyTemplateWholesale(rowData: {
 }
 
 export function priceBodyTemplateRetailPrice(rowData: {
-  retailPrice: number | bigint;
+  retail_price: number | bigint;
 }) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-  }).format(rowData.retailPrice);
+  }).format(rowData.retail_price);
 }
 
 export function priceBodyTemplateUnit(rowData: {

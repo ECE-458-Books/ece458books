@@ -37,6 +37,14 @@ const WithoutNavBar = () => {
 
 // Don't want the navigation bar on the login page
 export default function Router() {
+  const isLoggedIn = !!sessionStorage.getItem("accessToken");
+  const navigate = useNavigate();
+
+  if (!isLoggedIn) {
+    navigate("/");
+    return <LoginPage />;
+  }
+
   return (
     <Routes>
       <Route element={<WithoutNavBar />}>

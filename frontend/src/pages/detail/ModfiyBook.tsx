@@ -36,7 +36,7 @@ export default function BookDetail() {
   const [publisher, setPublisher] = useState(detailState.book.publisher);
   const [pubYear, setPubYear] = useState(detailState.book.publishedYear);
   const [pageCount, setPageCount] = useState(detailState.book.pageCount);
-  const [price, setPrice] = useState(detailState.book.retailPrice);
+  const [price, setPrice] = useState(detailState.book.retail_price);
   const [width, setWidth] = useState(detailState.book.width);
   const [height, setHeight] = useState(detailState.book.height);
   const [thickness, setThickness] = useState(detailState.book.thickness);
@@ -88,10 +88,11 @@ export default function BookDetail() {
         publisher: publisher,
         publishedYear: pubYear,
         pageCount: pageCount,
-        retailPrice: price,
+        retail_price: price,
         width: width,
         height: height,
         thickness: thickness,
+        stock: 0,
       };
       logger.debug("Submitting Book Modify", book);
       BOOKS_API.modifyBook(book);
@@ -299,14 +300,14 @@ export default function BookDetail() {
           <div className="col-4">
             <label
               className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
-              htmlFor="retailPrice"
+              htmlFor="retail_price"
             >
               Retail Price
             </label>
             <InputNumber
-              id="retailPrice"
+              id="retail_price"
               className="w-4"
-              name="retailPrice"
+              name="retail_price"
               value={price}
               disabled={!isModifiable}
               onValueChange={(e: InputNumberValueChangeEvent) =>
@@ -338,7 +339,7 @@ export default function BookDetail() {
             className=""
             id="modifyBookToggle"
             name="modifyBookToggle"
-            onLabel="Stop Edit"
+            onLabel="Editable"
             offLabel="Edit"
             onIcon="pi pi-check"
             offIcon="pi pi-times"

@@ -39,6 +39,7 @@ interface APIBook {
   height: number;
   thickness: number;
   retail_price: number;
+  stock: number;
 }
 
 interface APIBookFromAdd extends APIBook {
@@ -98,7 +99,8 @@ export const BOOKS_API = {
         width: book.width,
         height: book.height,
         thickness: book.thickness,
-        retailPrice: book.retail_price,
+        retail_price: book.retail_price,
+        stock: book.stock,
       } as Book;
     });
 
@@ -153,7 +155,7 @@ export const BOOKS_API = {
       width: book.width,
       height: book.height,
       thickness: book.thickness,
-      retail_price: book.retailPrice,
+      retail_price: book.retail_price,
     } as APIBook;
 
     return await API.request({
@@ -187,7 +189,7 @@ export const BOOKS_API = {
         width: book.width,
         height: book.height,
         thickness: book.thickness,
-        retailPrice: book.retail_price,
+        retail_price: book.retail_price,
         fromDB: book.fromDB,
       } as BookWithDBTag;
     });
@@ -212,7 +214,7 @@ export const BOOKS_API = {
       width: book.width,
       height: book.height,
       thickness: book.thickness,
-      retail_price: book.retailPrice,
+      retail_price: book.retail_price,
     };
 
     return await API.request({

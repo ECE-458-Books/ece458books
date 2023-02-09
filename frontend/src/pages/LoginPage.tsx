@@ -29,8 +29,8 @@ export default function LoginPage() {
       .then((response) => {
         if (response.data.access) {
           setAuthToken(response.data.access);
-          localStorage.setItem("refreshToken", response.data.refresh);
-          localStorage.setItem("accessToken", response.data.access);
+          sessionStorage.setItem("refreshToken", response.data.refresh);
+          sessionStorage.setItem("accessToken", response.data.access);
           navigate("/books");
         } else {
           delete axios.defaults.headers.common["Authorization"];

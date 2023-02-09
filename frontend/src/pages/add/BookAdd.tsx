@@ -73,6 +73,7 @@ export default function BookAdd() {
         placeholder={"Select Genre"}
         showClear
         virtualScrollerOptions={{ itemSize: 35 }}
+        style={{ position: "absolute", zIndex: 9999 }}
       />
     );
   };
@@ -166,12 +167,12 @@ export default function BookAdd() {
       cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
     },
     {
-      field: "retailPrice",
+      field: "retail_price",
       header: "Retail Price",
       filterPlaceholder: "Search by Price",
       customBody: priceBodyTemplateRetailPrice,
       cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
-      cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
+      cellEditor: (options: ColumnEditorOptions) => priceEditor(options),
     },
   ];
 
@@ -207,7 +208,7 @@ export default function BookAdd() {
   };
 
   const validateRow = (book: BookWithDBTag) => {
-    return book.retailPrice > 0 && book.genres;
+    return book.retail_price > 0 && book.genres;
   };
 
   const onFinalSubmit = (event: FormEvent<HTMLFormElement>): void => {
@@ -265,7 +266,7 @@ export default function BookAdd() {
       <div className="col-11">
         <div className="py-1">
           <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
-            Add Books Page
+            Add Books
           </h1>
         </div>
         <form onSubmit={onISBNInitialSubmit}>
@@ -276,7 +277,7 @@ export default function BookAdd() {
                 className="text-xl p-component text-teal-900 p-text-secondary"
                 htmlFor="addbook"
               >
-                Add Books (ISBN'S)
+                Enter ISBN-13 values, separated by comma or space:
               </label>
             </div>
             <InputTextarea
@@ -301,7 +302,7 @@ export default function BookAdd() {
               <Button
                 id="addbooksubmission"
                 name="addbooksubmission"
-                label="Submit"
+                label="Lookup"
                 type="submit"
                 className="p-button-success p-button-raised"
               />
@@ -313,7 +314,7 @@ export default function BookAdd() {
             htmlFor="addbookcompletion"
             className="p-component p-text-secondary text-3xl text-center text-900 color: var(--surface-800);"
           >
-            Finish Book Addition
+            Edit Fields
           </label>
         </div>
         <form onSubmit={onFinalSubmit}>
@@ -329,7 +330,7 @@ export default function BookAdd() {
             <Button
               id="confirmbooks"
               name="confirmbooks"
-              label="Confirm Addition"
+              label="Submit"
               type="submit"
             />
           </div>

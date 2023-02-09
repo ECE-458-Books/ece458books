@@ -28,7 +28,7 @@ createAuthRefreshInterceptor(API, AUTH_API.tokenRefresh);
 // Every outgoing request is logged, as well as setting the token to the most
 // up to date version
 API.interceptors.request.use((request) => {
-  request.headers["Authorization"] = `Bearer ${localStorage.getItem(
+  request.headers["Authorization"] = `Bearer ${sessionStorage.getItem(
     "accessToken"
   )}`;
   logger.debug("Making API Request", request);

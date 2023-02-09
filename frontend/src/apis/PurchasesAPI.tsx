@@ -49,6 +49,7 @@ export interface APIPOModify extends APIPOCreate {
 
 export interface APIPOPurchaseRow {
   id?: number; // ID only for new rows, not already existing ones
+  subtotal: number;
   book: number;
   quantity: number;
   unit_wholesale_price: number;

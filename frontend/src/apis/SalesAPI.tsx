@@ -48,6 +48,7 @@ export interface APISRModify extends APISRCreate {
 export interface APISRSaleRow {
   id?: number; // ID only for new rows, not already existing ones
   book: number;
+  subtotal: number;
   quantity: number;
   unit_retail_price: number;
 }

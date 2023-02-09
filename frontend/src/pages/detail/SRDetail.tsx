@@ -10,6 +10,7 @@ import { v4 as uuid } from "uuid";
 import {
   isPositiveInteger,
   numberEditor,
+  priceBodyTemplateSubtotal,
   priceBodyTemplateUnit,
   priceEditor,
   textEditor,
@@ -43,6 +44,7 @@ export interface SRSaleRow {
   isNewRow: boolean;
   id: string;
   book: number;
+  subtotal: number;
   book_title: string;
   quantity: number;
   unit_retail_price: number;
@@ -52,6 +54,7 @@ export default function SRDetail() {
   const emptyProduct = {
     isNewRow: true,
     id: uuid(),
+    subtotal: 0,
     book: 0,
     book_title: "",
     quantity: 1,
@@ -69,6 +72,7 @@ export default function SRDetail() {
         isNewRow: true,
         id: uuid(),
         book: 0,
+        subtotal: 0,
         book_title: "",
         quantity: 1,
         unit_retail_price: 0,
@@ -121,6 +125,11 @@ export default function SRDetail() {
       filterPlaceholder: "Price",
       cellEditor: (options: ColumnEditorOptions) => priceEditor(options),
       cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
+    },
+    {
+      field: "subtotal",
+      header: "Subtotal ($)",
+      filterPlaceholder: "Subtotal",
     },
   ];
 
@@ -360,12 +369,13 @@ export default function SRDetail() {
                   className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
                   htmlFor="totalrevenue"
                 >
-                  Total Revenue:
+                  Total Revenue ($):
                 </label>
                 <InputNumber
                   id="totalrevenue2"
                   className="w-6"
                   useGrouping={false}
+                  minFractionDigits={2}
                   name="totalrevenue2"
                   value={totalRevenue ?? 0}
                   disabled={true}
@@ -409,7 +419,9 @@ export default function SRDetail() {
                     header={col.header}
                     style={{ width: "25%" }}
                     body={
-                      col.field === "unit_retail_price" && priceBodyTemplateUnit
+                      (col.field === "unit_retail_price" &&
+                        priceBodyTemplateUnit) ||
+                      (col.field === "subtotal" && priceBodyTemplateSubtotal)
                     }
                     editor={col.cellEditor}
                     onCellEditComplete={onCellEditComplete}

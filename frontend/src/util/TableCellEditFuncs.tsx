@@ -71,6 +71,15 @@ export function priceBodyTemplateRetailPrice(rowData: {
   }).format(rowData.retail_price);
 }
 
+export function priceBodyTemplateSubtotal(rowData: {
+  subtotal: number | bigint;
+}) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(rowData.subtotal);
+}
+
 export function priceBodyTemplateUnit(rowData: {
   unit_retail_price: number | bigint;
 }) {

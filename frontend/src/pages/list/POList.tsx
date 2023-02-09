@@ -144,6 +144,7 @@ export default function PurchaseOrderList() {
     const detailState: PODetailState = {
       date: new Date(po.date.replace("-", "/")),
       purchases: po.purchases,
+      totalCost: po.total_cost,
       id: po.id,
       vendorName: po.vendor_name,
       vendorID: po.vendor,

@@ -12,6 +12,7 @@ import { v4 as uuid } from "uuid";
 import {
   isPositiveInteger,
   numberEditor,
+  priceBodyTemplateSubtotal,
   priceBodyTemplateWholesale,
   priceEditor,
   textEditor,
@@ -28,11 +29,13 @@ import { Vendor } from "../list/VendorList";
 import { BOOKS_API } from "../../apis/BooksAPI";
 import { toYYYYMMDDWithDash } from "../../util/DateOperations";
 import { Toast } from "primereact/toast";
+import { InputNumber } from "primereact/inputnumber";
 
 export interface PODetailState {
   id: number;
   date: any;
   purchases: POPurchaseRow[];
+  totalCost: number;
   vendorName: string;
   vendorID: number;
   isAddPage: boolean;
@@ -43,6 +46,7 @@ export interface PODetailState {
 export interface POPurchaseRow {
   isNewRow: boolean; // true if the user added this row, false if it already existed
   id: string;
+  subtotal: number;
   book: number;
   book_title: string;
   quantity: number;
@@ -60,6 +64,7 @@ export default function PODetail() {
     isNewRow: true,
     id: uuid(),
     book: 0,
+    subtotal: 0,
     book_title: "",
     quantity: 1,
     unit_wholesale_price: 0,
@@ -72,11 +77,13 @@ export default function PODetail() {
     date: new Date(),
     vendorName: "",
     vendorID: 0,
+    totalCost: 0,
     purchases: [
       {
         isNewRow: true,
         id: uuid(),
         book_title: "",
+        subtotal: 0,
         book: 0,
         quantity: 1,
         unit_wholesale_price: 0,
@@ -98,6 +105,7 @@ export default function PODetail() {
   const [purchases, setPurchases] = useState<POPurchaseRow[]>(
     detailState.purchases
   );
+  const [totalCost, setTotalCost] = useState(detailState.totalCost);
   const [purchaseOrderID, setPurchaseOrderID] = useState(detailState.id);
   const [lineData, setLineData] = useState(emptyProduct);
   const [vendorsData, setVendorsData] = useState<Vendor[]>();
@@ -132,10 +140,15 @@ export default function PODetail() {
     },
     {
       field: "unit_wholesale_price",
-      header: "Unit Retail Price ($)",
+      header: "Unit Wholesale Price ($)",
       filterPlaceholder: "Price",
       cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
       cellEditor: (options: ColumnEditorOptions) => priceEditor(options),
+    },
+    {
+      field: "subtotal",
+      header: "Subtotal ($)",
+      filterPlaceholder: "Subtotal",
     },
   ];
 
@@ -347,7 +360,9 @@ export default function PODetail() {
         header={col.header}
         style={{ width: "25%" }}
         body={
-          col.field === "unit_wholesale_price" && priceBodyTemplateWholesale
+          (col.field === "unit_wholesale_price" &&
+            priceBodyTemplateWholesale) ||
+          (col.field === "subtotal" && priceBodyTemplateSubtotal)
         }
         editor={col.cellEditor}
         cellEditValidator={col.cellEditValidator}
@@ -395,6 +410,23 @@ export default function PODetail() {
             </div>
 
             <div className="flex pb-2 flex-row justify-content-evenly card-container col-12">
+              <div>
+                <label
+                  className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
+                  htmlFor="totalcost"
+                >
+                  Total Cost ($):
+                </label>
+                <InputNumber
+                  id="totalcost2"
+                  className="w-6"
+                  minFractionDigits={2}
+                  useGrouping={false}
+                  name="totalcost2"
+                  value={totalCost ?? 0}
+                  disabled={true}
+                />
+              </div>
               <div>
                 <label
                   htmlFor="date"

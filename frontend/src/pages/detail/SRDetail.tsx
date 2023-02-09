@@ -10,6 +10,7 @@ import { v4 as uuid } from "uuid";
 import {
   isPositiveInteger,
   numberEditor,
+  priceBodyTemplateSubtotal,
   priceBodyTemplateUnit,
   priceEditor,
   textEditor,
@@ -27,10 +28,12 @@ import { BOOKS_API } from "../../apis/BooksAPI";
 import { BooksList } from "./PODetail";
 import { Toast } from "primereact/toast";
 import { toYYYYMMDDWithDash } from "../../util/DateOperations";
+import { InputNumber } from "primereact/inputnumber";
 
 export interface SRDetailState {
   id: number;
   date: any;
+  totalRevenue: number;
   sales: SRSaleRow[];
   isAddPage: boolean;
   isModifiable: boolean;
@@ -41,6 +44,7 @@ export interface SRSaleRow {
   isNewRow: boolean;
   id: string;
   book: number;
+  subtotal: number;
   book_title: string;
   quantity: number;
   unit_retail_price: number;
@@ -50,6 +54,7 @@ export default function SRDetail() {
   const emptyProduct = {
     isNewRow: true,
     id: uuid(),
+    subtotal: 0,
     book: 0,
     book_title: "",
     quantity: 1,
@@ -61,11 +66,13 @@ export default function SRDetail() {
   const detailState = (location.state! as SRDetailState) ?? {
     id: -1,
     date: new Date(),
+    totalRevenue: 0,
     sales: [
       {
         isNewRow: true,
         id: uuid(),
         book: 0,
+        subtotal: 0,
         book_title: "",
         quantity: 1,
         unit_retail_price: 0,
@@ -87,6 +94,7 @@ export default function SRDetail() {
   );
   const [lineData, setLineData] = useState(emptyProduct);
   const [bookTitlesList, setBookTitlesList] = useState<string[]>();
+  const [totalRevenue, setTotalRevenue] = useState(detailState.totalRevenue);
   const [bookMap, setBookMap] = useState<Map<string, number>>(new Map());
   const [isSRAddPage, setIsSRAddPage] = useState(detailState.isAddPage);
   const [isModifiable, setIsModifiable] = useState(detailState.isModifiable);
@@ -117,6 +125,11 @@ export default function SRDetail() {
       filterPlaceholder: "Price",
       cellEditor: (options: ColumnEditorOptions) => priceEditor(options),
       cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
+    },
+    {
+      field: "subtotal",
+      header: "Subtotal ($)",
+      filterPlaceholder: "Subtotal",
     },
   ];
 
@@ -353,6 +366,23 @@ export default function SRDetail() {
             <div className="flex pb-2 flex-row justify-content-evenly card-container col-12">
               <div>
                 <label
+                  className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
+                  htmlFor="totalrevenue"
+                >
+                  Total Revenue ($):
+                </label>
+                <InputNumber
+                  id="totalrevenue2"
+                  className="w-6"
+                  useGrouping={false}
+                  minFractionDigits={2}
+                  name="totalrevenue2"
+                  value={totalRevenue ?? 0}
+                  disabled={true}
+                />
+              </div>
+              <div>
+                <label
                   htmlFor="date"
                   className="pt-2 pr-2 p-component text-teal-900 p-text-secondary"
                 >
@@ -389,7 +419,9 @@ export default function SRDetail() {
                     header={col.header}
                     style={{ width: "25%" }}
                     body={
-                      col.field === "unit_retail_price" && priceBodyTemplateUnit
+                      (col.field === "unit_retail_price" &&
+                        priceBodyTemplateUnit) ||
+                      (col.field === "subtotal" && priceBodyTemplateSubtotal)
                     }
                     editor={col.cellEditor}
                     onCellEditComplete={onCellEditComplete}

@@ -74,12 +74,21 @@ class PurchaseOrderSerializer(serializers.ModelSerializer):
         return purchase_order
 
     def create_update_stock(self, purchase_data):
-        purchase_data['book'].stock += purchase_data['quantity']
-        purchase_data['book'].save()
+        book_obj = purchase_data['book']
+        # Sanity check if the book is not ghost
+        if(book_obj.isGhost):
+            raise APIException({
+                "error": {
+                    "query": "PO CREATE",
+                    "msg": f"Please Add Book title: {book_obj.title} and id: {book_obj.id} to the Inventory Before Creating Purchase Orders"
+                }
+            })
+
+        book_obj.stock += purchase_data['quantity']
+        book_obj.save()
     
     def update(self, instance, validated_data):
         purchases_update_data = validated_data.pop('purchases')
-        self.update_non_nested_fields(instance, validated_data)
 
         existing_purchases = Purchase.objects.filter(purchase_order_id=instance.id)
         existing_purchases_ids = set([purchase.id for purchase in existing_purchases])
@@ -93,18 +102,35 @@ class PurchaseOrderSerializer(serializers.ModelSerializer):
                 }
             })
 
+
+        # Inventory Count for Books
+        # Case 1. Purchase already exists so we update the purchase (meaning the equation: stock + (new-origial) should be checked for below 0)
+        # Case 2. This is creating a new Purchase Order in which we do not care about stock going below zero.
+        # Case 3. Deleting previous purchase orders -> This can lead to stock to go below zero so check.
         for purchase_data in purchases_update_data:
             purchase_id = purchase_data.get('id', None)
             if purchase_id:  # Purchase already exists
+                self.update_purchase(instance, purchase_data, purchase_id) # Case 1.
                 existing_purchases_ids.remove(purchase_id)
-                self.update_purchase(instance, purchase_data, purchase_id)
             else:  # Purchase doesn't exist, so create it
                 Purchase.objects.create(purchase_order=instance, **purchase_data)
 
         # Remove all old sales not included in updated sales list
+
+        # Add up all book quantity values in list
+        # Get a list of tuple (book, quantity)
+        # purchase_book_quantities = Purchase.objects.filter(purchase_order=instance.id).values('book').annotate(num_books=Sum('quantity')).values('book', 'num_books')
+        # for purchase_book_quantity in purchase_book_quantities:
+        #     book_to_remove_purchase = Book.objects.filter(id=purchase_book_quantity['book']).get()
+        #     if (book_to_remove_purchase.stock < purchase_book_quantity['num_books']):
+        #         return Response({"error": "Cannot delete purchase order, as doing so would cause book stock to become negative."}, status=status.HTTP_403_FORBIDDEN)
+
         for old_purchase_id in existing_purchases_ids:
             old_purchase = Purchase.objects.get(id=old_purchase_id)
             old_purchase.delete()
+        
+        # If this purchase order modify is valid then we update non_nested_fields
+        self.update_non_nested_fields(instance, validated_data)
         return instance
 
     def update_non_nested_fields(self, instance, validated_data):

@@ -161,7 +161,16 @@ class RetrieveUpdateDestroyPurchaseOrderAPIView(RetrieveUpdateDestroyAPIView):
         for purchase_book_quantity in purchase_book_quantities:
             book_to_remove_purchase = Book.objects.filter(id=purchase_book_quantity['book']).get()
             if (book_to_remove_purchase.stock < purchase_book_quantity['num_books']):
-                return Response({"error": "Cannot delete purchase order, as doing so would cause book stock to become negative."}, status=status.HTTP_403_FORBIDDEN)
+                return Response({"error": {
+                    "msg": "Cannot delete purchase order, as doing so would cause book stock to become negative.",
+                    "details": {
+                        "book_id": purchase_book_quantity['book'],
+                        "book_stock": book_to_remove_purchase.stock,
+                        "quantity_request_for_delete": purchase_book_quantity['num_books']
+                    }
+                    } 
+                },
+                status=status.HTTP_403_FORBIDDEN)
         
         # If we get here, we know we can successfully delete all the purchases, so we will do that
         for purchase_book_quantity in purchase_book_quantities:

@@ -21,7 +21,7 @@ class PurchaseSerializer(serializers.ModelSerializer):
         return instance.book.title
     
     def get_subtotal(self, instance):
-        return instance.quantity*instance.unit_wholesale_price
+        return float(format(instance.quantity*instance.unit_wholesale_price, '.2f'))
 
 
 class PurchaseOrderSerializer(serializers.ModelSerializer):

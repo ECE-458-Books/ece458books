@@ -15,13 +15,13 @@ class SaleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Sale
-        fields = ['id', 'book', 'book_title', 'quantity', 'unit_retail_price']
+        fields = ['id', 'book', 'book_title', 'quantity', 'unit_retail_price', 'subtotal']
     
     def get_book_title(self, instance):
         return instance.book.title
 
     def get_subtotal(self, instance):
-        return instance.quantity*instance.unit_retail_price
+        return float(format(instance.quantity*instance.unit_retail_price, '.2f'))
 
 class SalesReconciliationSerializer(serializers.ModelSerializer):
     sales = SaleSerializer(many=True)

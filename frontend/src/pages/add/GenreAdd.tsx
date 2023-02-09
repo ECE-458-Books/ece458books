@@ -1,4 +1,4 @@
-import React, { FormEvent, useRef, useState } from "react";
+import React, { FormEvent, useEffect, useRef, useState } from "react";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Button } from "primereact/button";
 import { GENRES_API } from "../../apis/GenresAPI";
@@ -24,13 +24,11 @@ export default function GenreAdd() {
 
   const onSubmit = (event: FormEvent<HTMLFormElement>): void => {
     logger.debug("Add Genre Submitted", textBox);
-    GENRES_API.addGenres(textBox).then((response) => {
-      if (response.status == 201) {
-        showSuccess();
-      } else {
-        showFailure();
-      }
-    });
+    let str: string[] = textBox.split(/\r?\n/);
+    str = str.filter((str) => /\S/.test(str));
+    for (let i = 0; i < str.length; i++) {
+      GENRES_API.addGenres(str[i]);
+    }
     event.preventDefault();
   };
 

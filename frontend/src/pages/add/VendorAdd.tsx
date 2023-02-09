@@ -24,13 +24,11 @@ export default function VendorAdd() {
 
   const onSubmit = (event: FormEvent<HTMLFormElement>): void => {
     logger.debug("Add Vendor Submitted", textBox);
-    VENDORS_API.addVendor(textBox).then((response) => {
-      if (response.status == 201) {
-        showSuccess();
-      } else {
-        showFailure();
-      }
-    });
+    let str: string[] = textBox.split(/\r?\n/);
+    str = str.filter((str) => /\S/.test(str));
+    for (let i = 0; i < str.length; i++) {
+      VENDORS_API.addVendor(str[i]);
+    }
     event.preventDefault();
   };
 
@@ -64,7 +62,7 @@ export default function VendorAdd() {
               setTextBox(e.currentTarget.value)
             }
             rows={8}
-            cols={30}
+            cols={40}
             className="text-base text-color surface-overlay p-2 border-1 border-solid surface-border border-round appearance-none outline-none focus:border-primary w-full"
           />
           <div className="flex flex-row justify-content-between card-container col-12">

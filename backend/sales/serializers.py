@@ -11,6 +11,7 @@ class SaleSerializer(serializers.ModelSerializer):
     book = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all())
     book_title = serializers.SerializerMethodField()
     id = serializers.IntegerField(required=False)
+    subtotal = serializers.SerializerMethodField()
 
     class Meta:
         model = Sale
@@ -18,6 +19,9 @@ class SaleSerializer(serializers.ModelSerializer):
     
     def get_book_title(self, instance):
         return instance.book.title
+
+    def get_subtotal(self, instance):
+        return instance.quantity*instance.unit_retail_price
 
 class SalesReconciliationSerializer(serializers.ModelSerializer):
     sales = SaleSerializer(many=True)

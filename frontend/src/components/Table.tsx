@@ -1,6 +1,7 @@
 import { DataTable } from "primereact/datatable";
-import { Column } from "primereact/column";
+import { Column, ColumnEditorOptions, ColumnEvent } from "primereact/column";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
+import { ReactNode } from "react";
 
 export interface TableColumn {
   field: string;
@@ -10,6 +11,8 @@ export interface TableColumn {
   hidden?: boolean;
   sortable?: boolean;
   filterable?: boolean;
+  cellEditValidator?: (event: ColumnEvent) => boolean;
+  cellEditor?: (options: ColumnEditorOptions) => ReactNode;
 }
 
 export interface TableProps<T extends object> {

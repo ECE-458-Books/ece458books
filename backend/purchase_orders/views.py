@@ -5,7 +5,7 @@ from rest_framework import status, filters
 from .models import Purchase, PurchaseOrder
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from .paginations import PurchaseOrderPagination
-from django.db.models import OuterRef, Subquery, Func, Count
+from django.db.models import OuterRef, Subquery, Func, Count, F
 import datetime, pytz
 
 
@@ -27,10 +27,9 @@ class ListCreatePurchaseOrderAPIView(ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = PurchaseOrderSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        saved_purchase_order = serializer.save()
+        serializer.save()
 
         response_data = serializer.data
-        response_data['id'] = saved_purchase_order.id
         return Response(response_data, status=status.HTTP_201_CREATED)
 
     def get_queryset(self):
@@ -63,6 +62,8 @@ class ListCreatePurchaseOrderAPIView(ListCreateAPIView):
         default_query_set = default_query_set.annotate(num_books=Subquery(num_books_subquery))
 
         default_query_set = default_query_set.annotate(num_unique_books=Count('purchases__book', distinct=True))
+
+        default_query_set = default_query_set.annotate(vendor_name=F('vendor__name'))
 
         # Filter by date
         start_date = self.request.GET.get('start')

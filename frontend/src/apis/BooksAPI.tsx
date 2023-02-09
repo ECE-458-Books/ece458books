@@ -1,4 +1,5 @@
 import { BookWithDBTag } from "../pages/add/BookAdd";
+import { BooksList } from "../pages/detail/PODetail";
 import { Book } from "../pages/list/BookList";
 import { CommaSeparatedStringToArray } from "../util/StringOperations";
 import {
@@ -54,6 +55,16 @@ export interface GetBooksResp {
   numberOfBooks: number;
 }
 
+// The structure of the response for a book from the API
+interface APIBookSimplified {
+  id: number;
+  title: string;
+}
+
+export interface GetBooksNoCountResp {
+  books: BooksList[];
+}
+
 export const BOOKS_API = {
   getBooks: async function (req: GetBooksReq): Promise<GetBooksResp> {
     const response = await API.request({
@@ -94,6 +105,28 @@ export const BOOKS_API = {
     return Promise.resolve({
       books: books,
       numberOfBooks: response.data.count,
+    });
+  },
+
+  getBooksNOPaging: async function (): Promise<GetBooksNoCountResp> {
+    const response = await API.request({
+      url: BOOKS_EXTENSION,
+      method: METHOD_GET,
+      params: {
+        no_pagination: true,
+      },
+    });
+
+    // Convert response to internal data type (not strictly necessary, but I think good practice)
+    const _books = response.data.map((book: APIBookSimplified) => {
+      return {
+        id: book.id,
+        title: book.title,
+      };
+    });
+
+    return Promise.resolve({
+      books: _books,
     });
   },
 

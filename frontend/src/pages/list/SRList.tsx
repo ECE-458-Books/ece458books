@@ -4,6 +4,7 @@ import {
   DataTableFilterEvent,
   DataTableFilterMetaData,
   DataTablePageEvent,
+  DataTableRowClickEvent,
   DataTableSortEvent,
 } from "primereact/datatable";
 import { useEffect, useState } from "react";
@@ -20,9 +21,9 @@ export interface SalesReconciliation {
   id: number;
   date: string;
   sales: SRSaleRow[];
-  uniqueBooks: number;
-  totalBooks: number;
-  totalRevenue: number;
+  num_unique_books: number;
+  num_books: number;
+  total_revenue: number;
 }
 
 const COLUMNS: TableColumn[] = [
@@ -30,21 +31,25 @@ const COLUMNS: TableColumn[] = [
     field: "date",
     header: "Date (YYYY-MM-DD)",
     filterPlaceholder: "Search by Total Date",
+    filterable: false,
   },
   {
-    field: "uniqueBooks",
+    field: "num_unique_books",
     header: "Unique Books",
     filterPlaceholder: "Search by Unique Books",
+    filterable: false,
   },
   {
-    field: "totalBooks",
+    field: "num_books",
     header: "Total Books",
     filterPlaceholder: "Search by Total Books",
+    filterable: false,
   },
   {
-    field: "totalRevenue",
+    field: "total_revenue",
     header: "Total Revenue ($)",
     filterPlaceholder: "Search by Total Revenue",
+    filterable: false,
   },
 ];
 
@@ -52,9 +57,9 @@ const COLUMNS: TableColumn[] = [
 interface Filters {
   [id: string]: DataTableFilterMetaData;
   date: DataTableFilterMetaData;
-  uniqueBooks: DataTableFilterMetaData;
-  totalBooks: DataTableFilterMetaData;
-  totalRevenue: DataTableFilterMetaData;
+  num_unique_books: DataTableFilterMetaData;
+  num_books: DataTableFilterMetaData;
+  total_revenue: DataTableFilterMetaData;
 }
 
 // Empty sales reconciliation, used to initialize state
@@ -62,9 +67,9 @@ const emptySalesReconciliation = {
   id: 0,
   date: "",
   sales: [],
-  uniqueBooks: 0,
-  totalBooks: 0,
-  totalRevenue: 0,
+  num_unique_books: 0,
+  num_books: 0,
+  total_revenue: 0,
 };
 
 export default function SalesReconciliationList() {
@@ -100,9 +105,9 @@ export default function SalesReconciliationList() {
     filters: {
       id: { value: "", matchMode: "contains" },
       date: { value: "", matchMode: "contains" },
-      uniqueBooks: { value: "", matchMode: "contains" },
-      totalBooks: { value: "", matchMode: "contains" },
-      totalRevenue: { value: "", matchMode: "contains" },
+      num_unique_books: { value: "", matchMode: "contains" },
+      num_books: { value: "", matchMode: "contains" },
+      total_revenue: { value: "", matchMode: "contains" },
     } as Filters,
   });
 
@@ -112,14 +117,14 @@ export default function SalesReconciliationList() {
   const navigate = useNavigate();
 
   // Callback functions for edit/delete buttons
-  const editSalesReconciliation = (sr: SalesReconciliation) => {
+  const toDetailPage = (sr: SalesReconciliation, isModifiable: boolean) => {
     logger.debug("Edit Sales Reconciliation Clicked", sr);
     const detailState: SRDetailState = {
       date: new Date(sr.date.replace("-", "/")),
-      data: sr.sales,
+      sales: sr.sales,
       id: sr.id,
       isAddPage: false,
-      isModifiable: false,
+      isModifiable: isModifiable,
       isConfirmationPopupVisible: false,
     };
 
@@ -139,6 +144,13 @@ export default function SalesReconciliationList() {
       "Delete Sales Reconciliation Finalized",
       selectedDeleteSalesReconciliation
     );
+    SALES_API.deleteSalesReconciliation(
+      selectedDeleteSalesReconciliation.id.toString()
+    );
+    const _salesReconciliations = salesReconciliations.filter(
+      (selectSR) => selectedDeleteSalesReconciliation.id != selectSR.id
+    );
+    setSalesReconciliations(_salesReconciliations);
     setDeletePopupVisible(false);
     setSelectedDeleteSalesReconciliation(emptySalesReconciliation);
   };
@@ -164,24 +176,29 @@ export default function SalesReconciliationList() {
     setPageParams(event);
   };
 
+  const onRowClick = (event: DataTableRowClickEvent) => {
+    // I couldn't figure out a better way to do this...
+    // It takes the current index as the table knows it and calculates the actual index in the genres array
+    const index = event.index - NUM_ROWS * (pageParams.page ?? 0);
+    const salesReconciliation = salesReconciliations[index];
+    logger.debug("Sales Reconciliation Row Clicked", salesReconciliation);
+    toDetailPage(salesReconciliation, false);
+  };
+
   // When any of the list of params are changed, useEffect is called to hit the API endpoint
   useEffect(() => callAPI(), [sortParams, pageParams, filterParams]);
 
-  // Calls the Vendors API
-  // const callAPI = () => {
-  //   SALES_API.getSalesReconciliations({
-  //     page: pageParams.page ?? 0,
-  //     page_size: pageParams.rows,
-  //     ordering_field: sortParams.sortField,
-  //     ordering_ascending: sortParams.sortOrder,
-  //     search: filterParams.filters.name.value,
-  //   }).then((response) => onAPIResponse(response));
-  // };
-
   const callAPI = () => {
+    // Invert sort order
+    let sortField = sortParams.sortField;
+    if (sortParams.sortOrder == -1) {
+      sortField = "-".concat(sortField);
+    }
+
     SALES_API.getSalesReconciliations({
       page: pageParams.page ?? 0,
       page_size: pageParams.rows,
+      ordering: sortField,
     }).then((response) => onAPIResponse(response));
   };
 
@@ -196,7 +213,7 @@ export default function SalesReconciliationList() {
 
   // Edit/Delete Cell Template
   const editDeleteCellTemplate = EditDeleteTemplate<SalesReconciliation>({
-    onEdit: (rowData) => editSalesReconciliation(rowData),
+    onEdit: (rowData) => toDetailPage(rowData, true),
     onDelete: (rowData) => deleteSalesReconciliationPopup(rowData),
   });
 
@@ -218,7 +235,7 @@ export default function SalesReconciliationList() {
         field={col.field}
         header={col.header}
         // Filtering
-        filter
+        filter={col.filterable}
         filterElement={col.customFilter}
         //filterMatchMode={"contains"}
         filterPlaceholder={col.filterPlaceholder}
@@ -244,6 +261,10 @@ export default function SalesReconciliationList() {
         responsiveLayout="scroll"
         filterDisplay="row"
         loading={loading}
+        // Row clicking
+        rowHover
+        selectionMode={"single"}
+        onRowClick={(event) => onRowClick(event)}
         // Paginator
         paginator
         first={pageParams.first}

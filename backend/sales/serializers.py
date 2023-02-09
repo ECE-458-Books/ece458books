@@ -1,16 +1,17 @@
 from rest_framework import serializers
 from books.models import Book
 from .models import Sale, SalesReconciliation
+from purchase_orders.models import Purchase, PurchaseOrder
 
 
 class SaleSerializer(serializers.ModelSerializer):
-    book_id = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all())
+    book = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all())
     book_title = serializers.SerializerMethodField()
     id = serializers.IntegerField(required=False)
 
     class Meta:
         model = Sale
-        fields = ['id', 'book_id', 'book_title', 'quantity', 'unit_retail_price']
+        fields = ['id', 'book', 'book_title', 'quantity', 'unit_retail_price']
     
     def get_book_title(self, instance):
         return instance.book.title
@@ -85,3 +86,4 @@ class SalesReconciliationSerializer(serializers.ModelSerializer):
         sale.quantity = sale_data.get('quantity', sale.quantity)
         sale.unit_retail_price = sale_data.get('unit_retail_price', sale.unit_retail_price)
         sale.save()
+

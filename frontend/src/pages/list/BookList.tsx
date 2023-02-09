@@ -353,7 +353,7 @@ export default function BookList() {
     setPageParams({
       first: 0,
       rows: NUM_ROWS,
-      page: pageParams.page,
+      page: 0,
     });
     setFilterParams(event);
   };

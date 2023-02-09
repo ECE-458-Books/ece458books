@@ -17,7 +17,7 @@ class BookListAddSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Book
-        fields = ['id', 'title', 'authors', 'genres', 'isbn_13', 'isbn_10', 'publisher', 'publishedDate', 'pageCount', 'width', 'height', 'thickness', 'retail_price', 'isGhost']
+        fields = ['id', 'title', 'authors', 'genres', 'isbn_13', 'isbn_10', 'publisher', 'publishedDate', 'pageCount', 'width', 'height', 'thickness', 'retail_price', 'isGhost', 'stock']
 
 class BookSerializer(serializers.ModelSerializer):
     authors = serializers.SlugRelatedField(queryset=Author.objects.all(), many=True, slug_field='name')

@@ -353,7 +353,7 @@ export default function SRDetail() {
               <div>
                 <label
                   htmlFor="date"
-                  className="pt-2 pr-2 p-component text-teal-800 p-text-secondary"
+                  className="pt-2 pr-2 p-component text-teal-900 p-text-secondary"
                 >
                   Date
                 </label>

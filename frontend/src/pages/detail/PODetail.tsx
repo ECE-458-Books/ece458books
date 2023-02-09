@@ -313,7 +313,7 @@ export default function PODetail() {
           }}
           buttonClickFunc={() => setIsConfirmationPopupVisible(true)}
           disabled={!isModifiable}
-          label={"Submit"}
+          label={"Update"}
           className="p-button-success p-button-raised"
         />
       </React.Fragment>
@@ -395,7 +395,7 @@ export default function PODetail() {
               <div>
                 <label
                   htmlFor="date"
-                  className="pt-2 pr-2 p-component text-teal-800 p-text-secondary"
+                  className="pt-2 pr-2 p-component text-teal-900 p-text-secondary"
                 >
                   Date
                 </label>
@@ -413,7 +413,7 @@ export default function PODetail() {
               <div>
                 <label
                   htmlFor="vendor"
-                  className="pt-2 pr-2 p-component text-teal-800 p-text-secondary"
+                  className="pt-2 pr-2 p-component text-teal-900 p-text-secondary"
                 >
                   Vendor
                 </label>

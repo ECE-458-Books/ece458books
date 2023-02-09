@@ -176,6 +176,7 @@ class RetrieveUpdateDestroyPurchaseOrderAPIView(RetrieveUpdateDestroyAPIView):
         for purchase_book_quantity in purchase_book_quantities:
             book_to_remove_purchase = Book.objects.filter(id=purchase_book_quantity['book']).get()
             book_to_remove_purchase.stock -= purchase_book_quantity['num_books']
+            book_to_remove_purchase.save()
         return super().destroy(request, *args, **kwargs)
 
     def verify_existance(self):

@@ -24,12 +24,19 @@ export default function VendorAdd() {
 
   const onSubmit = (event: FormEvent<HTMLFormElement>): void => {
     logger.debug("Add Vendor Submitted", textBox);
+    //take string input assigned to variable textBox and parse it based on newline character
+    //into a string array using a regular expression
     let str: string[] = textBox.split(/\r?\n/);
+    //take the string array -> check for and remove any elements containing only whitespace
+    //or nothing at all
     str = str.filter((str) => /\S/.test(str));
+    //loop through all elements and do an API submission to add the strings to database
     for (let i = 0; i < str.length; i++) {
       VENDORS_API.addVendor(str[i]).then((response) => {
         if (response.status == 201) {
           showSuccess();
+        } else {
+          showFailure();
         }
       });
     }

@@ -1,4 +1,4 @@
-import { FormEvent, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { ToggleButton } from "primereact/togglebutton";
 import ConfirmButton from "../../components/ConfirmButton";
@@ -12,6 +12,9 @@ import { BOOKS_API } from "../../apis/BooksAPI";
 import { FormikErrors, useFormik } from "formik";
 import { Toast } from "primereact/toast";
 import { logger } from "../../util/Logger";
+import { GENRES_API } from "../../apis/GenresAPI";
+import { ColumnEditorOptions } from "primereact/column";
+import { Dropdown } from "primereact/dropdown";
 
 export interface BookDetailState {
   book: Book;
@@ -101,6 +104,18 @@ export default function BookDetail() {
       formik.resetForm();
     },
   });
+
+  // The dropdown configuration for each cell
+  const [genreList, setGenreList] = useState<string[]>([]);
+  useEffect(() => {
+    GENRES_API.getGenres({
+      page: 0,
+      page_size: 30,
+      ordering: "name",
+    }).then((response) =>
+      setGenreList(response.genres.map((genre) => genre.name))
+    );
+  }, []);
 
   return (
     <div className="grid flex justify-content-center">
@@ -323,15 +338,17 @@ export default function BookDetail() {
             >
               Genre
             </label>
-            <InputText
-              id="genre"
-              className="w-8"
-              name="genre"
+            <Dropdown
               value={genre}
-              disabled={!isModifiable}
-              onChange={(event: FormEvent<HTMLInputElement>): void => {
-                setGenre(event.currentTarget.value);
+              options={genreList}
+              appendTo={"self"}
+              onChange={(e) => {
+                setGenre(e.target.value);
               }}
+              placeholder={"Select Genre"}
+              showClear
+              virtualScrollerOptions={{ itemSize: 35 }}
+              style={{ position: "absolute", zIndex: 9999 }}
             />
           </div>
         </div>

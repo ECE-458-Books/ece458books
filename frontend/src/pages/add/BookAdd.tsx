@@ -276,18 +276,10 @@ export default function BookAdd() {
         <form onSubmit={onISBNInitialSubmit}>
           <Toast ref={toast} />
           <div className="justify content center col-6 col-offset-3">
-            <div className="py-2">
-              <label
-                className="text-xl p-component text-teal-900 p-text-secondary"
-                htmlFor="addbook"
-              >
-                Enter ISBN-13 values, separated by comma or space:
-              </label>
-            </div>
             <InputTextarea
               id="addbook"
               name="addbook"
-              placeholder="Add Multiple Books using commas"
+              placeholder="Enter ISBN-13 values, separated by comma or space"
               value={textBox}
               onChange={(e: FormEvent<HTMLTextAreaElement>) =>
                 setTextBox(e.currentTarget.value)

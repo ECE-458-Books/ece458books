@@ -68,7 +68,7 @@ export default function GenreAdd() {
           <InputTextarea
             id="addgenre"
             name="addgenre"
-            placeholder="Enter Multiple Genres using Newline breaks"
+            placeholder="Enter genres, separated by newline breaks"
             value={textBox}
             onChange={(e: FormEvent<HTMLTextAreaElement>) =>
               setTextBox(e.currentTarget.value)

@@ -12,6 +12,7 @@ from purchase_orders.serializers import PurchaseOrderSerializer
 import datetime, pytz
 from datetime import datetime, timedelta
 from books.models import Book
+from rest_framework.exceptions import APIException
 
 
 class ListCreateSalesReconciliationAPIView(ListCreateAPIView):
@@ -196,7 +197,7 @@ class RetrieveSalesReportAPIView(APIView):
             try:
                 most_recent_unit_wholesale_price = PurchaseOrder.objects.filter(date__lte=end_date).order_by('-date', '-id').annotate(book_wholesale_price=Subquery(Purchase.objects.filter(purchase_order=OuterRef('id')).filter(book=book_sale['book_id']).values('unit_wholesale_price'))).values('book_wholesale_price').exclude(book_wholesale_price=None).first()['book_wholesale_price']
             except: # Every sale should have a prior purchase because of our validation that can't sell without inventory, so this should never occur, but here just in case
-                book_sale['total_cost_most_recent'] = "no prior purchase, sale is invalid"
+                raise APIException("Cannot sell a book that has not been purchased.")
             else:
                 book_sale['total_cost_most_recent'] = round(most_recent_unit_wholesale_price * book_sale['num_books_sold'], 2)
                 

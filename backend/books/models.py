@@ -35,8 +35,4 @@ class Book(models.Model):
     isGhost = models.BooleanField(default=False)
 
     # Number of books left in stock
-<<<<<<< HEAD
     stock = models.PositiveIntegerField(default=0)
-=======
-    stock = models.PositiveIntegerField()
->>>>>>> Add stock field to Book table

@@ -72,10 +72,10 @@ export function priceBodyTemplateRetailPrice(rowData: {
 }
 
 export function priceBodyTemplateUnit(rowData: {
-  unitRetailPrice: number | bigint;
+  unit_retail_price: number | bigint;
 }) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-  }).format(rowData.unitRetailPrice);
+  }).format(rowData.unit_retail_price);
 }

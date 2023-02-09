@@ -313,7 +313,7 @@ export default function PODetail() {
           }}
           buttonClickFunc={() => setIsConfirmationPopupVisible(true)}
           disabled={!isModifiable}
-          label={"Submit"}
+          label={"Update"}
           className="p-button-success p-button-raised"
         />
       </React.Fragment>

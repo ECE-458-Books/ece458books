@@ -315,22 +315,23 @@ export default function BookAdd() {
             Finish Book Addition
           </label>
         </div>
-
         <form onSubmit={onFinalSubmit}>
           <DataTable
             value={books}
             editMode="cell"
-            className="editable-cells-table"
+            className="editable-cells-table py-5"
             responsiveLayout="scroll"
           >
             {columns}
           </DataTable>
-          <Button
-            id="confirmbooks"
-            name="confirmbooks"
-            label="Confirm Addition"
-            type="submit"
-          />
+          <div className="col-12 col-offset-5">
+            <Button
+              id="confirmbooks"
+              name="confirmbooks"
+              label="Confirm Addition"
+              type="submit"
+            />
+          </div>
         </form>
       </div>
     </div>

@@ -1,10 +1,12 @@
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Calendar } from "primereact/calendar";
 import ConfirmButton from "../../components/ConfirmButton";
 import moment from "moment";
 import { GetSalesReportResp, SALES_REPORT_API } from "../../apis/SalesRepAPI";
+import { Toast } from "primereact/toast";
+import { logger } from "../../util/Logger";
 
 // The structure of the response for a SR from the API
 export interface salesReportTotalRow {
@@ -76,6 +78,21 @@ export default function SalesReport() {
     ]);
     setDailyData(response.daily_summary);
     setTopBooksData(response.top_books);
+    showSuccess("Data Successfully Retrieved");
+  };
+
+  // Toast is used for showing success/error messages
+  const toast = useRef<Toast>(null);
+
+  const showSuccess = (message: string) => {
+    toast.current?.show({ severity: "success", summary: message });
+  };
+
+  const showFailure = (message: string) => {
+    toast.current?.show({
+      severity: "error",
+      summary: message,
+    });
   };
 
   const formatCurrency = (value: any) => {
@@ -110,22 +127,28 @@ export default function SalesReport() {
       if (dates != null) {
         if (moment(dates[1]).format("YYYY-MM-DD") !== "Invalid date") {
           //console.log(moment(new Date()).format("YYYY-MM-DD"));
-          console.log(moment(dates[0]).format("YYYY-MM-DD"));
-          console.log(moment(dates[1]).format("YYYY-MM-DD"));
-          console.log("Sales Submit");
+          // console.log(moment(dates[0]).format("YYYY-MM-DD"));
+          // console.log(moment(dates[1]).format("YYYY-MM-DD"));
+          logger.debug("Sales Report Requested");
           SALES_REPORT_API.getSalesReport({
             start: moment(dates[0]).format("YYYY-MM-DD"),
             end: moment(dates[1]).format("YYYY-MM-DD"),
           }).then((response) => onAPIResponse(response));
+        } else {
+          showFailure("Select end date");
         }
+      } else {
+        showFailure("No Date Range selected");
       }
     } catch (error) {
-      console.log(error);
+      showFailure("Select end date");
+      logger.debug(error);
     }
   };
 
   return (
     <div className="grid flex justify-content-center">
+      <Toast ref={toast} />
       <div className="col-12">
         <div className="py-2">
           <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">

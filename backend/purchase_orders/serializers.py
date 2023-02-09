@@ -69,8 +69,13 @@ class PurchaseOrderSerializer(serializers.ModelSerializer):
 
         purchase_order = PurchaseOrder.objects.create(**validated_data)
         for purchase_data in purchases_data:
+            self.create_update_stock(purchase_data)
             Purchase.objects.create(purchase_order=purchase_order, **purchase_data)
         return purchase_order
+
+    def create_update_stock(self, purchase_data):
+        purchase_data['book'].stock += purchase_data['quantity']
+        purchase_data['book'].save()
     
     def update(self, instance, validated_data):
         purchases_update_data = validated_data.pop('purchases')

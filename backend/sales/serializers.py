@@ -11,13 +11,17 @@ class SaleSerializer(serializers.ModelSerializer):
     book = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all())
     book_title = serializers.SerializerMethodField()
     id = serializers.IntegerField(required=False)
+    subtotal = serializers.SerializerMethodField()
 
     class Meta:
         model = Sale
-        fields = ['id', 'book', 'book_title', 'quantity', 'unit_retail_price']
+        fields = ['id', 'book', 'book_title', 'quantity', 'unit_retail_price', 'subtotal']
     
     def get_book_title(self, instance):
         return instance.book.title
+
+    def get_subtotal(self, instance):
+        return float(format(instance.quantity*instance.unit_retail_price, '.2f'))
 
 class SalesReconciliationSerializer(serializers.ModelSerializer):
     sales = SaleSerializer(many=True)

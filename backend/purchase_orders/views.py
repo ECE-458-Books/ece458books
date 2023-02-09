@@ -5,8 +5,9 @@ from rest_framework import status, filters
 from .models import Purchase, PurchaseOrder
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from .paginations import PurchaseOrderPagination
-from django.db.models import OuterRef, Subquery, Func, Count, F
+from django.db.models import OuterRef, Subquery, Func, Count, F, Sum
 import datetime, pytz
+from books.models import Book
 
 
 class ListCreatePurchaseOrderAPIView(ListCreateAPIView):
@@ -154,6 +155,29 @@ class RetrieveUpdateDestroyPurchaseOrderAPIView(RetrieveUpdateDestroyAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def destroy(self, request, *args, **kwargs):
+        purchase_book_quantities = Purchase.objects.filter(purchase_order=self.get_object().id).values('book').annotate(num_books=Sum('quantity')).values('book', 'num_books')
+        for purchase_book_quantity in purchase_book_quantities:
+            book_to_remove_purchase = Book.objects.filter(id=purchase_book_quantity['book']).get()
+            if (book_to_remove_purchase.stock < purchase_book_quantity['num_books']):
+                return Response({"error": {
+                    "msg": "Cannot delete purchase order, as doing so would cause book stock to become negative.",
+                    "details": {
+                        "book_id": purchase_book_quantity['book'],
+                        "book_stock": book_to_remove_purchase.stock,
+                        "quantity_request_for_delete": purchase_book_quantity['num_books']
+                    }
+                    } 
+                },
+                status=status.HTTP_403_FORBIDDEN)
+        
+        # If we get here, we know we can successfully delete all the purchases, so we will do that
+        for purchase_book_quantity in purchase_book_quantities:
+            book_to_remove_purchase = Book.objects.filter(id=purchase_book_quantity['book']).get()
+            book_to_remove_purchase.stock -= purchase_book_quantity['num_books']
+            book_to_remove_purchase.save()
+        return super().destroy(request, *args, **kwargs)
 
     def verify_existance(self):
         if (len(self.get_queryset()) == 0):

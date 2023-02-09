@@ -43,7 +43,6 @@ export default function BookDetail() {
   const [width, setWidth] = useState(detailState.book.width);
   const [height, setHeight] = useState(detailState.book.height);
   const [thickness, setThickness] = useState(detailState.book.thickness);
-  const [stock, setStock] = useState(detailState.book.stock);
   const [isModifiable, setIsModifiable] = useState(detailState.isModifiable);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] = useState(
     detailState.isConfirmationPopupVisible

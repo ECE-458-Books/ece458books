@@ -36,15 +36,6 @@ export const SALES_REPORT_API = {
       method: METHOD_GET,
     });
 
-    // // Convert response to internal data type (not strictly necessary, but I think good practice)
-    // const total = response.data.total_summary.map((sr: salesReportTotalRow) => {
-    //   return {
-    //     revenue: sr.revenue,
-    //     cost: sr.cost,
-    //     profit: sr.profit,
-    //   };
-    // });
-
     // Convert response to internal data type (not strictly necessary, but I think good practice)
     const daily = response.data.daily_summary.map((sr: salesReportDailyRow) => {
       return {

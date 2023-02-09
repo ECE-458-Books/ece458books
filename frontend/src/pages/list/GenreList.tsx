@@ -266,6 +266,7 @@ export default function GenreList() {
     <div className="card pt-5 px-2">
       <Toast ref={toast} />
       <DataTable
+        showGridlines
         // General Settings
         value={genres}
         lazy

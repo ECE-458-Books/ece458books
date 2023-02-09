@@ -132,7 +132,7 @@ export default function PODetail() {
     },
     {
       field: "unit_wholesale_price",
-      header: "Unit Retail Price ($)",
+      header: "Unit Wholesale Price ($)",
       filterPlaceholder: "Price",
       cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
       cellEditor: (options: ColumnEditorOptions) => priceEditor(options),
@@ -443,6 +443,7 @@ export default function PODetail() {
             />
 
             <DataTable
+              showGridlines
               value={purchases}
               className="editable-cells-table"
               responsiveLayout="scroll"

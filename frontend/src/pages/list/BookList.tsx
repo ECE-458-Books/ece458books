@@ -141,9 +141,10 @@ export default function BookList() {
     },
     {
       field: "isbn10",
-      header: "ISBN",
+      header: "ISBN 10",
       filterPlaceholder: "Search by ISBN",
-      hidden: true,
+      sortable: false,
+      filterable: false,
     },
     {
       field: "publisher",
@@ -184,11 +185,13 @@ export default function BookList() {
       field: "retail_price",
       header: "Retail Price",
       filterPlaceholder: "Search by Price",
+      filterable: false,
     },
     {
       field: "stock",
       header: "Inventory Count",
       filterPlaceholder: "Search by Inventory Count",
+      filterable: false,
     },
   ];
 
@@ -391,13 +394,13 @@ export default function BookList() {
   const toast = useRef<Toast>(null);
 
   const showSuccess = () => {
-    toast.current?.show({ severity: "success", summary: "Genre modified" });
+    toast.current?.show({ severity: "success", summary: "Book deleted" });
   };
 
   const showFailure = () => {
     toast.current?.show({
       severity: "error",
-      summary: "Genre could not be modified",
+      summary: "Book could not be modified",
     });
   };
 
@@ -420,8 +423,11 @@ export default function BookList() {
         // Hiding Fields
         showFilterMenuOptions={false}
         showClearButton={false}
+        showApplyButton={false}
+        showFilterMatchModes={false}
+        showFilterOperator={false}
         // Other
-        style={{ minWidth: "12rem" }}
+        style={{ minWidth: "11rem" }}
         hidden={col.hidden}
       />
     );
@@ -432,6 +438,7 @@ export default function BookList() {
       <Toast ref={toast} />
       <DataTable
         // General Settings
+        showGridlines
         value={books}
         lazy
         responsiveLayout="scroll"
@@ -457,7 +464,7 @@ export default function BookList() {
         filters={filterParams.filters}
       >
         {dynamicColumns}
-        <Column body={editDeleteCellTemplate} style={{ minWidth: "16rem" }} />
+        <Column body={editDeleteCellTemplate} style={{ minWidth: "9rem" }} />
       </DataTable>
       {deletePopupVisible && deletePopup}
     </div>

@@ -376,6 +376,7 @@ export default function SRDetail() {
               right={rightToolbarTemplate}
             />
             <DataTable
+              showGridlines
               value={sales}
               className="editable-cells-table"
               responsiveLayout="scroll"

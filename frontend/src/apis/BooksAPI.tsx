@@ -189,7 +189,7 @@ export const BOOKS_API = {
         width: book.width,
         height: book.height,
         thickness: book.thickness,
-        retail_price: book.retail_price,
+        retail_price: book.retail_price ?? 0,
         fromDB: book.fromDB,
       } as BookWithDBTag;
     });

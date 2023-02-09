@@ -159,6 +159,14 @@ class RetrieveUpdateDestroySalesReconciliationAPIView(RetrieveUpdateDestroyAPIVi
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def destroy(self, request, *args, **kwargs):
+        sale_book_quantities = Sale.objects.filter(sales_reconciliation=self.get_object().id).values('book').annotate(num_books=Sum('quantity')).values('book', 'num_books')
+        for sale_book_quantity in sale_book_quantities:
+            book_to_remove_sale = Book.objects.filter(id=sale_book_quantity['book']).get()
+            book_to_remove_sale.stock += sale_book_quantity['num_books']
+            book_to_remove_sale.save()
+        return super().destroy(request, *args, **kwargs)
 
     def verify_existance(self):
         if (len(self.get_queryset()) == 0):

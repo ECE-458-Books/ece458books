@@ -58,12 +58,12 @@ export default function LoginPage() {
         href="https://unpkg.com/primeflex@3.1.2/primeflex.css"
       ></link>
       <div className="col-5">
-        <div className="py-5">
+        <div className="py-5 col-12">
           <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
             Login Page
           </h1>
         </div>
-        <div className="col-offset-4">
+        <div className="col-6 col-offset-5">
           <img
             alt="logo"
             src={require("../ImaginarySoftwareLogo.jpeg")}
@@ -71,6 +71,9 @@ export default function LoginPage() {
             className="mr-2"
           ></img>
         </div>
+        <h1 className="p-component p-text-secondary text-xl text-center text-900 color: var(--surface-800);">
+          Imaginary Software
+        </h1>
         <form onSubmit={onSubmit}>
           <div className="flex flex-row justify-content-center card-container col-12">
             <Password

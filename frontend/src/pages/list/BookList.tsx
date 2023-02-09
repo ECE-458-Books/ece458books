@@ -183,7 +183,7 @@ export default function BookList() {
     },
     {
       field: "retail_price",
-      header: "Retail Price",
+      header: "Retail Price ($)",
       filterPlaceholder: "Search by Price",
       filterable: false,
     },

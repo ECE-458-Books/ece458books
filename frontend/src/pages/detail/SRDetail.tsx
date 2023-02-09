@@ -95,7 +95,7 @@ export default function SRDetail() {
   );
 
   const COLUMNS: TableColumn[] = [
-    { field: "book", header: "ID", filterPlaceholder: "ID" },
+    { field: "book", header: "ID", filterPlaceholder: "ID", hidden: true },
     {
       field: "book_title",
       header: "Books",
@@ -305,7 +305,7 @@ export default function SRDetail() {
             setIsConfirmationPopupVisible(true);
           }}
           disabled={!isModifiable}
-          label={"Update"}
+          label={"Submit"}
           className="p-button-success p-button-raised"
         />
       </React.Fragment>
@@ -392,6 +392,7 @@ export default function SRDetail() {
                     }
                     editor={col.cellEditor}
                     onCellEditComplete={onCellEditComplete}
+                    hidden={col.hidden}
                   />
                 );
               })}

@@ -32,6 +32,7 @@ const COLUMNS: TableColumn[] = [
     header: "Date (YYYY-MM-DD)",
     filterPlaceholder: "Search by Total Date",
     filterable: false,
+    hidden: true,
   },
   {
     field: "num_unique_books",

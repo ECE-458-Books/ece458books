@@ -18,8 +18,10 @@ import { BookDetailState } from "../detail/ModfiyBook";
 import { useLocation, useNavigate } from "react-router-dom";
 import { GENRES_API } from "../../apis/GenresAPI";
 import { Toast } from "primereact/toast";
+import React from "react";
+import { Button } from "primereact/button";
 
-export const NUM_ROWS = 3;
+export const NUM_ROWS = 10;
 
 interface TableColumn {
   field: string;
@@ -44,7 +46,8 @@ export interface Book {
   width: number;
   height: number;
   thickness: number;
-  retailPrice: number;
+  retail_price: number;
+  inventory_count: number;
 }
 
 interface Filters {
@@ -59,7 +62,7 @@ interface Filters {
   width: DataTableFilterMetaData;
   height: DataTableFilterMetaData;
   thickness: DataTableFilterMetaData;
-  retailPrice: DataTableFilterMetaData;
+  retail_price: DataTableFilterMetaData;
 }
 
 export default function BookList() {
@@ -76,7 +79,8 @@ export default function BookList() {
     width: 0,
     height: 0,
     thickness: 0,
-    retailPrice: 0,
+    retail_price: 0,
+    inventory_count: 0,
   };
 
   // Custom dropdown selector for Genre
@@ -172,9 +176,14 @@ export default function BookList() {
       hidden: true,
     },
     {
-      field: "retailPrice",
+      field: "retail_price",
       header: "Retail Price",
       filterPlaceholder: "Search by Price",
+    },
+    {
+      field: "inventory_count",
+      header: "Inventory Count",
+      filterPlaceholder: "Search by Inventory Count",
     },
   ];
 
@@ -184,11 +193,23 @@ export default function BookList() {
   // State to track the current book that has been selected to be deleted
   const [selectedDeleteBook, setSelectedDeleteBook] = useState<Book>(emptyBook);
 
-  // Custom body template for edit/delete buttons
-  const editDeleteCellTemplate = EditDeleteTemplate<Book>({
-    onEdit: (rowData) => editBook(rowData),
-    onDelete: (rowData) => deleteBookPopup(rowData),
-  });
+  const editDeleteCellTemplate = (rowData: Book) => {
+    return (
+      <React.Fragment>
+        <Button
+          icon="pi pi-pencil"
+          className="p-button-rounded p-button-success mr-2"
+          onClick={() => editBook(rowData)}
+        />
+        <Button
+          icon="pi pi-trash"
+          className="p-button-rounded p-button-danger"
+          onClick={() => deleteBookPopup(rowData)}
+          disabled={rowData.inventory_count > 0}
+        />
+      </React.Fragment>
+    );
+  };
 
   // Callback functions for edit/delete buttons
   const editBook = (book: Book) => {
@@ -268,7 +289,7 @@ export default function BookList() {
       width: { value: "", matchMode: "contains" },
       height: { value: "", matchMode: "contains" },
       thickness: { value: "", matchMode: "contains" },
-      retailPrice: { value: "", matchMode: "contains" },
+      retail_price: { value: "", matchMode: "contains" },
     } as Filters,
   });
 
@@ -325,6 +346,11 @@ export default function BookList() {
     logger.debug("Filter Applied", event);
     setLoading(true);
     setFilterParams(event);
+    setPageParams({
+      first: 0,
+      rows: NUM_ROWS,
+      page: pageParams.page,
+    });
   };
 
   // Called when any of the columns are selected to be sorted
@@ -381,7 +407,7 @@ export default function BookList() {
         showFilterMenuOptions={false}
         showClearButton={false}
         // Other
-        style={{ minWidth: "16rem" }}
+        style={{ minWidth: "12rem" }}
         hidden={col.hidden}
       />
     );

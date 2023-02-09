@@ -166,7 +166,7 @@ export default function BookAdd() {
       cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
     },
     {
-      field: "retailPrice",
+      field: "retail_price",
       header: "Retail Price",
       filterPlaceholder: "Search by Price",
       customBody: priceBodyTemplateRetailPrice,
@@ -207,7 +207,7 @@ export default function BookAdd() {
   };
 
   const validateRow = (book: BookWithDBTag) => {
-    return book.retailPrice > 0 && book.genres;
+    return book.retail_price > 0 && book.genres;
   };
 
   const onFinalSubmit = (event: FormEvent<HTMLFormElement>): void => {

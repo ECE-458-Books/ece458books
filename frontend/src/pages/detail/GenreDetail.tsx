@@ -63,7 +63,7 @@ export default function GenreDetail() {
         <div className="col-5">
           <div className="py-5">
             <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
-              Modify Genre
+              Genre Details
             </h1>
           </div>
           <form onSubmit={onSubmit}>
@@ -72,8 +72,8 @@ export default function GenreDetail() {
               <ToggleButton
                 id="modifyGenreToggle"
                 name="modifyGenreToggle"
-                onLabel="Modifiable"
-                offLabel="Modify"
+                onLabel="Read Only"
+                offLabel="Edit"
                 onIcon="pi pi-check"
                 offIcon="pi pi-times"
                 checked={isModifiable}
@@ -84,7 +84,7 @@ export default function GenreDetail() {
             <div className="flex flex-row justify-content-center card-container col-12">
               <div className="pt-2 pr-2">
                 <label
-                  className="text-xl p-component text-teal-800 p-text-secondary"
+                  className="text-xl p-component text-teal-900 p-text-secondary"
                   htmlFor="genre"
                 >
                   Genre
@@ -112,7 +112,7 @@ export default function GenreDetail() {
                 }}
                 buttonClickFunc={() => setIsConfirmationPopupVisible(true)}
                 disabled={!isModifiable}
-                label={"Update"}
+                label={"Submit"}
                 className="p-button-success p-button-raised"
               />
             </div>

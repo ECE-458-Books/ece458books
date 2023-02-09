@@ -4,6 +4,7 @@ import {
   DataTable,
   DataTableFilterEvent,
   DataTablePageEvent,
+  DataTableRowClickEvent,
   DataTableSortEvent,
 } from "primereact/datatable";
 import { Column } from "primereact/column";
@@ -199,7 +200,7 @@ export default function BookList() {
         <Button
           icon="pi pi-pencil"
           className="p-button-rounded p-button-success mr-2"
-          onClick={() => editBook(rowData)}
+          onClick={() => toDetailsPage(rowData, true)}
         />
         <Button
           icon="pi pi-trash"
@@ -212,11 +213,11 @@ export default function BookList() {
   };
 
   // Callback functions for edit/delete buttons
-  const editBook = (book: Book) => {
+  const toDetailsPage = (book: Book, isModifiable: boolean) => {
     logger.debug("Edit Book Clicked", book);
     const detailState: BookDetailState = {
       book: book,
-      isModifiable: false,
+      isModifiable: isModifiable,
       isConfirmationPopupVisible: false,
     };
 
@@ -345,12 +346,12 @@ export default function BookList() {
   const onFilter = (event: DataTableFilterEvent) => {
     logger.debug("Filter Applied", event);
     setLoading(true);
-    setFilterParams(event);
     setPageParams({
       first: 0,
       rows: NUM_ROWS,
       page: pageParams.page,
     });
+    setFilterParams(event);
   };
 
   // Called when any of the columns are selected to be sorted
@@ -366,6 +367,15 @@ export default function BookList() {
     logger.debug("Page Applied", event);
     setLoading(true);
     setPageParams(event);
+  };
+
+  const onRowClick = (event: DataTableRowClickEvent) => {
+    // I couldn't figure out a better way to do this...
+    // It takes the current index as the table knows it and calculates the actual index in the books array
+    const index = event.index - NUM_ROWS * (pageParams.page ?? 0);
+    const book = books[index];
+    logger.debug("Book Row Clicked", book);
+    toDetailsPage(book, false);
   };
 
   // Call endpoint on page load whenever any of these variables change
@@ -423,6 +433,10 @@ export default function BookList() {
         responsiveLayout="scroll"
         filterDisplay="row"
         loading={loading}
+        // Row clicking
+        rowHover
+        selectionMode={"single"}
+        onRowClick={(event) => onRowClick(event)}
         // Paginator
         paginator
         first={pageParams.first}

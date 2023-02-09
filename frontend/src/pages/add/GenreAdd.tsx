@@ -43,14 +43,14 @@ export default function GenreAdd() {
       <div className="col-5">
         <div className="py-5">
           <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
-            Add Genre Page
+            Add Genre
           </h1>
         </div>
         <form onSubmit={onSubmit}>
           <Toast ref={toast} />
           <div className="py-2">
             <label
-              className="text-xl p-component text-teal-800 p-text-secondary"
+              className="text-xl p-component text-teal-900 p-text-secondary"
               htmlFor="addgenre"
             >
               Add Genre

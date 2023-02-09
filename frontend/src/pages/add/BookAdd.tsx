@@ -171,7 +171,7 @@ export default function BookAdd() {
       filterPlaceholder: "Search by Price",
       customBody: priceBodyTemplateRetailPrice,
       cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
-      cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
+      cellEditor: (options: ColumnEditorOptions) => priceEditor(options),
     },
   ];
 
@@ -261,45 +261,79 @@ export default function BookAdd() {
   //Second one is the submission of the added books and their modified fields
 
   return (
-    <div>
-      <form onSubmit={onISBNInitialSubmit}>
-        <Toast ref={toast} />
-        <label htmlFor="addbook">Add Books (ISBN'S)</label>
-        <InputTextarea
-          id="addbook"
-          name="addbook"
-          value={textBox}
-          onChange={(e: FormEvent<HTMLTextAreaElement>) =>
-            setTextBox(e.currentTarget.value)
-          }
-          rows={5}
-          cols={30}
-        />
-        <Button label="Clear" type="button" onClick={() => setTextBox("")} />
-        <Button
-          id="addbooksubmission"
-          name="addbooksubmission"
-          label="Submit"
-          type="submit"
-        />
-      </form>
-      <label htmlFor="addbookcompletion">Finish Book Addition</label>
-      <form onSubmit={onFinalSubmit}>
-        <DataTable
-          value={books}
-          editMode="cell"
-          className="editable-cells-table"
-          responsiveLayout="scroll"
-        >
-          {columns}
-        </DataTable>
-        <Button
-          id="confirmbooks"
-          name="confirmbooks"
-          label="Confirm Addition"
-          type="submit"
-        />
-      </form>
+    <div className="grid flex justify-content-center">
+      <div className="col-11">
+        <div className="py-1">
+          <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
+            Add Books
+          </h1>
+        </div>
+        <form onSubmit={onISBNInitialSubmit}>
+          <Toast ref={toast} />
+          <div className="justify content center col-6 col-offset-3">
+            <div className="py-2">
+              <label
+                className="text-xl p-component text-teal-900 p-text-secondary"
+                htmlFor="addbook"
+              >
+                Enter ISBN-13 values, separated by comma or space:
+              </label>
+            </div>
+            <InputTextarea
+              id="addbook"
+              name="addbook"
+              value={textBox}
+              onChange={(e: FormEvent<HTMLTextAreaElement>) =>
+                setTextBox(e.currentTarget.value)
+              }
+              rows={5}
+              cols={30}
+              className="text-base text-color surface-overlay p-2 border-1 border-solid surface-border border-round appearance-none outline-none focus:border-primary w-full"
+            />
+            <div className="flex flex-row justify-content-between card-container col-12">
+              <Button
+                label="Clear"
+                type="button"
+                onClick={() => setTextBox("")}
+                className="p-button-info"
+              />
+              <Button
+                id="addbooksubmission"
+                name="addbooksubmission"
+                label="Lookup"
+                type="submit"
+                className="p-button-success p-button-raised"
+              />
+            </div>
+          </div>
+        </form>
+        <div className="pt-3">
+          <label
+            htmlFor="addbookcompletion"
+            className="p-component p-text-secondary text-3xl text-center text-900 color: var(--surface-800);"
+          >
+            Edit Fields
+          </label>
+        </div>
+        <form onSubmit={onFinalSubmit}>
+          <DataTable
+            value={books}
+            editMode="cell"
+            className="editable-cells-table py-5"
+            responsiveLayout="scroll"
+          >
+            {columns}
+          </DataTable>
+          <div className="col-12 col-offset-5">
+            <Button
+              id="confirmbooks"
+              name="confirmbooks"
+              label="Submit"
+              type="submit"
+            />
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

@@ -102,18 +102,25 @@ export default function BookDetail() {
   });
 
   return (
-    <div>
-      <h1 className="p-component p-text-secondary">Book Details</h1>
-      <form onSubmit={formik.handleSubmit}>
+    <div className="grid flex justify-content-center">
+      <div className="col-12">
+        <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
+          Book Details
+        </h1>
+      </div>
+      <form onSubmit={formik.handleSubmit} className="col-12">
         <Toast ref={toast} />
-        <div className="card">
-          <div className="flex flex-column card-container">
-            <label className="p-component p-text-secondary" htmlFor="title">
+        <div className="grid col-offset-1 col-11 justify-content-center">
+          <div className="col-4 card justify-content-center">
+            <label
+              className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
+              htmlFor="title"
+            >
               Title
             </label>
             <InputText
               id="title"
-              className="p-inputtext-sm flex align-items-center justify-content-center w-3 pb-2"
+              className="w-8"
               name="title"
               value={title}
               disabled={true}
@@ -121,13 +128,17 @@ export default function BookDetail() {
                 setTitle(event.currentTarget.value);
               }}
             />
-
-            <label className="p-component p-text-secondary" htmlFor="authors">
+          </div>
+          <div className="col-4">
+            <label
+              className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
+              htmlFor="authors"
+            >
               Authors
             </label>
             <InputText
               id="authors"
-              className="p-inputtext-sm flex align-items-center justify-content-center w-3"
+              className="w-8"
               name="authors"
               value={authors}
               disabled={true}
@@ -135,13 +146,17 @@ export default function BookDetail() {
                 setAuthors(event.currentTarget.value);
               }}
             />
-
-            <label className="p-component p-text-secondary" htmlFor="isbn13">
+          </div>
+          <div className="col-4">
+            <label
+              className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
+              htmlFor="isbn13"
+            >
               ISBN13
             </label>
             <InputNumber
               id="isbn13"
-              className="p-inputtext-sm flex align-items-center justify-content-center w-3"
+              className="w-6"
               name="isbn13"
               value={isbn13}
               disabled={true}
@@ -149,13 +164,19 @@ export default function BookDetail() {
                 setISBN13(e.value ?? 0)
               }
             />
-
-            <label className="p-component p-text-secondary" htmlFor="isbn10">
+          </div>
+        </div>
+        <div className="grid col-offset-1 col-11 justify-content-center">
+          <div className="col-4">
+            <label
+              className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
+              htmlFor="isbn10"
+            >
               ISBN10
             </label>
             <InputNumber
               id="isbn10"
-              className="p-inputtext-sm flex align-items-center justify-content-center w-3"
+              className="w-6"
               name="isbn10"
               value={isbn10}
               disabled={true}
@@ -163,13 +184,17 @@ export default function BookDetail() {
                 setISBN10(e.value ?? 0)
               }
             />
-
-            <label className="p-component p-text-secondary" htmlFor="publisher">
+          </div>
+          <div className="col-4">
+            <label
+              className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
+              htmlFor="publisher"
+            >
               Publisher
             </label>
             <InputText
               id="publisher"
-              className="p-inputtext-sm flex align-items-center justify-content-center w-3"
+              className="w-8"
               name="publisher"
               value={publisher}
               disabled={true}
@@ -177,13 +202,17 @@ export default function BookDetail() {
                 setPublisher(event.currentTarget.value);
               }}
             />
-
-            <label className="p-component p-text-secondary" htmlFor="pubYear">
+          </div>
+          <div className="col-4">
+            <label
+              className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
+              htmlFor="pubYear"
+            >
               Publication Year
             </label>
             <InputNumber
               id="pubYear"
-              className="p-inputtext-sm flex align-items-center justify-content-center w-3"
+              className="w-4"
               name="pubYear"
               value={pubYear}
               disabled={true}
@@ -191,13 +220,19 @@ export default function BookDetail() {
                 setPubYear(e.value ?? 0)
               }
             />
-
-            <label className="p-component p-text-secondary" htmlFor="pageCount">
+          </div>
+        </div>
+        <div className="grid col-offset-1 col-11 justify-content-center">
+          <div className="col-4">
+            <label
+              className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
+              htmlFor="pageCount"
+            >
               Page Count
             </label>
             <InputNumber
               id="pageCount"
-              className="p-inputtext-sm flex align-items-center justify-content-center w-3"
+              className="w-4"
               name="pageCount"
               value={pageCount}
               disabled={!isModifiable}
@@ -205,13 +240,17 @@ export default function BookDetail() {
                 setPageCount(e.value ?? 0)
               }
             />
-
-            <label className="p-component p-text-secondary" htmlFor="width">
-              Dimensions
+          </div>
+          <div className="col-4">
+            <label
+              className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
+              htmlFor="width"
+            >
+              Width
             </label>
             <InputNumber
               id="width"
-              className="p-inputtext-sm flex align-items-center justify-content-center w-3"
+              className="w-4"
               name="width"
               value={width}
               disabled={!isModifiable}
@@ -219,13 +258,17 @@ export default function BookDetail() {
                 setWidth(e.value ?? 0)
               }
             />
-
-            <label className="p-component p-text-secondary" htmlFor="height">
-              Dimensions
+          </div>
+          <div className="col-4">
+            <label
+              className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
+              htmlFor="height"
+            >
+              Height
             </label>
             <InputNumber
               id="height"
-              className="p-inputtext-sm flex align-items-center justify-content-center w-3"
+              className="w-4"
               name="height"
               value={height}
               disabled={!isModifiable}
@@ -233,13 +276,19 @@ export default function BookDetail() {
                 setHeight(e.value ?? 0)
               }
             />
-
-            <label className="p-component p-text-secondary" htmlFor="thickness">
+          </div>
+        </div>
+        <div className="grid col-offset-1 col-11 justify-content-center">
+          <div className="col-4">
+            <label
+              className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
+              htmlFor="thickness"
+            >
               Dimensions
             </label>
             <InputNumber
               id="thickness"
-              className="p-inputtext-sm flex align-items-center justify-content-center w-3"
+              className="w-4"
               name="thickness"
               value={thickness}
               disabled={!isModifiable}
@@ -247,16 +296,17 @@ export default function BookDetail() {
                 setThickness(e.value ?? 0)
               }
             />
-
+          </div>
+          <div className="col-4">
             <label
-              className="p-component p-text-secondary"
+              className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
               htmlFor="retail_price"
             >
               Retail Price
             </label>
             <InputNumber
               id="retail_price"
-              className="p-inputtext-sm flex align-items-center justify-content-center w-3"
+              className="w-4"
               name="retail_price"
               value={price}
               disabled={!isModifiable}
@@ -264,13 +314,17 @@ export default function BookDetail() {
                 setPrice(e.value ?? 0)
               }
             />
-
-            <label className="p-component p-text-secondary" htmlFor="genre">
+          </div>
+          <div className="col-4">
+            <label
+              className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
+              htmlFor="genre"
+            >
               Genre
             </label>
             <InputText
               id="genre"
-              className="p-inputtext-sm flex align-items-center justify-content-center w-3"
+              className="w-8"
               name="genre"
               value={genre}
               disabled={!isModifiable}
@@ -278,34 +332,35 @@ export default function BookDetail() {
                 setGenre(event.currentTarget.value);
               }}
             />
-
-            <ToggleButton
-              className="flex align-items-center justify-content-center w-1"
-              id="modifyBookToggle"
-              name="modifyBookToggle"
-              onLabel="Stop Edit"
-              offLabel="Edit"
-              onIcon="pi pi-check"
-              offIcon="pi pi-times"
-              checked={isModifiable}
-              onChange={() => setIsModifiable(!isModifiable)}
-            />
-
-            <ConfirmButton
-              isVisible={isConfirmationPopupVisible}
-              hideFunc={() => setIsConfirmationPopupVisible(false)}
-              acceptFunc={formik.handleSubmit}
-              rejectFunc={() => {
-                console.log("reject");
-              }}
-              buttonClickFunc={() => {
-                setIsConfirmationPopupVisible(true);
-              }}
-              disabled={!isModifiable}
-              label={"Submit"}
-              className=""
-            />
           </div>
+        </div>
+        <div className="grid col-12 justify-content-evenly">
+          <ToggleButton
+            className=""
+            id="modifyBookToggle"
+            name="modifyBookToggle"
+            onLabel="Stop Edit"
+            offLabel="Edit"
+            onIcon="pi pi-check"
+            offIcon="pi pi-times"
+            checked={isModifiable}
+            onChange={() => setIsModifiable(!isModifiable)}
+          />
+
+          <ConfirmButton
+            isVisible={isConfirmationPopupVisible}
+            hideFunc={() => setIsConfirmationPopupVisible(false)}
+            acceptFunc={formik.handleSubmit}
+            rejectFunc={() => {
+              console.log("reject");
+            }}
+            buttonClickFunc={() => {
+              setIsConfirmationPopupVisible(true);
+            }}
+            disabled={!isModifiable}
+            label={"Update"}
+            className="p-button-success p-button-raised"
+          />
         </div>
         {/* Maybe be needed in case the confrim button using the popup breaks */}
         {/* <Button disabled={!this.state.isModifiable} label="submit" type="submit" /> */}

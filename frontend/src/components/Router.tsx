@@ -16,6 +16,7 @@ import GenreDetail from "../pages/detail/GenreDetail";
 import VendorDetail from "../pages/detail/VendorDetail";
 import PurchaseOrderList from "../pages/list/POList";
 import PasswordChangePage from "../pages/auth/PasswordChange";
+import SalesReportPage from "../pages/list/SalesReport";
 
 const WithNavBar = () => {
   return (
@@ -69,6 +70,7 @@ export default function Router() {
         <Route path="vendors/add" element={<VendorAdd />} />
         <Route path="vendors/detail" element={<VendorDetail />} />
         <Route path="change-password" element={<PasswordChangePage />} />
+        <Route path="sales-report" element={<SalesReportPage />} />
       </Route>
     </Routes>
   );

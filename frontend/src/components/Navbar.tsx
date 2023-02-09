@@ -92,6 +92,11 @@ function NavigationBar() {
       ],
     },
     {
+      label: "Sales Report",
+      icon: "pi pi-dollar",
+      command: () => navigate("/sales-report"),
+    },
+    {
       label: "Settings",
       icon: "pi pi-fw pi-wrench",
       items: [
@@ -104,7 +109,16 @@ function NavigationBar() {
     },
   ];
 
-  return <Menubar model={items} />;
+  const start = (
+    <img
+      alt="logo"
+      src={require("../ImaginarySoftwareLogo.jpeg")}
+      height="50"
+      className="mr-2 px-3"
+    ></img>
+  );
+
+  return <Menubar model={items} start={start} />;
 }
 
 export default NavigationBar;

@@ -22,6 +22,11 @@ interface APIVendor {
   num_purchase_orders: number;
 }
 
+export interface ModifyVendorReq {
+  id: number;
+  name: string;
+}
+
 export interface GetVendorsResp {
   vendors: Vendor[];
   numberOfVendors: number;
@@ -89,7 +94,7 @@ export const VENDORS_API = {
     });
   },
 
-  modifyVendor: async function (vendor: Vendor) {
+  modifyVendor: async function (vendor: ModifyVendorReq) {
     const vendorParams = {
       id: vendor.id,
       name: vendor.name,

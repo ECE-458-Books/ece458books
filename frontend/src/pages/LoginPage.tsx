@@ -1,11 +1,11 @@
 import { createRef, FormEvent, useState } from "react";
 import axios from "axios";
-import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 import { Messages } from "primereact/messages";
 import { useNavigate } from "react-router-dom";
 import { API } from "../apis/Config";
 import { AUTH_API } from "../apis/AuthAPI";
+import { Password } from "primereact/password";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -58,14 +58,30 @@ export default function LoginPage() {
         href="https://unpkg.com/primeflex@3.1.2/primeflex.css"
       ></link>
       <div className="col-5">
-        <div className="py-5">
+        <div className="py-5 col-12">
           <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
             Login Page
           </h1>
         </div>
+        <div className="col-6 col-offset-5">
+          <img
+            alt="logo"
+            src={require("../ImaginarySoftwareLogo.jpeg")}
+            height="200"
+            className="mr-2"
+          ></img>
+        </div>
+        <h1 className="p-component p-text-secondary text-xl text-center text-900 color: var(--surface-800);">
+          Imaginary Software
+        </h1>
         <form onSubmit={onSubmit}>
           <div className="flex flex-row justify-content-center card-container col-12">
-            <InputText value={password} onChange={onChange} />
+            <Password
+              value={password}
+              onChange={onChange}
+              toggleMask
+              feedback={false}
+            />
           </div>
           <div className="flex flex-row justify-content-center card-container col-12">
             <Button type="submit" label="Submit" aria-label="Submit" />

@@ -3,7 +3,7 @@ import { InputText } from "primereact/inputtext";
 import { ToggleButton } from "primereact/togglebutton";
 import ConfirmButton from "../../components/ConfirmButton";
 import { useLocation } from "react-router-dom";
-import { VENDORS_API } from "../../apis/VendorsAPI";
+import { ModifyVendorReq, VENDORS_API } from "../../apis/VendorsAPI";
 import { Vendor } from "../list/VendorList";
 import { InputNumber } from "primereact/inputnumber";
 import { logger } from "../../util/Logger";
@@ -42,7 +42,7 @@ export default function VendorDetail() {
   };
 
   const onSubmit = (): void => {
-    const modifiedVendor: Vendor = { id: id, name: vendor };
+    const modifiedVendor: ModifyVendorReq = { id: id, name: vendor };
     logger.debug("Edit Vendor Submitted", modifiedVendor);
     VENDORS_API.modifyVendor(modifiedVendor).then((response) => {
       if (response.status == 200) {
@@ -63,7 +63,7 @@ export default function VendorDetail() {
         ></link>
         <div className="col-5">
           <div className="py-5">
-            <h1 className="text-center text-900 color: var(--surface-800);">
+            <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
               Modify Vendor
             </h1>
           </div>

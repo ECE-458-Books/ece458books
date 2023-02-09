@@ -73,6 +73,7 @@ export default function BookAdd() {
         placeholder={"Select Genre"}
         showClear
         virtualScrollerOptions={{ itemSize: 35 }}
+        style={{ position: "absolute", zIndex: 9999 }}
       />
     );
   };

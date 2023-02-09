@@ -73,8 +73,8 @@ export default function VendorDetail() {
               <ToggleButton
                 id="modifyVendorToggle"
                 name="modifyVendorToggle"
-                onLabel="Modifiable"
-                offLabel="Modify"
+                onLabel="Editable"
+                offLabel="Edit"
                 onIcon="pi pi-check"
                 offIcon="pi pi-times"
                 checked={isModifiable}

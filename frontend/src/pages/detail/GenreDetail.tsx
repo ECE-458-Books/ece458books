@@ -72,7 +72,7 @@ export default function GenreDetail() {
               <ToggleButton
                 id="modifyGenreToggle"
                 name="modifyGenreToggle"
-                onLabel="Read Only"
+                onLabel="Editable"
                 offLabel="Edit"
                 onIcon="pi pi-check"
                 offIcon="pi pi-times"

@@ -98,7 +98,7 @@ export default function SRDetail() {
     { field: "book", header: "ID", filterPlaceholder: "ID", hidden: true },
     {
       field: "book_title",
-      header: "Books",
+      header: "Book",
       filterPlaceholder: "book",
       cellEditor: (options: ColumnEditorOptions) =>
         booksDropDownEditor(options),
@@ -258,6 +258,7 @@ export default function SRDetail() {
         }}
         showClear
         virtualScrollerOptions={{ itemSize: 35 }}
+        style={{ position: "absolute", zIndex: 9999 }}
       />
     );
   };
@@ -338,7 +339,7 @@ export default function SRDetail() {
                 <ToggleButton
                   id="modifySRToggle"
                   name="modifySRToggle"
-                  onLabel="Read Only"
+                  onLabel="Editable"
                   offLabel="Edit"
                   onIcon="pi pi-check"
                   offIcon="pi pi-times"

@@ -134,7 +134,11 @@ export default function BookList() {
       customFilter: genreFilter,
       sortable: false,
     },
-    { field: "isbn_13", header: "ISBN", filterPlaceholder: "Search by ISBN" },
+    {
+      field: "isbn_13",
+      header: "ISBN 13",
+      filterPlaceholder: "Search by ISBN",
+    },
     {
       field: "isbn10",
       header: "ISBN",

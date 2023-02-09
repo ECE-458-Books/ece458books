@@ -339,7 +339,7 @@ export default function BookDetail() {
             className=""
             id="modifyBookToggle"
             name="modifyBookToggle"
-            onLabel="Stop Edit"
+            onLabel="Editable"
             offLabel="Edit"
             onIcon="pi pi-check"
             offIcon="pi pi-times"

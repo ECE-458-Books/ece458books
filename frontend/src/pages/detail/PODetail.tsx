@@ -113,10 +113,11 @@ export default function PODetail() {
       field: "book_id",
       header: "ID",
       filterPlaceholder: "ID",
+      hidden: true,
     },
     {
       field: "book_title",
-      header: "Books",
+      header: "Book",
       filterPlaceholder: "Books",
       cellEditor: (options: ColumnEditorOptions) =>
         booksDropDownEditor(options),
@@ -313,7 +314,7 @@ export default function PODetail() {
           }}
           buttonClickFunc={() => setIsConfirmationPopupVisible(true)}
           disabled={!isModifiable}
-          label={"Update"}
+          label={"Submit"}
           className="p-button-success p-button-raised"
         />
       </React.Fragment>
@@ -333,6 +334,7 @@ export default function PODetail() {
         }}
         showClear
         virtualScrollerOptions={{ itemSize: 35 }}
+        style={{ position: "absolute", zIndex: 9999 }}
       />
     );
   };
@@ -350,6 +352,7 @@ export default function PODetail() {
         editor={col.cellEditor}
         cellEditValidator={col.cellEditValidator}
         onCellEditComplete={onCellEditComplete}
+        hidden={col.hidden}
       />
     );
   });
@@ -380,7 +383,7 @@ export default function PODetail() {
                 <ToggleButton
                   id="modifyPOToggle"
                   name="modifyPOToggle"
-                  onLabel="Read Only"
+                  onLabel="Editable"
                   offLabel="Edit"
                   onIcon="pi pi-check"
                   offIcon="pi pi-times"

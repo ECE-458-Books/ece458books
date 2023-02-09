@@ -1,6 +1,9 @@
 from rest_framework import serializers
-from books.models import Book
+from rest_framework.exceptions import APIException
+
 from .models import Purchase, PurchaseOrder
+
+from books.models import Book
 from vendors.models import Vendor
 from vendors.serializers import VendorSerializer
 
@@ -54,6 +57,16 @@ class PurchaseOrderSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         purchases_data = validated_data.pop('purchases')
+
+        # Sanity check if there exists at least one sale in PO
+        if(len(purchases_data) < 1):
+            raise APIException({
+                "error": {
+                    "query": "PO CREATE",
+                    "msg" : "There must be at least one order in Purchase Orders."
+                }
+            })
+
         purchase_order = PurchaseOrder.objects.create(**validated_data)
         for purchase_data in purchases_data:
             Purchase.objects.create(purchase_order=purchase_order, **purchase_data)
@@ -65,6 +78,16 @@ class PurchaseOrderSerializer(serializers.ModelSerializer):
 
         existing_purchases = Purchase.objects.filter(purchase_order_id=instance.id)
         existing_purchases_ids = set([purchase.id for purchase in existing_purchases])
+
+        # Sanity check if there exists at least one sale in PO
+        if(len(purchases_update_data) < 1):
+            raise APIException({
+                "error": {
+                    "query": "PO MODIFY",
+                    "msg" : "There must be at least one order in Purchase Orders."
+                }
+            })
+
         for purchase_data in purchases_update_data:
             purchase_id = purchase_data.get('id', None)
             if purchase_id:  # Purchase already exists

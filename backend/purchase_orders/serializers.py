@@ -90,7 +90,6 @@ class PurchaseOrderSerializer(serializers.ModelSerializer):
     
     def update(self, instance, validated_data):
         purchases_update_data = validated_data.pop('purchases')
-
         existing_purchases = Purchase.objects.filter(purchase_order_id=instance.id)
         existing_purchases_ids = set([purchase.id for purchase in existing_purchases])
 
@@ -109,30 +108,48 @@ class PurchaseOrderSerializer(serializers.ModelSerializer):
         # Case 3. Deleting previous purchase orders -> This can lead to stock to go below zero so check.
 
         purchases_to_delete_ids = existing_purchases_ids.copy()
+        books_stock_change = {}
         for purchase_data in purchases_update_data:
             purchase_id = purchase_data.get('id', None)
             if purchase_id: # Purchase already exists
-                purchases_to_delete_ids.discard(purchase_id)
                 # Check if can replace old purchase with new purchase and still have positive book stock
-                new_quantity = purchase_data['quantity']
-                old_quantity = Purchase.objects.get(id=purchase_id, purchase_order=instance).quantity
-                curr_book_stock = purchase_data.get('book').stock
-                if (curr_book_stock + (new_quantity - old_quantity) < 0): # problematic
-                    raise APIException("Cannot do update because would cause a book stock to be negative.")
+                # Two cases
+                # 1. Book doesn't change
+                update_purchase_book = purchase_data['book']
+                prev_purchase_book = Purchase.objects.get(id=purchase_data['id']).book
+                if (prev_purchase_book.id == update_purchase_book.id):
+                    purchases_to_delete_ids.discard(purchase_id)
+                    new_quantity = purchase_data['quantity']
+                    old_quantity = Purchase.objects.get(id=purchase_id, purchase_order=instance).quantity
+                    curr_book_stock = purchase_data.get('book').stock
+                    books_stock_change[update_purchase_book.id] = new_quantity - old_quantity
+                    # if (curr_book_stock + (new_quantity - old_quantity) < 0): # problematic
+                    #     raise APIException("Cannot do update because would cause a book stock to be negative.")
+                else: # book does change, so just treat purchase as deletion for calculating stock, thus don't remove it from purchases_to_delete_ids
+                    # print(f'{purchase_id}, should calculate as delete bcz book change')
+                    books_stock_change[purchase_data['book'].id] = books_stock_change.get(purchase_data['book'].id, 0) + purchase_data['quantity']
+                    pass
+                # print(purchase_data)
+                # print(Purchase.objects.get(id=purchase_data['id']).book)
             else: # Must create new purchase order, which will never cause stock to go below zero
-                pass
-
+                books_stock_change[purchase_data['book'].id] = books_stock_change.get(purchase_data['book'].id, 0) + purchase_data['quantity']
         for purchase_to_delete_id in purchases_to_delete_ids:
             purchase_to_delete = Purchase.objects.get(id=purchase_to_delete_id)
             book_quantity_loss = purchase_to_delete.quantity
             book_losing_stock = purchase_to_delete.book
-            if (book_losing_stock.stock - book_quantity_loss < 0): # problematic
+            books_stock_change[book_losing_stock.id] = books_stock_change.get(book_losing_stock.id, 0) - book_quantity_loss
+            # if (book_losing_stock.stock - book_quantity_loss < 0): # problematic
+            #     raise APIException("Cannot do update because would cause a book stock to be negative.")
+        print(books_stock_change)
+        # Now check if these would create negative book inventory
+        for book_id, stock_diff in books_stock_change.items():
+            if(Book.objects.get(id=book_id).stock + stock_diff < 0): # would cause book stock to be negative
                 raise APIException("Cannot do update because would cause a book stock to be negative.")
 
         # purchase_book_quantities = Purchase.objects.filter(purchase_order=instance.id).values('book').annotate(num_books=Sum('quantity')).values('book', 'num_books')
-        
+        # print(purchase_book_quantities)
+        # If this point is reached, the modify in aggregate will not cause books stocks to fall below zero, so do update.
 
-        return ""
         for purchase_data in purchases_update_data:
             purchase_id = purchase_data.get('id', None)
             if purchase_id:  # Purchase already exists
@@ -140,10 +157,15 @@ class PurchaseOrderSerializer(serializers.ModelSerializer):
                 existing_purchases_ids.remove(purchase_id)
             else:  # Purchase doesn't exist, so create it
                 Purchase.objects.create(purchase_order=instance, **purchase_data)
-
-                # Add to stock of Book
-                purchase_data.get('book').stock += purchase_data.get('quantity')
-                purchase_data.get('book').save()
+            
+        for old_purchase_id in existing_purchases_ids:
+            old_purchase = Purchase.objects.get(id=old_purchase_id)
+            old_purchase.delete()
+        
+        for book_id, stock_diff in books_stock_change.items(): # update stocks
+            book_to_update = Book.objects.get(id=book_id)
+            book_to_update.stock += stock_diff
+            book_to_update.save()
 
         # Remove all old sales not included in updated sales list
 
@@ -151,25 +173,21 @@ class PurchaseOrderSerializer(serializers.ModelSerializer):
         # Each purchase object has a quantity of the book associated.
         # We need to transform this to a list of (book, quantity) tuple to check if deleting the whole thing is fine
 
-        purchase_book_quantities = Purchase.objects.filter(purchase_order=instance.id).values('book').annotate(num_books=Sum('quantity')).values('book', 'num_books')
-        existing_purchases_ids
-        for purchase_book_quantity in purchase_book_quantities:
-            book_to_remove_purchase = Book.objects.filter(id=purchase_book_quantity['book']).get()
-            if (book_to_remove_purchase.stock < purchase_book_quantity['num_books']):
-                return Response({"error": {
-                    "msg": "Cannot delete purchase order, as doing so would cause book stock to become negative.",
-                    "details": {
-                        "book_id": purchase_book_quantity['book'],
-                        "book_stock": book_to_remove_purchase.stock,
-                        "quantity_request_for_delete": purchase_book_quantity['num_books']
-                    }
-                    } 
-                },
-                status=status.HTTP_403_FORBIDDEN)
-
-        for old_purchase_id in existing_purchases_ids:
-            old_purchase = Purchase.objects.get(id=old_purchase_id)
-            old_purchase.delete()
+        # purchase_book_quantities = Purchase.objects.filter(purchase_order=instance.id).values('book').annotate(num_books=Sum('quantity')).values('book', 'num_books')
+        # existing_purchases_ids
+        # for purchase_book_quantity in purchase_book_quantities:
+        #     book_to_remove_purchase = Book.objects.filter(id=purchase_book_quantity['book']).get()
+        #     if (book_to_remove_purchase.stock < purchase_book_quantity['num_books']):
+        #         return Response({"error": {
+        #             "msg": "Cannot delete purchase order, as doing so would cause book stock to become negative.",
+        #             "details": {
+        #                 "book_id": purchase_book_quantity['book'],
+        #                 "book_stock": book_to_remove_purchase.stock,
+        #                 "quantity_request_for_delete": purchase_book_quantity['num_books']
+        #             }
+        #             } 
+        #         },
+        #         status=status.HTTP_403_FORBIDDEN)
         
         # If this purchase order modify is valid then we update non_nested_fields
         self.update_non_nested_fields(instance, validated_data)

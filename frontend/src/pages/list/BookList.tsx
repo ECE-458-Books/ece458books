@@ -141,10 +141,9 @@ export default function BookList() {
     },
     {
       field: "isbn10",
-      header: "ISBN 10",
+      header: "ISBN",
       filterPlaceholder: "Search by ISBN",
-      sortable: false,
-      filterable: false,
+      hidden: true,
     },
     {
       field: "publisher",
@@ -183,15 +182,13 @@ export default function BookList() {
     },
     {
       field: "retail_price",
-      header: "Retail Price ($)",
+      header: "Retail Price",
       filterPlaceholder: "Search by Price",
-      filterable: false,
     },
     {
       field: "stock",
       header: "Inventory Count",
       filterPlaceholder: "Search by Inventory Count",
-      filterable: false,
     },
   ];
 
@@ -394,13 +391,13 @@ export default function BookList() {
   const toast = useRef<Toast>(null);
 
   const showSuccess = () => {
-    toast.current?.show({ severity: "success", summary: "Book deleted" });
+    toast.current?.show({ severity: "success", summary: "Genre modified" });
   };
 
   const showFailure = () => {
     toast.current?.show({
       severity: "error",
-      summary: "Book could not be modified",
+      summary: "Genre could not be modified",
     });
   };
 
@@ -423,11 +420,8 @@ export default function BookList() {
         // Hiding Fields
         showFilterMenuOptions={false}
         showClearButton={false}
-        showApplyButton={false}
-        showFilterMatchModes={false}
-        showFilterOperator={false}
         // Other
-        style={{ minWidth: "11rem" }}
+        style={{ minWidth: "12rem" }}
         hidden={col.hidden}
       />
     );
@@ -438,7 +432,6 @@ export default function BookList() {
       <Toast ref={toast} />
       <DataTable
         // General Settings
-        showGridlines
         value={books}
         lazy
         responsiveLayout="scroll"
@@ -464,7 +457,7 @@ export default function BookList() {
         filters={filterParams.filters}
       >
         {dynamicColumns}
-        <Column body={editDeleteCellTemplate} style={{ minWidth: "9rem" }} />
+        <Column body={editDeleteCellTemplate} style={{ minWidth: "16rem" }} />
       </DataTable>
       {deletePopupVisible && deletePopup}
     </div>

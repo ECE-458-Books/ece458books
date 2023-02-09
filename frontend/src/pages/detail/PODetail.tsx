@@ -233,7 +233,7 @@ export default function PODetail() {
 
       const purchaseOrder = {
         date: toYYYYMMDDWithDash(date),
-        vendor: vendorID,
+        vendor: vendorMap.get(vendorName),
         purchases: apiPurchases,
       } as APIPOCreate;
 

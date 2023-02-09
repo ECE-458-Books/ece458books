@@ -24,13 +24,22 @@ export default function VendorAdd() {
 
   const onSubmit = (event: FormEvent<HTMLFormElement>): void => {
     logger.debug("Add Vendor Submitted", textBox);
-    VENDORS_API.addVendor(textBox).then((response) => {
-      if (response.status == 201) {
-        showSuccess();
-      } else {
-        showFailure();
-      }
-    });
+    //take string input assigned to variable textBox and parse it based on newline character
+    //into a string array using a regular expression
+    let str: string[] = textBox.split(/\r?\n/);
+    //take the string array -> check for and remove any elements containing only whitespace
+    //or nothing at all
+    str = str.filter((str) => /\S/.test(str));
+    //loop through all elements and do an API submission to add the strings to database
+    for (let i = 0; i < str.length; i++) {
+      VENDORS_API.addVendor(str[i]).then((response) => {
+        if (response.status == 201) {
+          showSuccess();
+        } else {
+          showFailure();
+        }
+      });
+    }
     event.preventDefault();
   };
 
@@ -59,12 +68,13 @@ export default function VendorAdd() {
           <InputTextarea
             id="addvendor"
             name="addvendor"
+            placeholder="Enter Multiple Vendors using Newline breaks"
             value={textBox}
             onChange={(e: FormEvent<HTMLTextAreaElement>) =>
               setTextBox(e.currentTarget.value)
             }
             rows={8}
-            cols={30}
+            cols={40}
             className="text-base text-color surface-overlay p-2 border-1 border-solid surface-border border-round appearance-none outline-none focus:border-primary w-full"
           />
           <div className="flex flex-row justify-content-between card-container col-12">

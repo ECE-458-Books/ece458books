@@ -24,13 +24,22 @@ export default function GenreAdd() {
 
   const onSubmit = (event: FormEvent<HTMLFormElement>): void => {
     logger.debug("Add Genre Submitted", textBox);
-    GENRES_API.addGenres(textBox).then((response) => {
-      if (response.status == 201) {
-        showSuccess();
-      } else {
-        showFailure();
-      }
-    });
+    //take string input assigned to variable textBox and parse it based on newline character
+    //into a string array using a regular expression
+    let str: string[] = textBox.split(/\r?\n/);
+    //take the string array -> check for and remove any elements containing only whitespace
+    //or nothing at all
+    str = str.filter((str) => /\S/.test(str));
+    //loop through all elements and do an API submission to add the strings to database
+    for (let i = 0; i < str.length; i++) {
+      GENRES_API.addGenres(str[i]).then((response) => {
+        if (response.status == 201) {
+          showSuccess();
+        } else {
+          showFailure();
+        }
+      });
+    }
     event.preventDefault();
   };
 
@@ -59,6 +68,7 @@ export default function GenreAdd() {
           <InputTextarea
             id="addgenre"
             name="addgenre"
+            placeholder="Enter Multiple Genres using Newline breaks"
             value={textBox}
             onChange={(e: FormEvent<HTMLTextAreaElement>) =>
               setTextBox(e.currentTarget.value)

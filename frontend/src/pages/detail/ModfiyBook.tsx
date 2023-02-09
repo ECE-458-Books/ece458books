@@ -349,6 +349,7 @@ export default function BookDetail() {
               value={genre}
               options={genreList}
               appendTo={"self"}
+              disabled={!isModifiable}
               onChange={(e) => {
                 setGenre(e.target.value);
               }}

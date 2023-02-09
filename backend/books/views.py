@@ -178,6 +178,8 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
         # At this point we know the book exists in DB
 
         # check if book can be destroyed by inventory count
+        if instance.stock != 0:
+            return Response({"error": f"Cannot delete book with title: {instance.title} and id: {instance.id} because its stock is {instance.stock}. Stock must be 0 to delete a book."})
 
         # If book can be destroyed, we just make the isGhost=True and do not delete in database
         partial = True

@@ -269,7 +269,7 @@ export default function PurchaseOrderList() {
   // The delete popup
   const deletePopup = (
     <DeletePopup
-      deleteItemIdentifier={"this purchase order?"}
+      deleteItemIdentifier={"this purchase order"}
       onConfirm={() => deletePurchaseOrderFinal()}
       setIsVisible={setDeletePopupVisible}
     />

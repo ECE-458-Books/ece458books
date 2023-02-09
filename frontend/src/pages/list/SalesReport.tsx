@@ -69,16 +69,25 @@ export default function SalesReport() {
     useState(false);
 
   const onAPIResponse = (response: GetSalesReportResp) => {
-    setTotalsData([
-      {
-        revenue: response.revenue,
-        cost: response.cost,
-        profit: response.profit,
-      },
-    ]);
-    setDailyData(response.daily_summary);
-    setTopBooksData(response.top_books);
-    showSuccess("Data Successfully Retrieved");
+    if (
+      response.daily_summary[0].date === "Cannot Sell a Book not Purchased" &&
+      response.top_books[0].book_title === "Stop Selling Imaginary Books"
+    ) {
+      showFailure(
+        "Cannot sell a book that has not been purchased. I know we are Imaginary Software, but not that kind of imagination."
+      );
+    } else {
+      setTotalsData([
+        {
+          revenue: response.revenue,
+          cost: response.cost,
+          profit: response.profit,
+        },
+      ]);
+      setDailyData(response.daily_summary);
+      setTopBooksData(response.top_books);
+      showSuccess("Data Successfully Retrieved");
+    }
   };
 
   // Toast is used for showing success/error messages

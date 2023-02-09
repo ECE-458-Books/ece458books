@@ -7,7 +7,8 @@ import {
   DataTableRowClickEvent,
   DataTableSortEvent,
 } from "primereact/datatable";
-import { useEffect, useState } from "react";
+import { Toast } from "primereact/toast";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GetSalesReconciliationsResp, SALES_API } from "../../apis/SalesAPI";
 import DeletePopup from "../../components/DeletePopup";
@@ -145,14 +146,22 @@ export default function SalesReconciliationList() {
       "Delete Sales Reconciliation Finalized",
       selectedDeleteSalesReconciliation
     );
+    setDeletePopupVisible(false);
     SALES_API.deleteSalesReconciliation(
       selectedDeleteSalesReconciliation.id.toString()
-    );
+    ).then((response) => {
+      if (response.status == 204) {
+        showSuccess();
+      } else {
+        showFailure();
+        return;
+      }
+    });
     const _salesReconciliations = salesReconciliations.filter(
       (selectSR) => selectedDeleteSalesReconciliation.id != selectSR.id
     );
     setSalesReconciliations(_salesReconciliations);
-    setDeletePopupVisible(false);
+
     setSelectedDeleteSalesReconciliation(emptySalesReconciliation);
   };
 
@@ -221,11 +230,28 @@ export default function SalesReconciliationList() {
   // The delete popup
   const deletePopup = (
     <DeletePopup
-      deleteItemIdentifier={selectedDeleteSalesReconciliation.id.toString()}
+      deleteItemIdentifier={" this sales reconciliation"}
       onConfirm={() => deleteSalesReconciliationFinal()}
       setIsVisible={setDeletePopupVisible}
     />
   );
+
+  // Toast is used for showing success/error messages
+  const toast = useRef<Toast>(null);
+
+  const showSuccess = () => {
+    toast.current?.show({
+      severity: "success",
+      summary: "Sales reconciliation deleted",
+    });
+  };
+
+  const showFailure = () => {
+    toast.current?.show({
+      severity: "error",
+      summary: "Sales reconciliation not deleted",
+    });
+  };
 
   // Map column objects to actual columns
   const dynamicColumns = COLUMNS.map((col) => {
@@ -255,8 +281,10 @@ export default function SalesReconciliationList() {
 
   return (
     <div className="card pt-5 px-2">
+      <Toast ref={toast} />
       <DataTable
         // General Settings
+        showGridlines
         value={salesReconciliations}
         lazy
         responsiveLayout="scroll"

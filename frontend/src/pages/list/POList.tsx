@@ -270,7 +270,7 @@ export default function PurchaseOrderList() {
   // The delete popup
   const deletePopup = (
     <DeletePopup
-      deleteItemIdentifier={selectedDeletePurchaseOrder.id.toString()}
+      deleteItemIdentifier={"this purchase order"}
       onConfirm={() => deletePurchaseOrderFinal()}
       setIsVisible={setDeletePopupVisible}
     />
@@ -306,6 +306,7 @@ export default function PurchaseOrderList() {
     <div className="card pt-5 px-2">
       <Toast ref={toast} />
       <DataTable
+        showGridlines
         // General Settings
         value={purchaseOrders}
         lazy

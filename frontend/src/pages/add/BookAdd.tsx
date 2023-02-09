@@ -204,7 +204,11 @@ export default function BookAdd() {
   };
 
   const showFailure = (message: string) => {
-    toast.current?.show({ severity: "error", summary: message });
+    toast.current?.show({
+      severity: "error",
+      summary: message,
+      sticky: true,
+    });
   };
 
   const validateRow = (book: BookWithDBTag) => {
@@ -283,7 +287,6 @@ export default function BookAdd() {
             <InputTextarea
               id="addbook"
               name="addbook"
-              placeholder="Add Multiple Books using commas"
               value={textBox}
               onChange={(e: FormEvent<HTMLTextAreaElement>) =>
                 setTextBox(e.currentTarget.value)
@@ -320,6 +323,7 @@ export default function BookAdd() {
         <form onSubmit={onFinalSubmit}>
           <DataTable
             value={books}
+            showGridlines
             editMode="cell"
             className="editable-cells-table py-5"
             responsiveLayout="scroll"

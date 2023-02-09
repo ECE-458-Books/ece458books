@@ -68,7 +68,7 @@ export default function VendorAdd() {
           <InputTextarea
             id="addvendor"
             name="addvendor"
-            placeholder="Enter Multiple Vendors using Newline breaks"
+            placeholder="Enter vendors, separated by newline breaks"
             value={textBox}
             onChange={(e: FormEvent<HTMLTextAreaElement>) =>
               setTextBox(e.currentTarget.value)

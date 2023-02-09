@@ -98,7 +98,7 @@ export default function PODetail() {
     purchase.isNewRow = false;
   }
   const [bookMap, setBookMap] = useState<Map<string, number>>(new Map());
-
+  const [vendorMap, setVendorMap] = useState<Map<string, number>>(new Map());
   const [date, setDate] = useState(detailState.date);
   const [vendorName, setVendorName] = useState(detailState.vendorName);
   const [vendorID, setVendorID] = useState(detailState.vendorID);
@@ -108,7 +108,7 @@ export default function PODetail() {
   const [totalCost, setTotalCost] = useState(detailState.totalCost);
   const [purchaseOrderID, setPurchaseOrderID] = useState(detailState.id);
   const [lineData, setLineData] = useState(emptyProduct);
-  const [vendorsData, setVendorsData] = useState<Vendor[]>();
+  const [vendorNamesList, setVendorNamesList] = useState<string[]>();
   const [bookTitlesList, setBookTitlesList] = useState<string[]>();
   const [isPOAddPage, setisAddPage] = useState(detailState.isAddPage); // If false, this is an edit page
   const [isModifiable, setIsModifiable] = useState(detailState.isModifiable);
@@ -176,7 +176,13 @@ export default function PODetail() {
   // Populate the vendors/book list on page load
   useEffect(() => {
     VENDORS_API.getVendorsNOPaging().then((response) => {
-      return setVendorsData(response.vendors);
+      const tempVendorMap = new Map<string, number>();
+      for (const vendor of response.vendors) {
+        tempVendorMap.set(vendor.name, vendor.id);
+      }
+      setVendorMap(tempVendorMap);
+      setVendorNamesList(response.vendors.map((vendor) => vendor.name));
+      //return setVendorsData(response.vendors);
     });
 
     BOOKS_API.getBooksNOPaging().then((response) => {
@@ -255,7 +261,7 @@ export default function PODetail() {
       const purchaseOrder = {
         id: purchaseOrderID,
         date: toYYYYMMDDWithDash(date),
-        vendor: vendorID,
+        vendor: vendorMap.get(vendorName),
         purchases: apiPurchases,
       } as APIPOModify;
 
@@ -453,15 +459,14 @@ export default function PODetail() {
                   Vendor
                 </label>
                 <Dropdown
-                  value={{ name: vendorName, id: vendorID }}
-                  options={vendorsData}
+                  value={vendorName}
+                  options={vendorNamesList}
                   placeholder="Select a Vendor"
-                  optionLabel="name"
+                  //optionLabel="name"
                   filter
                   disabled={!isModifiable}
                   onChange={(event: DropdownProps): void => {
-                    setVendorName(event.value.name);
-                    setVendorID(event.value.id);
+                    setVendorName(event.value);
                   }}
                   virtualScrollerOptions={{ itemSize: 35 }}
                 />
@@ -475,6 +480,7 @@ export default function PODetail() {
             />
 
             <DataTable
+              showGridlines
               value={purchases}
               className="editable-cells-table"
               responsiveLayout="scroll"

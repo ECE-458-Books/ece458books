@@ -248,6 +248,7 @@ export default function VendorList() {
       <Toast ref={toast} />
       <DataTable
         // General Settings
+        showGridlines
         value={vendors}
         lazy
         responsiveLayout="scroll"

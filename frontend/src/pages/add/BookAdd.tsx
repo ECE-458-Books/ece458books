@@ -282,6 +282,7 @@ export default function BookAdd() {
             <InputTextarea
               id="addbook"
               name="addbook"
+              placeholder="Add Multiple Books using commas"
               value={textBox}
               onChange={(e: FormEvent<HTMLTextAreaElement>) =>
                 setTextBox(e.currentTarget.value)

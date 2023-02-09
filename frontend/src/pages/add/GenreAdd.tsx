@@ -27,7 +27,11 @@ export default function GenreAdd() {
     let str: string[] = textBox.split(/\r?\n/);
     str = str.filter((str) => /\S/.test(str));
     for (let i = 0; i < str.length; i++) {
-      GENRES_API.addGenres(str[i]);
+      GENRES_API.addGenres(str[i]).then((response) => {
+        if (response.status == 201) {
+          showSuccess();
+        }
+      });
     }
     event.preventDefault();
   };
@@ -57,6 +61,7 @@ export default function GenreAdd() {
           <InputTextarea
             id="addgenre"
             name="addgenre"
+            placeholder="Enter Multiple Genres using Newline breaks"
             value={textBox}
             onChange={(e: FormEvent<HTMLTextAreaElement>) =>
               setTextBox(e.currentTarget.value)

@@ -27,7 +27,11 @@ export default function VendorAdd() {
     let str: string[] = textBox.split(/\r?\n/);
     str = str.filter((str) => /\S/.test(str));
     for (let i = 0; i < str.length; i++) {
-      VENDORS_API.addVendor(str[i]);
+      VENDORS_API.addVendor(str[i]).then((response) => {
+        if (response.status == 201) {
+          showSuccess();
+        }
+      });
     }
     event.preventDefault();
   };
@@ -57,6 +61,7 @@ export default function VendorAdd() {
           <InputTextarea
             id="addvendor"
             name="addvendor"
+            placeholder="Enter Multiple Vendors using Newline breaks"
             value={textBox}
             onChange={(e: FormEvent<HTMLTextAreaElement>) =>
               setTextBox(e.currentTarget.value)

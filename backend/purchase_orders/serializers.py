@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
+from django.db.models import Sum
 
 from .models import Purchase, PurchaseOrder
 
@@ -106,8 +107,32 @@ class PurchaseOrderSerializer(serializers.ModelSerializer):
         # Case 1. Purchase already exists so we update the purchase (meaning the equation: stock + (new-origial) should be checked for below 0)
         # Case 2. This is creating a new Purchase Order in which we do not care about stock going below zero.
         # Case 3. Deleting previous purchase orders -> This can lead to stock to go below zero so check.
-        self.validate_purchase_order_update(purchases_update_data)
 
+        purchases_to_delete_ids = existing_purchases_ids.copy()
+        for purchase_data in purchases_update_data:
+            purchase_id = purchase_data.get('id', None)
+            if purchase_id: # Purchase already exists
+                purchases_to_delete_ids.discard(purchase_id)
+                # Check if can replace old purchase with new purchase and still have positive book stock
+                new_quantity = purchase_data['quantity']
+                old_quantity = Purchase.objects.get(id=purchase_id, purchase_order=instance).quantity
+                curr_book_stock = purchase_data.get('book').stock
+                if (curr_book_stock + (new_quantity - old_quantity) < 0): # problematic
+                    raise APIException("Cannot do update because would cause a book stock to be negative.")
+            else: # Must create new purchase order, which will never cause stock to go below zero
+                pass
+
+        for purchase_to_delete_id in purchases_to_delete_ids:
+            purchase_to_delete = Purchase.objects.get(id=purchase_to_delete_id)
+            book_quantity_loss = purchase_to_delete.quantity
+            book_losing_stock = purchase_to_delete.book
+            if (book_losing_stock.stock - book_quantity_loss < 0): # problematic
+                raise APIException("Cannot do update because would cause a book stock to be negative.")
+
+        # purchase_book_quantities = Purchase.objects.filter(purchase_order=instance.id).values('book').annotate(num_books=Sum('quantity')).values('book', 'num_books')
+        
+
+        return ""
         for purchase_data in purchases_update_data:
             purchase_id = purchase_data.get('id', None)
             if purchase_id:  # Purchase already exists

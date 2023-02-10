@@ -3,6 +3,7 @@ services:
   frontend:
     image: frontend-image
     build: ./frontend
+    restart: always
     ports: 
       - 3000:3000
     environment:
@@ -19,5 +20,6 @@ services:
   backend:
     image: backend-image
     build: ./backend
+    restart: always
     ports: 
       - 8000:8000

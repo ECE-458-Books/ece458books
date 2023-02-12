@@ -173,9 +173,10 @@ APPEND_SLASH = False
 # called `INSTALLED_APPS`.
 AUTH_USER_MODEL = 'authapp.User'
 
-CORS_ORIGIN_ALLOW_ALL = False
-CORS_ORIGIN_WHITELIST = [
-    'http://localhost',
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    '^https?://localhost(:8000)?$',
+    '^https?://books-front\.colab\.duke\.edu(:3000)?$' # Matches http,https request from port 3000 or none
 ]
 
 SIMPLE_JWT = {

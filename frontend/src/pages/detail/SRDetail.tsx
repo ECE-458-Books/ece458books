@@ -1,31 +1,28 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ToggleButton } from "primereact/togglebutton";
 import { Calendar, CalendarProps } from "primereact/calendar";
-import { Dropdown, DropdownProps } from "primereact/dropdown";
+import { Dropdown } from "primereact/dropdown";
 import { DataTable } from "primereact/datatable";
 import { Column, ColumnEditorOptions, ColumnEvent } from "primereact/column";
 import { TableColumn } from "../../components/Table";
 import ConfirmButton from "../../components/ConfirmButton";
 import { v4 as uuid } from "uuid";
 import {
-  isPositiveInteger,
   numberEditor,
   priceBodyTemplateSubtotal,
   priceBodyTemplateUnit,
   priceEditor,
-  textEditor,
 } from "../../util/TableCellEditFuncs";
 import { useLocation } from "react-router-dom";
 import { Toolbar } from "primereact/toolbar";
 import { Button } from "primereact/button";
 import {
-  APISRCreate,
-  APISRModify,
+  AddSRReq,
   APISRSaleRow,
+  ModifySRReq,
   SALES_API,
 } from "../../apis/SalesAPI";
 import { BOOKS_API } from "../../apis/BooksAPI";
-import { BooksList } from "./PODetail";
 import { Toast } from "primereact/toast";
 import { toYYYYMMDDWithDash } from "../../util/DateOperations";
 import { InputNumber } from "primereact/inputnumber";
@@ -43,11 +40,11 @@ export interface SRDetailState {
 export interface SRSaleRow {
   isNewRow: boolean;
   id: string;
-  book: number;
   subtotal: number;
-  book_title: string;
+  bookId: number;
+  bookTitle: string;
   quantity: number;
-  unit_retail_price: number;
+  unitRetailPrice: number;
 }
 
 export default function SRDetail() {
@@ -55,10 +52,10 @@ export default function SRDetail() {
     isNewRow: true,
     id: uuid(),
     subtotal: 0,
-    book: 0,
-    book_title: "",
+    bookId: 0,
+    bookTitle: "",
     quantity: 1,
-    unit_retail_price: 0,
+    unitRetailPrice: 0,
   };
 
   const location = useLocation();
@@ -71,11 +68,11 @@ export default function SRDetail() {
       {
         isNewRow: true,
         id: uuid(),
-        book: 0,
+        bookId: 0,
         subtotal: 0,
-        book_title: "",
+        bookTitle: "",
         quantity: 1,
-        unit_retail_price: 0,
+        unitRetailPrice: 0,
       },
     ],
     isAddPage: true,
@@ -156,22 +153,18 @@ export default function SRDetail() {
   useEffect(() => {
     BOOKS_API.getBooksNOPaging().then((response) => {
       const tempBookMap = new Map<string, number>();
-      for (const book of response.books) {
+      for (const book of response) {
         tempBookMap.set(book.title, book.id);
       }
       setBookMap(tempBookMap);
-      setBookTitlesList(response.books.map((book) => book.title));
+      setBookTitlesList(response.map((book) => book.title));
     });
   }, []);
 
   // Validate submission before making API req
   const validateSubmission = (sr: SRSaleRow[]) => {
     for (const sale of sr) {
-      if (
-        !sale.book_title ||
-        !(sale.unit_retail_price >= 0) ||
-        !sale.quantity
-      ) {
+      if (!sale.bookTitle || !(sale.unitRetailPrice >= 0) || !sale.quantity) {
         showFailure("All fields are required");
         return false;
       }
@@ -193,16 +186,16 @@ export default function SRDetail() {
     if (isSRAddPage) {
       const apiSales = sales.map((sale) => {
         return {
-          book: bookMap.get(sale.book_title),
+          book: bookMap.get(sale.bookTitle),
           quantity: sale.quantity,
-          unit_retail_price: sale.unit_retail_price,
+          unit_retail_price: sale.unitRetailPrice,
         } as APISRSaleRow;
       });
 
       const salesReconciliation = {
         date: toYYYYMMDDWithDash(date),
         sales: apiSales,
-      } as APISRCreate;
+      } as AddSRReq;
 
       SALES_API.addSalesReconciliation(salesReconciliation).then((response) => {
         if (response.status == 201) {
@@ -217,9 +210,9 @@ export default function SRDetail() {
       const apiSales = sales.map((sale) => {
         return {
           id: sale.isNewRow ? undefined : sale.id,
-          book: sale.isNewRow ? bookMap.get(sale.book_title) : sale.book,
+          book: sale.isNewRow ? bookMap.get(sale.bookTitle) : sale.bookId,
           quantity: sale.quantity,
-          unit_retail_price: sale.unit_retail_price,
+          unit_retail_price: sale.unitRetailPrice,
         } as APISRSaleRow;
       });
 
@@ -227,7 +220,7 @@ export default function SRDetail() {
         id: salesReconciliationID,
         date: toYYYYMMDDWithDash(date),
         sales: apiSales,
-      } as APISRModify;
+      } as ModifySRReq;
 
       SALES_API.modifySalesReconciliation(salesReconciliation).then(
         (response) => {

@@ -10,7 +10,11 @@ import {
 import { Toast } from "primereact/toast";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { GetSalesReconciliationsResp, SALES_API } from "../../apis/SalesAPI";
+import {
+  APISRSortFieldMap,
+  APItoInternalSRConversion,
+} from "../../apis/Conversions";
+import { GetSRsResp, SALES_API } from "../../apis/SalesAPI";
 import DeletePopup from "../../components/DeletePopup";
 import { TableColumn } from "../../components/Table";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
@@ -22,9 +26,9 @@ export interface SalesReconciliation {
   id: number;
   date: string;
   sales: SRSaleRow[];
-  num_unique_books: number;
-  num_books: number;
-  total_revenue: number;
+  uniqueBooks: number;
+  totalBooks: number;
+  totalRevenue: number;
 }
 
 const COLUMNS: TableColumn[] = [
@@ -35,19 +39,19 @@ const COLUMNS: TableColumn[] = [
     filterable: false,
   },
   {
-    field: "num_unique_books",
+    field: "uniqueBooks",
     header: "Unique Books",
     filterPlaceholder: "Search by Unique Books",
     filterable: false,
   },
   {
-    field: "num_books",
+    field: "totalBooks",
     header: "Total Books",
     filterPlaceholder: "Search by Total Books",
     filterable: false,
   },
   {
-    field: "total_revenue",
+    field: "totalRevenue",
     header: "Total Revenue ($)",
     filterPlaceholder: "Search by Total Revenue",
     filterable: false,
@@ -68,9 +72,9 @@ const emptySalesReconciliation = {
   id: 0,
   date: "",
   sales: [],
-  num_unique_books: 0,
-  num_books: 0,
-  total_revenue: 0,
+  uniqueBooks: 0,
+  totalBooks: 0,
+  totalRevenue: 0,
 };
 
 export default function SalesReconciliationList() {
@@ -123,7 +127,7 @@ export default function SalesReconciliationList() {
     const detailState: SRDetailState = {
       date: new Date(sr.date.replace("-", "/")),
       sales: sr.sales,
-      totalRevenue: sr.total_revenue,
+      totalRevenue: sr.totalRevenue,
       id: sr.id,
       isAddPage: false,
       isModifiable: isModifiable,
@@ -147,9 +151,9 @@ export default function SalesReconciliationList() {
       selectedDeleteSalesReconciliation
     );
     setDeletePopupVisible(false);
-    SALES_API.deleteSalesReconciliation(
-      selectedDeleteSalesReconciliation.id.toString()
-    ).then((response) => {
+    SALES_API.deleteSalesReconciliation({
+      id: selectedDeleteSalesReconciliation.id,
+    }).then((response) => {
       if (response.status == 204) {
         showSuccess();
       } else {
@@ -200,22 +204,24 @@ export default function SalesReconciliationList() {
 
   const callAPI = () => {
     // Invert sort order
-    let sortField = sortParams.sortField;
+    let sortField = APISRSortFieldMap.get(sortParams.sortField) ?? "";
     if (sortParams.sortOrder == -1) {
       sortField = "-".concat(sortField);
     }
 
     SALES_API.getSalesReconciliations({
-      page: pageParams.page ?? 0,
+      page: (pageParams.page ?? 0) + 1,
       page_size: pageParams.rows,
       ordering: sortField,
     }).then((response) => onAPIResponse(response));
   };
 
   // Set state when response to API call is received
-  const onAPIResponse = (response: GetSalesReconciliationsResp) => {
-    setSalesReconciliations(response.salesReconciliations);
-    setNumberOfSalesReconciliations(response.numberOfSalesReconciliations);
+  const onAPIResponse = (response: GetSRsResp) => {
+    setSalesReconciliations(
+      response.results.map((sr) => APItoInternalSRConversion(sr))
+    );
+    setNumberOfSalesReconciliations(response.count);
     setLoading(false);
   };
 

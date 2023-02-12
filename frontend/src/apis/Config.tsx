@@ -37,12 +37,12 @@ API.interceptors.request.use((request) => {
 
 // Every incoming response is logged
 API.interceptors.response.use((response) => {
-  logger.debug("API Response", response);
-  return response;
+  logger.debug("API Response Data", response.data);
+  return Promise.resolve(response.data);
 });
 
 // Every incoming error is logged
 API.interceptors.response.use(undefined, (error) => {
-  logger.error(error);
-  return error;
+  logger.error("API Error", error.response.status, error.response.data);
+  return Promise.reject(error.response);
 });

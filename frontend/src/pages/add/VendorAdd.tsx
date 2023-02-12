@@ -32,7 +32,7 @@ export default function VendorAdd() {
     str = str.filter((str) => /\S/.test(str));
     //loop through all elements and do an API submission to add the strings to database
     for (let i = 0; i < str.length; i++) {
-      VENDORS_API.addVendor(str[i]).then((response) => {
+      VENDORS_API.addVendor({ name: str[i] }).then((response) => {
         if (response.status == 201) {
           showSuccess();
         } else {

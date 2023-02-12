@@ -4,8 +4,6 @@ import { ToggleButton } from "primereact/togglebutton";
 import ConfirmButton from "../../components/ConfirmButton";
 import { useLocation } from "react-router-dom";
 import { ModifyVendorReq, VENDORS_API } from "../../apis/VendorsAPI";
-import { Vendor } from "../list/VendorList";
-import { InputNumber } from "primereact/inputnumber";
 import { logger } from "../../util/Logger";
 import { Toast } from "primereact/toast";
 

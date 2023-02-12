@@ -21,6 +21,10 @@ import { GENRES_API } from "../../apis/GenresAPI";
 import { Toast } from "primereact/toast";
 import React from "react";
 import { Button } from "primereact/button";
+import {
+  APIBookSortFieldMap,
+  APIToInternalBookConversion,
+} from "../../apis/Conversions";
 
 export const NUM_ROWS = 10;
 
@@ -39,7 +43,7 @@ export interface Book {
   title: string;
   author: string;
   genres: string;
-  isbn_13: number;
+  isbn13: number;
   isbn10: number;
   publisher: string;
   publishedYear: number;
@@ -47,7 +51,7 @@ export interface Book {
   width: number;
   height: number;
   thickness: number;
-  retail_price: number;
+  retailPrice: number;
   stock: number;
 }
 
@@ -55,7 +59,7 @@ interface Filters {
   [id: string]: DataTableFilterMetaData;
   title: DataTableFilterMetaData;
   author: DataTableFilterMetaData;
-  isbn_13: DataTableFilterMetaData;
+  isbn13: DataTableFilterMetaData;
   isbn10: DataTableFilterMetaData;
   publisher: DataTableFilterMetaData;
   publishedYear: DataTableFilterMetaData;
@@ -63,7 +67,7 @@ interface Filters {
   width: DataTableFilterMetaData;
   height: DataTableFilterMetaData;
   thickness: DataTableFilterMetaData;
-  retail_price: DataTableFilterMetaData;
+  retailPrice: DataTableFilterMetaData;
 }
 
 export default function BookList() {
@@ -72,7 +76,7 @@ export default function BookList() {
     title: "",
     author: "",
     genres: "",
-    isbn_13: 0,
+    isbn13: 0,
     isbn10: 0,
     publisher: "",
     publishedYear: 0,
@@ -80,7 +84,7 @@ export default function BookList() {
     width: 0,
     height: 0,
     thickness: 0,
-    retail_price: 0,
+    retailPrice: 0,
     stock: 0,
   };
 
@@ -92,11 +96,11 @@ export default function BookList() {
 
   useEffect(() => {
     GENRES_API.getGenres({
-      page: 0,
+      page: 1,
       page_size: 30,
       ordering: "name",
     }).then((response) =>
-      setGenreList(response.genres.map((genre) => genre.name))
+      setGenreList(response.results.map((genre) => genre.name))
     );
   }, []);
 
@@ -135,7 +139,7 @@ export default function BookList() {
       sortable: false,
     },
     {
-      field: "isbn_13",
+      field: "isbn13",
       header: "ISBN 13",
       filterPlaceholder: "Search by ISBN",
     },
@@ -182,7 +186,7 @@ export default function BookList() {
       hidden: true,
     },
     {
-      field: "retail_price",
+      field: "retailPrice",
       header: "Retail Price ($)",
       filterPlaceholder: "Search by Price",
       filterable: false,
@@ -240,7 +244,7 @@ export default function BookList() {
   const deleteBookFinal = () => {
     logger.debug("Delete Book Finalized", selectedDeleteBook);
     setDeletePopupVisible(false);
-    BOOKS_API.deleteBook(selectedDeleteBook.id).then((response) => {
+    BOOKS_API.deleteBook({ id: selectedDeleteBook.id }).then((response) => {
       if (response.status == 204) {
         showSuccess();
       } else {
@@ -289,7 +293,7 @@ export default function BookList() {
       id: { value: "", matchMode: "contains" },
       title: { value: "", matchMode: "contains" },
       author: { value: "", matchMode: "contains" },
-      isbn_13: { value: "", matchMode: "contains" },
+      isbn13: { value: "", matchMode: "contains" },
       isbn10: { value: "", matchMode: "contains" },
       publisher: { value: "", matchMode: "contains" },
       publishedYear: { value: "", matchMode: "contains" },
@@ -297,7 +301,7 @@ export default function BookList() {
       width: { value: "", matchMode: "contains" },
       height: { value: "", matchMode: "contains" },
       thickness: { value: "", matchMode: "contains" },
-      retail_price: { value: "", matchMode: "contains" },
+      retailPrice: { value: "", matchMode: "contains" },
     } as Filters,
   });
 
@@ -318,19 +322,19 @@ export default function BookList() {
     } else if (filterParams.filters.author.value) {
       search_string = filterParams.filters.author.value;
       author_only = true;
-    } else if (filterParams.filters.isbn_13.value) {
-      search_string = filterParams.filters.isbn_13.value ?? "";
+    } else if (filterParams.filters.isbn13.value) {
+      search_string = filterParams.filters.isbn13.value ?? "";
       isbn_only = true;
     }
 
     // Invert sort order
-    let sortField = sortParams.sortField;
+    let sortField = APIBookSortFieldMap.get(sortParams.sortField) ?? "";
     if (sortParams.sortOrder == -1) {
       sortField = "-".concat(sortField);
     }
 
     BOOKS_API.getBooks({
-      page: pageParams.page ?? 0,
+      page: (pageParams.page ?? 0) + 1,
       page_size: pageParams.rows,
       ordering: sortField,
       genre: selectedGenre,
@@ -344,8 +348,8 @@ export default function BookList() {
 
   // Set state when response to API call is received
   const onAPIResponse = (response: GetBooksResp) => {
-    setBooks(response.books);
-    setNumberOfBooks(response.numberOfBooks);
+    setBooks(response.results.map((book) => APIToInternalBookConversion(book)));
+    setNumberOfBooks(response.count);
     setLoading(false);
   };
 

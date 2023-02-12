@@ -3,29 +3,34 @@ import { API, METHOD_POST, METHOD_PUT } from "./Config";
 const AUTH_EXTENSION = "auth";
 
 // login
-interface LoginReq {
+export interface LoginReq {
   password: string;
 }
 
-interface LoginResp {
+export interface LoginResp {
   refresh: string;
   access: string;
 }
 
 // passwordChange
-interface PasswordChangeReq {
+export interface PasswordChangeReq {
   old_password: string;
   password: string;
   password2: string;
 }
 
-interface PasswordChangeResp {
+export interface PasswordChangeResp {
   status: string;
+}
+
+// refreshToken
+export interface RefreshTokenResp {
+  access: string;
 }
 
 export const AUTH_API = {
   login: async function (req: LoginReq): Promise<LoginResp> {
-    const resp = await API.request({
+    return await API.request({
       url: AUTH_EXTENSION.concat("/users/login"),
       method: METHOD_POST,
       data: {
@@ -33,36 +38,34 @@ export const AUTH_API = {
         password: req.password,
       },
     });
-
-    return Promise.resolve(resp.data);
   },
 
-  passwordChange: async function (old: string, pw: string, pw2: string) {
+  passwordChange: async function (req: PasswordChangeReq) {
     return await API.request({
       url: AUTH_EXTENSION.concat("/change_password/admin"),
       method: METHOD_PUT,
-      data: {
-        old_password: old,
-        password: pw,
-        password2: pw2,
-      },
+      data: req,
     });
   },
 
   tokenRefresh: async function (failedRequest: any) {
     const refreshToken = sessionStorage.getItem("refreshToken");
 
-    API.request({
+    API.request<never, RefreshTokenResp>({
       url: AUTH_EXTENSION.concat("/token/refresh"),
       method: METHOD_POST,
       data: {
         refresh: refreshToken,
       },
-    }).then((response) => {
-      sessionStorage.setItem("accessToken", response.data.access);
-      failedRequest.response.config.headers["Authorization"] =
-        "Bearer " + response.data.access;
-      return Promise.resolve();
-    });
+    })
+      .then((response) => {
+        sessionStorage.setItem("accessToken", response.access);
+        failedRequest.response.config.headers["Authorization"] =
+          "Bearer " + response.access;
+        return Promise.resolve();
+      })
+      .catch((error) => {
+        return error;
+      });
   },
 };

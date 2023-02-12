@@ -1,4 +1,3 @@
-import { Genre } from "../pages/list/GenreList";
 import {
   API,
   METHOD_DELETE,
@@ -9,78 +8,71 @@ import {
 
 const GENRES_EXTENSION = "genres";
 
-interface GetGenresReq {
+// getGenres
+export interface GetGenresReq {
   page: number;
   page_size: number;
   ordering: string;
 }
 
-// The structure of the response for a genre from the API
-interface APIGenre {
+export interface APIGenre {
   id: number;
   name: string;
   book_cnt: number;
 }
 
 export interface GetGenresResp {
-  genres: Genre[];
-  numberOfGenres: number;
+  results: APIGenre[];
+  count: number;
+}
+
+// deleteGenre
+export interface DeleteGenreReq {
+  id: number;
+}
+
+// modifyGenre
+export interface ModifyGenreReq {
+  id: number;
+  name: string;
+}
+
+// addGenre
+export interface AddGenreReq {
+  name: string;
 }
 
 export const GENRES_API = {
   getGenres: async function (req: GetGenresReq): Promise<GetGenresResp> {
-    const response = await API.request({
+    return await API.request({
       url: GENRES_EXTENSION,
       method: METHOD_GET,
-      params: {
-        page: req.page + 1,
-        page_size: req.page_size,
-        ordering: req.ordering,
-      },
-    });
-
-    // Convert response to internal data type (not strictly necessary, but I think good practice)
-    const genres = response.data.results.map((genre: APIGenre) => {
-      return {
-        id: genre.id,
-        name: genre.name,
-        book_cnt: genre.book_cnt,
-      } as Genre;
-    });
-
-    return Promise.resolve({
-      genres: genres,
-      numberOfGenres: response.data.count,
+      params: req,
     });
   },
 
   // Everything below this point has not been tested
 
-  deleteGenre: async function (id: number) {
+  deleteGenre: async function (req: DeleteGenreReq) {
     return await API.request({
-      url: GENRES_EXTENSION.concat("/".concat(id.toString())),
+      url: GENRES_EXTENSION.concat("/".concat(req.id.toString())),
       method: METHOD_DELETE,
     });
   },
 
-  modifyGenre: async function (genre: Genre) {
-    const genreParams = {
-      id: genre.id,
-      name: genre.name,
-    };
-
+  modifyGenre: async function (req: ModifyGenreReq) {
     return await API.request({
-      url: GENRES_EXTENSION.concat("/".concat(genre.id.toString())),
+      url: GENRES_EXTENSION.concat("/".concat(req.id.toString())),
       method: METHOD_PATCH,
-      data: genreParams,
+      data: req,
     });
   },
 
-  addGenres: async function (genres: string) {
+  addGenre: async function (req: AddGenreReq) {
     return await API.request({
       url: GENRES_EXTENSION,
       method: METHOD_POST,
-      data: { name: genres },
+      data: req,
     });
   },
 };

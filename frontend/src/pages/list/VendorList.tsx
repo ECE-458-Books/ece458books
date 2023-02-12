@@ -11,14 +11,13 @@ import { Toast } from "primereact/toast";
 import React from "react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { APIToInternalVendorConversion } from "../../apis/Conversions";
 import { GetVendorsResp, VENDORS_API } from "../../apis/VendorsAPI";
 import DeletePopup from "../../components/DeletePopup";
 import { TableColumn } from "../../components/Table";
-import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import { logger } from "../../util/Logger";
 import { VendorDetailState } from "../detail/VendorDetail";
 import { NUM_ROWS } from "./BookList";
-import { Genre } from "./GenreList";
 
 // The Vendor Interface
 export interface Vendor {
@@ -110,7 +109,7 @@ export default function VendorList() {
   const deleteVendorFinal = () => {
     logger.debug("Delete Vendor Finalized", selectedDeleteVendor);
     setDeletePopupVisible(false);
-    VENDORS_API.deleteVendor(selectedDeleteVendor.id.toString()).then(
+    VENDORS_API.deleteVendor({ id: selectedDeleteVendor.id }).then(
       (response) => {
         if (response.status == 204) {
           showSuccess();
@@ -160,7 +159,7 @@ export default function VendorList() {
     }
 
     VENDORS_API.getVendors({
-      page: pageParams.page ?? 0,
+      page: (pageParams.page ?? 0) + 1,
       page_size: pageParams.rows,
       ordering: sortField,
     }).then((response) => onAPIResponse(response));
@@ -168,8 +167,10 @@ export default function VendorList() {
 
   // Set state when response to API call is received
   const onAPIResponse = (response: GetVendorsResp) => {
-    setVendors(response.vendors);
-    setNumberOfVendors(response.numberOfVendors);
+    setVendors(
+      response.results.map((vendor) => APIToInternalVendorConversion(vendor))
+    );
+    setNumberOfVendors(response.count);
     setLoading(false);
   };
 

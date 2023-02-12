@@ -15,17 +15,15 @@ import {
   priceBodyTemplateSubtotal,
   priceBodyTemplateWholesale,
   priceEditor,
-  textEditor,
 } from "../../util/TableCellEditFuncs";
 import { useLocation } from "react-router-dom";
 import {
+  AddPOReq,
   APIPOPurchaseRow,
+  ModifyPOReq,
   PURCHASES_API,
-  APIPOCreate,
-  APIPOModify,
 } from "../../apis/PurchasesAPI";
 import { VENDORS_API } from "../../apis/VendorsAPI";
-import { Vendor } from "../list/VendorList";
 import { BOOKS_API } from "../../apis/BooksAPI";
 import { toYYYYMMDDWithDash } from "../../util/DateOperations";
 import { Toast } from "primereact/toast";
@@ -47,10 +45,10 @@ export interface POPurchaseRow {
   isNewRow: boolean; // true if the user added this row, false if it already existed
   id: string;
   subtotal: number;
-  book: number;
-  book_title: string;
+  bookId: number;
+  bookTitle: string;
   quantity: number;
-  unit_wholesale_price: number;
+  unitWholesalePrice: number;
 }
 
 // The books Interface lol no
@@ -63,11 +61,11 @@ export default function PODetail() {
   const emptyProduct = {
     isNewRow: true,
     id: uuid(),
-    book: 0,
+    bookId: 0,
     subtotal: 0,
-    book_title: "",
+    bookTitle: "",
     quantity: 1,
-    unit_wholesale_price: 0,
+    unitWholesalePrice: 0,
   };
 
   const location = useLocation();
@@ -82,11 +80,11 @@ export default function PODetail() {
       {
         isNewRow: true,
         id: uuid(),
-        book_title: "",
+        bookTitle: "",
         subtotal: 0,
-        book: 0,
+        bookId: 0,
         quantity: 1,
-        unit_wholesale_price: 0,
+        unitWholesalePrice: 0,
       },
     ],
     isAddPage: true,
@@ -187,19 +185,19 @@ export default function PODetail() {
 
     BOOKS_API.getBooksNOPaging().then((response) => {
       const tempBookMap = new Map<string, number>();
-      for (const book of response.books) {
+      for (const book of response) {
         tempBookMap.set(book.title, book.id);
       }
       setBookMap(tempBookMap);
-      setBookTitlesList(response.books.map((book) => book.title));
+      setBookTitlesList(response.map((book) => book.title));
     });
   }, []);
 
   const validateSubmission = (po: POPurchaseRow[]) => {
     for (const purchase of po) {
       if (
-        !purchase.book_title ||
-        !(purchase.unit_wholesale_price >= 0) ||
+        !purchase.bookTitle ||
+        !(purchase.unitWholesalePrice >= 0) ||
         !purchase.quantity
       ) {
         showFailure("All fields are required");
@@ -225,9 +223,9 @@ export default function PODetail() {
       // Create API Format
       const apiPurchases = purchases.map((purchase) => {
         return {
-          book: bookMap.get(purchase.book_title),
+          book: bookMap.get(purchase.bookTitle),
           quantity: purchase.quantity,
-          unit_wholesale_price: purchase.unit_wholesale_price,
+          unit_wholesale_price: purchase.unitWholesalePrice,
         } as APIPOPurchaseRow;
       });
 
@@ -235,7 +233,7 @@ export default function PODetail() {
         date: toYYYYMMDDWithDash(date),
         vendor: vendorMap.get(vendorName),
         purchases: apiPurchases,
-      } as APIPOCreate;
+      } as AddPOReq;
 
       PURCHASES_API.addPurchaseOrder(purchaseOrder).then((response) => {
         if (response.status == 201) {
@@ -251,10 +249,10 @@ export default function PODetail() {
         return {
           id: purchase.isNewRow ? undefined : purchase.id,
           book: purchase.isNewRow
-            ? bookMap.get(purchase.book_title)
-            : purchase.book,
+            ? bookMap.get(purchase.bookTitle)
+            : purchase.bookId,
           quantity: purchase.quantity,
-          unit_wholesale_price: purchase.unit_wholesale_price,
+          unit_wholesale_price: purchase.unitWholesalePrice,
         } as APIPOPurchaseRow;
       });
 
@@ -263,7 +261,7 @@ export default function PODetail() {
         date: toYYYYMMDDWithDash(date),
         vendor: vendorMap.get(vendorName),
         purchases: apiPurchases,
-      } as APIPOModify;
+      } as ModifyPOReq;
 
       PURCHASES_API.modifyPurchaseOrder(purchaseOrder).then((response) => {
         if (response.status == 200) {

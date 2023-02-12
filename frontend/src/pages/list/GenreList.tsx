@@ -6,14 +6,13 @@ import {
   DataTableFilterMetaData,
   DataTablePageEvent,
   DataTableRowClickEvent,
-  DataTableSelection,
-  DataTableSelectionChangeEvent,
   DataTableSortEvent,
 } from "primereact/datatable";
 import { Toast } from "primereact/toast";
 import React, { useRef } from "react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { APIToInternalGenreConversion } from "../../apis/Conversions";
 import { GENRES_API, GetGenresResp } from "../../apis/GenresAPI";
 import DeletePopup from "../../components/DeletePopup";
 import { TableColumn } from "../../components/Table";
@@ -25,11 +24,7 @@ import { NUM_ROWS } from "./BookList";
 export interface Genre {
   id: number;
   name: string;
-  book_cnt: number;
-}
-
-interface GenreRow extends Genre {
-  isDeletable: boolean;
+  bookCount: number;
 }
 
 // Properties of each column that change, the rest are set below when creating the actual Columns to be rendered
@@ -41,7 +36,7 @@ const COLUMNS: TableColumn[] = [
     filterable: false,
   },
   {
-    field: "book_cnt",
+    field: "bookCount",
     header: "Number of Books",
     filterPlaceholder: "Search by Number of Books",
     filterable: false,
@@ -52,13 +47,13 @@ const COLUMNS: TableColumn[] = [
 interface Filters {
   [id: string]: DataTableFilterMetaData;
   name: DataTableFilterMetaData;
-  book_cnt: DataTableFilterMetaData;
+  bookCount: DataTableFilterMetaData;
 }
 
 // Empty genre, used to initialize state
 const emptyGenre = {
   name: "",
-  book_cnt: 0,
+  bookCount: 0,
   id: 0,
 };
 
@@ -90,7 +85,7 @@ export default function GenreList() {
     filters: {
       id: { value: "", matchMode: "contains" },
       name: { value: "", matchMode: "contains" },
-      book_cnt: { value: "", matchMode: "contains" },
+      bookCount: { value: "", matchMode: "contains" },
     } as Filters,
   });
 
@@ -122,7 +117,7 @@ export default function GenreList() {
   const deleteGenreFinal = () => {
     logger.debug("Delete Genre Finalized", selectedDeleteGenre);
     setDeletePopupVisible(false);
-    GENRES_API.deleteGenre(selectedDeleteGenre.id).then((response) => {
+    GENRES_API.deleteGenre({ id: selectedDeleteGenre.id }).then((response) => {
       if (response.status == 204) {
         showSuccess();
       } else {
@@ -179,7 +174,7 @@ export default function GenreList() {
     }
 
     GENRES_API.getGenres({
-      page: pageParams.page ?? 0,
+      page: (pageParams.page ?? 0) + 1,
       page_size: pageParams.rows,
       ordering: sortField,
     }).then((response) => onAPIResponse(response));
@@ -187,8 +182,10 @@ export default function GenreList() {
 
   // Set state when response to API call is received
   const onAPIResponse = (response: GetGenresResp) => {
-    setGenres(response.genres);
-    setNumberOfGenres(response.numberOfGenres);
+    setGenres(
+      response.results.map((genre) => APIToInternalGenreConversion(genre))
+    );
+    setNumberOfGenres(response.count);
     setLoading(false);
   };
 
@@ -207,7 +204,7 @@ export default function GenreList() {
           icon="pi pi-trash"
           className="p-button-rounded p-button-danger"
           onClick={() => deleteGenrePopup(rowData)}
-          disabled={rowData.book_cnt > 0}
+          disabled={rowData.bookCount > 0}
         />
       </React.Fragment>
     );

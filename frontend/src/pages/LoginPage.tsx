@@ -4,7 +4,7 @@ import { Button } from "primereact/button";
 import { Messages } from "primereact/messages";
 import { useNavigate } from "react-router-dom";
 import { API } from "../apis/Config";
-import { AUTH_API } from "../apis/AuthAPI";
+import { AUTH_API, LoginReq } from "../apis/AuthAPI";
 import { Password } from "primereact/password";
 
 export default function LoginPage() {
@@ -25,16 +25,16 @@ export default function LoginPage() {
   // Hits the token endpoint, and stores the token in local storage. Displays incorrect password text if error returned from endpoint
   const onSubmit = (event: FormEvent<HTMLFormElement>): void => {
     // Make the request, and show error message if password is wrong
-    AUTH_API.login(password)
+    const req: LoginReq = {
+      password: password,
+    };
+
+    AUTH_API.login(req)
       .then((response) => {
-        if (response.data.access) {
-          setAuthToken(response.data.access);
-          sessionStorage.setItem("refreshToken", response.data.refresh);
-          sessionStorage.setItem("accessToken", response.data.access);
-          navigate("/books");
-        } else {
-          delete axios.defaults.headers.common["Authorization"];
-        }
+        setAuthToken(response.access);
+        sessionStorage.setItem("refreshToken", response.refresh);
+        sessionStorage.setItem("accessToken", response.access);
+        navigate("/books");
       })
       .catch(() => {
         wrongPasswordRef.current?.show([

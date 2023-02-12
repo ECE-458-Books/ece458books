@@ -33,7 +33,9 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG').lower() == 'true'
 
-ALLOWED_HOSTS = ['books.colab.duke.edu', 'books-dev.colab.duke.edu']
+# The reason why we don't let ALLOWED_HOSTS as a wildcard asterisk
+# https://www.djangoproject.com/weblog/2013/feb/19/security/#s-issue-host-header-poisoning
+ALLOWED_HOSTS = ['books.colab.duke.edu', 'books-dev.colab.duke.edu', 'books-front.colab.duke.edu']
 # ALLOWED_HOSTS = ['*']
 
 # Application definition

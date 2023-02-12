@@ -2,16 +2,39 @@ import { API, METHOD_POST, METHOD_PUT } from "./Config";
 
 const AUTH_EXTENSION = "auth";
 
+// login
+interface LoginReq {
+  password: string;
+}
+
+interface LoginResp {
+  refresh: string;
+  access: string;
+}
+
+// passwordChange
+interface PasswordChangeReq {
+  old_password: string;
+  password: string;
+  password2: string;
+}
+
+interface PasswordChangeResp {
+  status: string;
+}
+
 export const AUTH_API = {
-  login: async function (password: string) {
-    return await API.request({
+  login: async function (req: LoginReq): Promise<LoginResp> {
+    const resp = await API.request({
       url: AUTH_EXTENSION.concat("/users/login"),
       method: METHOD_POST,
       data: {
         email: "hosung.kim@duke.edu",
-        password: password,
+        password: req.password,
       },
     });
+
+    return Promise.resolve(resp.data);
   },
 
   passwordChange: async function (old: string, pw: string, pw2: string) {

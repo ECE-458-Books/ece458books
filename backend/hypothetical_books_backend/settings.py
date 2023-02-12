@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+from corsheaders.defaults import default_headers
 import environ
 import os
 
@@ -175,7 +176,7 @@ AUTH_USER_MODEL = 'authapp.User'
 
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGIN_REGEXES = [
-    '^https?://localhost(:8000)?$'
+    '^https?://localhost(:8000)?$',
     '^https?://books-front\.colab\.duke\.edu(:3000)?$' # Matches http,https request from port 3000 or none
 ]
 

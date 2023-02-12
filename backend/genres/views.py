@@ -1,4 +1,4 @@
-from django.db.models import Count
+from django.db.models import Count, Q
 
 from rest_framework import filters, status
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
@@ -53,9 +53,9 @@ class ListCreateGenreAPIView(ListCreateAPIView):
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(request, self.get_queryset())
 
-        # Might not scale?
+        # https://docs.djangoproject.com/en/4.1/topics/db/aggregation/#filtering-on-annotations
         queryset = queryset.annotate(
-            book_cnt=Count('book')
+            book_cnt=Count('book', filter=Q(book__isGhost=False))
         )
 
         page = self.paginate_queryset(queryset)

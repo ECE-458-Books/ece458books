@@ -110,11 +110,11 @@ export default function BookDetail() {
   const [genreList, setGenreList] = useState<string[]>([]);
   useEffect(() => {
     GENRES_API.getGenres({
-      page: 0,
+      page: 1,
       page_size: 30,
       ordering: "name",
     }).then((response) =>
-      setGenreList(response.genres.map((genre) => genre.name))
+      setGenreList(response.results.map((genre) => genre.name))
     );
   }, []);
 

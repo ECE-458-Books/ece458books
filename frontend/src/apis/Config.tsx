@@ -37,7 +37,7 @@ API.interceptors.request.use((request) => {
 
 // Every incoming response is logged
 API.interceptors.response.use((response) => {
-  logger.debug("API Response Data", response.data);
+  logger.debug("API Response Data", response.status, response.data);
   return Promise.resolve(response.data);
 });
 

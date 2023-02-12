@@ -226,7 +226,6 @@ export default function BookAdd() {
     for (const book of books) {
       console.log(!validateRow(book));
       if (!validateRow(book)) {
-        console.log("show fail");
         showFailure(
           "The following book does not have all required fields set: ".concat(
             book.title

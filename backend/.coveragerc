@@ -1,0 +1,7 @@
+[run]
+source=
+    ./
+omit=
+    ./env/*,
+    ./venv/*,
+branch = True

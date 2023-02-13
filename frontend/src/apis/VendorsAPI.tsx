@@ -7,18 +7,22 @@ import {
   METHOD_POST,
 } from "./Config";
 
-const VENDORS_EXTENSION = "vendors/";
+const VENDORS_EXTENSION = "vendors";
 
 interface GetVendorsReq {
   page: number;
   page_size: number;
-  ordering_field: string | undefined;
-  ordering_ascending: number | null | undefined;
-  search: string;
+  ordering: string;
 }
 
 // The structure of the response for a vendor from the API
 interface APIVendor {
+  id: number;
+  name: string;
+  num_purchase_orders: number;
+}
+
+export interface ModifyVendorReq {
   id: number;
   name: string;
 }
@@ -26,6 +30,10 @@ interface APIVendor {
 export interface GetVendorsResp {
   vendors: Vendor[];
   numberOfVendors: number;
+}
+
+export interface GetVendorsNoCountResp {
+  vendors: Vendor[];
 }
 
 export const VENDORS_API = {
@@ -36,8 +44,7 @@ export const VENDORS_API = {
       params: {
         page: req.page + 1,
         page_size: req.page_size,
-        ordering: req.ordering_field,
-        search: req.search,
+        ordering: req.ordering,
       },
     });
 
@@ -46,6 +53,7 @@ export const VENDORS_API = {
       return {
         id: vendor.id,
         name: vendor.name,
+        numPO: vendor.num_purchase_orders,
       };
     });
 
@@ -55,30 +63,52 @@ export const VENDORS_API = {
     });
   },
 
+  getVendorsNOPaging: async function (): Promise<GetVendorsNoCountResp> {
+    const response = await API.request({
+      url: VENDORS_EXTENSION,
+      method: METHOD_GET,
+      params: {
+        no_pagination: true,
+      },
+    });
+
+    // Convert response to internal data type (not strictly necessary, but I think good practice)
+    const vendors = response.data.map((vendor: APIVendor) => {
+      return {
+        id: vendor.id,
+        name: vendor.name,
+      };
+    });
+
+    return Promise.resolve({
+      vendors: vendors,
+    });
+  },
+
   // Everything below this point has not been tested
 
   deleteVendor: async function (id: string) {
-    await API.request({
-      url: VENDORS_EXTENSION.concat(id),
+    return await API.request({
+      url: VENDORS_EXTENSION.concat("/".concat(id)),
       method: METHOD_DELETE,
     });
   },
 
-  modifyVendor: async function (vendor: Vendor) {
+  modifyVendor: async function (vendor: ModifyVendorReq) {
     const vendorParams = {
       id: vendor.id,
       name: vendor.name,
     };
 
-    await API.request({
-      url: VENDORS_EXTENSION.concat(vendor.id.toString()),
+    return await API.request({
+      url: VENDORS_EXTENSION.concat("/".concat(vendor.id.toString())),
       method: METHOD_PATCH,
       data: vendorParams,
     });
   },
 
   addVendor: async function (vendor: string) {
-    await API.request({
+    return await API.request({
       url: VENDORS_EXTENSION,
       method: METHOD_POST,
       data: { name: vendor },

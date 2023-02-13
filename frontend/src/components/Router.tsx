@@ -15,6 +15,8 @@ import VendorAdd from "../pages/add/VendorAdd";
 import GenreDetail from "../pages/detail/GenreDetail";
 import VendorDetail from "../pages/detail/VendorDetail";
 import PurchaseOrderList from "../pages/list/POList";
+import PasswordChangePage from "../pages/auth/PasswordChange";
+import SalesReportPage from "../pages/list/SalesReport";
 
 const WithNavBar = () => {
   return (
@@ -35,10 +37,18 @@ const WithoutNavBar = () => {
 
 // Don't want the navigation bar on the login page
 export default function Router() {
+  const isLoggedIn = !!sessionStorage.getItem("accessToken");
+  const navigate = useNavigate();
+
+  if (!isLoggedIn) {
+    navigate("/");
+    return <LoginPage />;
+  }
+
   return (
     <Routes>
       <Route element={<WithoutNavBar />}>
-        <Route path="/" element={<LoginPage navigator={useNavigate()} />} />
+        <Route path="/" element={<LoginPage />} />
       </Route>
       <Route element={<WithNavBar />}>
         <Route path="books" element={<BookList />} />
@@ -59,6 +69,8 @@ export default function Router() {
         <Route path="sales-reconciliations/detail" element={<ModifySR />} />
         <Route path="vendors/add" element={<VendorAdd />} />
         <Route path="vendors/detail" element={<VendorDetail />} />
+        <Route path="change-password" element={<PasswordChangePage />} />
+        <Route path="sales-report" element={<SalesReportPage />} />
       </Route>
     </Routes>
   );

@@ -1,5 +1,6 @@
 from rest_framework import pagination
+from utils.paginations import HTTPSNoPortPagination
 
-class BookPagination(pagination.PageNumberPagination):
+class BookPagination(HTTPSNoPortPagination):
     page_size = 10
     page_size_query_param = 'page_size'

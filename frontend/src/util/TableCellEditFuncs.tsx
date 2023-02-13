@@ -36,6 +36,7 @@ export function numberEditor(options: ColumnEditorOptions) {
       value={options.value}
       onValueChange={(e) => options.editorCallback?.(e.target.value)}
       mode="decimal"
+      maxFractionDigits={2}
     />
   );
 }
@@ -52,9 +53,38 @@ export function priceEditor(options: ColumnEditorOptions) {
   );
 }
 
-export function priceBodyTemplate(rowData: { retailPrice: number | bigint }) {
+export function priceBodyTemplateWholesale(rowData: {
+  unit_wholesale_price: number | bigint;
+}) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-  }).format(rowData.retailPrice);
+  }).format(rowData.unit_wholesale_price);
+}
+
+export function priceBodyTemplateRetailPrice(rowData: {
+  retail_price: number | bigint;
+}) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(rowData.retail_price);
+}
+
+export function priceBodyTemplateSubtotal(rowData: {
+  subtotal: number | bigint;
+}) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(rowData.subtotal);
+}
+
+export function priceBodyTemplateUnit(rowData: {
+  unit_retail_price: number | bigint;
+}) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(rowData.unit_retail_price);
 }

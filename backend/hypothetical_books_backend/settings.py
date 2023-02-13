@@ -11,15 +11,18 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
+from datetime import timedelta
 import environ
 import os
 
 # Initialize environment variables
 env = environ.Env()
-environ.Env.read_env()
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+# Set the project base directory
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Take environment variables from .env file
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
@@ -28,10 +31,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('DEBUG')
+DEBUG = env('DEBUG').lower() == 'true'
 
-# ALLOWED_HOSTS = ['books.colab.duke.edu']
-ALLOWED_HOSTS = ['*']
+# The reason why we don't let ALLOWED_HOSTS as a wildcard asterisk
+# https://www.djangoproject.com/weblog/2013/feb/19/security/#s-issue-host-header-poisoning
+ALLOWED_HOSTS = ['books.colab.duke.edu', 'books-dev.colab.duke.edu', 'books-front.colab.duke.edu']
+# ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -54,12 +59,11 @@ INSTALLED_APPS = [
     'books',
     "genres",
     'vendors',
+    'purchase_orders',
+    'sales',
 
     # Authentication App
     'authapp',
-
-    # Sales App
-    'sales',
 
     # add REST Framework
     'corsheaders',
@@ -163,13 +167,21 @@ REST_FRAMEWORK = {
     'NON_FIELD_ERRORS_KEY': 'error',
 }
 
+APPEND_SLASH = False
+
 # Tell Django about the custom `User` model we created. The string
 # `authentication.User` tells Django we are referring to the `User` model in
 # the `authapp` module. This module is registered above in a setting
 # called `INSTALLED_APPS`.
 AUTH_USER_MODEL = 'authapp.User'
 
-CORS_ORIGIN_ALLOW_ALL = False
-CORS_ORIGIN_WHITELIST = [
-    'http://localhost',
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    '^https?://localhost(:8000)?$',
+    '^https?://books-front\.colab\.duke\.edu(:3000)?$' # Matches http,https request from port 3000 or none
 ]
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+}

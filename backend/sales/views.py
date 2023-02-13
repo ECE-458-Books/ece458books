@@ -2,12 +2,17 @@ from rest_framework.permissions import IsAuthenticated
 from .serializers import SalesReconciliationSerializer
 from rest_framework.response import Response
 from rest_framework import status, filters
+from rest_framework.views import APIView
 from .models import SalesReconciliation, Sale
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from .sales_reconciliation import SalesReconciliationFieldsCalculator
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView
 from .paginations import SalesReconciliationPagination
-from django.db.models import OuterRef, Subquery, Func, Count
+from django.db.models import OuterRef, Subquery, Func, Count, Sum, F
+from purchase_orders.models import Purchase, PurchaseOrder
+from purchase_orders.serializers import PurchaseOrderSerializer
 import datetime, pytz
+from datetime import datetime, timedelta
+from books.models import Book
+from rest_framework.exceptions import APIException
 
 
 class ListCreateSalesReconciliationAPIView(ListCreateAPIView):
@@ -19,6 +24,12 @@ class ListCreateSalesReconciliationAPIView(ListCreateAPIView):
     ordering_fields = '__all__'
     ordering = ['id']
 
+    def paginate_queryset(self, queryset):
+        if 'no_pagination' in self.request.query_params:
+            return None
+        else:
+            return super().paginate_queryset(queryset)
+
     def create(self, request, *args, **kwargs):
         serializer = SalesReconciliationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -26,7 +37,6 @@ class ListCreateSalesReconciliationAPIView(ListCreateAPIView):
 
         response_data = serializer.data
         response_data['id'] = saved_sales_reconciliation.id
-        response_data = SalesReconciliationFieldsCalculator.add_calculated_fields(response_data)
         return Response(response_data, status=status.HTTP_201_CREATED)
 
     def get_queryset(self):
@@ -137,8 +147,7 @@ class RetrieveUpdateDestroySalesReconciliationAPIView(RetrieveUpdateDestroyAPIVi
             return invalid_id_response
         (sales_reconciliation,) = self.get_queryset()
         serializer = self.get_serializer(sales_reconciliation)
-        sales_reconciliation_data = SalesReconciliationFieldsCalculator.add_calculated_fields(serializer.data)
-        return Response(sales_reconciliation_data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def update(self, request, *args, **kwargs):
         invalid_id_response = self.verify_existance()
@@ -149,10 +158,99 @@ class RetrieveUpdateDestroySalesReconciliationAPIView(RetrieveUpdateDestroyAPIVi
         serializer = self.get_serializer(sales_reconciliation, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        sales_reconciliation_data = SalesReconciliationFieldsCalculator.add_calculated_fields(serializer.data)
-        return Response(sales_reconciliation_data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def destroy(self, request, *args, **kwargs):
+        sale_book_quantities = Sale.objects.filter(sales_reconciliation=self.get_object().id).values('book').annotate(num_books=Sum('quantity')).values('book', 'num_books')
+        for sale_book_quantity in sale_book_quantities:
+            book_to_remove_sale = Book.objects.filter(id=sale_book_quantity['book']).get()
+            book_to_remove_sale.stock += sale_book_quantity['num_books']
+            book_to_remove_sale.save()
+        return super().destroy(request, *args, **kwargs)
 
     def verify_existance(self):
         if (len(self.get_queryset()) == 0):
             return Response({"id": "No sales reconciliation with queried id."}, status=status.HTTP_400_BAD_REQUEST)
         return None
+
+class RetrieveSalesReportAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, start_date, end_date):
+        daily_revenues = {}
+        daily_costs = {}
+        daily_profits = {}
+
+        # Get range of dates from starting date to ending date
+        dates = self.dates_range(start_date, end_date)
+
+        for date in dates:
+            date_str = date.strftime("%Y-%m-%d")
+            self.get_daily_revenues(daily_revenues, date_str)
+            self.get_daily_costs(daily_costs, date_str)
+            daily_profits[date_str] = round(daily_revenues[date_str] - daily_costs[date_str], 2)
+
+        total_cost = round(sum(daily_costs.values()), 2)
+        total_revenue = round(sum(daily_revenues.values()), 2)
+        total_profit = round(total_revenue - total_cost, 2)
+
+        sales_data_by_book = list(SalesReconciliation.objects.filter(date__range=(start_date, end_date)).values(book_id=F('sales__book')).annotate(num_books_sold=Sum('sales__quantity')).annotate(book_revenue=Sum('sales__revenue')).order_by('-num_books_sold'))
+        
+        # Keeeping this code to find books purchased quantities if needed for future
+        # order by date, then by id, since higher id means was entered later than lower id, so could mean more recent price... just need any way to decide on one price if two separate purchases are logged on same day of same book to know which unit wholesale price to use
+        # books_purchased_quantities = list(PurchaseOrder.objects.filter(date__lte=end_date).values('purchases__book').annotate(num_books_purchased=Sum('purchases__quantity')).values('purchases__book', 'num_books_purchased'))
+        # book_id_to_num_purchased_dict = {x['purchases__book']:x['num_books_purchased'] for x in books_purchased_quantities}
+
+        for book_sale in list(sales_data_by_book):
+            try:
+                most_recent_unit_wholesale_price = PurchaseOrder.objects.filter(date__lte=end_date).order_by('-date', '-id').annotate(book_wholesale_price=Subquery(Purchase.objects.filter(purchase_order=OuterRef('id')).filter(book=book_sale['book_id']).values('unit_wholesale_price'))).values('book_wholesale_price').exclude(book_wholesale_price=None).first()['book_wholesale_price']
+            except: # Every sale should have a prior purchase because of our validation that can't sell without inventory, so this should never occur, but here just in case
+                raise APIException("Cannot sell a book that has not been purchased.")
+            else:
+                book_sale['total_cost_most_recent'] = round(most_recent_unit_wholesale_price * book_sale['num_books_sold'], 2)
+                
+        
+        for book_sale in sales_data_by_book:
+            book_sale['book_title'] = Book.objects.filter(id=book_sale['book_id']).get().title
+            book_sale['book_profit'] = round(book_sale['book_revenue'] - book_sale['total_cost_most_recent'], 2)
+
+        return Response({
+            "total_summary":{
+                "revenue": total_revenue,
+                "cost": total_cost,
+                "profit": total_profit,
+            },
+            "daily_summary":  # date, revenue, cost, profit
+                [{"date": date, "revenue": revenue, "cost": cost, "profit": profit } for (date, revenue, cost, profit) in zip(daily_revenues.keys(), daily_revenues.values(), daily_costs.values(), daily_profits.values())]
+            ,
+            "top_books":  # title, quantity, total_revenue, total_cost, total_profit
+            sales_data_by_book
+            
+        })
+
+    def get_daily_costs(self, daily_costs, date: str):
+        purchase_orders = PurchaseOrder.objects.filter(date=date)
+        if len(purchase_orders) == 0:
+            daily_costs[date] = 0
+            return
+        for purchase_order in purchase_orders:
+            serializer = PurchaseOrderSerializer(purchase_order)
+            daily_costs[date] = serializer.data['total_cost']
+
+    def get_daily_revenues(self, daily_revenues, date: str):
+        sales_reconciliations = SalesReconciliation.objects.filter(date=date)
+        if len(sales_reconciliations) == 0:
+            daily_revenues[date] = 0
+            return
+        for sales_reconciliation in sales_reconciliations:
+            serializer = SalesReconciliationSerializer(sales_reconciliation)
+            daily_revenues[date] = serializer.data['total_revenue']
+
+    def dates_range(self, start: str, end: str):
+        date_format = "%Y-%m-%d"
+        start_date = datetime.strptime(start, date_format)
+        end_date = datetime.strptime(end, date_format)
+        delta = end_date - start_date
+        days = [start_date + timedelta(days=num_days) for num_days in range(delta.days+1)]
+        return days
+

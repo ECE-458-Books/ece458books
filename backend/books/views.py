@@ -8,7 +8,7 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
-from .serializers import BookAddSerializer, BookSerializer, ISBNSerializer
+from .serializers import BookListAddSerializer, BookSerializer, ISBNSerializer
 from .isbn import ISBNTools
 from .models import Book, Author
 from .paginations import BookPagination
@@ -31,11 +31,13 @@ class ISBNSearchView(APIView):
 
         # Split ISBN with spaces and/or commas
         raw_isbn_list = re.split("\s?[, ]\s?", serializer.data['isbns'].strip())
-
         # Convert all ISBN to ISBN-13
         parsed_isbn_list = self.isbn_toolbox.parse_raw_isbn_list(raw_isbn_list)
 
-        data_populated_isbn_list = []
+        data_populated_isbns = {
+            "books": [],
+            "invalid_isbns": [],
+        }
 
         # Fetch from DB if exist or else get from External DB such as Google Books
         for isbn in parsed_isbn_list:
@@ -44,12 +46,16 @@ class ISBNSearchView(APIView):
             # If ISBN exist in DB get from DB
             if(len(query_set) == 0):
                 # Get book data from external source
-                data_populated_isbn_list.append(self.isbn_toolbox.fetch_isbn_data(isbn))
+                external_data = self.isbn_toolbox.fetch_isbn_data(isbn)
+                if "Invalid ISBN" in external_data:
+                    data_populated_isbns['invalid_isbns'].append(isbn)
+                else:
+                    data_populated_isbns['books'].append(external_data)
             else:
                 # get book data from DB
-                data_populated_isbn_list.append(self.parseDBBookModel(query_set[0]))
+                data_populated_isbns['books'].append(self.parseDBBookModel(query_set[0]))
 
-        return Response(data_populated_isbn_list)
+        return Response(data_populated_isbns)
     
     def parseDBBookModel(self, book):
         # Returns a parsed Book json from Book Model
@@ -73,7 +79,7 @@ class ISBNSearchView(APIView):
 
 
 class ListCreateBookAPIView(ListCreateAPIView):
-    serializer_class = BookAddSerializer
+    serializer_class = BookListAddSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = BookPagination
     filter_backends = [filters.OrderingFilter, CustomSearchFilter]
@@ -81,13 +87,34 @@ class ListCreateBookAPIView(ListCreateAPIView):
     ordering = ['id']
     search_fields = ['authors__name', 'title', '=publisher', '=isbn_10', '=isbn_13']
 
+    def paginate_queryset(self, queryset):
+        if 'no_pagination' in self.request.query_params:
+            return None
+        else:
+            return super().paginate_queryset(queryset)
+
     # Override default create method
     def create(self, request, *args, **kwargs):
         # Need to handle creating authors and genres if not present in DB
         self.getOrCreateModel(request.data['authors'], Author)
         self.getOrCreateModel(request.data['genres'], Genre)
 
-        serializer = self.get_serializer(data=request.data)
+        # Handle the isbn that is already in DB
+        try:
+            obj = Book.objects.get(isbn_13=request.data['isbn_13'])
+        except Exception as e:
+            obj = None
+
+        # If the object with the specific isbn_13 is found we do the following:
+        # 1. add the isGhost field to the request data
+        # 2. update the already existing row in DB
+        if obj is not None:
+            request.data['isGhost'] = False
+            serializer = self.get_serializer(obj, data=request.data, partial=False)
+        else:
+            # This is different from the above serializer because this is creating a new row in the table
+            serializer = self.get_serializer(data=request.data)
+
         serializer.is_valid(raise_exception=True)
         serializer.save()
         headers = self.get_success_headers(serializer.data)
@@ -100,7 +127,7 @@ class ListCreateBookAPIView(ListCreateAPIView):
             )
     
     def get_queryset(self):
-        default_query_set = Book.objects.all()
+        default_query_set = Book.objects.filter(isGhost=False)
         # Books have a ManyToMany relationship with Author & Genre
         # A book can have many authors and genres.
         # We need to define sorting behavior for these fields
@@ -139,3 +166,27 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Book.objects.all()
     permission_classes = [IsAuthenticated]
     lookup_url_kwarg = 'id'
+
+    def destroy(self, request, *args, **kwargs):
+
+        # Check if the request url is valid
+        try:
+            instance = self.get_object()
+        except Exception as e:
+            return Response({"error": f"{e}"}, status=status.HTTP_204_NO_CONTENT)
+
+        # At this point we know the book exists in DB
+
+        # check if book can be destroyed by inventory count
+        if instance.stock != 0:
+            return Response({"error": f"Cannot delete book with title: {instance.title} and id: {instance.id} because its stock is {instance.stock}. Stock must be 0 to delete a book."})
+
+        # If book can be destroyed, we just make the isGhost=True and do not delete in database
+        partial = True
+        data = {"isGhost": True}
+        serializer = self.get_serializer(instance, data=data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response({"status" : f"Book: {instance.title}(id:{instance.id}) is now a ghost"}, status=status.HTTP_204_NO_CONTENT)
+

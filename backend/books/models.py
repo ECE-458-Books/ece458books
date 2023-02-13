@@ -8,7 +8,7 @@ class Book(models.Model):
     # Intrinsic, Acquired from external databse, not editable
     title = models.CharField(max_length=200)
     authors = models.ManyToManyField(Author)
-    isbn_13 = models.CharField(max_length=13)
+    isbn_13 = models.CharField(max_length=13, unique=True)
     isbn_10 = models.CharField(max_length=10)
     publisher = models.CharField(max_length=50)
     publishedDate = models.IntegerField(
@@ -30,3 +30,9 @@ class Book(models.Model):
 
     # Extrinsic, required
     genres = models.ManyToManyField('genres.Genre') 
+
+    # Ghost Column to check if Book is Deleted but Still Can Reference
+    isGhost = models.BooleanField(default=False)
+
+    # Number of books left in stock
+    stock = models.PositiveIntegerField(default=0)

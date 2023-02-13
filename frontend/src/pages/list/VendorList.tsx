@@ -1,3 +1,4 @@
+import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import {
   DataTable,
@@ -6,7 +7,9 @@ import {
   DataTablePageEvent,
   DataTableSortEvent,
 } from "primereact/datatable";
-import { useEffect, useState } from "react";
+import { Toast } from "primereact/toast";
+import React from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GetVendorsResp, VENDORS_API } from "../../apis/VendorsAPI";
 import DeletePopup from "../../components/DeletePopup";
@@ -15,11 +18,13 @@ import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import { logger } from "../../util/Logger";
 import { VendorDetailState } from "../detail/VendorDetail";
 import { NUM_ROWS } from "./BookList";
+import { Genre } from "./GenreList";
 
 // The Vendor Interface
 export interface Vendor {
   id: number;
   name: string;
+  numPO: number;
 }
 
 // Properties of each column that change, the rest are set below when creating the actual Columns to be rendered
@@ -28,6 +33,7 @@ const COLUMNS: TableColumn[] = [
     field: "name",
     header: "Vendor Name",
     filterPlaceholder: "Search by Name",
+    filterable: false,
   },
 ];
 
@@ -41,6 +47,7 @@ interface Filters {
 const emptyVendor = {
   id: 0,
   name: "",
+  numPO: 0,
 };
 
 export default function VendorList() {
@@ -83,8 +90,9 @@ export default function VendorList() {
   const editVendor = (vendor: Vendor) => {
     logger.debug("Edit Vendor Clicked", vendor);
     const detailState: VendorDetailState = {
+      id: vendor.id,
       vendor: vendor.name,
-      isModifiable: false,
+      isModifiable: true,
       isConfirmationPopupVisible: false,
     };
 
@@ -102,6 +110,20 @@ export default function VendorList() {
   const deleteVendorFinal = () => {
     logger.debug("Delete Vendor Finalized", selectedDeleteVendor);
     setDeletePopupVisible(false);
+    VENDORS_API.deleteVendor(selectedDeleteVendor.id.toString()).then(
+      (response) => {
+        if (response.status == 204) {
+          showSuccess();
+        } else {
+          showFailure();
+          return;
+        }
+      }
+    );
+    const _vendors = vendors.filter(
+      (selectVendor) => selectedDeleteVendor.id != selectVendor.id
+    );
+    setVendors(_vendors);
     setSelectedDeleteVendor(emptyVendor);
   };
 
@@ -110,7 +132,6 @@ export default function VendorList() {
     logger.debug("Filter Applied", event);
     setLoading(true);
     setFilterParams(event);
-    callAPI();
   };
 
   // Called when any of the columns are selected to be sorted
@@ -118,7 +139,6 @@ export default function VendorList() {
     logger.debug("Sort Applied", event);
     setLoading(true);
     setSortParams(event);
-    callAPI();
   };
 
   // Called when the paginator page is switched
@@ -126,20 +146,23 @@ export default function VendorList() {
     logger.debug("Page Applied", event);
     setLoading(true);
     setPageParams(event);
-    callAPI();
   };
 
   // When any of the list of params are changed, useEffect is called to hit the API endpoint
-  useEffect(() => callAPI(), []);
+  useEffect(() => callAPI(), [sortParams, pageParams, filterParams]);
 
   // Calls the Vendors API
   const callAPI = () => {
+    // Invert sort order
+    let sortField = sortParams.sortField;
+    if (sortParams.sortOrder == -1) {
+      sortField = "-".concat(sortField);
+    }
+
     VENDORS_API.getVendors({
       page: pageParams.page ?? 0,
       page_size: pageParams.rows,
-      ordering_field: sortParams.sortField,
-      ordering_ascending: sortParams.sortOrder,
-      search: filterParams.filters.name.value,
+      ordering: sortField,
     }).then((response) => onAPIResponse(response));
   };
 
@@ -153,10 +176,23 @@ export default function VendorList() {
   // ----------------- TEMPLATES/VISIBLE COMPONENTS -----------------
 
   // Edit/Delete Cell Template
-  const editDeleteCellTemplate = EditDeleteTemplate<Vendor>({
-    onEdit: (rowData) => editVendor(rowData),
-    onDelete: (rowData) => deleteVendorPopup(rowData),
-  });
+  const editDeleteCellTemplate = (rowData: Vendor) => {
+    return (
+      <React.Fragment>
+        <Button
+          icon="pi pi-pencil"
+          className="p-button-rounded p-button-success mr-2"
+          onClick={() => editVendor(rowData)}
+        />
+        <Button
+          icon="pi pi-trash"
+          className="p-button-rounded p-button-danger"
+          onClick={() => deleteVendorPopup(rowData)}
+          disabled={rowData.numPO > 0}
+        />
+      </React.Fragment>
+    );
+  };
 
   // The delete popup
   const deletePopup = (
@@ -167,6 +203,20 @@ export default function VendorList() {
     />
   );
 
+  // Toast is used for showing success/error messages
+  const toast = useRef<Toast>(null);
+
+  const showSuccess = () => {
+    toast.current?.show({ severity: "success", summary: "Vendor Deleted" });
+  };
+
+  const showFailure = () => {
+    toast.current?.show({
+      severity: "error",
+      summary: "Vendor could not be deleted",
+    });
+  };
+
   // Map column objects to actual columns
   const dynamicColumns = COLUMNS.map((col) => {
     return (
@@ -176,7 +226,7 @@ export default function VendorList() {
         field={col.field}
         header={col.header}
         // Filtering
-        filter
+        filter={col.filterable}
         filterElement={col.customFilter}
         //filterMatchMode={"contains"}
         filterPlaceholder={col.filterPlaceholder}
@@ -194,9 +244,11 @@ export default function VendorList() {
   });
 
   return (
-    <>
+    <div className="card pt-5 px-2">
+      <Toast ref={toast} />
       <DataTable
         // General Settings
+        showGridlines
         value={vendors}
         lazy
         responsiveLayout="scroll"
@@ -221,6 +273,6 @@ export default function VendorList() {
         <Column body={editDeleteCellTemplate} style={{ minWidth: "16rem" }} />
       </DataTable>
       {deletePopupVisible && deletePopup}
-    </>
+    </div>
   );
 }

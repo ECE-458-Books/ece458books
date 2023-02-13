@@ -7,6 +7,11 @@ function NavigationBar() {
 
   const items: MenuItem[] = [
     {
+      label: "Login",
+      icon: "pi pi-fw pi-user",
+      command: () => navigate("/"),
+    },
+    {
       label: "Books",
       icon: "pi pi-fw pi-book",
       items: [
@@ -86,9 +91,34 @@ function NavigationBar() {
         },
       ],
     },
+    {
+      label: "Sales Report",
+      icon: "pi pi-dollar",
+      command: () => navigate("/sales-report"),
+    },
+    {
+      label: "Settings",
+      icon: "pi pi-fw pi-wrench",
+      items: [
+        {
+          label: "Change Password",
+          icon: "pi pi-fw pi-database",
+          command: () => navigate("/change-password"),
+        },
+      ],
+    },
   ];
 
-  return <Menubar model={items} />;
+  const start = (
+    <img
+      alt="logo"
+      src={require("../ImaginarySoftwareLogo.jpeg")}
+      height="50"
+      className="mr-2 px-3"
+    ></img>
+  );
+
+  return <Menubar model={items} start={start} />;
 }
 
 export default NavigationBar;

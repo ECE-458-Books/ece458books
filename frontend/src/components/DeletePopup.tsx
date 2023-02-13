@@ -42,7 +42,7 @@ export default function DeletePopup(props: DeletePopupProps) {
         />
         {
           <span>
-            Are you sure you want to delete <b>{props.deleteItemIdentifier}</b>?
+            Are you sure you want to delete {props.deleteItemIdentifier}?
           </span>
         }
       </div>

@@ -1,14 +1,16 @@
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
-from django.db.models import Sum
-
 from .models import Purchase, PurchaseOrder
-
 from books.models import Book
-from vendors.models import Vendor
-from vendors.serializers import VendorSerializer
+
 
 class PurchaseSerializer(serializers.ModelSerializer):
+    """Serializes a singular purchase that is part of a purchase order into the following fields:
+    - book: pk of the book purchased
+    - book_title: title of the book purchased
+    - id: id of the purchase (if exists yet)
+    - subtotal: the total cost of this singular purchase
+    """
     book = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all())
     book_title = serializers.SerializerMethodField()
     id = serializers.IntegerField(required=False)
@@ -20,9 +22,9 @@ class PurchaseSerializer(serializers.ModelSerializer):
 
     def get_book_title(self, instance):
         return instance.book.title
-    
+
     def get_subtotal(self, instance):
-        return float(format(instance.quantity*instance.unit_wholesale_price, '.2f'))
+        return float(format(instance.quantity * instance.unit_wholesale_price, '.2f'))
 
 
 class PurchaseOrderSerializer(serializers.ModelSerializer):
@@ -50,14 +52,14 @@ class PurchaseOrderSerializer(serializers.ModelSerializer):
         for purchase in purchases:
             unique_books.add(purchase.book)
         return len(unique_books)
-    
+
     def get_total_cost(self, instance):
         total_cost = 0
         purchases = Purchase.objects.filter(purchase_order=instance.id)
         for purchase in purchases:
             total_cost += purchase.cost
         return round(total_cost, 2)
-    
+
     def get_vendor_name(self, instance):
         return instance.vendor.name
 
@@ -65,13 +67,12 @@ class PurchaseOrderSerializer(serializers.ModelSerializer):
         purchases_data = validated_data.pop('purchases')
 
         # Sanity check if there exists at least one sale in PO
-        if(len(purchases_data) < 1):
-            raise APIException({
-                "error": {
+        if (len(purchases_data) < 1):
+            raise APIException(
+                {"error": {
                     "query": "PO CREATE",
-                    "msg" : "There must be at least one order in Purchase Orders."
-                }
-            })
+                    "msg": "There must be at least one order in Purchase Orders."
+                }})
 
         purchase_order = PurchaseOrder.objects.create(**validated_data)
         for purchase_data in purchases_data:
@@ -82,30 +83,31 @@ class PurchaseOrderSerializer(serializers.ModelSerializer):
     def create_update_stock(self, purchase_data):
         book_obj = purchase_data['book']
         # Sanity check if the book is not ghost
-        if(book_obj.isGhost):
+        if (book_obj.isGhost):
             raise APIException({
                 "error": {
-                    "query": "PO CREATE",
-                    "msg": f"Please Add Book title: {book_obj.title} and id: {book_obj.id} to the Inventory Before Creating Purchase Orders"
+                    "query":
+                        "PO CREATE",
+                    "msg":
+                        f"Please Add Book title: {book_obj.title} and id: {book_obj.id} to the Inventory Before Creating Purchase Orders"
                 }
             })
 
         book_obj.stock += purchase_data['quantity']
         book_obj.save()
-    
+
     def update(self, instance, validated_data):
         purchases_update_data = validated_data.pop('purchases')
         existing_purchases = Purchase.objects.filter(purchase_order_id=instance.id)
         existing_purchases_ids = set([purchase.id for purchase in existing_purchases])
 
         # Sanity check if there exists at least one sale in PO
-        if(len(purchases_update_data) < 1):
-            raise APIException({
-                "error": {
+        if (len(purchases_update_data) < 1):
+            raise APIException(
+                {"error": {
                     "query": "PO MODIFY",
-                    "msg" : "There must be at least one order in Purchase Orders."
-                }
-            })
+                    "msg": "There must be at least one order in Purchase Orders."
+                }})
 
         # Inventory Count for Books
         # Case 1. Purchase already exists so we update the purchase (meaning the equation: stock + (new-origial) should be checked for below 0)
@@ -116,7 +118,7 @@ class PurchaseOrderSerializer(serializers.ModelSerializer):
         books_stock_change = {}
         for purchase_data in purchases_update_data:
             purchase_id = purchase_data.get('id', None)
-            if purchase_id: # Purchase already exists
+            if purchase_id:  # Purchase already exists
                 # Check if can replace old purchase with new purchase and still have positive book stock
                 # Two cases
                 # 1. Book doesn't change
@@ -130,25 +132,28 @@ class PurchaseOrderSerializer(serializers.ModelSerializer):
                     books_stock_change[update_purchase_book.id] = new_quantity - old_quantity
                     # if (curr_book_stock + (new_quantity - old_quantity) < 0): # problematic
                     #     raise APIException("Cannot do update because would cause a book stock to be negative.")
-                else: # book does change, so just treat purchase as deletion for calculating stock, thus don't remove it from purchases_to_delete_ids
+                else:  # book does change, so just treat purchase as deletion for calculating stock, thus don't remove it from purchases_to_delete_ids
                     # print(f'{purchase_id}, should calculate as delete bcz book change')
-                    books_stock_change[purchase_data['book'].id] = books_stock_change.get(purchase_data['book'].id, 0) + purchase_data['quantity']
+                    books_stock_change[purchase_data['book'].id] = books_stock_change.get(purchase_data['book'].id,
+                                                                                          0) + purchase_data['quantity']
                     pass
                 # print(purchase_data)
                 # print(Purchase.objects.get(id=purchase_data['id']).book)
-            else: # Must create new purchase order, which will never cause stock to go below zero
-                books_stock_change[purchase_data['book'].id] = books_stock_change.get(purchase_data['book'].id, 0) + purchase_data['quantity']
+            else:  # Must create new purchase order, which will never cause stock to go below zero
+                books_stock_change[purchase_data['book'].id] = books_stock_change.get(purchase_data['book'].id,
+                                                                                      0) + purchase_data['quantity']
         for purchase_to_delete_id in purchases_to_delete_ids:
             purchase_to_delete = Purchase.objects.get(id=purchase_to_delete_id)
             book_quantity_loss = purchase_to_delete.quantity
             book_losing_stock = purchase_to_delete.book
-            books_stock_change[book_losing_stock.id] = books_stock_change.get(book_losing_stock.id, 0) - book_quantity_loss
+            books_stock_change[book_losing_stock.id] = books_stock_change.get(book_losing_stock.id,
+                                                                              0) - book_quantity_loss
             # if (book_losing_stock.stock - book_quantity_loss < 0): # problematic
             #     raise APIException("Cannot do update because would cause a book stock to be negative.")
         print(books_stock_change)
         # Now check if these would create negative book inventory
         for book_id, stock_diff in books_stock_change.items():
-            if(Book.objects.get(id=book_id).stock + stock_diff < 0): # would cause book stock to be negative
+            if (Book.objects.get(id=book_id).stock + stock_diff < 0):  # would cause book stock to be negative
                 raise APIException("Cannot do update because would cause a book stock to be negative.")
 
         # purchase_book_quantities = Purchase.objects.filter(purchase_order=instance.id).values('book').annotate(num_books=Sum('quantity')).values('book', 'num_books')
@@ -158,16 +163,16 @@ class PurchaseOrderSerializer(serializers.ModelSerializer):
         for purchase_data in purchases_update_data:
             purchase_id = purchase_data.get('id', None)
             if purchase_id:  # Purchase already exists
-                self.update_purchase(instance, purchase_data, purchase_id) # Case 1.
+                self.update_purchase(instance, purchase_data, purchase_id)  # Case 1.
                 existing_purchases_ids.remove(purchase_id)
             else:  # Purchase doesn't exist, so create it
                 Purchase.objects.create(purchase_order=instance, **purchase_data)
-            
+
         for old_purchase_id in existing_purchases_ids:
             old_purchase = Purchase.objects.get(id=old_purchase_id)
             old_purchase.delete()
-        
-        for book_id, stock_diff in books_stock_change.items(): # update stocks
+
+        for book_id, stock_diff in books_stock_change.items():  # update stocks
             book_to_update = Book.objects.get(id=book_id)
             book_to_update.stock += stock_diff
             book_to_update.save()
@@ -190,14 +195,14 @@ class PurchaseOrderSerializer(serializers.ModelSerializer):
         #                 "book_stock": book_to_remove_purchase.stock,
         #                 "quantity_request_for_delete": purchase_book_quantity['num_books']
         #             }
-        #             } 
+        #             }
         #         },
         #         status=status.HTTP_403_FORBIDDEN)
-        
+
         # If this purchase order modify is valid then we update non_nested_fields
         self.update_non_nested_fields(instance, validated_data)
         return instance
-    
+
     def update_non_nested_fields(self, instance, validated_data):
         instance.date = validated_data.get('date', instance.date)
         instance.vendor = validated_data.get('vendor', instance.vendor)
@@ -210,4 +215,3 @@ class PurchaseOrderSerializer(serializers.ModelSerializer):
         purchase.quantity = purchase_data.get('quantity', purchase.quantity)
         purchase.unit_wholesale_price = purchase_data.get('unit_wholesale_price', purchase.unit_wholesale_price)
         purchase.save()
-        

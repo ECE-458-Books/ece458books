@@ -149,14 +149,9 @@ export default function PurchaseOrderList() {
     setDeletePopupVisible(false);
     PURCHASES_API.deletePurchaseOrder({
       id: selectedDeletePurchaseOrder.id,
-    }).then((response) => {
-      if (response.status == 204) {
-        showSuccess();
-      } else {
-        showFailure();
-        return;
-      }
-    });
+    })
+      .then(() => showSuccess())
+      .catch(() => showFailure());
     const _purchaseOrders = purchaseOrders.filter(
       (selectPO) => selectedDeletePurchaseOrder.id != selectPO.id
     );

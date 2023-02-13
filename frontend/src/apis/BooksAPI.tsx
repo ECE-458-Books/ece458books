@@ -49,10 +49,6 @@ export interface APIBookSimplified {
   title: string;
 }
 
-export interface GetBooksNoPagingResp {
-  books: APIBookSimplified[];
-}
-
 // modifyBook
 export interface ModifyBookReq {
   book: APIBook;

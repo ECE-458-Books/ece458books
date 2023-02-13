@@ -116,13 +116,13 @@ export default function PODetail() {
 
   const columns: TableColumn[] = [
     {
-      field: "book_id",
+      field: "bookId",
       header: "ID",
       filterPlaceholder: "ID",
       hidden: true,
     },
     {
-      field: "book_title",
+      field: "bookTitle",
       header: "Book",
       filterPlaceholder: "Books",
       cellEditor: (options: ColumnEditorOptions) =>
@@ -137,7 +137,7 @@ export default function PODetail() {
       cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
     },
     {
-      field: "unit_wholesale_price",
+      field: "unitWholesalePrice",
       header: "Unit Wholesale Price ($)",
       filterPlaceholder: "Price",
       cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
@@ -174,12 +174,13 @@ export default function PODetail() {
   // Populate the vendors/book list on page load
   useEffect(() => {
     VENDORS_API.getVendorsNOPaging().then((response) => {
+      console.log(response);
       const tempVendorMap = new Map<string, number>();
-      for (const vendor of response.vendors) {
+      for (const vendor of response) {
         tempVendorMap.set(vendor.name, vendor.id);
       }
       setVendorMap(tempVendorMap);
-      setVendorNamesList(response.vendors.map((vendor) => vendor.name));
+      setVendorNamesList(response.map((vendor) => vendor.name));
       //return setVendorsData(response.vendors);
     });
 
@@ -235,14 +236,9 @@ export default function PODetail() {
         purchases: apiPurchases,
       } as AddPOReq;
 
-      PURCHASES_API.addPurchaseOrder(purchaseOrder).then((response) => {
-        if (response.status == 201) {
-          showSuccess("Purchase order added successfully");
-        } else {
-          showFailure("Could not add purchase order");
-          return;
-        }
-      });
+      PURCHASES_API.addPurchaseOrder(purchaseOrder)
+        .then(() => showSuccess("Purchase order added successfully"))
+        .catch(() => showFailure("Could not add purchase order"));
     } else {
       // Otherwise, it is a modify page
       const apiPurchases = purchases.map((purchase) => {
@@ -263,14 +259,9 @@ export default function PODetail() {
         purchases: apiPurchases,
       } as ModifyPOReq;
 
-      PURCHASES_API.modifyPurchaseOrder(purchaseOrder).then((response) => {
-        if (response.status == 200) {
-          showSuccess("Purchase order edited successfully");
-        } else {
-          showFailure("Could not edit purchase order");
-          return;
-        }
-      });
+      PURCHASES_API.modifyPurchaseOrder(purchaseOrder)
+        .then(() => showSuccess("Purchase order modified successfully"))
+        .catch(() => showFailure("Could not modify purchase order"));
     }
   };
 

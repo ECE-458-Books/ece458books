@@ -26,9 +26,6 @@ export interface GetVendorsResp {
 }
 
 // getVendorsNoPagination
-export interface GetVendorsNoPaginationResp {
-  vendors: APIVendor[];
-}
 
 // deleteVendor
 export interface DeleteVendorReq {
@@ -55,7 +52,7 @@ export const VENDORS_API = {
     });
   },
 
-  getVendorsNOPaging: async function (): Promise<GetVendorsNoPaginationResp> {
+  getVendorsNOPaging: async function (): Promise<APIVendor[]> {
     return await API.request({
       url: VENDORS_EXTENSION,
       method: METHOD_GET,

@@ -100,9 +100,9 @@ export default function SRDetail() {
   );
 
   const COLUMNS: TableColumn[] = [
-    { field: "book", header: "ID", filterPlaceholder: "ID", hidden: true },
+    { field: "bookId", header: "ID", filterPlaceholder: "ID", hidden: true },
     {
-      field: "book_title",
+      field: "bookTitle",
       header: "Book",
       filterPlaceholder: "book",
       cellEditor: (options: ColumnEditorOptions) =>
@@ -117,7 +117,7 @@ export default function SRDetail() {
       cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
     },
     {
-      field: "unit_retail_price",
+      field: "unitRetailPrice",
       header: "Unit Retail Price ($)",
       filterPlaceholder: "Price",
       cellEditor: (options: ColumnEditorOptions) => priceEditor(options),
@@ -196,15 +196,9 @@ export default function SRDetail() {
         date: toYYYYMMDDWithDash(date),
         sales: apiSales,
       } as AddSRReq;
-
-      SALES_API.addSalesReconciliation(salesReconciliation).then((response) => {
-        if (response.status == 201) {
-          showSuccess("Sales reconciliation added successfully");
-        } else {
-          showFailure("Could not add sales reconciliation");
-          return;
-        }
-      });
+      SALES_API.addSalesReconciliation(salesReconciliation)
+        .then(() => showSuccess("Sales reconciliation added successfully"))
+        .catch(() => showFailure("Could not add sales reconciliation"));
     } else {
       // Otherwise, it is a modify page
       const apiSales = sales.map((sale) => {
@@ -222,16 +216,9 @@ export default function SRDetail() {
         sales: apiSales,
       } as ModifySRReq;
 
-      SALES_API.modifySalesReconciliation(salesReconciliation).then(
-        (response) => {
-          if (response.status == 200) {
-            showSuccess("Sales reconciliation edited successfully");
-          } else {
-            showFailure("Could not edit sales reconciliation");
-            return;
-          }
-        }
-      );
+      SALES_API.modifySalesReconciliation(salesReconciliation)
+        .then(() => showSuccess("Sales reconciliation modified successfully"))
+        .catch(() => showFailure("Could not modify sales reconciliation"));
     }
   };
 

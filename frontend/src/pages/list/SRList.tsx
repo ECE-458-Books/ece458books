@@ -153,14 +153,9 @@ export default function SalesReconciliationList() {
     setDeletePopupVisible(false);
     SALES_API.deleteSalesReconciliation({
       id: selectedDeleteSalesReconciliation.id,
-    }).then((response) => {
-      if (response.status == 204) {
-        showSuccess();
-      } else {
-        showFailure();
-        return;
-      }
-    });
+    })
+      .then(() => showSuccess())
+      .catch(() => showFailure());
     const _salesReconciliations = salesReconciliations.filter(
       (selectSR) => selectedDeleteSalesReconciliation.id != selectSR.id
     );

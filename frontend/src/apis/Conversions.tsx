@@ -4,6 +4,12 @@ import { SRSaleRow } from "../pages/detail/SRDetail";
 import { Book } from "../pages/list/BookList";
 import { Genre } from "../pages/list/GenreList";
 import { PurchaseOrder } from "../pages/list/POList";
+import {
+  SalesReport,
+  SalesReportDailyRow,
+  SalesReportTopBooksRow,
+  SalesReportTotalRow,
+} from "../pages/list/SalesReport";
 import { SalesReconciliation } from "../pages/list/SRList";
 import { Vendor } from "../pages/list/VendorList";
 import {
@@ -14,6 +20,7 @@ import { APIBook, APIBookWithDBTag } from "./BooksAPI";
 import { APIGenre } from "./GenresAPI";
 import { APIPO } from "./PurchasesAPI";
 import { APISR } from "./SalesAPI";
+import { GetSalesReportResp } from "./SalesRepAPI";
 import { APIVendor } from "./VendorsAPI";
 
 // Internal data type -> ordering required for book get API
@@ -174,5 +181,45 @@ export function APItoInternalSRConversion(sr: APISR): SalesReconciliation {
     uniqueBooks: sr.num_unique_books,
     totalRevenue: sr.total_revenue,
     sales: sales,
+  };
+}
+
+export function APIToInternalSalesReportConversion(
+  salesRep: GetSalesReportResp
+): SalesReport {
+  const dailyRows: SalesReportDailyRow[] = salesRep.daily_summary.map(
+    (daily) => {
+      return {
+        date: daily.date,
+        revenue: daily.revenue,
+        cost: daily.cost,
+        profit: daily.profit,
+      };
+    }
+  );
+
+  const topBooksRows: SalesReportTopBooksRow[] = salesRep.top_books.map(
+    (book) => {
+      return {
+        bookId: book.book_id,
+        bookTitle: book.book_title,
+        bookRevenue: book.book_revenue,
+        bookProfit: book.book_profit,
+        numBooksSold: book.num_books_sold,
+        totalCostMostRecent: book.total_cost_most_recent,
+      };
+    }
+  );
+
+  const totalRow: SalesReportTotalRow = {
+    revenue: salesRep.total_summary.revenue,
+    cost: salesRep.total_summary.cost,
+    profit: salesRep.total_summary.profit,
+  };
+
+  return {
+    dailySummaryRows: dailyRows,
+    topBooksRows: topBooksRows,
+    totalRow: totalRow,
   };
 }

@@ -7,28 +7,34 @@ import moment from "moment";
 import { GetSalesReportResp, SALES_REPORT_API } from "../../apis/SalesRepAPI";
 import { Toast } from "primereact/toast";
 import { logger } from "../../util/Logger";
+import { APIToInternalSalesReportConversion } from "../../apis/Conversions";
 
-// The structure of the response for a SR from the API
-export interface salesReportTotalRow {
+export interface SalesReport {
+  totalRow: SalesReportTotalRow;
+  dailySummaryRows: SalesReportDailyRow[];
+  topBooksRows: SalesReportTopBooksRow[];
+}
+
+export interface SalesReportTotalRow {
   revenue: number;
   cost: number;
   profit: number;
 }
 
-export interface salesReportDailyRow {
+export interface SalesReportDailyRow {
   date: string;
   revenue: number;
   cost: number;
   profit: number;
 }
 
-export interface salesReportTopBooksRow {
-  book_id: number;
-  num_books_sold: number;
-  book_revenue: number;
-  total_cost_most_recent: number;
-  book_title: string;
-  book_profit: number;
+export interface SalesReportTopBooksRow {
+  bookId: number;
+  numBooksSold: number;
+  bookRevenue: number;
+  totalCostMostRecent: number;
+  bookTitle: string;
+  bookProfit: number;
 }
 
 export interface TableColumnSales {
@@ -50,18 +56,18 @@ const COLUMNS_DAILY: TableColumnSales[] = [
 ];
 
 const COLUMNS_TOP_BOOKS: TableColumnSales[] = [
-  { field: "book_title", header: "Book" },
-  { field: "book_id", header: "id" },
-  { field: "num_books_sold", header: "Number of Books Sold" },
-  { field: "book_revenue", header: "Book Revenue" },
-  { field: "total_cost_most_recent", header: "Book Cost - Most Recent" },
-  { field: "book_profit", header: "Book Profit" },
+  { field: "bookTitle", header: "Book" },
+  { field: "bookId", header: "id" },
+  { field: "numBooksSold", header: "Number of Books Sold" },
+  { field: "bookRevenue", header: "Book Revenue" },
+  { field: "totalCostMostRecent", header: "Book Cost - Most Recent" },
+  { field: "bookProfit", header: "Book Profit" },
 ];
 
 export default function SalesReport() {
-  const [totalsData, setTotalsData] = useState<salesReportTotalRow[]>([]);
-  const [dailyData, setDailyData] = useState<salesReportDailyRow[]>([]);
-  const [topBooksData, setTopBooksData] = useState<salesReportTopBooksRow[]>(
+  const [totalsData, setTotalsData] = useState<SalesReportTotalRow[]>([]);
+  const [dailyData, setDailyData] = useState<SalesReportDailyRow[]>([]);
+  const [topBooksData, setTopBooksData] = useState<SalesReportTopBooksRow[]>(
     []
   );
   const [dates, setDates] = useState<any>(null);
@@ -69,25 +75,11 @@ export default function SalesReport() {
     useState(false);
 
   const onAPIResponse = (response: GetSalesReportResp) => {
-    if (
-      response.daily_summary[0].date === "Cannot Sell a Book not Purchased" &&
-      response.top_books[0].book_title === "Stop Selling Imaginary Books"
-    ) {
-      showFailure(
-        "Cannot sell a book that has not been purchased. I know we are Imaginary Software, but not that kind of imagination."
-      );
-    } else {
-      setTotalsData([
-        {
-          revenue: response.revenue,
-          cost: response.cost,
-          profit: response.profit,
-        },
-      ]);
-      setDailyData(response.daily_summary);
-      setTopBooksData(response.top_books);
-      showSuccess("Data Successfully Retrieved");
-    }
+    const salesReport = APIToInternalSalesReportConversion(response);
+    console.log(salesReport);
+    setTotalsData([salesReport.totalRow]);
+    setDailyData(salesReport.dailySummaryRows);
+    setTopBooksData(salesReport.topBooksRows);
   };
 
   // Toast is used for showing success/error messages
@@ -142,7 +134,9 @@ export default function SalesReport() {
           SALES_REPORT_API.getSalesReport({
             start: moment(dates[0]).format("YYYY-MM-DD"),
             end: moment(dates[1]).format("YYYY-MM-DD"),
-          }).then((response) => onAPIResponse(response));
+          })
+            .then((response) => onAPIResponse(response))
+            .catch(() => showFailure("Error retrieving sales report"));
         } else {
           showFailure("Select end date");
         }

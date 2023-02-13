@@ -42,13 +42,9 @@ export default function VendorDetail() {
   const onSubmit = (): void => {
     const modifiedVendor: ModifyVendorReq = { id: id, name: vendor };
     logger.debug("Edit Vendor Submitted", modifiedVendor);
-    VENDORS_API.modifyVendor(modifiedVendor).then((response) => {
-      if (response.status == 200) {
-        showSuccess();
-      } else {
-        showFailure();
-      }
-    });
+    VENDORS_API.modifyVendor(modifiedVendor)
+      .then(() => showSuccess())
+      .catch(() => showFailure());
     setIsModifiable(false);
   };
 

@@ -122,7 +122,10 @@ export default function GenreList() {
     setDeletePopupVisible(false);
     GENRES_API.deleteGenre({ id: selectedDeleteGenre.id })
       .then(() => showSuccess())
-      .catch(() => showFailure());
+      .catch(() => {
+        showFailure();
+        return;
+      });
     const _genres = genres.filter(
       (selectGenre) => selectedDeleteGenre.id != selectGenre.id
     );

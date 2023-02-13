@@ -109,16 +109,12 @@ export default function VendorList() {
   const deleteVendorFinal = () => {
     logger.debug("Delete Vendor Finalized", selectedDeleteVendor);
     setDeletePopupVisible(false);
-    VENDORS_API.deleteVendor({ id: selectedDeleteVendor.id }).then(
-      (response) => {
-        if (response.status == 204) {
-          showSuccess();
-        } else {
-          showFailure();
-          return;
-        }
-      }
-    );
+    VENDORS_API.deleteVendor({ id: selectedDeleteVendor.id })
+      .then(() => showSuccess())
+      .catch(() => {
+        showFailure();
+        return;
+      });
     const _vendors = vendors.filter(
       (selectVendor) => selectedDeleteVendor.id != selectVendor.id
     );

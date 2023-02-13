@@ -250,6 +250,7 @@ export default function BookList() {
       })
       .catch(() => {
         showFailure();
+        return;
       });
     // TODO: Show error if book is not actually deleted
     const _books = books.filter((book) => selectedDeleteBook.id != book.id);

@@ -186,18 +186,20 @@ export default function BookAdd() {
 
   const onISBNInitialSubmit = (event: FormEvent<HTMLFormElement>): void => {
     logger.debug("Submitting Initial Book Lookup", textBox);
-    BOOKS_API.addBookInitialLookup({ isbns: textBox }).then((response) => {
-      setBooks(
-        response.books.map((book) => APIToInternalBookConversionWithDB(book))
-      );
-      if (response.invalid_isbns.length > 0) {
-        showFailure(
-          "The following ISBNs were not successfully added: ".concat(
-            response.invalid_isbns.toString()
-          )
+    BOOKS_API.addBookInitialLookup({ isbns: textBox })
+      .then((response) => {
+        setBooks(
+          response.books.map((book) => APIToInternalBookConversionWithDB(book))
         );
-      }
-    });
+        if (response.invalid_isbns.length > 0) {
+          showFailure(
+            "The following ISBNs were not successfully added: ".concat(
+              response.invalid_isbns.toString()
+            )
+          );
+        }
+      })
+      .catch(() => showFailure("Could not add books"));
 
     event.preventDefault();
   };
@@ -240,9 +242,13 @@ export default function BookAdd() {
 
     for (const book of books) {
       if (!book.fromDB) {
-        BOOKS_API.addBookFinal({ book: InternalToAPIBookConversion(book) });
+        BOOKS_API.addBookFinal({
+          book: InternalToAPIBookConversion(book),
+        }).catch(() => showFailure("Could not add ".concat(book.title)));
       } else {
-        BOOKS_API.modifyBook({ book: InternalToAPIBookConversion(book) });
+        BOOKS_API.modifyBook({ book: InternalToAPIBookConversion(book) }).catch(
+          () => showFailure("Could not modify ".concat(book.title))
+        );
       }
     }
 

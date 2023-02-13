@@ -100,8 +100,9 @@ export default function BookDetail() {
         stock: 0,
       };
       logger.debug("Submitting Book Modify", book);
-      BOOKS_API.modifyBook({ book: book });
-      showSuccess();
+      BOOKS_API.modifyBook({ book: book })
+        .then(() => showSuccess())
+        .catch(() => showFailure("Could not modify book"));
       formik.resetForm();
     },
   });

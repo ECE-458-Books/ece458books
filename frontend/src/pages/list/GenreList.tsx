@@ -12,7 +12,10 @@ import { Toast } from "primereact/toast";
 import React, { useRef } from "react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { APIToInternalGenreConversion } from "../../apis/Conversions";
+import {
+  APIGenreSortFieldMap,
+  APIToInternalGenreConversion,
+} from "../../apis/Conversions";
 import { GENRES_API, GetGenresResp } from "../../apis/GenresAPI";
 import DeletePopup from "../../components/DeletePopup";
 import { TableColumn } from "../../components/Table";
@@ -117,14 +120,9 @@ export default function GenreList() {
   const deleteGenreFinal = () => {
     logger.debug("Delete Genre Finalized", selectedDeleteGenre);
     setDeletePopupVisible(false);
-    GENRES_API.deleteGenre({ id: selectedDeleteGenre.id }).then((response) => {
-      if (response.status == 204) {
-        showSuccess();
-      } else {
-        showFailure();
-        return;
-      }
-    });
+    GENRES_API.deleteGenre({ id: selectedDeleteGenre.id })
+      .then(() => showSuccess())
+      .catch(() => showFailure());
     const _genres = genres.filter(
       (selectGenre) => selectedDeleteGenre.id != selectGenre.id
     );
@@ -168,7 +166,7 @@ export default function GenreList() {
   // Calls the Genres API
   const callAPI = () => {
     // Invert sort order
-    let sortField = sortParams.sortField;
+    let sortField = APIGenreSortFieldMap.get(sortParams.sortField) ?? "";
     if (sortParams.sortOrder == -1) {
       sortField = "-".concat(sortField);
     }

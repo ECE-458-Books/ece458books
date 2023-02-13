@@ -244,14 +244,13 @@ export default function BookList() {
   const deleteBookFinal = () => {
     logger.debug("Delete Book Finalized", selectedDeleteBook);
     setDeletePopupVisible(false);
-    BOOKS_API.deleteBook({ id: selectedDeleteBook.id }).then((response) => {
-      if (response.status == 204) {
+    BOOKS_API.deleteBook({ id: selectedDeleteBook.id })
+      .then(() => {
         showSuccess();
-      } else {
+      })
+      .catch(() => {
         showFailure();
-        return;
-      }
-    });
+      });
     // TODO: Show error if book is not actually deleted
     const _books = books.filter((book) => selectedDeleteBook.id != book.id);
     setBooks(_books);

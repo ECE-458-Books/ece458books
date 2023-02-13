@@ -2,7 +2,6 @@ from urllib.request import urlopen
 import json
 from isbnlib import *
 from dateutil import parser
-from pprint import pprint
 
 class ISBNTools:
     def __init__(

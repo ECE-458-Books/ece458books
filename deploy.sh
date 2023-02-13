@@ -7,7 +7,9 @@
 # ----------------------------------------------------------------------
 
 echo "Copy FrondEnd Environment File"
-cp ../.env.development frontend
+cp /home/hk196/.env.development frontend
+
 echo "Copy BackEnd Environment File"
-cp ../.env backend
-make local
+cp /home/hk196/.env backend
+
+(cd /home/hk196/jenkins_auto_deploy && make local)

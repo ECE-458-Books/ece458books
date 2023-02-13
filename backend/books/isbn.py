@@ -2,6 +2,7 @@ from urllib.request import urlopen
 import json
 from isbnlib import *
 from dateutil import parser
+from pprint import pprint
 
 class ISBNTools:
     def __init__(
@@ -56,18 +57,21 @@ class ISBNTools:
         relevant_keys = ['title', 'authors', 'publisher', 'pageCount', 'publishedDate', 'industryIdentifiers', 'dimensions']
 
         for key in relevant_keys:
-            if(key == 'dimensions'):
-                # convert dimensions
-                for dimension in info['dimensions'].keys():
-                    ret[dimension] = self.centiToInches(info['dimensions'][dimension])
-            elif (key == 'industryIdentifiers'):
-                # convert to isbn
-                ret['isbn_10'] = info[key][0]['identifier']
-                ret['isbn_13'] = isbn
-            elif (key == 'publishedDate'):
-                ret[key] = parser.parse(info[key]).year
+            if key in info.keys():
+                if(key == 'dimensions'):
+                    # convert dimensions
+                    for dimension in info['dimensions'].keys():
+                        ret[dimension] = self.centiToInches(info['dimensions'][dimension])
+                elif (key == 'industryIdentifiers'):
+                    # convert to isbn
+                    ret['isbn_10'] = info[key][0]['identifier']
+                    ret['isbn_13'] = isbn
+                elif (key == 'publishedDate'):
+                    ret[key] = parser.parse(info[key]).year
+                else:
+                    ret[key] = info[key]
             else:
-                ret[key] = info[key]
+                ret[key] = None
         
         # Set from DB to False
         ret["fromDB"] = False

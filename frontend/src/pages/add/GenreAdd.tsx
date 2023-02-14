@@ -32,13 +32,9 @@ export default function GenreAdd() {
     str = str.filter((str) => /\S/.test(str));
     //loop through all elements and do an API submission to add the strings to database
     for (let i = 0; i < str.length; i++) {
-      GENRES_API.addGenres(str[i]).then((response) => {
-        if (response.status == 201) {
-          showSuccess();
-        } else {
-          showFailure();
-        }
-      });
+      GENRES_API.addGenre({ name: str[i] })
+        .then(() => showSuccess())
+        .catch(() => showFailure());
     }
     event.preventDefault();
   };

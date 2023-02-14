@@ -4,8 +4,6 @@ import { ToggleButton } from "primereact/togglebutton";
 import ConfirmButton from "../../components/ConfirmButton";
 import { useLocation } from "react-router-dom";
 import { ModifyVendorReq, VENDORS_API } from "../../apis/VendorsAPI";
-import { Vendor } from "../list/VendorList";
-import { InputNumber } from "primereact/inputnumber";
 import { logger } from "../../util/Logger";
 import { Toast } from "primereact/toast";
 
@@ -44,13 +42,9 @@ export default function VendorDetail() {
   const onSubmit = (): void => {
     const modifiedVendor: ModifyVendorReq = { id: id, name: vendor };
     logger.debug("Edit Vendor Submitted", modifiedVendor);
-    VENDORS_API.modifyVendor(modifiedVendor).then((response) => {
-      if (response.status == 200) {
-        showSuccess();
-      } else {
-        showFailure();
-      }
-    });
+    VENDORS_API.modifyVendor(modifiedVendor)
+      .then(() => showSuccess())
+      .catch(() => showFailure());
     setIsModifiable(false);
   };
 

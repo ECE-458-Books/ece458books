@@ -22,6 +22,10 @@ import { logger } from "../../util/Logger";
 import { Toast } from "primereact/toast";
 import { GENRES_API } from "../../apis/GenresAPI";
 import { Dropdown } from "primereact/dropdown";
+import {
+  APIToInternalBookConversionWithDB,
+  InternalToAPIBookConversion,
+} from "../../apis/Conversions";
 
 export interface BookWithDBTag extends Book {
   fromDB: boolean;
@@ -53,11 +57,11 @@ export default function BookAdd() {
   const [genreList, setGenreList] = useState<string[]>([]);
   useEffect(() => {
     GENRES_API.getGenres({
-      page: 0,
+      page: 1,
       page_size: 30,
       ordering: "name",
     }).then((response) =>
-      setGenreList(response.genres.map((genre) => genre.name))
+      setGenreList(response.results.map((genre) => genre.name))
     );
   }, []);
 
@@ -113,8 +117,8 @@ export default function BookAdd() {
       cellEditor: (options) => genreDropdown(options),
     },
     {
-      field: "isbn_13",
-      header: "ISBN",
+      field: "isbn13",
+      header: "ISBN 13",
       filterPlaceholder: "Search by ISBN",
       cellEditValidator: () => false,
     },
@@ -167,7 +171,7 @@ export default function BookAdd() {
       cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
     },
     {
-      field: "retail_price",
+      field: "retailPrice",
       header: "Retail Price",
       filterPlaceholder: "Search by Price",
       customBody: priceBodyTemplateRetailPrice,
@@ -182,16 +186,20 @@ export default function BookAdd() {
 
   const onISBNInitialSubmit = (event: FormEvent<HTMLFormElement>): void => {
     logger.debug("Submitting Initial Book Lookup", textBox);
-    BOOKS_API.addBookInitialLookup(textBox).then((response) => {
-      setBooks(response.books);
-      if (response.invalidISBNS.length > 0) {
-        showFailure(
-          "The following ISBNs were not successfully added: ".concat(
-            response.invalidISBNS.toString()
-          )
+    BOOKS_API.addBookInitialLookup({ isbns: textBox })
+      .then((response) => {
+        setBooks(
+          response.books.map((book) => APIToInternalBookConversionWithDB(book))
         );
-      }
-    });
+        if (response.invalid_isbns.length > 0) {
+          showFailure(
+            "The following ISBNs were not successfully added: ".concat(
+              response.invalid_isbns.toString()
+            )
+          );
+        }
+      })
+      .catch(() => showFailure("Could not add books"));
 
     event.preventDefault();
   };
@@ -212,7 +220,7 @@ export default function BookAdd() {
   };
 
   const validateRow = (book: BookWithDBTag) => {
-    return book.retail_price > 0 && book.genres;
+    return book.retailPrice > 0 && book.genres;
   };
 
   const onFinalSubmit = (event: FormEvent<HTMLFormElement>): void => {
@@ -220,7 +228,6 @@ export default function BookAdd() {
     for (const book of books) {
       console.log(!validateRow(book));
       if (!validateRow(book)) {
-        console.log("show fail");
         showFailure(
           "The following book does not have all required fields set: ".concat(
             book.title
@@ -235,9 +242,13 @@ export default function BookAdd() {
 
     for (const book of books) {
       if (!book.fromDB) {
-        BOOKS_API.addBookFinal(book);
+        BOOKS_API.addBookFinal({
+          book: InternalToAPIBookConversion(book),
+        }).catch(() => showFailure("Could not add ".concat(book.title)));
       } else {
-        BOOKS_API.modifyBook(book);
+        BOOKS_API.modifyBook({ book: InternalToAPIBookConversion(book) }).catch(
+          () => showFailure("Could not modify ".concat(book.title))
+        );
       }
     }
 

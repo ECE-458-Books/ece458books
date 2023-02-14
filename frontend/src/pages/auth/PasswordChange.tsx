@@ -57,11 +57,11 @@ export default function PasswordChangePage() {
           ) {
             if (containsNumber(newPassword1) && containsNumber(newPassword2)) {
               console.log("Password Changed");
-              AUTH_API.passwordChange(
-                oldPassword,
-                newPassword1,
-                newPassword2
-              ).then((response) => {
+              AUTH_API.passwordChange({
+                old_password: oldPassword,
+                password: newPassword1,
+                password2: newPassword2,
+              }).then((response) => {
                 // TODO: Refactor this
                 if (response.data?.status) {
                   showSuccess();

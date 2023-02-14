@@ -8,13 +8,14 @@ import {
   InputNumber,
   InputNumberValueChangeEvent,
 } from "primereact/inputnumber";
-import { BOOKS_API } from "../../apis/BooksAPI";
+import { APIBook, BOOKS_API } from "../../apis/BooksAPI";
 import { FormikErrors, useFormik } from "formik";
 import { Toast } from "primereact/toast";
 import { logger } from "../../util/Logger";
 import { GENRES_API } from "../../apis/GenresAPI";
 import { ColumnEditorOptions } from "primereact/column";
 import { Dropdown } from "primereact/dropdown";
+import { CommaSeparatedStringToArray } from "../../util/StringOperations";
 
 export interface BookDetailState {
   book: Book;
@@ -34,12 +35,12 @@ export default function BookDetail() {
   const [title, setTitle] = useState(detailState.book.title);
   const [authors, setAuthors] = useState(detailState.book.author);
   const [genre, setGenre] = useState(detailState.book.genres);
-  const [isbn13, setISBN13] = useState(detailState.book.isbn_13);
+  const [isbn13, setISBN13] = useState(detailState.book.isbn13);
   const [isbn10, setISBN10] = useState(detailState.book.isbn10);
   const [publisher, setPublisher] = useState(detailState.book.publisher);
   const [pubYear, setPubYear] = useState(detailState.book.publishedYear);
   const [pageCount, setPageCount] = useState(detailState.book.pageCount);
-  const [price, setPrice] = useState(detailState.book.retail_price);
+  const [price, setPrice] = useState(detailState.book.retailPrice);
   const [width, setWidth] = useState(detailState.book.width);
   const [height, setHeight] = useState(detailState.book.height);
   const [thickness, setThickness] = useState(detailState.book.thickness);
@@ -82,15 +83,15 @@ export default function BookDetail() {
       return errors;
     },
     onSubmit: () => {
-      const book: Book = {
+      const book: APIBook = {
         id: id,
         title: title,
-        author: authors,
-        genres: genre,
+        authors: CommaSeparatedStringToArray(authors),
+        genres: [genre],
         isbn_13: isbn13,
-        isbn10: isbn10,
+        isbn_10: isbn10,
         publisher: publisher,
-        publishedYear: pubYear,
+        publishedDate: pubYear,
         pageCount: pageCount,
         retail_price: price,
         width: width,
@@ -99,8 +100,9 @@ export default function BookDetail() {
         stock: 0,
       };
       logger.debug("Submitting Book Modify", book);
-      BOOKS_API.modifyBook(book);
-      showSuccess();
+      BOOKS_API.modifyBook({ book: book })
+        .then(() => showSuccess())
+        .catch(() => showFailure("Could not modify book"));
       formik.resetForm();
     },
   });
@@ -109,11 +111,11 @@ export default function BookDetail() {
   const [genreList, setGenreList] = useState<string[]>([]);
   useEffect(() => {
     GENRES_API.getGenres({
-      page: 0,
+      page: 1,
       page_size: 30,
       ordering: "name",
     }).then((response) =>
-      setGenreList(response.genres.map((genre) => genre.name))
+      setGenreList(response.results.map((genre) => genre.name))
     );
   }, []);
 

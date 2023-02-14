@@ -41,15 +41,11 @@ export default function GenreDetail() {
   };
 
   const onSubmit = (): void => {
-    const modifiedGenre: Genre = { id: id, name: genre, book_cnt: 0 };
+    const modifiedGenre: Genre = { id: id, name: genre, bookCount: 0 };
     logger.debug("Edit Genre Submitted", modifiedGenre);
-    GENRES_API.modifyGenre(modifiedGenre).then((response) => {
-      if (response.status == 200) {
-        showSuccess();
-      } else {
-        showFailure();
-      }
-    });
+    GENRES_API.modifyGenre(modifiedGenre)
+      .then(() => showSuccess())
+      .catch(() => showFailure());
     setIsModifiable(false);
   };
 

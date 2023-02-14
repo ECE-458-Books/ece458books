@@ -15,17 +15,15 @@ import {
   priceBodyTemplateSubtotal,
   priceBodyTemplateWholesale,
   priceEditor,
-  textEditor,
 } from "../../util/TableCellEditFuncs";
 import { useLocation } from "react-router-dom";
 import {
+  AddPOReq,
   APIPOPurchaseRow,
+  ModifyPOReq,
   PURCHASES_API,
-  APIPOCreate,
-  APIPOModify,
 } from "../../apis/PurchasesAPI";
 import { VENDORS_API } from "../../apis/VendorsAPI";
-import { Vendor } from "../list/VendorList";
 import { BOOKS_API } from "../../apis/BooksAPI";
 import { toYYYYMMDDWithDash } from "../../util/DateOperations";
 import { Toast } from "primereact/toast";
@@ -47,10 +45,10 @@ export interface POPurchaseRow {
   isNewRow: boolean; // true if the user added this row, false if it already existed
   id: string;
   subtotal: number;
-  book: number;
-  book_title: string;
+  bookId: number;
+  bookTitle: string;
   quantity: number;
-  unit_wholesale_price: number;
+  unitWholesalePrice: number;
 }
 
 // The books Interface lol no
@@ -63,11 +61,11 @@ export default function PODetail() {
   const emptyProduct = {
     isNewRow: true,
     id: uuid(),
-    book: 0,
+    bookId: 0,
     subtotal: 0,
-    book_title: "",
+    bookTitle: "",
     quantity: 1,
-    unit_wholesale_price: 0,
+    unitWholesalePrice: 0,
   };
 
   const location = useLocation();
@@ -82,11 +80,11 @@ export default function PODetail() {
       {
         isNewRow: true,
         id: uuid(),
-        book_title: "",
+        bookTitle: "",
         subtotal: 0,
-        book: 0,
+        bookId: 0,
         quantity: 1,
-        unit_wholesale_price: 0,
+        unitWholesalePrice: 0,
       },
     ],
     isAddPage: true,
@@ -118,13 +116,13 @@ export default function PODetail() {
 
   const columns: TableColumn[] = [
     {
-      field: "book_id",
+      field: "bookId",
       header: "ID",
       filterPlaceholder: "ID",
       hidden: true,
     },
     {
-      field: "book_title",
+      field: "bookTitle",
       header: "Book",
       filterPlaceholder: "Books",
       cellEditor: (options: ColumnEditorOptions) =>
@@ -139,7 +137,7 @@ export default function PODetail() {
       cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
     },
     {
-      field: "unit_wholesale_price",
+      field: "unitWholesalePrice",
       header: "Unit Wholesale Price ($)",
       filterPlaceholder: "Price",
       cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
@@ -176,30 +174,31 @@ export default function PODetail() {
   // Populate the vendors/book list on page load
   useEffect(() => {
     VENDORS_API.getVendorsNOPaging().then((response) => {
+      console.log(response);
       const tempVendorMap = new Map<string, number>();
-      for (const vendor of response.vendors) {
+      for (const vendor of response) {
         tempVendorMap.set(vendor.name, vendor.id);
       }
       setVendorMap(tempVendorMap);
-      setVendorNamesList(response.vendors.map((vendor) => vendor.name));
+      setVendorNamesList(response.map((vendor) => vendor.name));
       //return setVendorsData(response.vendors);
     });
 
     BOOKS_API.getBooksNOPaging().then((response) => {
       const tempBookMap = new Map<string, number>();
-      for (const book of response.books) {
+      for (const book of response) {
         tempBookMap.set(book.title, book.id);
       }
       setBookMap(tempBookMap);
-      setBookTitlesList(response.books.map((book) => book.title));
+      setBookTitlesList(response.map((book) => book.title));
     });
   }, []);
 
   const validateSubmission = (po: POPurchaseRow[]) => {
     for (const purchase of po) {
       if (
-        !purchase.book_title ||
-        !(purchase.unit_wholesale_price >= 0) ||
+        !purchase.bookTitle ||
+        !(purchase.unitWholesalePrice >= 0) ||
         !purchase.quantity
       ) {
         showFailure("All fields are required");
@@ -225,9 +224,9 @@ export default function PODetail() {
       // Create API Format
       const apiPurchases = purchases.map((purchase) => {
         return {
-          book: bookMap.get(purchase.book_title),
+          book: bookMap.get(purchase.bookTitle),
           quantity: purchase.quantity,
-          unit_wholesale_price: purchase.unit_wholesale_price,
+          unit_wholesale_price: purchase.unitWholesalePrice,
         } as APIPOPurchaseRow;
       });
 
@@ -235,26 +234,21 @@ export default function PODetail() {
         date: toYYYYMMDDWithDash(date),
         vendor: vendorMap.get(vendorName),
         purchases: apiPurchases,
-      } as APIPOCreate;
+      } as AddPOReq;
 
-      PURCHASES_API.addPurchaseOrder(purchaseOrder).then((response) => {
-        if (response.status == 201) {
-          showSuccess("Purchase order added successfully");
-        } else {
-          showFailure("Could not add purchase order");
-          return;
-        }
-      });
+      PURCHASES_API.addPurchaseOrder(purchaseOrder)
+        .then(() => showSuccess("Purchase order added successfully"))
+        .catch(() => showFailure("Could not add purchase order"));
     } else {
       // Otherwise, it is a modify page
       const apiPurchases = purchases.map((purchase) => {
         return {
           id: purchase.isNewRow ? undefined : purchase.id,
           book: purchase.isNewRow
-            ? bookMap.get(purchase.book_title)
-            : purchase.book,
+            ? bookMap.get(purchase.bookTitle)
+            : purchase.bookId,
           quantity: purchase.quantity,
-          unit_wholesale_price: purchase.unit_wholesale_price,
+          unit_wholesale_price: purchase.unitWholesalePrice,
         } as APIPOPurchaseRow;
       });
 
@@ -263,16 +257,11 @@ export default function PODetail() {
         date: toYYYYMMDDWithDash(date),
         vendor: vendorMap.get(vendorName),
         purchases: apiPurchases,
-      } as APIPOModify;
+      } as ModifyPOReq;
 
-      PURCHASES_API.modifyPurchaseOrder(purchaseOrder).then((response) => {
-        if (response.status == 200) {
-          showSuccess("Purchase order edited successfully");
-        } else {
-          showFailure("Could not edit purchase order");
-          return;
-        }
-      });
+      PURCHASES_API.modifyPurchaseOrder(purchaseOrder)
+        .then(() => showSuccess("Purchase order modified successfully"))
+        .catch(() => showFailure("Could not modify purchase order"));
     }
   };
 

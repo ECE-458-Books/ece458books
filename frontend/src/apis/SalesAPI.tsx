@@ -1,5 +1,3 @@
-import { SalesReconciliation } from "../pages/list/SRList";
-import { SRSaleRow } from "../pages/detail/SRDetail";
 import {
   API,
   METHOD_DELETE,

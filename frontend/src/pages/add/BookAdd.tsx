@@ -42,7 +42,7 @@ interface TableColumn {
 }
 
 export default function BookAdd() {
-  const [textBox, setTextBox] = useState("");
+  const [textBox, setTextBox] = useState<string>("");
   const [books, setBooks] = useState<BookWithDBTag[]>([]);
 
   const statusTemplate = (rowData: BookWithDBTag) => {

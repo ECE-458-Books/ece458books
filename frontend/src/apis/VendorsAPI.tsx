@@ -25,8 +25,6 @@ export interface GetVendorsResp {
   count: number;
 }
 
-// getVendorsNoPagination
-
 // deleteVendor
 export interface DeleteVendorReq {
   id: number;
@@ -61,8 +59,6 @@ export const VENDORS_API = {
       },
     });
   },
-
-  // Everything below this point has not been tested
 
   deleteVendor: async function (req: DeleteVendorReq) {
     return await API.request({

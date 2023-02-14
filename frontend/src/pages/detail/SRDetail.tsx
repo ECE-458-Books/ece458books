@@ -5,7 +5,7 @@ import { Dropdown } from "primereact/dropdown";
 import { DataTable } from "primereact/datatable";
 import { Column, ColumnEditorOptions, ColumnEvent } from "primereact/column";
 import { TableColumn } from "../../components/Table";
-import ConfirmButton from "../../components/ConfirmButton";
+import ConfirmPopup from "../../components/ConfirmPopup";
 import { v4 as uuid } from "uuid";
 import {
   numberEditor,
@@ -48,7 +48,7 @@ export interface SRSaleRow {
 }
 
 export default function SRDetail() {
-  const emptyProduct = {
+  const emptyProduct: SRSaleRow = {
     isNewRow: true,
     id: uuid(),
     subtotal: 0,
@@ -85,19 +85,19 @@ export default function SRDetail() {
   }
 
   const [date, setDate] = useState(detailState.date);
-  const [sales, setSales] = useState(detailState.sales);
-  const [salesReconciliationID, setSalesReconciliationID] = useState(
-    detailState.id
-  );
-  const [lineData, setLineData] = useState(emptyProduct);
+  const [sales, setSales] = useState<SRSaleRow[]>(detailState.sales);
+  const salesReconciliationID = detailState.id;
+
+  const [lineData, setLineData] = useState<SRSaleRow>(emptyProduct);
   const [bookTitlesList, setBookTitlesList] = useState<string[]>();
-  const [totalRevenue, setTotalRevenue] = useState(detailState.totalRevenue);
+  const totalRevenue = detailState.totalRevenue;
   const [bookMap, setBookMap] = useState<Map<string, number>>(new Map());
-  const [isSRAddPage, setIsSRAddPage] = useState(detailState.isAddPage);
-  const [isModifiable, setIsModifiable] = useState(detailState.isModifiable);
-  const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] = useState(
-    detailState.isConfirmationPopupVisible
+  const isSRAddPage = useState<boolean>(detailState.isAddPage);
+  const [isModifiable, setIsModifiable] = useState<boolean>(
+    detailState.isModifiable
   );
+  const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
+    useState<boolean>(detailState.isConfirmationPopupVisible);
 
   const COLUMNS: TableColumn[] = [
     { field: "bookId", header: "ID", filterPlaceholder: "ID", hidden: true },
@@ -288,7 +288,7 @@ export default function SRDetail() {
   const rightToolbarTemplate = () => {
     return (
       <React.Fragment>
-        <ConfirmButton
+        <ConfirmPopup
           isVisible={isConfirmationPopupVisible}
           hideFunc={() => setIsConfirmationPopupVisible(false)}
           acceptFunc={onSubmit}

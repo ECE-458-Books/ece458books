@@ -92,10 +92,11 @@ const emptyPurchaseOrder = {
 
 export default function PurchaseOrderList() {
   // ----------------- STATE -----------------
-  const [loading, setLoading] = useState(false); // Whether we show that the table is loading or not
-  const [numberOfPurchaseOrders, setNumberOfPurchaseOrders] = useState(0); // The number of elements that match the query
+  const [loading, setLoading] = useState<boolean>(false); // Whether we show that the table is loading or not
+  const [numberOfPurchaseOrders, setNumberOfPurchaseOrders] =
+    useState<number>(0); // The number of elements that match the query
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]); // The data displayed in the table
-  const [deletePopupVisible, setDeletePopupVisible] = useState(false); // Whether the delete popup is shown
+  const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false); // Whether the delete popup is shown
   const [selectedDeletePurchaseOrder, setSelectedDeletePurchaseOrder] =
     useState<PurchaseOrder>(emptyPurchaseOrder); // The element that has been clicked on to delete
 

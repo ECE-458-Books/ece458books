@@ -257,7 +257,7 @@ export default function BookList() {
   };
 
   // Buttons for the delete Dialogue Popup
-  const [deletePopupVisible, setDeletePopupVisible] = useState(false);
+  const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false);
 
   const deletePopup = (
     <DeletePopup
@@ -267,8 +267,8 @@ export default function BookList() {
     />
   );
 
-  const [loading, setLoading] = useState(false); // Whether we show that the table is loading or not
-  const [numberOfBooks, setNumberOfBooks] = useState(0); // The number of books that match the query
+  const [loading, setLoading] = useState<boolean>(false); // Whether we show that the table is loading or not
+  const [numberOfBooks, setNumberOfBooks] = useState<number>(0); // The number of books that match the query
   const [books, setBooks] = useState<Book[]>([]); // The book data itself
 
   // The current state of sorting.

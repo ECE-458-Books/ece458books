@@ -97,8 +97,6 @@ export const BOOKS_API = {
     });
   },
 
-  // Everything below this point has not been tested
-
   deleteBook: async function (req: DeleteBookReq) {
     return await API.request({
       url: BOOKS_EXTENSION.concat("/".concat(req.id.toString())),

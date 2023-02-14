@@ -68,7 +68,7 @@ interface Filters {
 }
 
 // Empty sales reconciliation, used to initialize state
-const emptySalesReconciliation = {
+const emptySalesReconciliation: SalesReconciliation = {
   id: 0,
   date: "",
   sales: [],
@@ -79,13 +79,13 @@ const emptySalesReconciliation = {
 
 export default function SalesReconciliationList() {
   // ----------------- STATE -----------------
-  const [loading, setLoading] = useState(false); // Whether we show that the table is loading or not
+  const [loading, setLoading] = useState<boolean>(false); // Whether we show that the table is loading or not
   const [numberOfSalesReconciliations, setNumberOfSalesReconciliations] =
     useState(0); // The number of elements that match the query
   const [salesReconciliations, setSalesReconciliations] = useState<
     SalesReconciliation[]
   >([]); // The data displayed in the table
-  const [deletePopupVisible, setDeletePopupVisible] = useState(false); // Whether the delete popup is shown
+  const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false); // Whether the delete popup is shown
   const [
     selectedDeleteSalesReconciliation,
     setSelectedDeleteSalesReconciliation,

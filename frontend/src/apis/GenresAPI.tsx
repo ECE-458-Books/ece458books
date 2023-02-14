@@ -51,8 +51,6 @@ export const GENRES_API = {
     });
   },
 
-  // Everything below this point has not been tested
-
   deleteGenre: async function (req: DeleteGenreReq) {
     return await API.request({
       url: GENRES_EXTENSION.concat("/".concat(req.id.toString())),

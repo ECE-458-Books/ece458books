@@ -70,7 +70,12 @@ class ISBNTools:
                 else:
                     ret[key] = info[key]
             else:
-                ret[key] = None
+                if(key == 'dimensions'):
+                    pass
+                elif(key == 'authors'):
+                    ret[key] = [""]
+                else:
+                    ret[key] = None
         
         # Set from DB to False
         ret["fromDB"] = False

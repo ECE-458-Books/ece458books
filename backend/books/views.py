@@ -4,11 +4,11 @@ from django.db.models import OuterRef, Subquery
 
 from rest_framework import status, filters
 from rest_framework.views import APIView
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
-from .serializers import BookListAddSerializer, BookSerializer, ISBNSerializer
+from .serializers import BookListSerializer, BookAddSerializer, BookSerializer, ISBNSerializer
 from .isbn import ISBNTools
 from .models import Book, Author
 from .paginations import BookPagination
@@ -77,9 +77,8 @@ class ISBNSearchView(APIView):
 
         return ret
 
-
-class ListCreateBookAPIView(ListCreateAPIView):
-    serializer_class = BookListAddSerializer
+class ListBookAPIView(ListAPIView):
+    serializer_class = BookListSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = BookPagination
     filter_backends = [filters.OrderingFilter, CustomSearchFilter]
@@ -93,39 +92,6 @@ class ListCreateBookAPIView(ListCreateAPIView):
         else:
             return super().paginate_queryset(queryset)
 
-    # Override default create method
-    def create(self, request, *args, **kwargs):
-        # Need to handle creating authors and genres if not present in DB
-        self.getOrCreateModel(request.data['authors'], Author)
-        self.getOrCreateModel(request.data['genres'], Genre)
-
-        # Handle the isbn that is already in DB
-        try:
-            obj = Book.objects.get(isbn_13=request.data['isbn_13'])
-        except Exception as e:
-            obj = None
-
-        # If the object with the specific isbn_13 is found we do the following:
-        # 1. add the isGhost field to the request data
-        # 2. update the already existing row in DB
-        if obj is not None:
-            request.data['isGhost'] = False
-            serializer = self.get_serializer(obj, data=request.data, partial=False)
-        else:
-            # This is different from the above serializer because this is creating a new row in the table
-            serializer = self.get_serializer(data=request.data)
-
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-    
-    def getOrCreateModel(self, item_list, model):
-        for item in item_list:
-            obj, created = model.objects.get_or_create(
-                name=item.strip(),
-            )
-    
     def get_queryset(self):
         default_query_set = Book.objects.filter(isGhost=False)
         # Books have a ManyToMany relationship with Author & Genre
@@ -160,6 +126,42 @@ class ListCreateBookAPIView(ListCreateAPIView):
             return default_query_set.filter(genres__name=genre)
 
         return default_query_set
+
+class CreateBookAPIView(CreateAPIView):
+    serializer_class = BookAddSerializer
+
+    # Override default create method
+    def create(self, request, *args, **kwargs):
+        # Need to handle creating authors and genres if not present in DB
+        self.getOrCreateModel(request.data['authors'], Author)
+        self.getOrCreateModel(request.data['genres'], Genre)
+
+        # Handle the isbn that is already in DB
+        try:
+            obj = Book.objects.get(isbn_13=request.data['isbn_13'])
+        except Exception as e:
+            obj = None
+
+        # If the object with the specific isbn_13 is found we do the following:
+        # 1. add the isGhost field to the request data
+        # 2. update the already existing row in DB
+        if obj is not None:
+            request.data['isGhost'] = False
+            serializer = self.get_serializer(obj, data=request.data, partial=False)
+        else:
+            # This is different from the above serializer because this is creating a new row in the table
+            serializer = self.get_serializer(data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
+    def getOrCreateModel(self, item_list, model):
+        for item in item_list:
+            obj, created = model.objects.get_or_create(
+                name=item.strip(),
+            )
 
 class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = BookSerializer 

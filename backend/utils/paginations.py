@@ -50,6 +50,7 @@ class HTTPSNoPortPagination(PageNumberPagination):
         return reformat_url
     
     def get_port_number(self, url):
-        if(len(url.split(":"))<2):
+        if(len(url.split(":"))<3):
             return None
+        
         return url.split(":")[2].split("/")[0]

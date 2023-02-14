@@ -16,7 +16,7 @@ import {
 } from "../../apis/Conversions";
 import { GetSRsResp, SALES_API } from "../../apis/SalesAPI";
 import DeletePopup from "../../components/DeletePopup";
-import { TableColumn } from "../../components/Table";
+import { createColumns, TableColumn } from "../../components/Table";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import { logger } from "../../util/Logger";
 import { SRDetailState, SRSaleRow } from "../detail/SRDetail";
@@ -35,37 +35,24 @@ const COLUMNS: TableColumn[] = [
   {
     field: "date",
     header: "Date (YYYY-MM-DD)",
-    filterPlaceholder: "Search by Total Date",
-    filterable: false,
+    sortable: true,
   },
   {
     field: "uniqueBooks",
     header: "Unique Books",
-    filterPlaceholder: "Search by Unique Books",
-    filterable: false,
+    sortable: true,
   },
   {
     field: "totalBooks",
     header: "Total Books",
-    filterPlaceholder: "Search by Total Books",
-    filterable: false,
+    sortable: true,
   },
   {
     field: "totalRevenue",
     header: "Total Revenue ($)",
-    filterPlaceholder: "Search by Total Revenue",
-    filterable: false,
+    sortable: true,
   },
 ];
-
-// Define the column filters
-interface Filters {
-  [id: string]: DataTableFilterMetaData;
-  date: DataTableFilterMetaData;
-  num_unique_books: DataTableFilterMetaData;
-  num_books: DataTableFilterMetaData;
-  total_revenue: DataTableFilterMetaData;
-}
 
 // Empty sales reconciliation, used to initialize state
 const emptySalesReconciliation: SalesReconciliation = {
@@ -103,17 +90,6 @@ export default function SalesReconciliationList() {
     first: 0,
     rows: NUM_ROWS,
     page: 0,
-  });
-
-  // The current state of the filters
-  const [filterParams, setFilterParams] = useState<any>({
-    filters: {
-      id: { value: "", matchMode: "contains" },
-      date: { value: "", matchMode: "contains" },
-      num_unique_books: { value: "", matchMode: "contains" },
-      num_books: { value: "", matchMode: "contains" },
-      total_revenue: { value: "", matchMode: "contains" },
-    } as Filters,
   });
 
   // ----------------- METHODS -----------------
@@ -164,13 +140,6 @@ export default function SalesReconciliationList() {
     setSelectedDeleteSalesReconciliation(emptySalesReconciliation);
   };
 
-  // Called when any of the filters (search boxes) are typed into
-  const onFilter = (event: DataTableFilterEvent) => {
-    logger.debug("Filter Applied", event);
-    setLoading(true);
-    setFilterParams(event);
-  };
-
   // Called when any of the columns are selected to be sorted
   const onSort = (event: DataTableSortEvent) => {
     logger.debug("Sort Applied", event);
@@ -195,7 +164,7 @@ export default function SalesReconciliationList() {
   };
 
   // When any of the list of params are changed, useEffect is called to hit the API endpoint
-  useEffect(() => callAPI(), [sortParams, pageParams, filterParams]);
+  useEffect(() => callAPI(), [sortParams, pageParams]);
 
   const callAPI = () => {
     // Invert sort order
@@ -254,31 +223,7 @@ export default function SalesReconciliationList() {
     });
   };
 
-  // Map column objects to actual columns
-  const dynamicColumns = COLUMNS.map((col) => {
-    return (
-      <Column
-        // Indexing/header
-        key={col.field}
-        field={col.field}
-        header={col.header}
-        // Filtering
-        filter={col.filterable}
-        filterElement={col.customFilter}
-        //filterMatchMode={"contains"}
-        filterPlaceholder={col.filterPlaceholder}
-        // Sorting
-        sortable
-        //sortField={col.field}
-        // Hiding Fields
-        showFilterMenuOptions={false}
-        showClearButton={false}
-        // Other
-        style={{ minWidth: "16rem" }}
-        hidden={col.hidden}
-      />
-    );
-  });
+  const columns = createColumns(COLUMNS);
 
   return (
     <div className="card pt-5 px-2">
@@ -289,7 +234,6 @@ export default function SalesReconciliationList() {
         value={salesReconciliations}
         lazy
         responsiveLayout="scroll"
-        filterDisplay="row"
         loading={loading}
         // Row clicking
         rowHover
@@ -306,11 +250,8 @@ export default function SalesReconciliationList() {
         onSort={onSort}
         sortField={sortParams.sortField}
         sortOrder={sortParams.sortOrder}
-        // Filtering
-        onFilter={onFilter}
-        filters={filterParams.filters}
       >
-        {dynamicColumns}
+        {columns}
         <Column body={editDeleteCellTemplate} style={{ minWidth: "16rem" }} />
       </DataTable>
       {deletePopupVisible && deletePopup}

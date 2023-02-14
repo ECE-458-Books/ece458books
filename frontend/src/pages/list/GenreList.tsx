@@ -2,8 +2,6 @@ import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import {
   DataTable,
-  DataTableFilterEvent,
-  DataTableFilterMetaData,
   DataTablePageEvent,
   DataTableRowClickEvent,
   DataTableSortEvent,
@@ -18,7 +16,7 @@ import {
 } from "../../apis/Conversions";
 import { GENRES_API, GetGenresResp } from "../../apis/GenresAPI";
 import DeletePopup from "../../components/DeletePopup";
-import { TableColumn } from "../../components/Table";
+import { createColumns, TableColumn } from "../../components/Table";
 import { logger } from "../../util/Logger";
 import { GenreDetailState } from "../detail/GenreDetail";
 import { NUM_ROWS } from "./BookList";
@@ -35,26 +33,17 @@ const COLUMNS: TableColumn[] = [
   {
     field: "name",
     header: "Genre",
-    filterPlaceholder: "Search by Genre",
-    filterable: false,
+    sortable: true,
   },
   {
     field: "bookCount",
     header: "Number of Books",
-    filterPlaceholder: "Search by Number of Books",
-    filterable: false,
+    sortable: true,
   },
 ];
 
-// Define the column filters
-interface Filters {
-  [id: string]: DataTableFilterMetaData;
-  name: DataTableFilterMetaData;
-  bookCount: DataTableFilterMetaData;
-}
-
 // Empty genre, used to initialize state
-const emptyGenre = {
+const emptyGenre: Genre = {
   name: "",
   bookCount: 0,
   id: 0,
@@ -81,15 +70,6 @@ export default function GenreList() {
     first: 0,
     rows: NUM_ROWS,
     page: 0,
-  });
-
-  // The current state of the filters
-  const [filterParams, setFilterParams] = useState<any>({
-    filters: {
-      id: { value: "", matchMode: "contains" },
-      name: { value: "", matchMode: "contains" },
-      bookCount: { value: "", matchMode: "contains" },
-    } as Filters,
   });
 
   // ----------------- METHODS -----------------
@@ -133,13 +113,6 @@ export default function GenreList() {
     setSelectedDeleteGenre(emptyGenre);
   };
 
-  // Called when any of the filters (search boxes) are typed into
-  const onFilter = (event: DataTableFilterEvent) => {
-    logger.debug("Filter Applied", event);
-    setLoading(true);
-    setFilterParams(event);
-  };
-
   // Called when any of the columns are selected to be sorted
   const onSort = (event: DataTableSortEvent) => {
     logger.debug("Sort Applied", event);
@@ -164,7 +137,7 @@ export default function GenreList() {
   };
 
   // API call on page load
-  useEffect(() => callAPI(), [sortParams, pageParams, filterParams]);
+  useEffect(() => callAPI(), [sortParams, pageParams]);
 
   // Calls the Genres API
   const callAPI = () => {
@@ -234,31 +207,7 @@ export default function GenreList() {
     });
   };
 
-  // Map column objects to actual columns
-  const dynamicColumns = COLUMNS.map((col) => {
-    return (
-      <Column
-        // Indexing/header
-        key={col.field}
-        field={col.field}
-        header={col.header}
-        // Filtering
-        filter={col.filterable}
-        filterElement={col.customFilter}
-        //filterMatchMode={"contains"}
-        filterPlaceholder={col.filterPlaceholder}
-        // Sorting
-        sortable
-        //sortField={col.field}
-        // Hiding Fields
-        showFilterMenuOptions={false}
-        showClearButton={false}
-        // Other
-        style={{ minWidth: "16rem" }}
-        hidden={col.hidden}
-      />
-    );
-  });
+  const columns = createColumns(COLUMNS);
 
   return (
     <div className="card pt-5 px-2">
@@ -269,7 +218,6 @@ export default function GenreList() {
         value={genres}
         lazy
         responsiveLayout="scroll"
-        filterDisplay="row"
         loading={loading}
         // Operations on rows
         rowHover
@@ -286,11 +234,8 @@ export default function GenreList() {
         onSort={onSort}
         sortField={sortParams.sortField}
         sortOrder={sortParams.sortOrder}
-        // Filtering
-        onFilter={onFilter}
-        filters={filterParams.filters}
       >
-        {dynamicColumns}
+        {columns}
         <Column
           body={(rowData) => editDeleteCellTemplate(rowData)}
           style={{ minWidth: "16rem" }}

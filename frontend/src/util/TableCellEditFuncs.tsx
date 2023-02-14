@@ -33,6 +33,7 @@ export function textEditor(options: ColumnEditorOptions) {
 export function numberEditor(options: ColumnEditorOptions) {
   return (
     <InputNumber
+      autoFocus
       value={options.value}
       onValueChange={(e) => options.editorCallback?.(e.target.value)}
       mode="decimal"
@@ -53,22 +54,29 @@ export function priceEditor(options: ColumnEditorOptions) {
   );
 }
 
+export function priceBodyTemplate(value: number) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(value);
+}
+
 export function priceBodyTemplateWholesale(rowData: {
-  unit_wholesale_price: number | bigint;
+  unitWholesalePrice: number | bigint;
 }) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-  }).format(rowData.unit_wholesale_price);
+  }).format(rowData.unitWholesalePrice);
 }
 
 export function priceBodyTemplateRetailPrice(rowData: {
-  retail_price: number | bigint;
+  unitRetailPrice: number | bigint;
 }) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-  }).format(rowData.retail_price);
+  }).format(rowData.unitRetailPrice);
 }
 
 export function priceBodyTemplateSubtotal(rowData: {
@@ -81,10 +89,10 @@ export function priceBodyTemplateSubtotal(rowData: {
 }
 
 export function priceBodyTemplateUnit(rowData: {
-  unit_retail_price: number | bigint;
+  unitRetailPrice: number | bigint;
 }) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-  }).format(rowData.unit_retail_price);
+  }).format(rowData.unitRetailPrice);
 }

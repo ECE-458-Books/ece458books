@@ -1,4 +1,3 @@
-import { DataTable } from "primereact/datatable";
 import { Column, ColumnEditorOptions, ColumnEvent } from "primereact/column";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import { ReactNode } from "react";
@@ -21,11 +20,14 @@ export interface TableColumn {
   // Editing/Custom Body Information
   cellEditValidator?: (event: ColumnEvent) => boolean; // Validator for cell editing
   cellEditor?: (options: ColumnEditorOptions) => ReactNode; // Cell editor
-  onCellEditComplete?: (event: ColumnEvent) => void; // Callback for cell editing
   customBody?: any; // Custom body
 }
 
 export function createColumns(columns: TableColumn[]) {
+  const onCellEditComplete = (event: ColumnEvent) => {
+    event.rowData[event.field] = event.newValue;
+  };
+
   return columns.map((col) => {
     return (
       <Column
@@ -52,7 +54,7 @@ export function createColumns(columns: TableColumn[]) {
         // Editing/Body customization
         editor={col.cellEditor}
         cellEditValidator={col.cellEditValidator}
-        onCellEditComplete={col.onCellEditComplete}
+        onCellEditComplete={onCellEditComplete}
         body={col.customBody}
       />
     );
@@ -62,44 +64,4 @@ export function createColumns(columns: TableColumn[]) {
 export interface TableProps<T extends object> {
   columns: Array<TableColumn>;
   data: Array<T>;
-}
-
-export default function Table<T extends object>(props: TableProps<T>) {
-  const dynamicColumns = props.columns.map((col) => {
-    return (
-      <Column
-        // Indexing/header
-        key={col.field}
-        field={col.field}
-        header={col.header}
-        // Filtering
-        filter
-        filterElement={col.customFilter}
-        filterMatchMode={"contains"}
-        filterPlaceholder={col.filterPlaceholder}
-        // Sorting
-        sortable
-        sortField={col.field}
-        // Hiding Fields
-        showFilterMenuOptions={false}
-        showClearButton={false}
-        // Other
-        style={{ minWidth: "16rem" }}
-        hidden={col.hidden}
-      />
-    );
-  });
-
-  return (
-    <DataTable
-      value={props.data}
-      responsiveLayout="scroll"
-      filterDisplay="row"
-      paginator
-      rows={10}
-      paginatorTemplate="PrevPageLink NextPageLink"
-    >
-      {dynamicColumns}
-    </DataTable>
-  );
 }

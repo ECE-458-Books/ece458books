@@ -3,7 +3,7 @@ import { ToggleButton } from "primereact/togglebutton";
 import { Calendar, CalendarProps } from "primereact/calendar";
 import { Dropdown, DropdownProps } from "primereact/dropdown";
 import { DataTable } from "primereact/datatable";
-import { TableColumn } from "../../components/Table";
+import { createColumns, TableColumn } from "../../components/Table";
 import { Column, ColumnEditorOptions, ColumnEvent } from "primereact/column";
 import ConfirmPopup from "../../components/ConfirmPopup";
 import { Button } from "primereact/button";
@@ -12,8 +12,7 @@ import { v4 as uuid } from "uuid";
 import {
   isPositiveInteger,
   numberEditor,
-  priceBodyTemplateSubtotal,
-  priceBodyTemplateWholesale,
+  priceBodyTemplate,
   priceEditor,
 } from "../../util/TableCellEditFuncs";
 import { useLocation } from "react-router-dom";
@@ -114,17 +113,10 @@ export default function PODetail() {
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(detailState.isConfirmationPopupVisible);
 
-  const columns: TableColumn[] = [
-    {
-      field: "bookId",
-      header: "ID",
-      filterPlaceholder: "ID",
-      hidden: true,
-    },
+  const COLUMNS: TableColumn[] = [
     {
       field: "bookTitle",
       header: "Book",
-      filterPlaceholder: "Books",
       cellEditor: (options: ColumnEditorOptions) =>
         booksDropDownEditor(options),
     },
@@ -142,6 +134,8 @@ export default function PODetail() {
       filterPlaceholder: "Price",
       cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
       cellEditor: (options: ColumnEditorOptions) => priceEditor(options),
+      customBody: (rowData: POPurchaseRow) =>
+        priceBodyTemplate(rowData.unitWholesalePrice),
     },
     {
       field: "subtotal",
@@ -149,10 +143,6 @@ export default function PODetail() {
       filterPlaceholder: "Subtotal",
     },
   ];
-
-  const onCellEditComplete = (event: ColumnEvent) => {
-    event.rowData[event.field] = event.newValue;
-  };
 
   // Adds a row to the PO
   const addNewPurchase = () => {
@@ -347,25 +337,7 @@ export default function PODetail() {
     );
   };
 
-  const tableColumns = columns.map((col) => {
-    return (
-      <Column
-        key={col.field}
-        field={col.field}
-        header={col.header}
-        style={{ width: "25%" }}
-        body={
-          (col.field === "unit_wholesale_price" &&
-            priceBodyTemplateWholesale) ||
-          (col.field === "subtotal" && priceBodyTemplateSubtotal)
-        }
-        editor={col.cellEditor}
-        cellEditValidator={col.cellEditValidator}
-        onCellEditComplete={onCellEditComplete}
-        hidden={col.hidden}
-      />
-    );
-  });
+  const columns = createColumns(COLUMNS);
 
   return (
     <div>
@@ -475,7 +447,7 @@ export default function PODetail() {
               responsiveLayout="scroll"
               editMode="cell"
             >
-              {tableColumns}
+              {columns}
               <Column
                 body={actionBodyTemplate}
                 exportable={false}

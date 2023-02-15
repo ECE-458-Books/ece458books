@@ -1,4 +1,4 @@
-import { ColumnEditorOptions } from "primereact/column";
+import { ColumnBodyOptions, ColumnEditorOptions } from "primereact/column";
 import { InputNumber } from "primereact/inputnumber";
 import { InputText } from "primereact/inputtext";
 
@@ -50,49 +50,14 @@ export function priceEditor(options: ColumnEditorOptions) {
       mode="currency"
       currency="USD"
       locale="en-US"
+      autoFocus={true}
     />
   );
 }
 
-export function priceBodyTemplate(value: number) {
+export function priceBodyTemplate(value: number | bigint) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
   }).format(value);
-}
-
-export function priceBodyTemplateWholesale(rowData: {
-  unitWholesalePrice: number | bigint;
-}) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(rowData.unitWholesalePrice);
-}
-
-export function priceBodyTemplateRetailPrice(rowData: {
-  unitRetailPrice: number | bigint;
-}) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(rowData.unitRetailPrice);
-}
-
-export function priceBodyTemplateSubtotal(rowData: {
-  subtotal: number | bigint;
-}) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(rowData.subtotal);
-}
-
-export function priceBodyTemplateUnit(rowData: {
-  unitRetailPrice: number | bigint;
-}) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(rowData.unitRetailPrice);
 }

@@ -10,7 +10,6 @@ import { v4 as uuid } from "uuid";
 import {
   numberEditor,
   priceBodyTemplate,
-  priceBodyTemplateRetailPrice,
   priceEditor,
 } from "../../util/TableCellEditFuncs";
 import { useLocation } from "react-router-dom";
@@ -98,17 +97,12 @@ export default function SRDetail() {
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(detailState.isConfirmationPopupVisible);
 
-  const onCellEditComplete = (event: ColumnEvent) => {
-    event.rowData[event.field] = event.newValue;
-  };
-
   const COLUMNS: TableColumn[] = [
     {
       field: "bookTitle",
       header: "Book",
       cellEditor: (options: ColumnEditorOptions) =>
         booksDropDownEditor(options),
-      onCellEditComplete: onCellEditComplete,
     },
 
     {
@@ -116,19 +110,19 @@ export default function SRDetail() {
       header: "Quantity",
       cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
       cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
-      onCellEditComplete: onCellEditComplete,
     },
     {
       field: "unitRetailPrice",
       header: "Unit Retail Price ($)",
       cellEditor: (options: ColumnEditorOptions) => priceEditor(options),
       cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
-      customBody: priceBodyTemplateRetailPrice,
-      onCellEditComplete: onCellEditComplete,
+      customBody: (rowData: SRSaleRow) =>
+        priceBodyTemplate(rowData.unitRetailPrice),
     },
     {
       field: "subtotal",
       header: "Subtotal ($)",
+      customBody: (rowData: SRSaleRow) => priceBodyTemplate(rowData.subtotal),
     },
   ];
 

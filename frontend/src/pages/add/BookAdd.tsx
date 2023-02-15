@@ -73,39 +73,48 @@ export default function BookAdd() {
       field: "fromDB",
       header: "Book Status",
       customBody: statusTemplate,
+      style: { width: "5%" },
     },
     {
       field: "title",
       header: "Title",
+      style: { width: "15%" },
     },
     {
       field: "author",
       header: "Authors",
+      style: { width: "10%" },
     },
     {
       field: "genres",
       header: "Genre",
+      style: { width: "10%" },
       cellEditor: (options) => genreDropdown(options),
     },
     {
       field: "isbn13",
       header: "ISBN 13",
+      style: { width: "10%" },
     },
     {
       field: "isbn10",
       header: "ISBN",
+      style: { width: "10%" },
     },
     {
       field: "publisher",
       header: "Publisher",
+      style: { width: "10%" },
     },
     {
       field: "publishedYear",
       header: "Publication Year",
+      style: { width: "5%" },
     },
     {
       field: "pageCount",
       header: "Page Count",
+      style: { width: "5%" },
       cellEditValidator: (event: ColumnEvent) =>
         isPositiveInteger(event.newValue),
       cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
@@ -113,12 +122,14 @@ export default function BookAdd() {
     {
       field: "width",
       header: "Width",
+      style: { width: "5%" },
       cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
       cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
     },
     {
       field: "height",
       header: "Height",
+      style: { width: "5%" },
       filterPlaceholder: "Search by Height",
       cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
       cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
@@ -126,6 +137,7 @@ export default function BookAdd() {
     {
       field: "thickness",
       header: "Thickness",
+      style: { width: "5%" },
       filterPlaceholder: "Search by Thickness",
       cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
       cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
@@ -133,6 +145,7 @@ export default function BookAdd() {
     {
       field: "retailPrice",
       header: "Retail Price",
+      style: { width: "5%" },
       filterPlaceholder: "Search by Price",
       cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
       cellEditor: (options: ColumnEditorOptions) => priceEditor(options),

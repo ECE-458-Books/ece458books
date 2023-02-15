@@ -2,12 +2,18 @@ import { Column, ColumnEditorOptions, ColumnEvent } from "primereact/column";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import { ReactNode } from "react";
 
+export interface ColumnStyle {
+  minWidth?: string;
+  width?: string;
+}
+
 // The base column interface, all columns should implement this interface
 export interface TableColumn {
   // Base information
   field: string; // The key of the field. If the column is hidden, this is the only required field
   header?: string; // Displayed header on table
   hidden?: boolean; // Set to true if hiding column
+  style?: ColumnStyle; // Used for setting width
 
   // Filter Information
   filterable?: boolean; // Set to true to enabling filter
@@ -36,7 +42,7 @@ export function createColumns(columns: TableColumn[]) {
         key={col.field}
         field={col.field}
         header={col.header}
-        style={{ minWidth: "16rem" }}
+        style={col.style ?? { minWidth: "16rem" }}
         // Filtering
         filter={col.filterable ?? false}
         filterElement={col.customFilter}
@@ -59,9 +65,4 @@ export function createColumns(columns: TableColumn[]) {
       />
     );
   });
-}
-
-export interface TableProps<T extends object> {
-  columns: Array<TableColumn>;
-  data: Array<T>;
 }

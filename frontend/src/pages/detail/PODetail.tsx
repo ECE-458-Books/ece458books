@@ -141,6 +141,8 @@ export default function PODetail() {
       field: "subtotal",
       header: "Subtotal ($)",
       filterPlaceholder: "Subtotal",
+      customBody: (rowData: POPurchaseRow) =>
+        priceBodyTemplate(rowData.subtotal),
     },
   ];
 

@@ -19,6 +19,7 @@ import DeletePopup from "../../components/DeletePopup";
 import { createColumns, TableColumn } from "../../components/Table";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import { logger } from "../../util/Logger";
+import { priceBodyTemplate } from "../../util/TableCellEditFuncs";
 import { SRDetailState, SRSaleRow } from "../detail/SRDetail";
 import { NUM_ROWS } from "./BookList";
 
@@ -51,6 +52,8 @@ const COLUMNS: TableColumn[] = [
     field: "totalRevenue",
     header: "Total Revenue ($)",
     sortable: true,
+    customBody: (rowData: SalesReconciliation) =>
+      priceBodyTemplate(rowData.totalRevenue),
   },
 ];
 

@@ -24,6 +24,7 @@ import {
   APIToInternalBookConversion,
 } from "../../apis/Conversions";
 import { createColumns, TableColumn } from "../../components/Table";
+import { priceBodyTemplate } from "../../util/TableCellEditFuncs";
 
 export const NUM_ROWS = 10;
 
@@ -145,6 +146,7 @@ export default function BookList() {
       field: "retailPrice",
       header: "Retail Price ($)",
       sortable: true,
+      customBody: (rowData: Book) => priceBodyTemplate(rowData.retailPrice),
     },
     {
       field: "stock",

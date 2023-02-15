@@ -17,6 +17,7 @@ import DeletePopup from "../../components/DeletePopup";
 import { createColumns, TableColumn } from "../../components/Table";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import { logger } from "../../util/Logger";
+import { priceBodyTemplate } from "../../util/TableCellEditFuncs";
 import { PODetailState, POPurchaseRow } from "../detail/PODetail";
 import { NUM_ROWS } from "./BookList";
 
@@ -56,6 +57,8 @@ const COLUMNS: TableColumn[] = [
     field: "totalCost",
     header: "Total Cost ($)",
     sortable: true,
+    customBody: (rowData: PurchaseOrder) =>
+      priceBodyTemplate(rowData.totalCost),
   },
 ];
 

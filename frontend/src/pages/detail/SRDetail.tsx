@@ -4,7 +4,7 @@ import { Calendar, CalendarProps } from "primereact/calendar";
 import { Dropdown } from "primereact/dropdown";
 import { DataTable } from "primereact/datatable";
 import { Column, ColumnEditorOptions, ColumnEvent } from "primereact/column";
-import { createColumns, TableColumn } from "../../components/Table";
+import { createColumns, TableColumn } from "../../components/TableColumns";
 import ConfirmPopup from "../../components/ConfirmPopup";
 import { v4 as uuid } from "uuid";
 import {

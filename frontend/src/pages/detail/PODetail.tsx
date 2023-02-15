@@ -3,7 +3,7 @@ import { ToggleButton } from "primereact/togglebutton";
 import { Calendar, CalendarProps } from "primereact/calendar";
 import { Dropdown, DropdownProps } from "primereact/dropdown";
 import { DataTable } from "primereact/datatable";
-import { createColumns, TableColumn } from "../../components/Table";
+import { createColumns, TableColumn } from "../../components/TableColumns";
 import { Column, ColumnEditorOptions, ColumnEvent } from "primereact/column";
 import ConfirmPopup from "../../components/ConfirmPopup";
 import { Button } from "primereact/button";
@@ -123,7 +123,6 @@ export default function PODetail() {
     {
       field: "quantity",
       header: "Quantity",
-      filterPlaceholder: "Quantity",
       cellEditValidator: (event: ColumnEvent) =>
         isPositiveInteger(event.newValue),
       cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
@@ -131,7 +130,6 @@ export default function PODetail() {
     {
       field: "unitWholesalePrice",
       header: "Unit Wholesale Price ($)",
-      filterPlaceholder: "Price",
       cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
       cellEditor: (options: ColumnEditorOptions) => priceEditor(options),
       customBody: (rowData: POPurchaseRow) =>
@@ -140,7 +138,6 @@ export default function PODetail() {
     {
       field: "subtotal",
       header: "Subtotal ($)",
-      filterPlaceholder: "Subtotal",
       customBody: (rowData: POPurchaseRow) =>
         priceBodyTemplate(rowData.subtotal),
     },

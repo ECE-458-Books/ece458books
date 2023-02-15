@@ -20,7 +20,7 @@ import {
   APIToInternalBookConversionWithDB,
   InternalToAPIBookConversion,
 } from "../../apis/Conversions";
-import { createColumns, TableColumn } from "../../components/Table";
+import { createColumns, TableColumn } from "../../components/TableColumns";
 
 export interface BookWithDBTag extends Book {
   fromDB: boolean;
@@ -130,7 +130,6 @@ export default function BookAdd() {
       field: "height",
       header: "Height",
       style: { width: "5%" },
-      filterPlaceholder: "Search by Height",
       cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
       cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
     },
@@ -138,7 +137,6 @@ export default function BookAdd() {
       field: "thickness",
       header: "Thickness",
       style: { width: "5%" },
-      filterPlaceholder: "Search by Thickness",
       cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
       cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
     },
@@ -146,7 +144,6 @@ export default function BookAdd() {
       field: "retailPrice",
       header: "Retail Price",
       style: { width: "5%" },
-      filterPlaceholder: "Search by Price",
       cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
       cellEditor: (options: ColumnEditorOptions) => priceEditor(options),
       customBody: (rowData: BookWithDBTag) =>

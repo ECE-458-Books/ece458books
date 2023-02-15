@@ -14,7 +14,7 @@ import {
 } from "../../apis/Conversions";
 import { GetPOsResp, PURCHASES_API } from "../../apis/PurchasesAPI";
 import DeletePopup from "../../components/DeletePopup";
-import { createColumns, TableColumn } from "../../components/Table";
+import { createColumns, TableColumn } from "../../components/TableColumns";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import { logger } from "../../util/Logger";
 import { priceBodyTemplate } from "../../util/TableCellEditFuncs";

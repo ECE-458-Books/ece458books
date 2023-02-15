@@ -23,7 +23,7 @@ import {
   APIBookSortFieldMap,
   APIToInternalBookConversion,
 } from "../../apis/Conversions";
-import { createColumns, TableColumn } from "../../components/Table";
+import { createColumns, TableColumn } from "../../components/TableColumns";
 import { priceBodyTemplate } from "../../util/TableCellEditFuncs";
 
 export const NUM_ROWS = 10;

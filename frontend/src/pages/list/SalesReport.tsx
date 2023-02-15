@@ -7,7 +7,7 @@ import { GetSalesReportResp, SALES_REPORT_API } from "../../apis/SalesRepAPI";
 import { Toast } from "primereact/toast";
 import { logger } from "../../util/Logger";
 import { APIToInternalSalesReportConversion } from "../../apis/Conversions";
-import { createColumns, TableColumn } from "../../components/Table";
+import { createColumns, TableColumn } from "../../components/TableColumns";
 import { priceBodyTemplate } from "../../util/TableCellEditFuncs";
 
 export interface SalesReport {

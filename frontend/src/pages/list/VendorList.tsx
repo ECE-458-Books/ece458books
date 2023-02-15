@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { APIToInternalVendorConversion } from "../../apis/Conversions";
 import { GetVendorsResp, VENDORS_API } from "../../apis/VendorsAPI";
 import DeletePopup from "../../components/DeletePopup";
-import { createColumns, TableColumn } from "../../components/Table";
+import { createColumns, TableColumn } from "../../components/TableColumns";
 import { logger } from "../../util/Logger";
 import { VendorDetailState } from "../detail/VendorDetail";
 import { NUM_ROWS } from "./BookList";

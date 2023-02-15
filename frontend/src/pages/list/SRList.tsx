@@ -16,7 +16,7 @@ import {
 } from "../../apis/Conversions";
 import { GetSRsResp, SALES_API } from "../../apis/SalesAPI";
 import DeletePopup from "../../components/DeletePopup";
-import { createColumns, TableColumn } from "../../components/Table";
+import { createColumns, TableColumn } from "../../components/TableColumns";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import { logger } from "../../util/Logger";
 import { priceBodyTemplate } from "../../util/TableCellEditFuncs";

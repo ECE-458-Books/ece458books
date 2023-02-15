@@ -1,5 +1,4 @@
 import { createRef, FormEvent, useState } from "react";
-import axios from "axios";
 import { Button } from "primereact/button";
 import { Messages } from "primereact/messages";
 import { useNavigate } from "react-router-dom";
@@ -10,7 +9,7 @@ import { Password } from "primereact/password";
 export default function LoginPage() {
   const navigate = useNavigate();
   const wrongPasswordRef = createRef<Messages>();
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState<string>("");
 
   // Sets the default auth token used by axios
   const setAuthToken = (token: string) => {

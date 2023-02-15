@@ -1,7 +1,7 @@
 import React, { FormEvent, useRef, useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { ToggleButton } from "primereact/togglebutton";
-import ConfirmButton from "../../components/ConfirmButton";
+import ConfirmButton from "../../components/ConfirmPopup";
 import { useLocation } from "react-router-dom";
 import { GENRES_API } from "../../apis/GenresAPI";
 import { Genre } from "../list/GenreList";
@@ -17,14 +17,16 @@ export interface GenreDetailState {
 
 export default function GenreDetail() {
   const location = useLocation();
+  // Only end up on this page when we are passing genre data
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const detailState = location.state! as GenreDetailState;
   const [genre, setGenre] = useState<string>(detailState.genre);
-  const [id, setId] = useState(detailState.id);
-  const [isModifiable, setIsModifiable] = useState(detailState.isModifiable);
-  const [isConfirmationPopVisible, setIsConfirmationPopupVisible] = useState(
-    detailState.isConfirmationPopupVisible
+  const id = detailState.id;
+  const [isModifiable, setIsModifiable] = useState<boolean>(
+    detailState.isModifiable
   );
+  const [isConfirmationPopVisible, setIsConfirmationPopupVisible] =
+    useState<boolean>(detailState.isConfirmationPopupVisible);
 
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);

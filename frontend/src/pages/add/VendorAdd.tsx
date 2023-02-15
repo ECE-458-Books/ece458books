@@ -6,7 +6,7 @@ import { logger } from "../../util/Logger";
 import { Toast } from "primereact/toast";
 
 export default function VendorAdd() {
-  const [textBox, setTextBox] = useState("");
+  const [textBox, setTextBox] = useState<string>("");
 
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);

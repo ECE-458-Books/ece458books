@@ -51,10 +51,10 @@ const emptyVendor = {
 
 export default function VendorList() {
   // ----------------- STATE -----------------
-  const [loading, setLoading] = useState(false); // Whether we show that the table is loading or not
-  const [numberOfVendors, setNumberOfVendors] = useState(0); // The number of elements that match the query
+  const [loading, setLoading] = useState<boolean>(false); // Whether we show that the table is loading or not
+  const [numberOfVendors, setNumberOfVendors] = useState<number>(0); // The number of elements that match the query
   const [vendors, setVendors] = useState<Vendor[]>([]); // The data displayed in the table
-  const [deletePopupVisible, setDeletePopupVisible] = useState(false); // Whether the delete popup is shown
+  const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false); // Whether the delete popup is shown
   const [selectedDeleteVendor, setSelectedDeleteVendor] =
     useState<Vendor>(emptyVendor); // The element that has been clicked on to delete
 

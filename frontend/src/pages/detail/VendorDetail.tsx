@@ -1,7 +1,7 @@
-import React, { FormEvent, useRef, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { ToggleButton } from "primereact/togglebutton";
-import ConfirmButton from "../../components/ConfirmButton";
+import ConfirmPopup from "../../components/ConfirmPopup";
 import { useLocation } from "react-router-dom";
 import { ModifyVendorReq, VENDORS_API } from "../../apis/VendorsAPI";
 import { logger } from "../../util/Logger";
@@ -16,14 +16,16 @@ export interface VendorDetailState {
 
 export default function VendorDetail() {
   const location = useLocation();
+  // If we are on this page, we know that the state is not null
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const detailState = location.state! as VendorDetailState;
   const [vendor, setVendor] = useState<string>(detailState.vendor);
-  const [id, setId] = useState<number>(detailState.id);
-  const [isModifiable, setIsModifiable] = useState(detailState.isModifiable);
-  const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] = useState(
-    detailState.isConfirmationPopupVisible
+  const id = detailState.id;
+  const [isModifiable, setIsModifiable] = useState<boolean>(
+    detailState.isModifiable
   );
+  const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
+    useState<boolean>(detailState.isConfirmationPopupVisible);
 
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
@@ -95,7 +97,7 @@ export default function VendorDetail() {
             </div>
 
             <div className="flex flex-row justify-content-center card-container col-12">
-              <ConfirmButton
+              <ConfirmPopup
                 isVisible={isConfirmationPopupVisible}
                 hideFunc={() => setIsConfirmationPopupVisible(false)}
                 acceptFunc={onSubmit}

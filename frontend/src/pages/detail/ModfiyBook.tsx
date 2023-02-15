@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { ToggleButton } from "primereact/togglebutton";
-import ConfirmButton from "../../components/ConfirmButton";
+import ConfirmPopup from "../../components/ConfirmPopup";
 import { useLocation } from "react-router-dom";
 import { Book } from "../list/BookList";
 import {
@@ -13,7 +13,6 @@ import { FormikErrors, useFormik } from "formik";
 import { Toast } from "primereact/toast";
 import { logger } from "../../util/Logger";
 import { GENRES_API } from "../../apis/GenresAPI";
-import { ColumnEditorOptions } from "primereact/column";
 import { Dropdown } from "primereact/dropdown";
 import { CommaSeparatedStringToArray } from "../../util/StringOperations";
 
@@ -31,24 +30,33 @@ export default function BookDetail() {
   const location = useLocation();
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const detailState = location.state! as BookDetailState;
-  const [id, setId] = useState(detailState.book.id);
-  const [title, setTitle] = useState(detailState.book.title);
-  const [authors, setAuthors] = useState(detailState.book.author);
-  const [genre, setGenre] = useState(detailState.book.genres);
-  const [isbn13, setISBN13] = useState(detailState.book.isbn13);
-  const [isbn10, setISBN10] = useState(detailState.book.isbn10);
-  const [publisher, setPublisher] = useState(detailState.book.publisher);
-  const [pubYear, setPubYear] = useState(detailState.book.publishedYear);
-  const [pageCount, setPageCount] = useState(detailState.book.pageCount);
-  const [price, setPrice] = useState(detailState.book.retailPrice);
-  const [width, setWidth] = useState(detailState.book.width);
-  const [height, setHeight] = useState(detailState.book.height);
-  const [thickness, setThickness] = useState(detailState.book.thickness);
-  const [stock, setStock] = useState(detailState.book.stock);
-  const [isModifiable, setIsModifiable] = useState(detailState.isModifiable);
-  const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] = useState(
-    detailState.isConfirmationPopupVisible
+  const id = detailState.book.id;
+  const [title, setTitle] = useState<string>(detailState.book.title);
+  const [authors, setAuthors] = useState<string>(detailState.book.author);
+  const [genre, setGenre] = useState<string>(detailState.book.genres);
+  const [isbn13, setISBN13] = useState<number>(detailState.book.isbn13);
+  const [isbn10, setISBN10] = useState<number>(detailState.book.isbn10);
+  const [publisher, setPublisher] = useState<string>(
+    detailState.book.publisher
   );
+  const [pubYear, setPubYear] = useState<number>(
+    detailState.book.publishedYear
+  );
+  const [pageCount, setPageCount] = useState<number>(
+    detailState.book.pageCount
+  );
+  const [price, setPrice] = useState<number>(detailState.book.retailPrice);
+  const [width, setWidth] = useState<number>(detailState.book.width);
+  const [height, setHeight] = useState<number>(detailState.book.height);
+  const [thickness, setThickness] = useState<number>(
+    detailState.book.thickness
+  );
+  const stock = detailState.book.stock;
+  const [isModifiable, setIsModifiable] = useState<boolean>(
+    detailState.isModifiable
+  );
+  const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
+    useState<boolean>(detailState.isConfirmationPopupVisible);
 
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
@@ -392,7 +400,7 @@ export default function BookDetail() {
             onChange={() => setIsModifiable(!isModifiable)}
           />
 
-          <ConfirmButton
+          <ConfirmPopup
             isVisible={isConfirmationPopupVisible}
             hideFunc={() => setIsConfirmationPopupVisible(false)}
             acceptFunc={formik.handleSubmit}

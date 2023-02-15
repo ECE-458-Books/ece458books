@@ -2,7 +2,7 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { useRef, useState } from "react";
 import { Calendar } from "primereact/calendar";
-import ConfirmButton from "../../components/ConfirmButton";
+import ConfirmPopup from "../../components/ConfirmPopup";
 import moment from "moment";
 import { GetSalesReportResp, SALES_REPORT_API } from "../../apis/SalesRepAPI";
 import { Toast } from "primereact/toast";
@@ -72,7 +72,7 @@ export default function SalesReport() {
   );
   const [dates, setDates] = useState<any>(null);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
-    useState(false);
+    useState<boolean>(false);
 
   const onAPIResponse = (response: GetSalesReportResp) => {
     const salesReport = APIToInternalSalesReportConversion(response);
@@ -84,10 +84,6 @@ export default function SalesReport() {
 
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
-
-  const showSuccess = (message: string) => {
-    toast.current?.show({ severity: "success", summary: message });
-  };
 
   const showFailure = (message: string) => {
     toast.current?.show({
@@ -176,7 +172,7 @@ export default function SalesReport() {
                 />
               </div>
 
-              <ConfirmButton
+              <ConfirmPopup
                 isVisible={isConfirmationPopupVisible}
                 hideFunc={() => setIsConfirmationPopupVisible(false)}
                 acceptFunc={onSubmit}

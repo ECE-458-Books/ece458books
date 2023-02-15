@@ -1,5 +1,3 @@
-import { POPurchaseRow } from "../pages/detail/PODetail";
-import { PurchaseOrder } from "../pages/list/POList";
 import {
   API,
   METHOD_DELETE,
@@ -68,8 +66,6 @@ export const PURCHASES_API = {
       params: req,
     });
   },
-
-  // Everything below this point has not been tested
 
   deletePurchaseOrder: async function (req: DeletePOReq) {
     return await API.request({

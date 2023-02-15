@@ -5,7 +5,7 @@ import { Dropdown, DropdownProps } from "primereact/dropdown";
 import { DataTable } from "primereact/datatable";
 import { TableColumn } from "../../components/Table";
 import { Column, ColumnEditorOptions, ColumnEvent } from "primereact/column";
-import ConfirmButton from "../../components/ConfirmButton";
+import ConfirmPopup from "../../components/ConfirmPopup";
 import { Button } from "primereact/button";
 import { Toolbar } from "primereact/toolbar";
 import { v4 as uuid } from "uuid";
@@ -58,7 +58,7 @@ export interface BooksList {
 }
 
 export default function PODetail() {
-  const emptyProduct = {
+  const emptyProduct: POPurchaseRow = {
     isNewRow: true,
     id: uuid(),
     bookId: 0,
@@ -98,21 +98,21 @@ export default function PODetail() {
   const [bookMap, setBookMap] = useState<Map<string, number>>(new Map());
   const [vendorMap, setVendorMap] = useState<Map<string, number>>(new Map());
   const [date, setDate] = useState(detailState.date);
-  const [vendorName, setVendorName] = useState(detailState.vendorName);
-  const [vendorID, setVendorID] = useState(detailState.vendorID);
+  const [vendorName, setVendorName] = useState<string>(detailState.vendorName);
   const [purchases, setPurchases] = useState<POPurchaseRow[]>(
     detailState.purchases
   );
-  const [totalCost, setTotalCost] = useState(detailState.totalCost);
-  const [purchaseOrderID, setPurchaseOrderID] = useState(detailState.id);
-  const [lineData, setLineData] = useState(emptyProduct);
+  const totalCost = detailState.totalCost;
+  const purchaseOrderID = detailState.id;
+  const [lineData, setLineData] = useState<POPurchaseRow>(emptyProduct);
   const [vendorNamesList, setVendorNamesList] = useState<string[]>();
   const [bookTitlesList, setBookTitlesList] = useState<string[]>();
-  const [isPOAddPage, setisAddPage] = useState(detailState.isAddPage); // If false, this is an edit page
-  const [isModifiable, setIsModifiable] = useState(detailState.isModifiable);
-  const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] = useState(
-    detailState.isConfirmationPopupVisible
+  const isPOAddPage = detailState.isAddPage; // If false, this is an edit page
+  const [isModifiable, setIsModifiable] = useState<boolean>(
+    detailState.isModifiable
   );
+  const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
+    useState<boolean>(detailState.isConfirmationPopupVisible);
 
   const columns: TableColumn[] = [
     {
@@ -281,7 +281,7 @@ export default function PODetail() {
     });
   };
 
-  const actionBodyTemplate = (rowData: any) => {
+  const actionBodyTemplate = (rowData: POPurchaseRow) => {
     return (
       <React.Fragment>
         <Button
@@ -313,7 +313,7 @@ export default function PODetail() {
   const rightToolbarTemplate = () => {
     return (
       <React.Fragment>
-        <ConfirmButton
+        <ConfirmPopup
           isVisible={isConfirmationPopupVisible}
           hideFunc={() => setIsConfirmationPopupVisible(false)}
           acceptFunc={onSubmit}

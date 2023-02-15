@@ -14,9 +14,9 @@ import {
 
 export default function PasswordChangePage() {
   const wrongPasswordRef = createRef<Messages>();
-  const [oldPassword, setOldPassword] = useState("");
-  const [newPassword1, setNewPassword1] = useState("");
-  const [newPassword2, setNewPassword2] = useState("");
+  const [oldPassword, setOldPassword] = useState<string>("");
+  const [newPassword1, setNewPassword1] = useState<string>("");
+  const [newPassword2, setNewPassword2] = useState<string>("");
 
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);

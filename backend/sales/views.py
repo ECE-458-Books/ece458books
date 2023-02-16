@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status, filters
 from rest_framework.views import APIView
 from .models import SalesReconciliation, Sale
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
 from .paginations import SalesReconciliationPagination
 from django.db.models import OuterRef, Subquery, Func, Count, Sum, F
 from purchase_orders.models import Purchase, PurchaseOrder
@@ -43,28 +43,17 @@ class ListCreateSalesReconciliationAPIView(ListCreateAPIView):
         default_query_set = SalesReconciliation.objects.all()
 
         # Create a subquery to aggregate the 'revenue' value for each sale in SalesReconciliation
-        revenue_subquery = Sale.objects.filter(
-            sales_reconciliation=OuterRef('id')
-        ).values_list(
+        revenue_subquery = Sale.objects.filter(sales_reconciliation=OuterRef('id')).values_list(
             Func(
                 'revenue',
                 function='SUM',
-            ),
-        )
+            ),)
 
-        default_query_set = default_query_set.annotate(
-            total_revenue=Subquery(revenue_subquery)
-        )
-        
+        default_query_set = default_query_set.annotate(total_revenue=Subquery(revenue_subquery))
+
         # Filter by quantity of books in SalesReconciliation
-        num_books_subquery = Sale.objects.filter(
-            sales_reconciliation=OuterRef('id')
-        ).values_list(
-            Func(
-                'quantity',
-                function='SUM'
-            ),
-        )
+        num_books_subquery = Sale.objects.filter(sales_reconciliation=OuterRef('id')).values_list(
+            Func('quantity', function='SUM'),)
 
         default_query_set = default_query_set.annotate(num_books=Subquery(num_books_subquery))
 
@@ -76,9 +65,9 @@ class ListCreateSalesReconciliationAPIView(ListCreateAPIView):
         if start_date is not None and end_date is not None:
             default_query_set = default_query_set.filter(date__range=(start_date, end_date))
         elif start_date is not None:
-            default_query_set = default_query_set.filter(date__range=(start_date, datetime.datetime.now(pytz.timezone('US/Eastern'))))
+            default_query_set = default_query_set.filter(
+                date__range=(start_date, datetime.datetime.now(pytz.timezone('US/Eastern'))))
 
-        
         # Filter by book
         book = self.request.GET.get('book')
         if book is not None:
@@ -93,12 +82,12 @@ class ListCreateSalesReconciliationAPIView(ListCreateAPIView):
         sale_revenue__lte = self.request.GET.get('sale_revenue__lte')
         if sale_revenue__lte is not None:
             default_query_set = default_query_set.filter(sales__revenue__lte=sale_revenue__lte).distinct()
-        
+
         # Filter by <= revenue
         sale_revenue = self.request.GET.get('sale_revenue')
         if sale_revenue is not None:
             default_query_set = default_query_set.filter(sales__revenue=sale_revenue).distinct()
-        
+
         # Filter by >= quantity
         sale_quantity__gte = self.request.GET.get('sale_quantity__gte')
         if sale_quantity__gte is not None:
@@ -113,22 +102,24 @@ class ListCreateSalesReconciliationAPIView(ListCreateAPIView):
         sale_quantity = self.request.GET.get('sale_quantity')
         if sale_quantity is not None:
             default_query_set = default_query_set.filter(sales__quantity=sale_quantity).distinct()
-        
+
         # Filter by >= unit_retail_price
         sale_unit_retail_price__gte = self.request.GET.get('sale_unit_retail_price__gte')
         if sale_unit_retail_price__gte is not None:
-            default_query_set = default_query_set.filter(sales__unit_retail_price__gte=sale_unit_retail_price__gte).distinct()
-        
+            default_query_set = default_query_set.filter(
+                sales__unit_retail_price__gte=sale_unit_retail_price__gte).distinct()
+
         # Filter by <= unit_retail_price
         sale_unit_retail_price__lte = self.request.GET.get('sale_unit_retail_price__lte')
         if sale_unit_retail_price__lte is not None:
-            default_query_set = default_query_set.filter(sales__unit_retail_price__lte=sale_unit_retail_price__lte).distinct()
-        
+            default_query_set = default_query_set.filter(
+                sales__unit_retail_price__lte=sale_unit_retail_price__lte).distinct()
+
         # Filter by == unit_retail_price
         sale_unit_retail_price = self.request.GET.get('sale_unit_retail_price')
         if sale_unit_retail_price is not None:
             default_query_set = default_query_set.filter(sales__unit_retail_price=sale_unit_retail_price).distinct()
-        
+
         return default_query_set
 
 
@@ -159,9 +150,10 @@ class RetrieveUpdateDestroySalesReconciliationAPIView(RetrieveUpdateDestroyAPIVi
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
+
     def destroy(self, request, *args, **kwargs):
-        sale_book_quantities = Sale.objects.filter(sales_reconciliation=self.get_object().id).values('book').annotate(num_books=Sum('quantity')).values('book', 'num_books')
+        sale_book_quantities = Sale.objects.filter(sales_reconciliation=self.get_object().id).values('book').annotate(
+            num_books=Sum('quantity')).values('book', 'num_books')
         for sale_book_quantity in sale_book_quantities:
             book_to_remove_sale = Book.objects.filter(id=sale_book_quantity['book']).get()
             book_to_remove_sale.stock += sale_book_quantity['num_books']
@@ -172,6 +164,7 @@ class RetrieveUpdateDestroySalesReconciliationAPIView(RetrieveUpdateDestroyAPIVi
         if (len(self.get_queryset()) == 0):
             return Response({"id": "No sales reconciliation with queried id."}, status=status.HTTP_400_BAD_REQUEST)
         return None
+
 
 class RetrieveSalesReportAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -194,8 +187,11 @@ class RetrieveSalesReportAPIView(APIView):
         total_revenue = round(sum(daily_revenues.values()), 2)
         total_profit = round(total_revenue - total_cost, 2)
 
-        sales_data_by_book = list(SalesReconciliation.objects.filter(date__range=(start_date, end_date)).values(book_id=F('sales__book')).annotate(num_books_sold=Sum('sales__quantity')).annotate(book_revenue=Sum('sales__revenue')).order_by('-num_books_sold'))
-        
+        sales_data_by_book = list(
+            SalesReconciliation.objects.filter(date__range=(start_date, end_date)).values(
+                book_id=F('sales__book')).annotate(num_books_sold=Sum('sales__quantity')).annotate(
+                    book_revenue=Sum('sales__revenue')).order_by('-num_books_sold'))
+
         # Keeeping this code to find books purchased quantities if needed for future
         # order by date, then by id, since higher id means was entered later than lower id, so could mean more recent price... just need any way to decide on one price if two separate purchases are logged on same day of same book to know which unit wholesale price to use
         # books_purchased_quantities = list(PurchaseOrder.objects.filter(date__lte=end_date).values('purchases__book').annotate(num_books_purchased=Sum('purchases__quantity')).values('purchases__book', 'num_books_purchased'))
@@ -203,29 +199,37 @@ class RetrieveSalesReportAPIView(APIView):
 
         for book_sale in list(sales_data_by_book):
             try:
-                most_recent_unit_wholesale_price = PurchaseOrder.objects.filter(date__lte=end_date).order_by('-date', '-id').annotate(book_wholesale_price=Subquery(Purchase.objects.filter(purchase_order=OuterRef('id')).filter(book=book_sale['book_id']).values('unit_wholesale_price'))).values('book_wholesale_price').exclude(book_wholesale_price=None).first()['book_wholesale_price']
-            except: # Every sale should have a prior purchase because of our validation that can't sell without inventory, so this should never occur, but here just in case
+                most_recent_unit_wholesale_price = PurchaseOrder.objects.filter(date__lte=end_date).order_by(
+                    '-date', '-id').annotate(book_wholesale_price=Subquery(
+                        Purchase.objects.filter(purchase_order=OuterRef('id')).filter(book=book_sale['book_id']).values(
+                            'unit_wholesale_price'))).values('book_wholesale_price').exclude(
+                                book_wholesale_price=None).first()['book_wholesale_price']
+            except:  # Every sale should have a prior purchase because of our validation that can't sell without inventory, so this should never occur, but here just in case
                 raise APIException("Cannot sell a book that has not been purchased.")
             else:
-                book_sale['total_cost_most_recent'] = round(most_recent_unit_wholesale_price * book_sale['num_books_sold'], 2)
-                
-        
+                book_sale['total_cost_most_recent'] = round(
+                    most_recent_unit_wholesale_price * book_sale['num_books_sold'], 2)
+
         for book_sale in sales_data_by_book:
             book_sale['book_title'] = Book.objects.filter(id=book_sale['book_id']).get().title
             book_sale['book_profit'] = round(book_sale['book_revenue'] - book_sale['total_cost_most_recent'], 2)
 
         return Response({
-            "total_summary":{
+            "total_summary": {
                 "revenue": total_revenue,
                 "cost": total_cost,
                 "profit": total_profit,
             },
             "daily_summary":  # date, revenue, cost, profit
-                [{"date": date, "revenue": revenue, "cost": cost, "profit": profit } for (date, revenue, cost, profit) in zip(daily_revenues.keys(), daily_revenues.values(), daily_costs.values(), daily_profits.values())]
-            ,
+                [{
+                    "date": date,
+                    "revenue": revenue,
+                    "cost": cost,
+                    "profit": profit
+                } for (date, revenue, cost, profit) in zip(daily_revenues.keys(), daily_revenues.values(),
+                                                           daily_costs.values(), daily_profits.values())],
             "top_books":  # title, quantity, total_revenue, total_cost, total_profit
-            sales_data_by_book
-            
+                sales_data_by_book
         })
 
     def get_daily_costs(self, daily_costs, date: str):
@@ -251,6 +255,51 @@ class RetrieveSalesReportAPIView(APIView):
         start_date = datetime.strptime(start, date_format)
         end_date = datetime.strptime(end, date_format)
         delta = end_date - start_date
-        days = [start_date + timedelta(days=num_days) for num_days in range(delta.days+1)]
+        days = [start_date + timedelta(days=num_days) for num_days in range(delta.days + 1)]
         return days
 
+
+class CSVSaleAPIView(CreateAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        print(request.data)
+
+        return Response({
+            "sales": [{
+                "book": 10,
+                "book_title": "The Google Story",
+                "book_isbn": 987654321003,
+                "quantity": 10,
+                "unit_retail_price": 10.01,
+                "errors": {
+                    "quantity": "quantity_below_0"
+                }
+            }, {
+                "book": 105,
+                "book_isbn": 9876543210001,
+                "book_title": "Moby Dick",
+                "quantity": 10,
+                "unit_retail_price": 10.0,
+                "errors": {
+                    "unit_retail_price": "incorrect_format",
+                    "quantity": "incorrect_format"
+                }
+            }, {
+                "book": 106,
+                "book_isbn": 9876543210000,
+                "book_title": "The Catcher in the Rye",
+                "quantity": 1,
+                "unit_retail_price": 2.0,
+                "error": {
+                    "quantity": "incorrect_format"
+                }
+            }, {
+                "book": 107,
+                "book_isbn": 9876543210002,
+                "book_title": "Harry Potter and the Sorcerer's Stone",
+                "quantity": 1,
+                "unit_retail_price": 200.0,
+            }],
+            "errors": ["extra_column"]
+        })

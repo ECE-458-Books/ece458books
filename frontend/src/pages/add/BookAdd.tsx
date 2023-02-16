@@ -1,10 +1,4 @@
-import React, {
-  FormEvent,
-  ReactNode,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Button } from "primereact/button";
 import { DataTable } from "primereact/datatable";
@@ -12,7 +6,7 @@ import { Column, ColumnEditorOptions, ColumnEvent } from "primereact/column";
 import {
   isPositiveInteger,
   numberEditor,
-  priceBodyTemplateRetailPrice,
+  priceBodyTemplate,
   priceEditor,
 } from "../../util/TableCellEditFuncs";
 import { BOOKS_API } from "../../apis/BooksAPI";
@@ -26,19 +20,10 @@ import {
   APIToInternalBookConversionWithDB,
   InternalToAPIBookConversion,
 } from "../../apis/Conversions";
+import { createColumns, TableColumn } from "../../components/TableColumns";
 
 export interface BookWithDBTag extends Book {
   fromDB: boolean;
-}
-
-interface TableColumn {
-  field: string;
-  header: string;
-  filterPlaceholder?: string;
-  hidden?: boolean;
-  customBody?: any; // TODO: Remove this after ev 1
-  cellEditValidator?: (event: ColumnEvent) => boolean;
-  cellEditor?: (options: ColumnEditorOptions) => ReactNode;
 }
 
 export default function BookAdd() {
@@ -87,64 +72,49 @@ export default function BookAdd() {
     {
       field: "fromDB",
       header: "Book Status",
-      filterPlaceholder: "Search by Book Status",
       customBody: statusTemplate,
-      cellEditValidator: () => false,
-    },
-    {
-      field: "id",
-      header: "ID",
-      filterPlaceholder: "Search by ID",
-      hidden: true,
-      cellEditValidator: () => false,
+      style: { width: "5%" },
     },
     {
       field: "title",
       header: "Title",
-      filterPlaceholder: "Search by Title",
-      cellEditValidator: () => false,
+      style: { width: "15%" },
     },
     {
       field: "author",
       header: "Authors",
-      filterPlaceholder: "Search by Authors",
-      cellEditValidator: () => false,
+      style: { width: "10%" },
     },
     {
       field: "genres",
       header: "Genre",
-      filterPlaceholder: "Search by Genre",
+      style: { width: "10%" },
       cellEditor: (options) => genreDropdown(options),
     },
     {
       field: "isbn13",
       header: "ISBN 13",
-      filterPlaceholder: "Search by ISBN",
-      cellEditValidator: () => false,
+      style: { width: "10%" },
     },
     {
       field: "isbn10",
       header: "ISBN",
-      filterPlaceholder: "Search by ISBN",
-      cellEditValidator: () => false,
+      style: { width: "10%" },
     },
     {
       field: "publisher",
       header: "Publisher",
-      filterPlaceholder: "Search by Publisher",
-      cellEditValidator: () => false,
+      style: { width: "10%" },
     },
     {
       field: "publishedYear",
       header: "Publication Year",
-      filterPlaceholder: "Search by Publication Year",
-      cellEditValidator: () => false,
+      style: { width: "5%" },
     },
     {
       field: "pageCount",
       header: "Page Count",
-      filterPlaceholder: "Search by Page Count",
-      hidden: true,
+      style: { width: "5%" },
       cellEditValidator: (event: ColumnEvent) =>
         isPositiveInteger(event.newValue),
       cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
@@ -152,37 +122,34 @@ export default function BookAdd() {
     {
       field: "width",
       header: "Width",
-      filterPlaceholder: "Search by Width",
+      style: { width: "5%" },
       cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
       cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
     },
     {
       field: "height",
       header: "Height",
-      filterPlaceholder: "Search by Height",
+      style: { width: "5%" },
       cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
       cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
     },
     {
       field: "thickness",
       header: "Thickness",
-      filterPlaceholder: "Search by Thickness",
+      style: { width: "5%" },
       cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
       cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
     },
     {
       field: "retailPrice",
       header: "Retail Price",
-      filterPlaceholder: "Search by Price",
-      customBody: priceBodyTemplateRetailPrice,
+      style: { width: "5%" },
       cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
       cellEditor: (options: ColumnEditorOptions) => priceEditor(options),
+      customBody: (rowData: BookWithDBTag) =>
+        priceBodyTemplate(rowData.retailPrice),
     },
   ];
-
-  const onCellEditComplete = (event: ColumnEvent) => {
-    event.rowData[event.field] = event.newValue;
-  };
 
   const onISBNInitialSubmit = (event: FormEvent<HTMLFormElement>): void => {
     logger.debug("Submitting Initial Book Lookup", textBox);
@@ -256,21 +223,7 @@ export default function BookAdd() {
     showSuccess();
   };
 
-  const columns = COLUMNS.map((col) => {
-    return (
-      <Column
-        key={col.field}
-        field={col.field}
-        header={col.header}
-        style={{ width: "25%" }}
-        body={col.customBody}
-        cellEditValidator={col.cellEditValidator}
-        editor={col.cellEditor}
-        onCellEditComplete={onCellEditComplete}
-        hidden={col.hidden ?? false}
-      />
-    );
-  });
+  const columns = createColumns(COLUMNS);
 
   //Two Forms exist in order for the seperate submission of two seperate types of data.
   //First one is the submission of ISBNS that need to be added

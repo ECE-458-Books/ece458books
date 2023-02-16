@@ -23,18 +23,10 @@ import {
   APIBookSortFieldMap,
   APIToInternalBookConversion,
 } from "../../apis/Conversions";
+import { createColumns, TableColumn } from "../../components/TableColumns";
+import { priceBodyTemplate } from "../../util/TableCellEditFuncs";
 
 export const NUM_ROWS = 10;
-
-interface TableColumn {
-  field: string;
-  header: string;
-  filterPlaceholder?: string;
-  customFilter?: () => JSX.Element;
-  hidden?: boolean;
-  sortable?: boolean;
-  filterable?: boolean;
-}
 
 export interface Book {
   id: number;
@@ -54,22 +46,14 @@ export interface Book {
 }
 
 interface Filters {
-  [id: string]: DataTableFilterMetaData;
-  title: DataTableFilterMetaData;
+  [title: string]: DataTableFilterMetaData;
   author: DataTableFilterMetaData;
   isbn13: DataTableFilterMetaData;
-  isbn10: DataTableFilterMetaData;
   publisher: DataTableFilterMetaData;
-  publishedYear: DataTableFilterMetaData;
-  pageCount: DataTableFilterMetaData;
-  width: DataTableFilterMetaData;
-  height: DataTableFilterMetaData;
-  thickness: DataTableFilterMetaData;
-  retailPrice: DataTableFilterMetaData;
 }
 
 export default function BookList() {
-  const emptyBook = {
+  const emptyBook: Book = {
     id: 0,
     title: "",
     author: "",
@@ -115,31 +99,34 @@ export default function BookList() {
     );
   };
 
-  // Properties of each column that change, the rest are set below when creating the actual Columns to be rendered
   const COLUMNS: TableColumn[] = [
     {
-      field: "id",
-      header: "ID",
-      filterPlaceholder: "Search by ID",
-      hidden: true,
+      field: "title",
+      header: "Title",
+      filterPlaceholder: "Search by Title",
+      sortable: true,
+      filterable: true,
     },
-    { field: "title", header: "Title", filterPlaceholder: "Search by Title" },
     {
       field: "author",
       header: "Authors",
       filterPlaceholder: "Search by Authors",
+      sortable: true,
+      filterable: true,
     },
     {
       field: "genres",
       header: "Genre",
       filterPlaceholder: "Search by Genre",
+      filterable: true,
       customFilter: genreFilter,
-      sortable: false,
     },
     {
       field: "isbn13",
       header: "ISBN 13",
       filterPlaceholder: "Search by ISBN",
+      sortable: true,
+      filterable: true,
     },
     {
       field: "isbn10",
@@ -152,48 +139,19 @@ export default function BookList() {
       field: "publisher",
       header: "Publisher",
       filterPlaceholder: "Search by Publisher",
-    },
-    {
-      field: "publishedYear",
-      header: "Publication Year",
-      filterPlaceholder: "Search by Publication Year",
-      hidden: true,
-    },
-    {
-      field: "pageCount",
-      header: "Page Count",
-      filterPlaceholder: "Search by Page Count",
-      hidden: true,
-    },
-    {
-      field: "width",
-      header: "Width",
-      filterPlaceholder: "Search by Width",
-      hidden: true,
-    },
-    {
-      field: "height",
-      header: "Height",
-      filterPlaceholder: "Search by Height",
-      hidden: true,
-    },
-    {
-      field: "thickness",
-      header: "Thickness",
-      filterPlaceholder: "Search by Thickness",
-      hidden: true,
+      sortable: true,
+      filterable: true,
     },
     {
       field: "retailPrice",
       header: "Retail Price ($)",
-      filterPlaceholder: "Search by Price",
-      filterable: false,
+      sortable: true,
+      customBody: (rowData: Book) => priceBodyTemplate(rowData.retailPrice),
     },
     {
       field: "stock",
       header: "Inventory Count",
-      filterPlaceholder: "Search by Inventory Count",
-      filterable: false,
+      sortable: true,
     },
   ];
 
@@ -286,20 +244,12 @@ export default function BookList() {
   });
 
   // The current state of the filters
-  const [filterParams, setFilterParams] = useState<any>({
+  const [filterParams, setFilterParams] = useState<DataTableFilterEvent>({
     filters: {
-      id: { value: "", matchMode: "contains" },
       title: { value: "", matchMode: "contains" },
       author: { value: "", matchMode: "contains" },
       isbn13: { value: "", matchMode: "contains" },
-      isbn10: { value: "", matchMode: "contains" },
       publisher: { value: "", matchMode: "contains" },
-      publishedYear: { value: "", matchMode: "contains" },
-      pageCount: { value: "", matchMode: "contains" },
-      width: { value: "", matchMode: "contains" },
-      height: { value: "", matchMode: "contains" },
-      thickness: { value: "", matchMode: "contains" },
-      retailPrice: { value: "", matchMode: "contains" },
     } as Filters,
   });
 
@@ -311,16 +261,28 @@ export default function BookList() {
     let publisher_only = false;
     let author_only = false;
     let isbn_only = false;
-    if (filterParams.filters.title.value) {
+    if (
+      "value" in filterParams.filters.title &&
+      filterParams.filters.title.value
+    ) {
       search_string = filterParams.filters.title.value;
       title_only = true;
-    } else if (filterParams.filters.publisher.value) {
+    } else if (
+      "value" in filterParams.filters.publisher &&
+      filterParams.filters.publisher.value
+    ) {
       search_string = filterParams.filters.publisher.value;
       publisher_only = true;
-    } else if (filterParams.filters.author.value) {
+    } else if (
+      "value" in filterParams.filters.author &&
+      filterParams.filters.author.value
+    ) {
       search_string = filterParams.filters.author.value;
       author_only = true;
-    } else if (filterParams.filters.isbn13.value) {
+    } else if (
+      "value" in filterParams.filters.isbn13 &&
+      filterParams.filters.isbn13.value
+    ) {
       search_string = filterParams.filters.isbn13.value ?? "";
       isbn_only = true;
     }
@@ -406,34 +368,7 @@ export default function BookList() {
     });
   };
 
-  // Map column objects to actual columns
-  const dynamicColumns = COLUMNS.map((col) => {
-    return (
-      <Column
-        // Indexing/header
-        key={col.field}
-        field={col.field}
-        header={col.header}
-        // Filtering
-        filter
-        filterElement={col.customFilter}
-        //filterMatchMode={"contains"}
-        filterPlaceholder={col.filterPlaceholder}
-        // Sorting
-        sortable={col.sortable ?? true}
-        //sortField={col.field}
-        // Hiding Fields
-        showFilterMenuOptions={false}
-        showClearButton={false}
-        showApplyButton={false}
-        showFilterMatchModes={false}
-        showFilterOperator={false}
-        // Other
-        style={{ minWidth: "11rem" }}
-        hidden={col.hidden}
-      />
-    );
-  });
+  const columns = createColumns(COLUMNS);
 
   return (
     <div className="card pt-5 px-2">
@@ -465,7 +400,7 @@ export default function BookList() {
         onFilter={onFilter}
         filters={filterParams.filters}
       >
-        {dynamicColumns}
+        {columns}
         <Column body={editDeleteCellTemplate} style={{ minWidth: "9rem" }} />
       </DataTable>
       {deletePopupVisible && deletePopup}

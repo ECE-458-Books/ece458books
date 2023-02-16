@@ -14,9 +14,10 @@ import {
 } from "../../apis/Conversions";
 import { GetPOsResp, PURCHASES_API } from "../../apis/PurchasesAPI";
 import DeletePopup from "../../components/DeletePopup";
-import { TableColumn } from "../../components/Table";
+import { createColumns, TableColumn } from "../../components/TableColumns";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import { logger } from "../../util/Logger";
+import { priceBodyTemplate } from "../../util/TableCellEditFuncs";
 import { PODetailState, POPurchaseRow } from "../detail/PODetail";
 import { NUM_ROWS } from "./BookList";
 
@@ -33,53 +34,36 @@ export interface PurchaseOrder {
 
 const COLUMNS: TableColumn[] = [
   {
-    field: "id",
-    header: "ID",
-    filterPlaceholder: "Search by ID",
-    hidden: true,
-    filterable: false,
-  },
-  {
     field: "date",
     header: "Date (YYYY-MM-DD)",
-    filterPlaceholder: "Search by Date",
-    filterable: false,
+    sortable: true,
   },
   {
     field: "vendorName",
     header: "Vendor Name",
-    filterPlaceholder: "Search by Name",
-    filterable: false,
-  },
-  {
-    field: "vendorId",
-    header: "Vendor ID",
-    filterPlaceholder: "Search by Name",
-    hidden: true,
-    filterable: false,
+    sortable: true,
   },
   {
     field: "uniqueBooks",
     header: "Unique Books",
-    filterPlaceholder: "Search by Unique Books",
-    filterable: false,
+    sortable: true,
   },
   {
     field: "totalBooks",
     header: "Total Books",
-    filterPlaceholder: "Search by Total Books",
-    filterable: false,
+    sortable: true,
   },
   {
     field: "totalCost",
     header: "Total Cost ($)",
-    filterPlaceholder: "Search by Total Cost",
-    filterable: false,
+    sortable: true,
+    customBody: (rowData: PurchaseOrder) =>
+      priceBodyTemplate(rowData.totalCost),
   },
 ];
 
 // Empty purchase order, used to initialize state
-const emptyPurchaseOrder = {
+const emptyPurchaseOrder: PurchaseOrder = {
   id: 0,
   date: "",
   vendorName: "",
@@ -247,31 +231,7 @@ export default function PurchaseOrderList() {
     />
   );
 
-  // Map column objects to actual columns
-  const dynamicColumns = COLUMNS.map((col) => {
-    return (
-      <Column
-        // Indexing/header
-        key={col.field}
-        field={col.field}
-        header={col.header}
-        // Filtering
-        filter={col.filterable}
-        filterElement={col.customFilter}
-        //filterMatchMode={"contains"}
-        filterPlaceholder={col.filterPlaceholder}
-        // Sorting
-        sortable
-        //sortField={col.field}
-        // Hiding Fields
-        showFilterMenuOptions={false}
-        showClearButton={false}
-        // Other
-        style={{ minWidth: "16rem" }}
-        hidden={col.hidden}
-      />
-    );
-  });
+  const columns = createColumns(COLUMNS);
 
   return (
     <div className="card pt-5 px-2">
@@ -282,7 +242,6 @@ export default function PurchaseOrderList() {
         value={purchaseOrders}
         lazy
         responsiveLayout="scroll"
-        filterDisplay="row"
         loading={loading}
         // Row clicking
         rowHover
@@ -300,7 +259,7 @@ export default function PurchaseOrderList() {
         sortField={sortParams.sortField}
         sortOrder={sortParams.sortOrder}
       >
-        {dynamicColumns}
+        {columns}
         <Column body={editDeleteCellTemplate} style={{ minWidth: "16rem" }} />
       </DataTable>
       {deletePopupVisible && deletePopup}

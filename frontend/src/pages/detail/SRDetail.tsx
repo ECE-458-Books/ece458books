@@ -4,13 +4,12 @@ import { Calendar, CalendarProps } from "primereact/calendar";
 import { Dropdown } from "primereact/dropdown";
 import { DataTable } from "primereact/datatable";
 import { Column, ColumnEditorOptions, ColumnEvent } from "primereact/column";
-import { TableColumn } from "../../components/Table";
+import { createColumns, TableColumn } from "../../components/TableColumns";
 import ConfirmPopup from "../../components/ConfirmPopup";
 import { v4 as uuid } from "uuid";
 import {
   numberEditor,
-  priceBodyTemplateSubtotal,
-  priceBodyTemplateUnit,
+  priceBodyTemplate,
   priceEditor,
 } from "../../util/TableCellEditFuncs";
 import { useLocation } from "react-router-dom";
@@ -87,7 +86,6 @@ export default function SRDetail() {
   const [date, setDate] = useState(detailState.date);
   const [sales, setSales] = useState<SRSaleRow[]>(detailState.sales);
   const salesReconciliationID = detailState.id;
-
   const [lineData, setLineData] = useState<SRSaleRow>(emptyProduct);
   const [bookTitlesList, setBookTitlesList] = useState<string[]>();
   const totalRevenue = detailState.totalRevenue;
@@ -100,11 +98,9 @@ export default function SRDetail() {
     useState<boolean>(detailState.isConfirmationPopupVisible);
 
   const COLUMNS: TableColumn[] = [
-    { field: "bookId", header: "ID", filterPlaceholder: "ID", hidden: true },
     {
       field: "bookTitle",
       header: "Book",
-      filterPlaceholder: "book",
       cellEditor: (options: ColumnEditorOptions) =>
         booksDropDownEditor(options),
     },
@@ -112,27 +108,23 @@ export default function SRDetail() {
     {
       field: "quantity",
       header: "Quantity",
-      filterPlaceholder: "Quantity",
       cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
       cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
     },
     {
       field: "unitRetailPrice",
       header: "Unit Retail Price ($)",
-      filterPlaceholder: "Price",
       cellEditor: (options: ColumnEditorOptions) => priceEditor(options),
       cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
+      customBody: (rowData: SRSaleRow) =>
+        priceBodyTemplate(rowData.unitRetailPrice),
     },
     {
       field: "subtotal",
       header: "Subtotal ($)",
-      filterPlaceholder: "Subtotal",
+      customBody: (rowData: SRSaleRow) => priceBodyTemplate(rowData.subtotal),
     },
   ];
-
-  const onCellEditComplete = (event: ColumnEvent) => {
-    event.rowData[event.field] = event.newValue;
-  };
 
   const addNewSale = () => {
     setLineData(emptyProduct);
@@ -256,7 +248,7 @@ export default function SRDetail() {
     );
   };
 
-  const actionBodyTemplate = (rowData: any) => {
+  const actionBodyTemplate = (rowData: SRSaleRow) => {
     return (
       <React.Fragment>
         <Button
@@ -305,6 +297,8 @@ export default function SRDetail() {
       </React.Fragment>
     );
   };
+
+  const columns = createColumns(COLUMNS);
 
   return (
     <div>
@@ -392,24 +386,7 @@ export default function SRDetail() {
               responsiveLayout="scroll"
               editMode="cell"
             >
-              {COLUMNS.map((col) => {
-                return (
-                  <Column
-                    key={col.field}
-                    field={col.field}
-                    header={col.header}
-                    style={{ width: "25%" }}
-                    body={
-                      (col.field === "unit_retail_price" &&
-                        priceBodyTemplateUnit) ||
-                      (col.field === "subtotal" && priceBodyTemplateSubtotal)
-                    }
-                    editor={col.cellEditor}
-                    onCellEditComplete={onCellEditComplete}
-                    hidden={col.hidden}
-                  />
-                );
-              })}
+              {columns}
               <Column
                 body={actionBodyTemplate}
                 exportable={false}

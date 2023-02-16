@@ -2,8 +2,6 @@ import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import {
   DataTable,
-  DataTableFilterEvent,
-  DataTableFilterMetaData,
   DataTablePageEvent,
   DataTableSortEvent,
 } from "primereact/datatable";
@@ -14,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { APIToInternalVendorConversion } from "../../apis/Conversions";
 import { GetVendorsResp, VENDORS_API } from "../../apis/VendorsAPI";
 import DeletePopup from "../../components/DeletePopup";
-import { TableColumn } from "../../components/Table";
+import { createColumns, TableColumn } from "../../components/TableColumns";
 import { logger } from "../../util/Logger";
 import { VendorDetailState } from "../detail/VendorDetail";
 import { NUM_ROWS } from "./BookList";
@@ -31,19 +29,12 @@ const COLUMNS: TableColumn[] = [
   {
     field: "name",
     header: "Vendor Name",
-    filterPlaceholder: "Search by Name",
-    filterable: false,
+    sortable: true,
   },
 ];
 
-// Define the column filters
-interface Filters {
-  [id: string]: DataTableFilterMetaData;
-  name: DataTableFilterMetaData;
-}
-
 // Empty vendor, used to initialize state
-const emptyVendor = {
+const emptyVendor: Vendor = {
   id: 0,
   name: "",
   numPO: 0,
@@ -70,14 +61,6 @@ export default function VendorList() {
     first: 0,
     rows: NUM_ROWS,
     page: 0,
-  });
-
-  // The current state of the filters
-  const [filterParams, setFilterParams] = useState<any>({
-    filters: {
-      id: { value: "", matchMode: "contains" },
-      name: { value: "", matchMode: "contains" },
-    } as Filters,
   });
 
   // ----------------- METHODS -----------------
@@ -122,13 +105,6 @@ export default function VendorList() {
     setSelectedDeleteVendor(emptyVendor);
   };
 
-  // Called when any of the filters (search boxes) are typed into
-  const onFilter = (event: DataTableFilterEvent) => {
-    logger.debug("Filter Applied", event);
-    setLoading(true);
-    setFilterParams(event);
-  };
-
   // Called when any of the columns are selected to be sorted
   const onSort = (event: DataTableSortEvent) => {
     logger.debug("Sort Applied", event);
@@ -144,7 +120,7 @@ export default function VendorList() {
   };
 
   // When any of the list of params are changed, useEffect is called to hit the API endpoint
-  useEffect(() => callAPI(), [sortParams, pageParams, filterParams]);
+  useEffect(() => callAPI(), [sortParams, pageParams]);
 
   // Calls the Vendors API
   const callAPI = () => {
@@ -214,31 +190,7 @@ export default function VendorList() {
     });
   };
 
-  // Map column objects to actual columns
-  const dynamicColumns = COLUMNS.map((col) => {
-    return (
-      <Column
-        // Indexing/header
-        key={col.field}
-        field={col.field}
-        header={col.header}
-        // Filtering
-        filter={col.filterable}
-        filterElement={col.customFilter}
-        //filterMatchMode={"contains"}
-        filterPlaceholder={col.filterPlaceholder}
-        // Sorting
-        sortable
-        //sortField={col.field}
-        // Hiding Fields
-        showFilterMenuOptions={false}
-        showClearButton={false}
-        // Other
-        style={{ minWidth: "16rem" }}
-        hidden={col.hidden}
-      />
-    );
-  });
+  const columns = createColumns(COLUMNS);
 
   return (
     <div className="card pt-5 px-2">
@@ -249,7 +201,6 @@ export default function VendorList() {
         value={vendors}
         lazy
         responsiveLayout="scroll"
-        filterDisplay="row"
         loading={loading}
         // Paginator
         paginator
@@ -262,11 +213,8 @@ export default function VendorList() {
         onSort={onSort}
         sortField={sortParams.sortField}
         sortOrder={sortParams.sortOrder}
-        // Filtering
-        onFilter={onFilter}
-        filters={filterParams.filters}
       >
-        {dynamicColumns}
+        {columns}
         <Column body={editDeleteCellTemplate} style={{ minWidth: "16rem" }} />
       </DataTable>
       {deletePopupVisible && deletePopup}

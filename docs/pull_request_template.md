@@ -1,9 +1,5 @@
-## Feature Description (what did you do?)
+## Feature Description/Implementation
 
-## Design/Implementation Details (how did you do it?)
+## Dependencies
 
-## Areas Affected (what parts of the code does this affect?)
-
-## Testing (how did you ensure this works correctly?)
-
-## Future Considerations (is there anything we should know about this going forward?)
+## Anything Else

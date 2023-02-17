@@ -196,6 +196,7 @@ export default function SalesReconciliationList() {
   const editDeleteCellTemplate = EditDeleteTemplate<SalesReconciliation>({
     onEdit: (rowData) => toDetailPage(rowData, true),
     onDelete: (rowData) => deleteSalesReconciliationPopup(rowData),
+    deleteDisabled: () => false,
   });
 
   // The delete popup

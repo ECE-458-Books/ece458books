@@ -17,6 +17,7 @@ import {
 import { GENRES_API, GetGenresResp } from "../../apis/GenresAPI";
 import DeletePopup from "../../components/DeletePopup";
 import { createColumns, TableColumn } from "../../components/TableColumns";
+import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import { logger } from "../../util/Logger";
 import { GenreDetailState } from "../detail/GenreDetail";
 import { NUM_ROWS } from "./BookList";
@@ -165,24 +166,17 @@ export default function GenreList() {
 
   // ----------------- TEMPLATES/VISIBLE COMPONENTS -----------------
 
-  // Edit/Delete Cell Template
-  const editDeleteCellTemplate = (rowData: Genre) => {
-    return (
-      <React.Fragment>
-        <Button
-          icon="pi pi-pencil"
-          className="p-button-rounded p-button-success mr-2"
-          onClick={() => editGenre(rowData)}
-        />
-        <Button
-          icon="pi pi-trash"
-          className="p-button-rounded p-button-danger"
-          onClick={() => deleteGenrePopup(rowData)}
-          disabled={rowData.bookCount > 0}
-        />
-      </React.Fragment>
-    );
+  // Whether the delete button should be disabled
+  const isDeleteDisabled = (genre: Genre) => {
+    return genre.bookCount > 0;
   };
+
+  // Edit/Delete Cell Template
+  const editDeleteCellTemplate = EditDeleteTemplate<Genre>({
+    onEdit: (rowData) => editGenre(rowData),
+    onDelete: (rowData) => deleteGenrePopup(rowData),
+    deleteDisabled: (rowData) => isDeleteDisabled(rowData),
+  });
 
   // The delete popup
   const deletePopup = (

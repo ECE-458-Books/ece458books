@@ -13,6 +13,7 @@ import { APIToInternalVendorConversion } from "../../apis/Conversions";
 import { GetVendorsResp, VENDORS_API } from "../../apis/VendorsAPI";
 import DeletePopup from "../../components/DeletePopup";
 import { createColumns, TableColumn } from "../../components/TableColumns";
+import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import { logger } from "../../util/Logger";
 import { VendorDetailState } from "../detail/VendorDetail";
 import { NUM_ROWS } from "./BookList";
@@ -148,24 +149,17 @@ export default function VendorList() {
 
   // ----------------- TEMPLATES/VISIBLE COMPONENTS -----------------
 
-  // Edit/Delete Cell Template
-  const editDeleteCellTemplate = (rowData: Vendor) => {
-    return (
-      <React.Fragment>
-        <Button
-          icon="pi pi-pencil"
-          className="p-button-rounded p-button-success mr-2"
-          onClick={() => editVendor(rowData)}
-        />
-        <Button
-          icon="pi pi-trash"
-          className="p-button-rounded p-button-danger"
-          onClick={() => deleteVendorPopup(rowData)}
-          disabled={rowData.numPO > 0}
-        />
-      </React.Fragment>
-    );
+  // Whether the delete button should be disabled
+  const isDeleteDisabled = (vendor: Vendor) => {
+    return vendor.numPO > 0;
   };
+
+  // Edit/Delete Cell Template
+  const editDeleteCellTemplate = EditDeleteTemplate<Vendor>({
+    onEdit: (rowData) => editVendor(rowData),
+    onDelete: (rowData) => deleteVendorPopup(rowData),
+    deleteDisabled: (rowData) => isDeleteDisabled(rowData),
+  });
 
   // The delete popup
   const deletePopup = (

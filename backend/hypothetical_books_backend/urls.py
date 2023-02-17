@@ -25,4 +25,5 @@ urlpatterns = [
     path(f'{api_prefix}sales', include('sales.urls')),
     path(f'{api_prefix}purchase_orders', include('purchase_orders.urls')),
     path(f'{api_prefix}auth', include('authapp.urls', namespace='authentication')),
+    path(f'{api_prefix}buybacks', include('buybacks.urls')),
 ]

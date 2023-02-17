@@ -35,7 +35,9 @@ DEBUG = env('DEBUG').lower() == 'true'
 
 # The reason why we don't let ALLOWED_HOSTS as a wildcard asterisk
 # https://www.djangoproject.com/weblog/2013/feb/19/security/#s-issue-host-header-poisoning
-ALLOWED_HOSTS = ['books.colab.duke.edu', 'books-dev.colab.duke.edu', 'books-front.colab.duke.edu', 'books-test.colab.duke.edu']
+ALLOWED_HOSTS = [
+    'books.colab.duke.edu', 'books-dev.colab.duke.edu', 'books-front.colab.duke.edu', 'books-test.colab.duke.edu'
+]
 # ALLOWED_HOSTS = ['*']
 
 # Application definition
@@ -61,6 +63,7 @@ INSTALLED_APPS = [
     'vendors',
     'purchase_orders',
     'sales',
+    'buybacks',
 
     # Authentication App
     'authapp',
@@ -178,7 +181,7 @@ AUTH_USER_MODEL = 'authapp.User'
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGIN_REGEXES = [
     '^https?://localhost(:8000)?$',
-    '^https?://books-front\.colab\.duke\.edu(:3000)?$' # Matches http,https request from port 3000 or none
+    '^https?://books-front\.colab\.duke\.edu(:3000)?$'  # Matches http,https request from port 3000 or none
 ]
 
 SIMPLE_JWT = {

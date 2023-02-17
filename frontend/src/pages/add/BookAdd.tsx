@@ -43,6 +43,7 @@ export default function BookAdd() {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       setSelectedGenre={options.editorCallback!}
       selectedGenre={options.value}
+      isTableCell
     />
   );
 

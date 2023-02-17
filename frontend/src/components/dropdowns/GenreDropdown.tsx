@@ -5,6 +5,7 @@ import { GENRES_API } from "../../apis/GenresAPI";
 export interface GenreDropdownProps {
   setSelectedGenre: (arg0: string) => void;
   selectedGenre: string;
+  isTableCell?: boolean;
 }
 
 // This cannot be used in a table cell in the current form, only when there is one on the page
@@ -29,6 +30,9 @@ export default function GenreDropdown(props: GenreDropdownProps) {
       onChange={(e) => props.setSelectedGenre(e.value)}
       placeholder={"Select Genre"}
       showClear
+      style={
+        props.isTableCell ? { position: "absolute", zIndex: 9999 } : undefined
+      }
     />
   );
 }

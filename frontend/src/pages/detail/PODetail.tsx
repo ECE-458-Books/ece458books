@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ToggleButton } from "primereact/togglebutton";
 import { Calendar, CalendarProps } from "primereact/calendar";
 import { DataTable } from "primereact/datatable";
@@ -28,7 +28,9 @@ import { FileUploadHandlerEvent } from "primereact/fileupload";
 import { APIToInternalPurchasesCSVConversion } from "../../apis/Conversions";
 import CSVUploader from "../../components/CSVFileUploader";
 import VendorDropdown from "../../components/dropdowns/VendorDropdown";
-import BookDropdown from "../../components/dropdowns/BookDropdown";
+import BooksDropdown, {
+  BooksDropdownData,
+} from "../../components/dropdowns/BookDropdown";
 
 export interface PODetailState {
   id: number;
@@ -104,12 +106,13 @@ export default function PODetail() {
     purchase.isNewRow = false;
   }
 
-  const [bookMap, setBookMap] = useState<Map<string, number>>(new Map());
+  const [bookMap, setBooksMap] = useState<Map<string, number>>(new Map());
   const [vendorMap, setVendorMap] = useState<Map<string, number>>(new Map());
   const [date, setDate] = useState(detailState.date);
   const [selectedVendorName, setSelectedVendorName] = useState<string>(
     detailState.vendorName
   );
+  const [booksDropdownTitles, setBooksDropdownTitles] = useState<string[]>([]);
   const [purchases, setPurchases] = useState<POPurchaseRow[]>(
     detailState.purchases
   );
@@ -328,13 +331,23 @@ export default function PODetail() {
     );
   };
 
+  // Get the data for the books dropdown
+  useEffect(
+    () =>
+      BooksDropdownData({
+        setBooksMap: setBooksMap,
+        setBookTitlesList: setBooksDropdownTitles,
+      }),
+    []
+  );
+
   const booksDropDownEditor = (options: ColumnEditorOptions) => (
-    <BookDropdown
-      setBookMap={setBookMap}
+    <BooksDropdown
       // This will always be used in a table cell, so we can disable the warning
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       setSelectedBook={options.editorCallback!}
       selectedBook={options.value}
+      bookTitlesList={booksDropdownTitles}
     />
   );
 

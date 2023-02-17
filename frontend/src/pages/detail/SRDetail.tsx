@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ToggleButton } from "primereact/togglebutton";
 import { Calendar, CalendarProps } from "primereact/calendar";
 import { DataTable } from "primereact/datatable";
@@ -23,7 +23,9 @@ import {
 import { Toast } from "primereact/toast";
 import { toYYYYMMDDWithDash } from "../../util/DateOperations";
 import { InputNumber } from "primereact/inputnumber";
-import BookDropdown from "../../components/dropdowns/BookDropdown";
+import BooksDropdown, {
+  BooksDropdownData,
+} from "../../components/dropdowns/BookDropdown";
 
 export interface SRDetailState {
   id: number;
@@ -87,7 +89,8 @@ export default function SRDetail() {
   const salesReconciliationID = detailState.id;
   const [lineData, setLineData] = useState<SRSaleRow>(emptyProduct);
   const totalRevenue = detailState.totalRevenue;
-  const [bookMap, setBookMap] = useState<Map<string, number>>(new Map());
+  const [booksMap, setBooksMap] = useState<Map<string, number>>(new Map());
+  const [booksDropdownTitles, setBooksDropdownTitles] = useState<string[]>([]);
   const isSRAddPage = useState<boolean>(detailState.isAddPage);
   const [isModifiable, setIsModifiable] = useState<boolean>(
     detailState.isModifiable
@@ -95,21 +98,12 @@ export default function SRDetail() {
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(detailState.isConfirmationPopupVisible);
 
-  const booksDropDownEditor = (options: ColumnEditorOptions) => (
-    <BookDropdown
-      setBookMap={setBookMap}
-      // This will always be used in a table cell, so we can disable the warning
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      setSelectedBook={options.editorCallback!}
-      selectedBook={options.value}
-    />
-  );
-
   const COLUMNS: TableColumn[] = [
     {
       field: "bookTitle",
       header: "Book",
-      cellEditor: booksDropDownEditor,
+      cellEditor: (options: ColumnEditorOptions) =>
+        booksDropDownEditor(options),
     },
 
     {
@@ -173,7 +167,7 @@ export default function SRDetail() {
     if (isSRAddPage) {
       const apiSales = sales.map((sale) => {
         return {
-          book: bookMap.get(sale.bookTitle),
+          book: booksMap.get(sale.bookTitle),
           quantity: sale.quantity,
           unit_retail_price: sale.unitRetailPrice,
         } as APISRSaleRow;
@@ -191,7 +185,7 @@ export default function SRDetail() {
       const apiSales = sales.map((sale) => {
         return {
           id: sale.isNewRow ? undefined : sale.id,
-          book: sale.isNewRow ? bookMap.get(sale.bookTitle) : sale.bookId,
+          book: sale.isNewRow ? booksMap.get(sale.bookTitle) : sale.bookId,
           quantity: sale.quantity,
           unit_retail_price: sale.unitRetailPrice,
         } as APISRSaleRow;
@@ -274,6 +268,26 @@ export default function SRDetail() {
       </React.Fragment>
     );
   };
+
+  // Get the data for the books dropdown
+  useEffect(
+    () =>
+      BooksDropdownData({
+        setBooksMap: setBooksMap,
+        setBookTitlesList: setBooksDropdownTitles,
+      }),
+    []
+  );
+
+  const booksDropDownEditor = (options: ColumnEditorOptions) => (
+    <BooksDropdown
+      // This will always be used in a table cell, so we can disable the warning
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      setSelectedBook={options.editorCallback!}
+      selectedBook={options.value}
+      bookTitlesList={booksDropdownTitles}
+    />
+  );
 
   const columns = createColumns(COLUMNS);
 

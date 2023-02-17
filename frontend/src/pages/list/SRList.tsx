@@ -1,8 +1,6 @@
 import { Column } from "primereact/column";
 import {
   DataTable,
-  DataTableFilterEvent,
-  DataTableFilterMetaData,
   DataTablePageEvent,
   DataTableRowClickEvent,
   DataTableSortEvent,

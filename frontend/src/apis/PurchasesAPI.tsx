@@ -18,9 +18,10 @@ export interface GetPOsReq {
 
 export interface APIPOPurchaseRow {
   id?: number; // ID only for new rows, not already existing ones
-  subtotal: number;
+  subtotal: number; // Soon to be deprecated
   book: number;
   book_title: string;
+  book_isbn: string;
   quantity: number;
   unit_wholesale_price: number;
 }
@@ -58,6 +59,20 @@ export interface ModifyPOReq extends AddPOReq {
   id: number;
 }
 
+// puchaseOrdersCSVImport
+export interface POCSVImportReq {
+  file: File;
+}
+
+export interface APIPurchaseCSVImportRow extends APIPOPurchaseRow {
+  errors: { [key: string]: string };
+}
+
+export interface POCSVImportResp {
+  purchases: APIPurchaseCSVImportRow[];
+  errors: string[];
+}
+
 export const PURCHASES_API = {
   getPurchaseOrders: async function (req: GetPOsReq): Promise<GetPOsResp> {
     return await API.request({
@@ -88,5 +103,23 @@ export const PURCHASES_API = {
       method: METHOD_POST,
       data: req,
     });
+  },
+
+  purchaseOrderCSVImport: async function (
+    req: POCSVImportReq
+  ): Promise<POCSVImportResp> {
+    const formData = new FormData();
+    formData.append("file", req.file);
+    console.log(formData);
+    const request = {
+      url: PURCHASES_EXTENSION.concat("/csv/import"),
+      method: METHOD_POST,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      data: formData,
+    };
+    console.log(request);
+    return await API.request(request);
   },
 };

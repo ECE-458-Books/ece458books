@@ -50,7 +50,7 @@ export const VENDORS_API = {
     });
   },
 
-  getVendorsNOPaging: async function (): Promise<APIVendor[]> {
+  getVendorsNoPagination: async function (): Promise<APIVendor[]> {
     return await API.request({
       url: VENDORS_EXTENSION,
       method: METHOD_GET,

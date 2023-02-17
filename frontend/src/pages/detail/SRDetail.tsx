@@ -143,7 +143,7 @@ export default function SRDetail() {
 
   // Populate the book list on page load
   useEffect(() => {
-    BOOKS_API.getBooksNOPaging().then((response) => {
+    BOOKS_API.getBooksNoPagination().then((response) => {
       const tempBookMap = new Map<string, number>();
       for (const book of response) {
         tempBookMap.set(book.title, book.id);

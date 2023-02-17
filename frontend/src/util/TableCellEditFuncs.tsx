@@ -1,4 +1,4 @@
-import { ColumnBodyOptions, ColumnEditorOptions } from "primereact/column";
+import { ColumnEditorOptions } from "primereact/column";
 import { InputNumber } from "primereact/inputnumber";
 import { InputText } from "primereact/inputtext";
 

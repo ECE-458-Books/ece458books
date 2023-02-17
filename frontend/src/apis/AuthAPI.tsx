@@ -48,6 +48,8 @@ export const AUTH_API = {
     });
   },
 
+  // We don't know the format of the failed request
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tokenRefresh: async function (failedRequest: any) {
     const refreshToken = sessionStorage.getItem("refreshToken");
 

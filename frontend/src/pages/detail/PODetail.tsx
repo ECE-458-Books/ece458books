@@ -27,6 +27,9 @@ import { BOOKS_API } from "../../apis/BooksAPI";
 import { toYYYYMMDDWithDash } from "../../util/DateOperations";
 import { Toast } from "primereact/toast";
 import { InputNumber } from "primereact/inputnumber";
+import { FileUploadHandlerEvent } from "primereact/fileupload";
+import { APIToInternalPurchasesCSVConversion } from "../../apis/Conversions";
+import CSVUploader from "../../components/CSVFileUploader";
 
 export interface PODetailState {
   id: number;
@@ -45,9 +48,11 @@ export interface POPurchaseRow {
   id: string;
   subtotal: number;
   bookId: number;
+  bookISBN: string;
   bookTitle: string;
   quantity: number;
   unitWholesalePrice: number;
+  errors?: { [key: string]: string }; // Only present on CSV import
 }
 
 // The books Interface lol no
@@ -57,10 +62,12 @@ export interface BooksList {
 }
 
 export default function PODetail() {
+  // -------- STATE --------
   const emptyProduct: POPurchaseRow = {
     isNewRow: true,
     id: uuid(),
     bookId: 0,
+    bookISBN: "",
     subtotal: 0,
     bookTitle: "",
     quantity: 1,
@@ -80,6 +87,7 @@ export default function PODetail() {
         isNewRow: true,
         id: uuid(),
         bookTitle: "",
+        bookISBN: "",
         subtotal: 0,
         bookId: 0,
         quantity: 1,
@@ -143,6 +151,8 @@ export default function PODetail() {
     },
   ];
 
+  // -------- METHODS --------
+
   // Adds a row to the PO
   const addNewPurchase = () => {
     setLineData(emptyProduct);
@@ -160,20 +170,34 @@ export default function PODetail() {
     setPurchases(_data);
   };
 
+  // Handler for a CSV upload
+  const csvUploadHandler = (event: FileUploadHandlerEvent) => {
+    const csv = event.files[0];
+    PURCHASES_API.purchaseOrderCSVImport({ file: csv })
+      .then((response) => {
+        const purchases = APIToInternalPurchasesCSVConversion(
+          response.purchases
+        );
+        const nonBlockingErrors = response.errors;
+        setPurchases(purchases);
+      })
+      .catch((error) => {
+        showFailure(error.data.errors[0]);
+      });
+  };
+
   // Populate the vendors/book list on page load
   useEffect(() => {
-    VENDORS_API.getVendorsNOPaging().then((response) => {
-      console.log(response);
+    VENDORS_API.getVendorsNoPagination().then((response) => {
       const tempVendorMap = new Map<string, number>();
       for (const vendor of response) {
         tempVendorMap.set(vendor.name, vendor.id);
       }
       setVendorMap(tempVendorMap);
       setVendorNamesList(response.map((vendor) => vendor.name));
-      //return setVendorsData(response.vendors);
     });
 
-    BOOKS_API.getBooksNOPaging().then((response) => {
+    BOOKS_API.getBooksNoPagination().then((response) => {
       const tempBookMap = new Map<string, number>();
       for (const book of response) {
         tempBookMap.set(book.title, book.id);
@@ -286,16 +310,21 @@ export default function PODetail() {
 
   const leftToolbarTemplate = () => {
     return (
-      <React.Fragment>
-        <Button
-          type="button"
-          label="Add Book"
-          className="p-button-info mr-2"
-          icon="pi pi-plus"
-          onClick={addNewPurchase}
-          disabled={!isModifiable}
-        />
-      </React.Fragment>
+      <>
+        <React.Fragment>
+          <CSVUploader uploadHandler={csvUploadHandler} />
+        </React.Fragment>
+        <React.Fragment>
+          <Button
+            type="button"
+            label="Add Book"
+            className="p-button-info mr-2"
+            icon="pi pi-plus"
+            onClick={addNewPurchase}
+            disabled={!isModifiable}
+          />
+        </React.Fragment>
+      </>
     );
   };
 

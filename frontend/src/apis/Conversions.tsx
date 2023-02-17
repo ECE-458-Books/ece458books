@@ -1,3 +1,4 @@
+import { v4 as uuid } from "uuid";
 import { BookWithDBTag } from "../pages/add/BookAdd";
 import { POPurchaseRow } from "../pages/detail/PODetail";
 import { SRSaleRow } from "../pages/detail/SRDetail";
@@ -18,7 +19,11 @@ import {
 } from "../util/StringOperations";
 import { APIBook, APIBookWithDBTag } from "./BooksAPI";
 import { APIGenre } from "./GenresAPI";
-import { APIPO } from "./PurchasesAPI";
+import {
+  APIPO,
+  APIPOPurchaseRow,
+  APIPurchaseCSVImportRow,
+} from "./PurchasesAPI";
 import { APISR } from "./SalesAPI";
 import { GetSalesReportResp } from "./SalesRepAPI";
 import { APIVendor } from "./VendorsAPI";
@@ -55,6 +60,8 @@ export const APISRSortFieldMap = new Map<string, string>([
   ["totalRevenue", "total_revenue"],
   ["date", "date"],
 ]);
+
+// Books
 
 export function APIToInternalBookConversion(book: APIBook): Book {
   return {
@@ -116,6 +123,8 @@ export function APIToInternalBookConversionWithDB(
   };
 }
 
+// Vendor
+
 export function APIToInternalVendorConversion(vendor: APIVendor): Vendor {
   return {
     id: vendor.id,
@@ -123,6 +132,8 @@ export function APIToInternalVendorConversion(vendor: APIVendor): Vendor {
     numPO: vendor.num_purchase_orders,
   };
 }
+
+// Genre
 
 export function APIToInternalGenreConversion(genre: APIGenre): Genre {
   return {
@@ -132,20 +143,29 @@ export function APIToInternalGenreConversion(genre: APIGenre): Genre {
   };
 }
 
+// Purchase Orders
+
+export function APIToInternalPOPurchaseConversion(
+  purchase: APIPOPurchaseRow
+): POPurchaseRow {
+  return {
+    isNewRow: false,
+    // (id is always defined from API)
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    id: purchase.id!.toString(),
+    subtotal: purchase.subtotal,
+    bookId: purchase.book,
+    bookTitle: purchase.book_title,
+    bookISBN: purchase.book_isbn,
+    quantity: purchase.quantity,
+    unitWholesalePrice: purchase.unit_wholesale_price,
+  };
+}
+
 export function APIToInternalPOConversion(po: APIPO): PurchaseOrder {
-  const purchases: POPurchaseRow[] = po.purchases.map((purchase) => {
-    return {
-      isNewRow: false,
-      // (id is always defined from API)
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      id: purchase.id!.toString(),
-      subtotal: purchase.subtotal,
-      bookId: purchase.book,
-      bookTitle: purchase.book_title,
-      quantity: purchase.quantity,
-      unitWholesalePrice: purchase.unit_wholesale_price,
-    };
-  });
+  const purchases: POPurchaseRow[] = po.purchases.map((purchase) =>
+    APIToInternalPOPurchaseConversion(purchase)
+  );
 
   return {
     id: po.id,
@@ -158,6 +178,26 @@ export function APIToInternalPOConversion(po: APIPO): PurchaseOrder {
     purchases: purchases,
   };
 }
+
+export function APIToInternalPurchasesCSVConversion(
+  purchases: APIPurchaseCSVImportRow[]
+): POPurchaseRow[] {
+  return purchases.map((purchase) => {
+    return {
+      isNewRow: true,
+      id: uuid(),
+      subtotal: 0, // Temporary, subtotal will be deprecated
+      bookId: purchase.book,
+      bookTitle: purchase.book_title,
+      bookISBN: purchase.book_isbn,
+      quantity: purchase.quantity,
+      unitWholesalePrice: purchase.unit_wholesale_price,
+      errors: purchase.errors,
+    };
+  });
+}
+
+// Sales Reconciliations
 
 export function APItoInternalSRConversion(sr: APISR): SalesReconciliation {
   const sales: SRSaleRow[] = sr.sales.map((sale) => {
@@ -183,6 +223,8 @@ export function APItoInternalSRConversion(sr: APISR): SalesReconciliation {
     sales: sales,
   };
 }
+
+// Sales Report
 
 export function APIToInternalSalesReportConversion(
   salesRep: GetSalesReportResp

@@ -3,7 +3,7 @@ from .serializers import PurchaseOrderSerializer
 from rest_framework.response import Response
 from rest_framework import status, filters
 from .models import Purchase, PurchaseOrder
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
 from .paginations import PurchaseOrderPagination
 from django.db.models import OuterRef, Subquery, Func, Count, F, Sum
 import datetime, pytz
@@ -37,28 +37,17 @@ class ListCreatePurchaseOrderAPIView(ListCreateAPIView):
         default_query_set = PurchaseOrder.objects.all()
 
         # Create a subquery to aggregate the 'cost' value for each purchase in PurchaseOrder
-        cost_subquery = Purchase.objects.filter(
-            purchase_order=OuterRef('id')
-        ).values_list(
+        cost_subquery = Purchase.objects.filter(purchase_order=OuterRef('id')).values_list(
             Func(
                 'cost',
                 function='SUM',
-            ),
-        )
+            ),)
 
-        default_query_set = default_query_set.annotate(
-            total_cost=Subquery(cost_subquery)
-        )
-        
+        default_query_set = default_query_set.annotate(total_cost=Subquery(cost_subquery))
+
         # Filter by quantity of books in PurchaseOrder
-        num_books_subquery = Purchase.objects.filter(
-            purchase_order=OuterRef('id')
-        ).values_list(
-            Func(
-                'quantity',
-                function='SUM'
-            ),
-        )
+        num_books_subquery = Purchase.objects.filter(purchase_order=OuterRef('id')).values_list(
+            Func('quantity', function='SUM'),)
 
         default_query_set = default_query_set.annotate(num_books=Subquery(num_books_subquery))
 
@@ -72,9 +61,9 @@ class ListCreatePurchaseOrderAPIView(ListCreateAPIView):
         if start_date is not None and end_date is not None:
             default_query_set = default_query_set.filter(date__range=(start_date, end_date))
         elif start_date is not None:
-            default_query_set = default_query_set.filter(date__range=(start_date, datetime.datetime.now(pytz.timezone('US/Eastern'))))
+            default_query_set = default_query_set.filter(
+                date__range=(start_date, datetime.datetime.now(pytz.timezone('US/Eastern'))))
 
-        
         # Filter by book
         book = self.request.GET.get('book')
         if book is not None:
@@ -89,12 +78,12 @@ class ListCreatePurchaseOrderAPIView(ListCreateAPIView):
         purchase_cost__lte = self.request.GET.get('purchase_cost__lte')
         if purchase_cost__lte is not None:
             default_query_set = default_query_set.filter(purchases__cost__lte=purchase_cost__lte).distinct()
-        
+
         # Filter by <= cost
         purchase_cost = self.request.GET.get('purchase_cost')
         if purchase_cost is not None:
             default_query_set = default_query_set.filter(purchases__cost=purchase_cost).distinct()
-        
+
         # Filter by >= quantity
         purchase_quantity__gte = self.request.GET.get('purchase_quantity__gte')
         if purchase_quantity__gte is not None:
@@ -109,22 +98,25 @@ class ListCreatePurchaseOrderAPIView(ListCreateAPIView):
         purchase_quantity = self.request.GET.get('purchase_quantity')
         if purchase_quantity is not None:
             default_query_set = default_query_set.filter(purchases__quantity=purchase_quantity).distinct()
-        
+
         # Filter by >= unit_retail_price
         purchase_unit_wholesale_price__gte = self.request.GET.get('purchase_unit_wholesale_price__gte')
         if purchase_unit_wholesale_price__gte is not None:
-            default_query_set = default_query_set.filter(purchases__unit_wholesale_price__gte=purchase_unit_wholesale_price__gte).distinct()
-        
+            default_query_set = default_query_set.filter(
+                purchases__unit_wholesale_price__gte=purchase_unit_wholesale_price__gte).distinct()
+
         # Filter by <= unit_retail_price
         purchase_unit_wholesale_price__lte = self.request.GET.get('purchase_unit_wholesale_price__lte')
         if purchase_unit_wholesale_price__lte is not None:
-            default_query_set = default_query_set.filter(purchases__unit_wholesale_price__lte=purchase_unit_wholesale_price__lte).distinct()
-        
+            default_query_set = default_query_set.filter(
+                purchases__unit_wholesale_price__lte=purchase_unit_wholesale_price__lte).distinct()
+
         # Filter by == unit_retail_price
         purchase_unit_wholesale_price = self.request.GET.get('purchase_unit_wholesale_price')
         if purchase_unit_wholesale_price is not None:
-            default_query_set = default_query_set.filter(purchases__unit_wholesale_price=purchase_unit_wholesale_price).distinct()
-        
+            default_query_set = default_query_set.filter(
+                purchases__unit_wholesale_price=purchase_unit_wholesale_price).distinct()
+
         return default_query_set
 
 
@@ -155,23 +147,27 @@ class RetrieveUpdateDestroyPurchaseOrderAPIView(RetrieveUpdateDestroyAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
+
     def destroy(self, request, *args, **kwargs):
-        purchase_book_quantities = Purchase.objects.filter(purchase_order=self.get_object().id).values('book').annotate(num_books=Sum('quantity')).values('book', 'num_books')
+        purchase_book_quantities = Purchase.objects.filter(purchase_order=self.get_object().id).values('book').annotate(
+            num_books=Sum('quantity')).values('book', 'num_books')
         for purchase_book_quantity in purchase_book_quantities:
             book_to_remove_purchase = Book.objects.filter(id=purchase_book_quantity['book']).get()
             if (book_to_remove_purchase.stock < purchase_book_quantity['num_books']):
-                return Response({"error": {
-                    "msg": "Cannot delete purchase order, as doing so would cause book stock to become negative.",
-                    "details": {
-                        "book_id": purchase_book_quantity['book'],
-                        "book_stock": book_to_remove_purchase.stock,
-                        "quantity_request_for_delete": purchase_book_quantity['num_books']
-                    }
-                    } 
-                },
-                status=status.HTTP_403_FORBIDDEN)
-        
+                return Response(
+                    {
+                        "error": {
+                            "msg":
+                                "Cannot delete purchase order, as doing so would cause book stock to become negative.",
+                            "details": {
+                                "book_id": purchase_book_quantity['book'],
+                                "book_stock": book_to_remove_purchase.stock,
+                                "quantity_request_for_delete": purchase_book_quantity['num_books']
+                            }
+                        }
+                    },
+                    status=status.HTTP_403_FORBIDDEN)
+
         # If we get here, we know we can successfully delete all the purchases, so we will do that
         for purchase_book_quantity in purchase_book_quantities:
             book_to_remove_purchase = Book.objects.filter(id=purchase_book_quantity['book']).get()
@@ -183,3 +179,52 @@ class RetrieveUpdateDestroyPurchaseOrderAPIView(RetrieveUpdateDestroyAPIView):
         if (len(self.get_queryset()) == 0):
             return Response({"id": "No purchase orders with queried id."}, status=status.HTTP_400_BAD_REQUEST)
         return None
+
+
+class CSVPurchasesAPIView(CreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PurchaseOrderSerializer
+    queryset = PurchaseOrder.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        print(request.data)
+        return Response(
+            {
+                "purchases": [{
+                    "book": 104,
+                    "book_title": "The Google Story",
+                    "book_isbn": 9781509889211,
+                    "quantity": 10,
+                    "unit_wholesale_price": 10.01,
+                    "errors": {
+                        "book": "not_in_db"
+                    }
+                }, {
+                    "book": 105,
+                    "book_title": "Moby Dick",
+                    "book_isbn": 9781853260087,
+                    "quantity": 10,
+                    "unit_wholesale_price": 10.0,
+                    "errors": {
+                        "unit_wholesale_price": "incorrect_format",
+                        "quantity": "incorrect_format"
+                    }
+                }, {
+                    "book": 106,
+                    "book_title": "The Catcher in the Rye",
+                    "book_isbn": 9786543210000,
+                    "quantity": 1,
+                    "unit_wholesale_price": 2.0,
+                    "error": {
+                        "quantity": "incorrect_format"
+                    }
+                }, {
+                    "book": 107,
+                    "book_title": "Harry Potter and the Sorcerer's Stone",
+                    "book_isbn": 9780545790352,
+                    "quantity": 1,
+                    "unit_wholesale_price": 200.0,
+                }],
+                "errors": ["extra_column"]
+            },
+            status=status.HTTP_200_OK)

@@ -1,18 +1,19 @@
-import re
+import re, os
 
 from django.db.models import OuterRef, Subquery
 
 from rest_framework import status, filters
 from rest_framework.views import APIView
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveUpdateAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
-from .serializers import BookListAddSerializer, BookSerializer, ISBNSerializer
+from .serializers import BookListAddSerializer, BookSerializer, ISBNSerializer, BookImageSerializer
 from .isbn import ISBNTools
-from .models import Book, Author
+from .models import Book, Author, BookImage
 from .paginations import BookPagination
 from .search_filters import CustomSearchFilter
+from .scpconnect import SCPTools
 
 from genres.models import Genre
 
@@ -190,3 +191,35 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
 
         return Response({"status" : f"Book: {instance.title}(id:{instance.id}) is now a ghost"}, status=status.HTTP_204_NO_CONTENT)
 
+
+class RetrieveUpdateBookImageAPIView(RetrieveUpdateAPIView):
+    serializer_class = BookImageSerializer
+    queryset = BookImage.objects.all()
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'book_id' # looks up using the book_id field
+    lookup_url_kwarg = 'book_id'
+    scp_toolbox = SCPTools()
+
+    def update(self, request, *args, **kwargs):
+        book_id = request.build_absolute_uri().split('/')[-1].strip()
+        file_uploaded = request.FILES.get('image')
+        content_type = file_uploaded.content_type
+        extension = content_type.split('/')[-1].strip()
+        file_bytes = file_uploaded.read()
+
+        filename = f'{book_id}.{extension}'
+        location = f'/temp_media/{filename}'
+        absolute_location = os.getcwd()+location
+
+        HOST = self.scp_toolbox.send_image_data(file_bytes, absolute_location)
+
+        # Now update URL of BookImage
+        instance = self.get_object()
+        data = {
+            "url" : f"https://{HOST}/{filename}"
+        }
+        serializer = self.get_serializer(instance, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        return Response('If no errors occurred, should work. If not, slack Hosung')

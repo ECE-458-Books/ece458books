@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Book, Author
+from .models import Book, Author, BookImage
 from genres.models import Genre
 
 class BookListAddSerializer(serializers.ModelSerializer):
@@ -37,3 +37,8 @@ class AuthorSerializer(serializers.ModelSerializer):
 
 class ISBNSerializer(serializers.Serializer):
     isbns = serializers.CharField()
+
+class BookImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BookImage
+        fields = '__all__'

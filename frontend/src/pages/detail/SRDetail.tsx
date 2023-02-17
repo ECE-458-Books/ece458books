@@ -29,7 +29,7 @@ import BooksDropdown, {
 import CSVUploader from "../../components/CSVFileUploader";
 import { FileUploadHandlerEvent } from "primereact/fileupload";
 import { APIToInternalSalesCSVConversion } from "../../apis/Conversions";
-import { showWarning } from "../../components/Toast";
+import { showFailure, showSuccess, showWarning } from "../../components/Toast";
 
 export interface SRDetailState {
   id: number;
@@ -157,7 +157,7 @@ export default function SRDetail() {
         setSales(sales);
       })
       .catch((error) => {
-        showFailure(error.data.errors[0]);
+        showFailure(toast, error.data.errors[0]);
       });
   };
 
@@ -165,13 +165,13 @@ export default function SRDetail() {
   const validateSubmission = (sr: SRSaleRow[]) => {
     for (const sale of sr) {
       if (!sale.bookTitle || !(sale.unitRetailPrice >= 0) || !sale.quantity) {
-        showFailure("All fields are required");
+        showFailure(toast, "All fields are required");
         return false;
       }
     }
 
     if (!date) {
-      showFailure("All fields are required");
+      showFailure(toast, "All fields are required");
       return false;
     }
 
@@ -197,8 +197,10 @@ export default function SRDetail() {
         sales: apiSales,
       } as AddSRReq;
       SALES_API.addSalesReconciliation(salesReconciliation)
-        .then(() => showSuccess("Sales reconciliation added successfully"))
-        .catch(() => showFailure("Could not add sales reconciliation"));
+        .then(() =>
+          showSuccess(toast, "Sales reconciliation added successfully")
+        )
+        .catch(() => showFailure(toast, "Could not add sales reconciliation"));
     } else {
       // Otherwise, it is a modify page
       const apiSales = sales.map((sale) => {
@@ -217,8 +219,12 @@ export default function SRDetail() {
       } as ModifySRReq;
 
       SALES_API.modifySalesReconciliation(salesReconciliation)
-        .then(() => showSuccess("Sales reconciliation modified successfully"))
-        .catch(() => showFailure("Could not modify sales reconciliation"));
+        .then(() =>
+          showSuccess(toast, "Sales reconciliation modified successfully")
+        )
+        .catch(() =>
+          showFailure(toast, "Could not modify sales reconciliation")
+        );
     }
   };
 
@@ -226,17 +232,6 @@ export default function SRDetail() {
 
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
-
-  const showSuccess = (message: string) => {
-    toast.current?.show({ severity: "success", summary: message });
-  };
-
-  const showFailure = (message: string) => {
-    toast.current?.show({
-      severity: "error",
-      summary: message,
-    });
-  };
 
   const actionBodyTemplate = (rowData: SRSaleRow) => {
     return (

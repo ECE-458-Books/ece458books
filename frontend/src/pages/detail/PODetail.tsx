@@ -1,7 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { ToggleButton } from "primereact/togglebutton";
 import { Calendar, CalendarProps } from "primereact/calendar";
-import { Dropdown, DropdownProps } from "primereact/dropdown";
 import { DataTable } from "primereact/datatable";
 import { createColumns, TableColumn } from "../../components/TableColumns";
 import { Column, ColumnEditorOptions, ColumnEvent } from "primereact/column";
@@ -22,8 +21,6 @@ import {
   ModifyPOReq,
   PURCHASES_API,
 } from "../../apis/PurchasesAPI";
-import { VENDORS_API } from "../../apis/VendorsAPI";
-import { BOOKS_API } from "../../apis/BooksAPI";
 import { toYYYYMMDDWithDash } from "../../util/DateOperations";
 import { Toast } from "primereact/toast";
 import { InputNumber } from "primereact/inputnumber";
@@ -119,8 +116,6 @@ export default function PODetail() {
   const totalCost = detailState.totalCost;
   const purchaseOrderID = detailState.id;
   const [lineData, setLineData] = useState<POPurchaseRow>(emptyProduct);
-  const [vendorNamesList, setVendorNamesList] = useState<string[]>();
-  const [bookTitlesList, setBookTitlesList] = useState<string[]>();
   const isPOAddPage = detailState.isAddPage; // If false, this is an edit page
   const [isModifiable, setIsModifiable] = useState<boolean>(
     detailState.isModifiable
@@ -333,21 +328,24 @@ export default function PODetail() {
     );
   };
 
-  const booksDropDownEditor = (options: ColumnEditorOptions) =>
-    BookDropdown({
-      setBookMap: setBookMap,
-      // The editor callback will be defined, or else the dropdown will not serve it's purpose
+  const booksDropDownEditor = (options: ColumnEditorOptions) => (
+    <BookDropdown
+      setBookMap={setBookMap}
+      // This will always be used in a table cell, so we can disable the warning
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      setSelectedBook: options.editorCallback!,
-      selectedBook: options.value,
-    });
+      setSelectedBook={options.editorCallback!}
+      selectedBook={options.value}
+    />
+  );
 
-  const vendorDropdown = VendorDropdown({
-    setVendorMap: setVendorMap,
-    setSelectedVendor: setSelectedVendorName,
-    selectedVendor: selectedVendorName,
-    isModifiable: isModifiable,
-  });
+  const vendorDropdown = (
+    <VendorDropdown
+      setVendorMap={setVendorMap}
+      setSelectedVendor={setSelectedVendorName}
+      selectedVendor={selectedVendorName}
+      isModifiable={isModifiable}
+    />
+  );
 
   const columns = createColumns(COLUMNS);
 

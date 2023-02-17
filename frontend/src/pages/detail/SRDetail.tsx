@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { ToggleButton } from "primereact/togglebutton";
 import { Calendar, CalendarProps } from "primereact/calendar";
 import { DataTable } from "primereact/datatable";
@@ -20,7 +20,6 @@ import {
   ModifySRReq,
   SALES_API,
 } from "../../apis/SalesAPI";
-import { BOOKS_API } from "../../apis/BooksAPI";
 import { Toast } from "primereact/toast";
 import { toYYYYMMDDWithDash } from "../../util/DateOperations";
 import { InputNumber } from "primereact/inputnumber";
@@ -96,12 +95,21 @@ export default function SRDetail() {
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(detailState.isConfirmationPopupVisible);
 
+  const booksDropDownEditor = (options: ColumnEditorOptions) => (
+    <BookDropdown
+      setBookMap={setBookMap}
+      // This will always be used in a table cell, so we can disable the warning
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      setSelectedBook={options.editorCallback!}
+      selectedBook={options.value}
+    />
+  );
+
   const COLUMNS: TableColumn[] = [
     {
       field: "bookTitle",
       header: "Book",
-      cellEditor: (options: ColumnEditorOptions) =>
-        booksDropDownEditor(options),
+      cellEditor: booksDropDownEditor,
     },
 
     {
@@ -266,15 +274,6 @@ export default function SRDetail() {
       </React.Fragment>
     );
   };
-
-  const booksDropDownEditor = (options: ColumnEditorOptions) =>
-    BookDropdown({
-      setBookMap: () => setBookMap,
-      // The editor callback will be defined, or else the dropdown will not serve it's purpose
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      setSelectedBook: () => options.editorCallback!,
-      selectedBook: options.value,
-    });
 
   const columns = createColumns(COLUMNS);
 

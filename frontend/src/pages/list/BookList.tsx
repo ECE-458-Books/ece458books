@@ -105,10 +105,12 @@ export default function BookList() {
   });
 
   // Custom dropdown selector for genre
-  const genreFilter = GenreDropdown({
-    selectedGenre: selectedGenre,
-    setSelectedGenre: setSelectedGenre,
-  });
+  const genreFilter = (
+    <GenreDropdown
+      selectedGenre={selectedGenre}
+      setSelectedGenre={setSelectedGenre}
+    />
+  );
 
   const COLUMNS: TableColumn[] = [
     {

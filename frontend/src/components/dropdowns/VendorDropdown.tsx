@@ -24,7 +24,7 @@ export default function VendorDropdown(props: VendorDropdownProps) {
     });
   }, []);
 
-  return () => {
+  return (
     <Dropdown
       value={props.selectedVendor}
       options={vendorNamesList}
@@ -33,6 +33,6 @@ export default function VendorDropdown(props: VendorDropdownProps) {
       disabled={!props.isModifiable ?? false}
       onChange={(e) => props.setSelectedVendor(e.value)}
       virtualScrollerOptions={{ itemSize: 35 }}
-    />;
-  };
+    />
+  );
 }

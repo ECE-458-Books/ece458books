@@ -30,6 +30,7 @@ export default function BookDropdown(props: BookDropdownProps) {
 
   return (
     <Dropdown
+      autoFocus
       value={props.selectedBook}
       options={bookTitlesList}
       filter

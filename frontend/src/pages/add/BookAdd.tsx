@@ -37,12 +37,14 @@ export default function BookAdd() {
     }
   };
 
-  const genreDropdown = (options: ColumnEditorOptions) =>
-    GenreDropdown({
+  const genreDropdown = (options: ColumnEditorOptions) => (
+    <GenreDropdown
+      // This will always be used in a table cell, so we can disable the warning
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      setSelectedGenre: options.editorCallback!,
-      selectedGenre: options.value,
-    });
+      setSelectedGenre={options.editorCallback!}
+      selectedGenre={options.value}
+    />
+  );
 
   // Properties of each column that change, the rest are set below when creating the actual Columns to be rendered
   const COLUMNS: TableColumn[] = [

@@ -7,7 +7,8 @@ export interface GenreDropdownProps {
   selectedGenre: string;
 }
 
-export function GenreDropdown(props: GenreDropdownProps) {
+// This cannot be used in a table cell in the current form, only when there is one on the page
+export default function GenreDropdown(props: GenreDropdownProps) {
   const [genreList, setGenreList] = useState<string[]>([]);
 
   useEffect(() => {

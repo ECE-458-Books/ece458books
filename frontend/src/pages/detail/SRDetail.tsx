@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ToggleButton } from "primereact/togglebutton";
 import { Calendar, CalendarProps } from "primereact/calendar";
-import { Dropdown } from "primereact/dropdown";
 import { DataTable } from "primereact/datatable";
 import { Column, ColumnEditorOptions, ColumnEvent } from "primereact/column";
 import { createColumns, TableColumn } from "../../components/TableColumns";
@@ -25,6 +24,7 @@ import { BOOKS_API } from "../../apis/BooksAPI";
 import { Toast } from "primereact/toast";
 import { toYYYYMMDDWithDash } from "../../util/DateOperations";
 import { InputNumber } from "primereact/inputnumber";
+import BookDropdown from "../../components/dropdowns/BookDropdown";
 
 export interface SRDetailState {
   id: number;
@@ -87,7 +87,6 @@ export default function SRDetail() {
   const [sales, setSales] = useState<SRSaleRow[]>(detailState.sales);
   const salesReconciliationID = detailState.id;
   const [lineData, setLineData] = useState<SRSaleRow>(emptyProduct);
-  const [bookTitlesList, setBookTitlesList] = useState<string[]>();
   const totalRevenue = detailState.totalRevenue;
   const [bookMap, setBookMap] = useState<Map<string, number>>(new Map());
   const isSRAddPage = useState<boolean>(detailState.isAddPage);
@@ -140,18 +139,6 @@ export default function SRDetail() {
     const _data = sales.filter((val) => val.id !== rowData.id);
     setSales(_data);
   };
-
-  // Populate the book list on page load
-  useEffect(() => {
-    BOOKS_API.getBooksNoPagination().then((response) => {
-      const tempBookMap = new Map<string, number>();
-      for (const book of response) {
-        tempBookMap.set(book.title, book.id);
-      }
-      setBookMap(tempBookMap);
-      setBookTitlesList(response.map((book) => book.title));
-    });
-  }, []);
 
   // Validate submission before making API req
   const validateSubmission = (sr: SRSaleRow[]) => {
@@ -230,24 +217,6 @@ export default function SRDetail() {
     });
   };
 
-  const booksDropDownEditor = (options: ColumnEditorOptions) => {
-    return (
-      <Dropdown
-        value={options.value}
-        options={bookTitlesList}
-        filter
-        appendTo={"self"}
-        placeholder="Select a Book"
-        onChange={(e) => {
-          options.editorCallback?.(e.target.value);
-        }}
-        showClear
-        virtualScrollerOptions={{ itemSize: 35 }}
-        style={{ position: "absolute", zIndex: 9999 }}
-      />
-    );
-  };
-
   const actionBodyTemplate = (rowData: SRSaleRow) => {
     return (
       <React.Fragment>
@@ -297,6 +266,15 @@ export default function SRDetail() {
       </React.Fragment>
     );
   };
+
+  const booksDropDownEditor = (options: ColumnEditorOptions) =>
+    BookDropdown({
+      setBookMap: () => setBookMap,
+      // The editor callback will be defined, or else the dropdown will not serve it's purpose
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      setSelectedBook: () => options.editorCallback!,
+      selectedBook: options.value,
+    });
 
   const columns = createColumns(COLUMNS);
 

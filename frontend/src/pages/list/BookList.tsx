@@ -22,7 +22,7 @@ import {
 import { createColumns, TableColumn } from "../../components/TableColumns";
 import { priceBodyTemplate } from "../../util/TableCellEditFuncs";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
-import { GenreDropdown } from "../../components/dropdowns/GenreDropdown";
+import GenreDropdown from "../../components/dropdowns/GenreDropdown";
 
 export const NUM_ROWS = 10;
 

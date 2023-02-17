@@ -30,6 +30,8 @@ import { InputNumber } from "primereact/inputnumber";
 import { FileUploadHandlerEvent } from "primereact/fileupload";
 import { APIToInternalPurchasesCSVConversion } from "../../apis/Conversions";
 import CSVUploader from "../../components/CSVFileUploader";
+import VendorDropdown from "../../components/dropdowns/VendorDropdown";
+import BookDropdown from "../../components/dropdowns/BookDropdown";
 
 export interface PODetailState {
   id: number;
@@ -61,19 +63,20 @@ export interface BooksList {
   title: string;
 }
 
+// Used for setting initial state
+const emptyProduct: POPurchaseRow = {
+  isNewRow: true,
+  id: uuid(),
+  bookId: 0,
+  bookISBN: "",
+  subtotal: 0,
+  bookTitle: "",
+  quantity: 1,
+  unitWholesalePrice: 0,
+};
+
 export default function PODetail() {
   // -------- STATE --------
-  const emptyProduct: POPurchaseRow = {
-    isNewRow: true,
-    id: uuid(),
-    bookId: 0,
-    bookISBN: "",
-    subtotal: 0,
-    bookTitle: "",
-    quantity: 1,
-    unitWholesalePrice: 0,
-  };
-
   const location = useLocation();
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const detailState = (location.state! as PODetailState) ?? {
@@ -99,13 +102,17 @@ export default function PODetail() {
     isConfirmationPopupVisible: false,
   };
 
+  // Need to check, but this can likely be deleted
   for (const purchase of detailState.purchases) {
     purchase.isNewRow = false;
   }
+
   const [bookMap, setBookMap] = useState<Map<string, number>>(new Map());
   const [vendorMap, setVendorMap] = useState<Map<string, number>>(new Map());
   const [date, setDate] = useState(detailState.date);
-  const [vendorName, setVendorName] = useState<string>(detailState.vendorName);
+  const [selectedVendorName, setSelectedVendorName] = useState<string>(
+    detailState.vendorName
+  );
   const [purchases, setPurchases] = useState<POPurchaseRow[]>(
     detailState.purchases
   );
@@ -186,27 +193,6 @@ export default function PODetail() {
       });
   };
 
-  // Populate the vendors/book list on page load
-  useEffect(() => {
-    VENDORS_API.getVendorsNoPagination().then((response) => {
-      const tempVendorMap = new Map<string, number>();
-      for (const vendor of response) {
-        tempVendorMap.set(vendor.name, vendor.id);
-      }
-      setVendorMap(tempVendorMap);
-      setVendorNamesList(response.map((vendor) => vendor.name));
-    });
-
-    BOOKS_API.getBooksNoPagination().then((response) => {
-      const tempBookMap = new Map<string, number>();
-      for (const book of response) {
-        tempBookMap.set(book.title, book.id);
-      }
-      setBookMap(tempBookMap);
-      setBookTitlesList(response.map((book) => book.title));
-    });
-  }, []);
-
   const validateSubmission = (po: POPurchaseRow[]) => {
     for (const purchase of po) {
       if (
@@ -219,7 +205,7 @@ export default function PODetail() {
       }
     }
 
-    if (!date || !vendorName) {
+    if (!date || !selectedVendorName) {
       showFailure("All fields are required");
       return false;
     }
@@ -245,7 +231,7 @@ export default function PODetail() {
 
       const purchaseOrder = {
         date: toYYYYMMDDWithDash(date),
-        vendor: vendorMap.get(vendorName),
+        vendor: vendorMap.get(selectedVendorName),
         purchases: apiPurchases,
       } as AddPOReq;
 
@@ -268,7 +254,7 @@ export default function PODetail() {
       const purchaseOrder = {
         id: purchaseOrderID,
         date: toYYYYMMDDWithDash(date),
-        vendor: vendorMap.get(vendorName),
+        vendor: vendorMap.get(selectedVendorName),
         purchases: apiPurchases,
       } as ModifyPOReq;
 
@@ -347,23 +333,21 @@ export default function PODetail() {
     );
   };
 
-  const booksDropDownEditor = (options: ColumnEditorOptions) => {
-    return (
-      <Dropdown
-        value={options.value}
-        options={bookTitlesList}
-        filter
-        appendTo={"self"}
-        placeholder="Select a Book"
-        onChange={(e) => {
-          options.editorCallback?.(e.target.value);
-        }}
-        showClear
-        virtualScrollerOptions={{ itemSize: 35 }}
-        style={{ position: "absolute", zIndex: 9999 }}
-      />
-    );
-  };
+  const booksDropDownEditor = (options: ColumnEditorOptions) =>
+    BookDropdown({
+      setBookMap: setBookMap,
+      // The editor callback will be defined, or else the dropdown will not serve it's purpose
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      setSelectedBook: options.editorCallback!,
+      selectedBook: options.value,
+    });
+
+  const vendorDropdown = VendorDropdown({
+    setVendorMap: setVendorMap,
+    setSelectedVendor: setSelectedVendorName,
+    selectedVendor: selectedVendorName,
+    isModifiable: isModifiable,
+  });
 
   const columns = createColumns(COLUMNS);
 
@@ -447,18 +431,7 @@ export default function PODetail() {
                 >
                   Vendor
                 </label>
-                <Dropdown
-                  value={vendorName}
-                  options={vendorNamesList}
-                  placeholder="Select a Vendor"
-                  //optionLabel="name"
-                  filter
-                  disabled={!isModifiable}
-                  onChange={(event: DropdownProps): void => {
-                    setVendorName(event.value);
-                  }}
-                  virtualScrollerOptions={{ itemSize: 35 }}
-                />
+                <>{vendorDropdown}</>
               </div>
             </div>
 

@@ -119,7 +119,6 @@ export const PURCHASES_API = {
       },
       data: formData,
     };
-    console.log(request);
     return await API.request(request);
   },
 };

@@ -24,7 +24,7 @@ import {
   APIPOPurchaseRow,
   APIPurchaseCSVImportRow,
 } from "./PurchasesAPI";
-import { APISR } from "./SalesAPI";
+import { APISaleCSVImportRow, APISR, APISRSaleRow } from "./SalesAPI";
 import { GetSalesReportResp } from "./SalesRepAPI";
 import { APIVendor } from "./VendorsAPI";
 
@@ -199,20 +199,24 @@ export function APIToInternalPurchasesCSVConversion(
 
 // Sales Reconciliations
 
+function APIToInternalSRSaleConversion(sale: APISRSaleRow): SRSaleRow {
+  return {
+    isNewRow: false,
+    // (id is always defined from API)
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    id: sale.id!.toString(),
+    bookId: sale.book,
+    bookTitle: sale.book_title,
+    subtotal: sale.subtotal,
+    quantity: sale.quantity,
+    unitRetailPrice: sale.unit_retail_price,
+  };
+}
+
 export function APItoInternalSRConversion(sr: APISR): SalesReconciliation {
-  const sales: SRSaleRow[] = sr.sales.map((sale) => {
-    return {
-      isNewRow: false,
-      // (id is always defined from API)
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      id: sale.id!.toString(),
-      bookId: sale.book,
-      bookTitle: sale.book_title,
-      subtotal: sale.subtotal,
-      quantity: sale.quantity,
-      unitRetailPrice: sale.unit_retail_price,
-    };
-  });
+  const sales: SRSaleRow[] = sr.sales.map((sale) =>
+    APIToInternalSRSaleConversion(sale)
+  );
 
   return {
     id: sr.id,
@@ -222,6 +226,24 @@ export function APItoInternalSRConversion(sr: APISR): SalesReconciliation {
     totalRevenue: sr.total_revenue,
     sales: sales,
   };
+}
+
+export function APIToInternalSalesCSVConversion(
+  sales: APISaleCSVImportRow[]
+): SRSaleRow[] {
+  return sales.map((sale) => {
+    return {
+      isNewRow: true,
+      id: uuid(),
+      subtotal: 0, // Temporary, subtotal will be deprecated
+      bookId: sale.book,
+      bookTitle: sale.book_title,
+      bookISBN: sale.book_isbn,
+      quantity: sale.quantity,
+      unitRetailPrice: sale.unit_retail_price,
+      errors: sale.errors,
+    };
+  });
 }
 
 // Sales Report

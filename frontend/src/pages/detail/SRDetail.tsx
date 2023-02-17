@@ -26,6 +26,10 @@ import { InputNumber } from "primereact/inputnumber";
 import BooksDropdown, {
   BooksDropdownData,
 } from "../../components/dropdowns/BookDropdown";
+import CSVUploader from "../../components/CSVFileUploader";
+import { FileUploadHandlerEvent } from "primereact/fileupload";
+import { APIToInternalSalesCSVConversion } from "../../apis/Conversions";
+import { showWarning } from "../../components/Toast";
 
 export interface SRDetailState {
   id: number;
@@ -142,6 +146,21 @@ export default function SRDetail() {
     setSales(_data);
   };
 
+  const csvUploadHandler = (event: FileUploadHandlerEvent) => {
+    const csv = event.files[0];
+    SALES_API.salesReconciliationCSVImport({ file: csv })
+      .then((response) => {
+        const sales = APIToInternalSalesCSVConversion(response.sales);
+        const nonBlockingErrors = response.errors;
+        console.log(nonBlockingErrors[0]);
+        showWarning(toast, nonBlockingErrors[0]);
+        setSales(sales);
+      })
+      .catch((error) => {
+        showFailure(error.data.errors[0]);
+      });
+  };
+
   // Validate submission before making API req
   const validateSubmission = (sr: SRSaleRow[]) => {
     for (const sale of sr) {
@@ -235,16 +254,21 @@ export default function SRDetail() {
 
   const leftToolbarTemplate = () => {
     return (
-      <React.Fragment>
-        <Button
-          type="button"
-          label="New"
-          icon="pi pi-plus"
-          className="p-button-info mr-2"
-          onClick={addNewSale}
-          disabled={!isModifiable}
-        />
-      </React.Fragment>
+      <>
+        <React.Fragment>
+          <CSVUploader uploadHandler={csvUploadHandler} />
+        </React.Fragment>
+        <React.Fragment>
+          <Button
+            type="button"
+            label="New"
+            icon="pi pi-plus"
+            className="p-button-info mr-2"
+            onClick={addNewSale}
+            disabled={!isModifiable}
+          />
+        </React.Fragment>
+      </>
     );
   };
 

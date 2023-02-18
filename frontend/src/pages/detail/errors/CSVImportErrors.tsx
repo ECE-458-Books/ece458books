@@ -1,10 +1,8 @@
-import React from "react";
 import { Tag } from "primereact/tag";
 
 // These are the possible 400 level error keys, and will result in the CSV import data not being displayed
 // Each one is present when a column with that name is missing from the CSV file, and the error will
 // be displayed with a toast message
-
 export const CSVImport400Errors = new Map<string, string>([
   ["isbn_13 ", "ISBN 13 Column Missing from the CSV"],
   ["quantity", "Quantity Column Missing from the CSV"],

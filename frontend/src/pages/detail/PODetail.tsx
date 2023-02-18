@@ -31,7 +31,11 @@ import VendorDropdown from "../../components/dropdowns/VendorDropdown";
 import BooksDropdown, {
   BooksDropdownData,
 } from "../../components/dropdowns/BookDropdown";
-import { showWarning } from "../../components/Toast";
+import { showFailuresMapper, showWarningsMapper } from "../../components/Toast";
+import {
+  CSVImport200Errors,
+  CSVImport400Errors,
+} from "./errors/CSVImportErrors";
 
 export interface PODetailState {
   id: number;
@@ -185,13 +189,15 @@ export default function PODetail() {
           response.purchases
         );
         const nonBlockingErrors = response.errors;
-        console.log(nonBlockingErrors[0]);
-        showWarning(toast, nonBlockingErrors[0]);
+        showWarningsMapper(toast, nonBlockingErrors, CSVImport200Errors);
         setPurchases(purchases);
       })
       .catch((error) => {
-        showFailure(error.data.errors[0]);
+        showFailuresMapper(toast, error.data.errors, CSVImport400Errors);
       });
+    
+      
+      
   };
 
   const validateSubmission = (po: POPurchaseRow[]) => {

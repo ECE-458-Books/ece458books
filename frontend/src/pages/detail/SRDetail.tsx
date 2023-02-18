@@ -29,7 +29,16 @@ import BooksDropdown, {
 import CSVUploader from "../../components/CSVFileUploader";
 import { FileUploadHandlerEvent } from "primereact/fileupload";
 import { APIToInternalSalesCSVConversion } from "../../apis/Conversions";
-import { showFailure, showSuccess, showWarning } from "../../components/Toast";
+import {
+  showFailure,
+  showSuccess,
+  showWarningsMapper,
+  showFailuresMapper,
+} from "../../components/Toast";
+import {
+  CSVImport200Errors,
+  CSVImport400Errors,
+} from "./errors/CSVImportErrors";
 
 export interface SRDetailState {
   id: number;
@@ -152,13 +161,13 @@ export default function SRDetail() {
       .then((response) => {
         const sales = APIToInternalSalesCSVConversion(response.sales);
         const nonBlockingErrors = response.errors;
-        console.log(nonBlockingErrors[0]);
-        showWarning(toast, nonBlockingErrors[0]);
+        showWarningsMapper(toast, nonBlockingErrors, CSVImport200Errors);
         setSales(sales);
       })
       .catch((error) => {
-        showFailure(toast, error.data.errors[0]);
+        showFailuresMapper(toast, error.data.errors, CSVImport400Errors);
       });
+    event.options.clear();
   };
 
   // Validate submission before making API req

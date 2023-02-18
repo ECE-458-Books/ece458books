@@ -12,7 +12,6 @@
     "@types/react-dom": "^18.0.10",
     "axios": "^1.2.5",
     "axios-auth-refresh": "^3.3.6",
-    "bidirectional-map": "^1.1.1",
     "formik": "^2.2.9",
     "fs": "^0.0.1-security",
     "moment": "^2.29.4",

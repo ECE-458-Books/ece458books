@@ -35,6 +35,7 @@ import { showFailuresMapper, showWarningsMapper } from "../../components/Toast";
 import {
   CSVImport200Errors,
   CSVImport400Errors,
+  errorCellBody,
 } from "./errors/CSVImportErrors";
 
 export interface PODetailState {
@@ -130,8 +131,15 @@ export default function PODetail() {
   );
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(detailState.isConfirmationPopupVisible);
+  const [hasUploadedCSV, setHasUploadedCSV] = useState<boolean>(false);
 
   const COLUMNS: TableColumn[] = [
+    {
+      field: "errors",
+      header: "Errors",
+      hidden: !hasUploadedCSV,
+      customBody: (rowData: POPurchaseRow) => errorCellBody(rowData.errors),
+    },
     {
       field: "bookTitle",
       header: "Book",
@@ -188,16 +196,16 @@ export default function PODetail() {
         const purchases = APIToInternalPurchasesCSVConversion(
           response.purchases
         );
+        setPurchases(purchases);
+        setHasUploadedCSV(true);
+
+        // Show nonblocking errors (warnings)
         const nonBlockingErrors = response.errors;
         showWarningsMapper(toast, nonBlockingErrors, CSVImport200Errors);
-        setPurchases(purchases);
       })
       .catch((error) => {
         showFailuresMapper(toast, error.data.errors, CSVImport400Errors);
       });
-    
-      
-      
   };
 
   const validateSubmission = (po: POPurchaseRow[]) => {

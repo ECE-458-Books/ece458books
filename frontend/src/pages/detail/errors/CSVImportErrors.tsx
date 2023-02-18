@@ -1,4 +1,5 @@
 import { Tag } from "primereact/tag";
+import { ReactElement } from "react";
 
 // These are the possible 400 level error keys, and will result in the CSV import data not being displayed
 // Each one is present when a column with that name is missing from the CSV file, and the error will
@@ -20,26 +21,30 @@ export const CSVImport200Errors = new Map<string, string>([
 // These are the possible 200 (success) error keys at the row level, and will result
 // in tags being shown in the rows with the errors
 export function CSVImport200RowErrors(
-  error: string,
-  field: string
-): JSX.Element {
+  field: string,
+  error: string
+): ReactElement {
   switch (error) {
     case "incorrect_format":
       return (
         <Tag
           severity="danger"
           icon="pi pi-book"
-          value={field.concat("Incorrect Format")}
+          value={field.concat(" Incorrect Format")}
+          key={field}
         />
       );
     case "not_in_db":
-      return <Tag icon="pi pi-database" value="Book Not in Database" />;
+      return (
+        <Tag icon="pi pi-database" value="Book Not in System" key={field} />
+      );
     case "quantity_below_0":
       return (
         <Tag
           severity="warning"
           icon="pi pi-pencil"
           value="Book Quantity Below 0"
+          key={field}
         />
       );
     case "not_sold_by_vendor":
@@ -48,9 +53,21 @@ export function CSVImport200RowErrors(
           severity="info"
           icon="pi pi-briefcase"
           value="Book Not Sold by Vendor"
+          key={field}
         />
       );
     default:
       return <Tag severity="warning" value="Unknown Error" />;
   }
 }
+
+export const errorCellBody = (
+  errors: { [key: string]: string } | undefined
+): ReactElement[] => {
+  const errorTags: ReactElement[] = [];
+  for (const key in errors) {
+    const tag = CSVImport200RowErrors(key, errors[key]);
+    errorTags.push(tag);
+  }
+  return errorTags;
+};

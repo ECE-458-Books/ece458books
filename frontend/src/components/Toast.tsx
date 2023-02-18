@@ -39,32 +39,35 @@ export const showFailures = (
   }
 };
 
+// Iterates through error keys, and maps them to the appropriate success message in the map
 export const showSuccessesMapper = (
   toast: React.RefObject<Toast>,
   keys: string[],
   map: Map<string, string>
 ) => {
   for (const key of keys) {
-    showSuccess(toast, map.get(key) ?? "");
+    showSuccess(toast, map.get(key) ?? "Success");
   }
 };
 
+// Iterates through error keys, and maps them to the appropriate warning message in the map
 export const showWarningsMapper = (
   toast: React.RefObject<Toast>,
   messages: string[],
   map: Map<string, string>
 ) => {
   for (const key of messages) {
-    showWarning(toast, map.get(key) ?? "");
+    showWarning(toast, map.get(key) ?? "Warning");
   }
 };
 
+// Iterates through error keys, and maps them to the appropriate error message in the map
 export const showFailuresMapper = (
   toast: React.RefObject<Toast>,
   messages: string[],
   map: Map<string, string>
 ) => {
   for (const key of messages) {
-    showFailure(toast, map.get(key) ?? "");
+    showFailure(toast, map.get(key) ?? "Error Occurred");
   }
 };

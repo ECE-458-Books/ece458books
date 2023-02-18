@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { ReactElement, useEffect, useRef, useState } from "react";
 import { ToggleButton } from "primereact/togglebutton";
 import { Calendar, CalendarProps } from "primereact/calendar";
 import { DataTable } from "primereact/datatable";
@@ -38,6 +38,7 @@ import {
 import {
   CSVImport200Errors,
   CSVImport400Errors,
+  errorCellBody,
 } from "./errors/CSVImportErrors";
 
 export interface SRDetailState {
@@ -58,6 +59,7 @@ export interface SRSaleRow {
   bookTitle: string;
   quantity: number;
   unitRetailPrice: number;
+  errors?: { [key: string]: string };
 }
 
 export default function SRDetail() {
@@ -104,14 +106,21 @@ export default function SRDetail() {
   const totalRevenue = detailState.totalRevenue;
   const [booksMap, setBooksMap] = useState<Map<string, number>>(new Map());
   const [booksDropdownTitles, setBooksDropdownTitles] = useState<string[]>([]);
-  const isSRAddPage = useState<boolean>(detailState.isAddPage);
+  const isSRAddPage = detailState.isAddPage;
   const [isModifiable, setIsModifiable] = useState<boolean>(
     detailState.isModifiable
   );
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(detailState.isConfirmationPopupVisible);
+  const [hasUploadedCSV, setHasUploadedCSV] = useState<boolean>(false);
 
   const COLUMNS: TableColumn[] = [
+    {
+      field: "errors",
+      header: "Errors",
+      hidden: !hasUploadedCSV,
+      customBody: (rowData: SRSaleRow) => errorCellBody(rowData.errors),
+    },
     {
       field: "bookTitle",
       header: "Book",
@@ -160,9 +169,12 @@ export default function SRDetail() {
     SALES_API.salesReconciliationCSVImport({ file: csv })
       .then((response) => {
         const sales = APIToInternalSalesCSVConversion(response.sales);
+        setSales(sales);
+        setHasUploadedCSV(true);
+
+        // Show nonblocking errors (warnings)
         const nonBlockingErrors = response.errors;
         showWarningsMapper(toast, nonBlockingErrors, CSVImport200Errors);
-        setSales(sales);
       })
       .catch((error) => {
         showFailuresMapper(toast, error.data.errors, CSVImport400Errors);

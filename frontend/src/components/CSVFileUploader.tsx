@@ -16,6 +16,7 @@ export default function CSVUploader(props: CSVUploaderProps) {
         maxFileSize={MAX_FILE_UPLOAD}
         customUpload
         uploadHandler={props.uploadHandler}
+        chooseLabel={"Import CSV"}
       />
     </div>
   );

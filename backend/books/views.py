@@ -87,6 +87,7 @@ class ListCreateBookAPIView(ListCreateAPIView):
     ordering_fields = '__all__'
     ordering = ['id']
     search_fields = ['authors__name', 'title', '=publisher', '=isbn_10', '=isbn_13']
+    isbn_toolbox = ISBNTools()
 
     def paginate_queryset(self, queryset):
         if 'no_pagination' in self.request.query_params:
@@ -118,8 +119,28 @@ class ListCreateBookAPIView(ListCreateAPIView):
 
         serializer.is_valid(raise_exception=True)
         serializer.save()
+
+        # Get or Create the Image
+        self.bookimage_get_and_create(serializer.data.get('isbn_13'))
+
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
+    def bookimage_get_and_create(self, isbn_13):
+        book = Book.objects.filter(isbn_13=isbn_13)
+
+        # This creates an image in temp_media and sends a file
+        url = self.isbn_toolbox.create_image(book[0].id, isbn_13)
+
+        obj, created = BookImage.objects.get_or_create(
+            book=book[0],
+            url=url
+        )
+
+        # We need to patch the url if it is a get
+        if obj is not None:
+            obj.url = url
+            obj.save()
     
     def getOrCreateModel(self, item_list, model):
         for item in item_list:
@@ -159,7 +180,7 @@ class ListCreateBookAPIView(ListCreateAPIView):
             # The requirements for Evolution 1 requires filtering by genre.
             # Thus if a query key 'genre' exists, we only consider the query_set having that specific genre
             return default_query_set.filter(genres__name=genre)
-
+        
         return default_query_set
 
 class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
@@ -190,7 +211,6 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
         serializer.save()
 
         return Response({"status" : f"Book: {instance.title}(id:{instance.id}) is now a ghost"}, status=status.HTTP_204_NO_CONTENT)
-
 
 class RetrieveUpdateBookImageAPIView(RetrieveUpdateAPIView):
     serializer_class = BookImageSerializer

@@ -1,14 +1,19 @@
 from urllib.request import urlopen
-import json
+import urllib
+import json, os
 from isbnlib import *
 from dateutil import parser
+
+from .scpconnect import SCPTools
 
 class ISBNTools:
     def __init__(
         self,
     ):
         self._base_url = "https://www.googleapis.com/books/v1/volumes?q=isbn:"
-    
+        self._image_base_url = "https://covers.openlibrary.org/b/isbn"
+        self._scp_toolbox = SCPTools()
+
     def is_valid_isbn(
         self,
         isbn: str,
@@ -114,3 +119,25 @@ class ISBNTools:
 
         """
         return [self.parse_isbn(raw_isbn) if self.is_valid_isbn(raw_isbn) else raw_isbn for raw_isbn in isbn_list]
+    
+    def create_image(self, book_id, isbn_13):
+        end_url = self._image_base_url + f'/{isbn_13}-L.jpg?default=false'
+
+        DEFAULT_IMG = "media/books/default.png"
+
+        try:
+            resp = urlopen(end_url)
+        except Exception as e:
+            # Case where defualt image does not exist
+            host = self._scp_toolbox.get_host()
+            return f"https://{host}/{DEFAULT_IMG}"
+
+        image_bytearray = resp.read()
+
+        filename = f'{book_id}.jpg'
+        location = f'/temp_media/{filename}'
+        absolute_location = os.getcwd()+location
+
+        HOST = self._scp_toolbox.send_image_data(image_bytearray, absolute_location)
+
+        return f"https://{HOST}/{filename}"

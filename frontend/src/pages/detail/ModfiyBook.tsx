@@ -15,6 +15,8 @@ import { logger } from "../../util/Logger";
 import { GENRES_API } from "../../apis/GenresAPI";
 import { Dropdown } from "primereact/dropdown";
 import { CommaSeparatedStringToArray } from "../../util/StringOperations";
+import { Image } from "primereact/image";
+import { FileUpload, FileUploadHandlerEvent } from "primereact/fileupload";
 
 export interface BookDetailState {
   book: Book;
@@ -57,6 +59,10 @@ export default function BookDetail() {
   );
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(detailState.isConfirmationPopupVisible);
+  const [image, setImage] = useState<any>({
+    imageSrc: "...",
+    imageHash: Date.now(),
+  });
 
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
@@ -106,6 +112,7 @@ export default function BookDetail() {
         height: height,
         thickness: thickness,
         stock: 0,
+        url: image,
       };
       logger.debug("Submitting Book Modify", book);
       BOOKS_API.modifyBook({ book: book })
@@ -125,7 +132,27 @@ export default function BookDetail() {
     }).then((response) =>
       setGenreList(response.results.map((genre) => genre.name))
     );
+
+    BOOKS_API.getImage({ id: id }).then((response) =>
+      setImage({
+        imageSrc: response.url,
+        imageHash: Date.now(),
+      })
+    );
   }, []);
+
+  const uploadFileHandler = (event: FileUploadHandlerEvent) => {
+    const file = event.files[0];
+    BOOKS_API.uploadImage({ id: id, image: file }).then((response) =>
+      BOOKS_API.getImage({ id: id }).then((response) =>
+        setImage({
+          imageSrc: response.url,
+          imageHash: Date.now(),
+        })
+      )
+    );
+    event.options.clear();
+  };
 
   return (
     <div className="grid flex justify-content-center">
@@ -134,8 +161,23 @@ export default function BookDetail() {
           Book Details
         </h1>
       </div>
+      <FileUpload
+        mode="basic"
+        name="demo[]"
+        auto
+        accept="image/*"
+        maxFileSize={1000000}
+        customUpload
+        uploadHandler={uploadFileHandler}
+      />
       <form onSubmit={formik.handleSubmit} className="col-12">
         <Toast ref={toast} />
+        <Image
+          src={`${image.imageSrc}?${image.imageHash}`}
+          id="imageONpage"
+          alt="Image"
+          width="250"
+        />
         <div className="grid col-offset-1 col-11 justify-content-center">
           <div className="col-4 card justify-content-center">
             <label

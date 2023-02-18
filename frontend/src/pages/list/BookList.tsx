@@ -24,7 +24,10 @@ import {
   APIToInternalBookConversion,
 } from "../../apis/Conversions";
 import { createColumns, TableColumn } from "../../components/TableColumns";
-import { priceBodyTemplate } from "../../util/TableCellEditFuncs";
+import {
+  imageBodyTemplate,
+  priceBodyTemplate,
+} from "../../util/TableCellEditFuncs";
 
 export const NUM_ROWS = 10;
 
@@ -43,6 +46,7 @@ export interface Book {
   thickness: number;
   retailPrice: number;
   stock: number;
+  thumbnailURL: string;
 }
 
 interface Filters {
@@ -68,6 +72,7 @@ export default function BookList() {
     thickness: 0,
     retailPrice: 0,
     stock: 0,
+    thumbnailURL: "",
   };
 
   // Custom dropdown selector for Genre
@@ -100,6 +105,11 @@ export default function BookList() {
   };
 
   const COLUMNS: TableColumn[] = [
+    {
+      field: "thumbnailURL",
+      header: "Cover Art",
+      customBody: (rowData: Book) => imageBodyTemplate(rowData.thumbnailURL),
+    },
     {
       field: "title",
       header: "Title",

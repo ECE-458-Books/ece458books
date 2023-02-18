@@ -72,6 +72,7 @@ export function APIToInternalBookConversion(book: APIBook): Book {
     thickness: book.thickness,
     retailPrice: book.retail_price,
     stock: book.stock,
+    thumbnailURL: book.url,
   };
 }
 

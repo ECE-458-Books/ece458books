@@ -61,3 +61,7 @@ export function priceBodyTemplate(value: number | bigint) {
     currency: "USD",
   }).format(value);
 }
+
+export function imageBodyTemplate(thumbnailURL: string) {
+  return <img src={thumbnailURL} alt="Image" className="product-image" />;
+}

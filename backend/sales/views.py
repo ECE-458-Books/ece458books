@@ -1,6 +1,7 @@
 from rest_framework.permissions import IsAuthenticated
 from .serializers import SalesReconciliationSerializer
 from rest_framework.response import Response
+from rest_framework.request import Request
 from rest_framework import status, filters
 from rest_framework.views import APIView
 from .models import SalesReconciliation, Sale
@@ -13,6 +14,7 @@ import datetime, pytz
 from datetime import datetime, timedelta
 from books.models import Book
 from rest_framework.exceptions import APIException
+from helpers.csv_reader import CSVReader
 
 
 class ListCreateSalesReconciliationAPIView(ListCreateAPIView):
@@ -259,47 +261,9 @@ class RetrieveSalesReportAPIView(APIView):
         return days
 
 
-class CSVSaleAPIView(CreateAPIView):
+class CSVSaleAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def create(self, request, *args, **kwargs):
-        print(request.data)
-
-        return Response({
-            "sales": [{
-                "book": 10,
-                "book_title": "The Google Story",
-                "book_isbn": 987654321003,
-                "quantity": 10,
-                "unit_retail_price": 10.01,
-                "errors": {
-                    "quantity": "quantity_below_0"
-                }
-            }, {
-                "book": 105,
-                "book_isbn": 9876543210001,
-                "book_title": "Moby Dick",
-                "quantity": 10,
-                "unit_retail_price": 10.0,
-                "errors": {
-                    "unit_retail_price": "incorrect_format",
-                    "quantity": "incorrect_format"
-                }
-            }, {
-                "book": 106,
-                "book_isbn": 9876543210000,
-                "book_title": "The Catcher in the Rye",
-                "quantity": 1,
-                "unit_retail_price": 2.0,
-                "error": {
-                    "quantity": "incorrect_format"
-                }
-            }, {
-                "book": 107,
-                "book_isbn": 9876543210002,
-                "book_title": "Harry Potter and the Sorcerer's Stone",
-                "quantity": 1,
-                "unit_retail_price": 200.0,
-            }],
-            "errors": ["extra_column"]
-        })
+    def post(self, request: Request):
+        csv_reader = CSVReader("sales")
+        return csv_reader.read_csv(request)

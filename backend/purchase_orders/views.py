@@ -1,13 +1,20 @@
 from rest_framework.permissions import IsAuthenticated
+
+from helpers.csv_reader import CSVReader
 from .serializers import PurchaseOrderSerializer
 from rest_framework.response import Response
 from rest_framework import status, filters
 from .models import Purchase, PurchaseOrder
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
+from rest_framework.views import APIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from .paginations import PurchaseOrderPagination
 from django.db.models import OuterRef, Subquery, Func, Count, F, Sum
 import datetime, pytz
 from books.models import Book
+from helpers.csv_format_checker import CSVFormatChecker
+from rest_framework.request import Request
+from helpers.csv_exceptions import ExtraHeadersException, MissingHeadersException
+import pandas as pd
 
 
 class ListCreatePurchaseOrderAPIView(ListCreateAPIView):
@@ -181,50 +188,9 @@ class RetrieveUpdateDestroyPurchaseOrderAPIView(RetrieveUpdateDestroyAPIView):
         return None
 
 
-class CSVPurchasesAPIView(CreateAPIView):
+class CSVPurchasesAPIView(APIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = PurchaseOrderSerializer
-    queryset = PurchaseOrder.objects.all()
 
-    def create(self, request, *args, **kwargs):
-        print(request.data)
-        return Response(
-            {
-                "purchases": [{
-                    "book": 104,
-                    "book_title": "The Google Story",
-                    "book_isbn": 9781509889211,
-                    "quantity": 10,
-                    "unit_wholesale_price": 10.01,
-                    "errors": {
-                        "book": "not_in_db"
-                    }
-                }, {
-                    "book": 105,
-                    "book_title": "Moby Dick",
-                    "book_isbn": 9781853260087,
-                    "quantity": 10,
-                    "unit_wholesale_price": 10.0,
-                    "errors": {
-                        "unit_wholesale_price": "incorrect_format",
-                        "quantity": "incorrect_format"
-                    }
-                }, {
-                    "book": 106,
-                    "book_title": "The Catcher in the Rye",
-                    "book_isbn": 9786543210000,
-                    "quantity": 1,
-                    "unit_wholesale_price": 2.0,
-                    "error": {
-                        "quantity": "incorrect_format"
-                    }
-                }, {
-                    "book": 107,
-                    "book_title": "Harry Potter and the Sorcerer's Stone",
-                    "book_isbn": 9780545790352,
-                    "quantity": 1,
-                    "unit_wholesale_price": 200.0,
-                }],
-                "errors": ["extra_column"]
-            },
-            status=status.HTTP_200_OK)
+    def post(self, request: Request):
+        csv_reader = CSVReader("purchases")
+        return csv_reader.read_csv(request)

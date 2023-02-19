@@ -20,7 +20,7 @@ class ListCreateBuybackAPIView(ListCreateAPIView):
             {
                 "id": 86,
                 "date": "2022-12-01",
-                "purchases": [{
+                "buybacks": [{
                     "id": 118,
                     "book": 104,
                     "book_title": "The Google Story",
@@ -77,7 +77,9 @@ class RetrieveUpdateDestroyBuybackAPIView(RetrieveUpdateDestroyAPIView):
                     "unit_buyback_price": 15.0
                 }],
                 "num_books": 9,
-                "num_unique_books": 2
+                "num_unique_books": 2,
+                "vendor": 49,
+                "vendor_name": "Adams Publishing"
             },
             status=status.HTTP_200_OK)
 

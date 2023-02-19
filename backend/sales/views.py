@@ -190,7 +190,7 @@ class RetrieveSalesReportAPIView(APIView):
         sales_data_by_book = list(
             SalesReconciliation.objects.filter(date__range=(start_date, end_date)).values(
                 book_id=F('sales__book')).annotate(num_books_sold=Sum('sales__quantity')).annotate(
-                    book_revenue=Sum('sales__revenue')).order_by('-num_books_sold'))
+                    book_revenue=Sum('sales__revenue')).order_by('-num_books_sold'))[:10]
 
         # Keeeping this code to find books purchased quantities if needed for future
         # order by date, then by id, since higher id means was entered later than lower id, so could mean more recent price... just need any way to decide on one price if two separate purchases are logged on same day of same book to know which unit wholesale price to use
@@ -237,18 +237,24 @@ class RetrieveSalesReportAPIView(APIView):
         if len(purchase_orders) == 0:
             daily_costs[date] = 0
             return
-        for purchase_order in purchase_orders:
+        for purchase_order in purchase_orders:  # sum the total costs for the day
             serializer = PurchaseOrderSerializer(purchase_order)
-            daily_costs[date] = serializer.data['total_cost']
+            if date not in daily_costs.keys():
+                daily_costs[date] = serializer.data['total_cost']
+            else:
+                daily_costs[date] += serializer.data['total_cost']
 
     def get_daily_revenues(self, daily_revenues, date: str):
         sales_reconciliations = SalesReconciliation.objects.filter(date=date)
         if len(sales_reconciliations) == 0:
             daily_revenues[date] = 0
             return
-        for sales_reconciliation in sales_reconciliations:
+        for sales_reconciliation in sales_reconciliations:  # sum the total revenue for the day
             serializer = SalesReconciliationSerializer(sales_reconciliation)
-            daily_revenues[date] = serializer.data['total_revenue']
+            if date not in daily_revenues.keys():
+                daily_revenues[date] = serializer.data['total_revenue']
+            else:
+                daily_revenues[date] += serializer.data['total_revenue']
 
     def dates_range(self, start: str, end: str):
         date_format = "%Y-%m-%d"

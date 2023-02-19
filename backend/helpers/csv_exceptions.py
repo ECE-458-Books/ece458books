@@ -8,7 +8,7 @@ class MissingHeadersException(Exception):
 class ExtraHeadersException(Exception):
 
     def __init__(self, extra_headers) -> None:
-        self.extra_headers = " ".join(extra_headers)
+        self.extra_headers = extra_headers
         super().__init__()
 
 

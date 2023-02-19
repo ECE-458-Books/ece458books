@@ -20,18 +20,16 @@ class CSVReader:
             csv_df = pd.read_csv(csv, dtype=str, keep_default_na=False)
         except pd.errors.EmptyDataError:
             return Response({"errors": "empty_csv"}, status=status.HTTP_400_BAD_REQUEST)
-
         try:
             csv_format_checker.are_headers_correct(csv_df.columns.to_list())
         except MissingHeadersException as mse:
             return Response({"errors": mse.missing_headers}, status=status.HTTP_400_BAD_REQUEST)
         except ExtraHeadersException as ehe:
             response_data["errors"] = ehe.extra_headers
-            csv_df.drop(ehe.extra_headers.split(" "), axis=1, inplace=True)
-
+            csv_df.drop(ehe.extra_headers, axis=1, inplace=True)
         malformed_data = csv_format_checker.find_malformed_data(csv_df)
 
-        response_data = {self.csv_import_type: [{"errors": data} for data in malformed_data]}
+        response_data[self.csv_import_type] = [{"errors": data} for data in malformed_data]
         for index, row in csv_df.iterrows():
             if "isbn13" not in malformed_data[index].keys():  # There is an issue with the isbn, so can't get book data
                 book = Book.objects.filter(isbn_13=row["isbn_13"]).get()

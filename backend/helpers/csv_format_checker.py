@@ -12,7 +12,7 @@ class CSVFormatChecker:
         self.price = csv_column_headers.get(csv_import_type)[0]
 
     def are_headers_correct(self, actual_headers: list) -> None:
-        actual_headers = [header.strip().lower() for header in actual_headers]
+        actual_headers = [header.lower() for header in actual_headers]
         missing_headers = [header for header in self.expected_headers if header not in actual_headers]
         if len(missing_headers) != 0:
             raise MissingHeadersException(missing_headers)

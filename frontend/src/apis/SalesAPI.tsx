@@ -19,6 +19,7 @@ export interface APISRSaleRow {
   id?: number; // ID only for new rows, not already existing ones
   book: number;
   book_title: string;
+  book_isbn: string;
   subtotal: number;
   quantity: number;
   unit_retail_price: number;
@@ -54,6 +55,20 @@ export interface ModifySRReq extends AddSRReq {
   id: number;
 }
 
+// puchaseOrdersCSVImport
+export interface SRCSVImportReq {
+  file: File;
+}
+
+export interface APISaleCSVImportRow extends APISRSaleRow {
+  errors: { [key: string]: string };
+}
+
+export interface SRCSVImportResp {
+  sales: APISaleCSVImportRow[];
+  errors: string[];
+}
+
 export const SALES_API = {
   getSalesReconciliations: async function (
     req: GetSRsReq
@@ -86,5 +101,22 @@ export const SALES_API = {
       method: METHOD_POST,
       data: req,
     });
+  },
+
+  salesReconciliationCSVImport: async function (
+    req: SRCSVImportReq
+  ): Promise<SRCSVImportResp> {
+    const formData = new FormData();
+    formData.append("file", req.file);
+    console.log(formData);
+    const request = {
+      url: SALES_EXTENSION.concat("/csv/import"), // TODO: This will eventually go back to sales/sales_reconciliation/...
+      method: METHOD_POST,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      data: formData,
+    };
+    return await API.request(request);
   },
 };

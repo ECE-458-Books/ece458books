@@ -1,4 +1,3 @@
-import { Dropdown } from "primereact/dropdown";
 import { BOOKS_API, GetBooksResp } from "../../apis/BooksAPI";
 import {
   DataTable,
@@ -15,16 +14,15 @@ import DeletePopup from "../../components/DeletePopup";
 import { logger } from "../../util/Logger";
 import { BookDetailState } from "../detail/ModfiyBook";
 import { useLocation, useNavigate } from "react-router-dom";
-import { GENRES_API } from "../../apis/GenresAPI";
 import { Toast } from "primereact/toast";
-import React from "react";
-import { Button } from "primereact/button";
 import {
   APIBookSortFieldMap,
   APIToInternalBookConversion,
 } from "../../apis/Conversions";
 import { createColumns, TableColumn } from "../../components/TableColumns";
 import { priceBodyTemplate } from "../../util/TableCellEditFuncs";
+import EditDeleteTemplate from "../../util/EditDeleteTemplate";
+import GenreDropdown from "../../components/dropdowns/GenreDropdown";
 
 export const NUM_ROWS = 10;
 
@@ -52,52 +50,67 @@ interface Filters {
   publisher: DataTableFilterMetaData;
 }
 
+// Used for initializing state
+const emptyBook: Book = {
+  id: 0,
+  title: "",
+  author: "",
+  genres: "",
+  isbn13: 0,
+  isbn10: 0,
+  publisher: "",
+  publishedYear: 0,
+  pageCount: 0,
+  width: 0,
+  height: 0,
+  thickness: 0,
+  retailPrice: 0,
+  stock: 0,
+};
+
 export default function BookList() {
-  const emptyBook: Book = {
-    id: 0,
-    title: "",
-    author: "",
-    genres: "",
-    isbn13: 0,
-    isbn10: 0,
-    publisher: "",
-    publishedYear: 0,
-    pageCount: 0,
-    width: 0,
-    height: 0,
-    thickness: 0,
-    retailPrice: 0,
-    stock: 0,
-  };
+  // ----- STATE -----
+  const location = useLocation(); // Utilized if coming from the genre list
+  const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false); // Whether the delete popup is visible
+  const [loading, setLoading] = useState<boolean>(false); // Whether we show that the table is loading or not
+  const [numberOfBooks, setNumberOfBooks] = useState<number>(0); // The number of books that match the query
+  const [books, setBooks] = useState<Book[]>([]); // The book data itself (rows of the table)
+  const [selectedGenre, setSelectedGenre] = useState<string>(
+    location.state?.genre ?? ""
+  ); // Initialize genre to the genre passed, if coming from genre list
+  const [selectedDeleteBook, setSelectedDeleteBook] = useState<Book>(emptyBook); // track the current book that has been selected to be deleted
 
-  // Custom dropdown selector for Genre
-  const location = useLocation();
-  const passedGenre = location.state?.genre ?? "";
-  const [genreList, setGenreList] = useState<string[]>([]);
-  const [selectedGenre, setSelectedGenre] = useState<string>(passedGenre);
+  // The current state of sorting.
+  const [sortParams, setSortParams] = useState<DataTableSortEvent>({
+    sortField: "",
+    sortOrder: null,
+    multiSortMeta: null, // Not used
+  });
 
-  useEffect(() => {
-    GENRES_API.getGenres({
-      page: 1,
-      page_size: 30,
-      ordering: "name",
-    }).then((response) =>
-      setGenreList(response.results.map((genre) => genre.name))
-    );
-  }, []);
+  // The current state of the paginator
+  const [pageParams, setPageParams] = useState<DataTablePageEvent>({
+    first: 0,
+    rows: NUM_ROWS,
+    page: 0,
+  });
 
-  const genreFilter = () => {
-    return (
-      <Dropdown
-        value={selectedGenre}
-        options={genreList}
-        appendTo={"self"}
-        onChange={(e) => setSelectedGenre(e.value)}
-        placeholder={"Select Genre"}
-        showClear
-      />
-    );
-  };
+  // The current state of the filters
+  const [filterParams, setFilterParams] = useState<DataTableFilterEvent>({
+    filters: {
+      title: { value: "", matchMode: "contains" },
+      author: { value: "", matchMode: "contains" },
+      isbn13: { value: "", matchMode: "contains" },
+      publisher: { value: "", matchMode: "contains" },
+    } as Filters,
+  });
+
+  // Custom dropdown selector for genre
+  const genreFilter = (
+    <GenreDropdown
+      selectedGenre={selectedGenre}
+      setSelectedGenre={setSelectedGenre}
+    />
+  );
 
   const COLUMNS: TableColumn[] = [
     {
@@ -158,26 +171,17 @@ export default function BookList() {
   // The navigator to switch pages
   const navigate = useNavigate();
 
-  // State to track the current book that has been selected to be deleted
-  const [selectedDeleteBook, setSelectedDeleteBook] = useState<Book>(emptyBook);
-
-  const editDeleteCellTemplate = (rowData: Book) => {
-    return (
-      <React.Fragment>
-        <Button
-          icon="pi pi-pencil"
-          className="p-button-rounded p-button-success mr-2"
-          onClick={() => toDetailsPage(rowData, true)}
-        />
-        <Button
-          icon="pi pi-trash"
-          className="p-button-rounded p-button-danger"
-          onClick={() => deleteBookPopup(rowData)}
-          disabled={rowData.stock > 0}
-        />
-      </React.Fragment>
-    );
+  // Checks if the book can be deleted
+  const isDeleteDisabled = (book: Book) => {
+    return book.stock > 0;
   };
+
+  // Edit/Delete Cell Template
+  const editDeleteCellTemplate = EditDeleteTemplate<Book>({
+    onEdit: (rowData) => toDetailsPage(rowData, true),
+    onDelete: (rowData) => deleteBookPopup(rowData),
+    deleteDisabled: (rowData) => isDeleteDisabled(rowData),
+  });
 
   // Callback functions for edit/delete buttons
   const toDetailsPage = (book: Book, isModifiable: boolean) => {
@@ -214,9 +218,6 @@ export default function BookList() {
     setSelectedDeleteBook(emptyBook);
   };
 
-  // Buttons for the delete Dialogue Popup
-  const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false);
-
   const deletePopup = (
     <DeletePopup
       deleteItemIdentifier={selectedDeleteBook.title}
@@ -224,34 +225,6 @@ export default function BookList() {
       setIsVisible={setDeletePopupVisible}
     />
   );
-
-  const [loading, setLoading] = useState<boolean>(false); // Whether we show that the table is loading or not
-  const [numberOfBooks, setNumberOfBooks] = useState<number>(0); // The number of books that match the query
-  const [books, setBooks] = useState<Book[]>([]); // The book data itself
-
-  // The current state of sorting.
-  const [sortParams, setSortParams] = useState<DataTableSortEvent>({
-    sortField: "",
-    sortOrder: null,
-    multiSortMeta: null, // Not used
-  });
-
-  // The current state of the paginator
-  const [pageParams, setPageParams] = useState<DataTablePageEvent>({
-    first: 0,
-    rows: NUM_ROWS,
-    page: 0,
-  });
-
-  // The current state of the filters
-  const [filterParams, setFilterParams] = useState<DataTableFilterEvent>({
-    filters: {
-      title: { value: "", matchMode: "contains" },
-      author: { value: "", matchMode: "contains" },
-      isbn13: { value: "", matchMode: "contains" },
-      publisher: { value: "", matchMode: "contains" },
-    } as Filters,
-  });
 
   // Calls the Books API
   const callAPI = () => {

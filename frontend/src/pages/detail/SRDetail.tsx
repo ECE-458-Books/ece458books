@@ -1,7 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { ReactElement, useEffect, useRef, useState } from "react";
 import { ToggleButton } from "primereact/togglebutton";
 import { Calendar, CalendarProps } from "primereact/calendar";
-import { Dropdown } from "primereact/dropdown";
 import { DataTable } from "primereact/datatable";
 import { Column, ColumnEditorOptions, ColumnEvent } from "primereact/column";
 import { createColumns, TableColumn } from "../../components/TableColumns";
@@ -21,10 +20,26 @@ import {
   ModifySRReq,
   SALES_API,
 } from "../../apis/SalesAPI";
-import { BOOKS_API } from "../../apis/BooksAPI";
 import { Toast } from "primereact/toast";
 import { toYYYYMMDDWithDash } from "../../util/DateOperations";
 import { InputNumber } from "primereact/inputnumber";
+import BooksDropdown, {
+  BooksDropdownData,
+} from "../../components/dropdowns/BookDropdown";
+import CSVUploader from "../../components/CSVFileUploader";
+import { FileUploadHandlerEvent } from "primereact/fileupload";
+import { APIToInternalSalesCSVConversion } from "../../apis/Conversions";
+import {
+  showFailure,
+  showSuccess,
+  showWarningsMapper,
+  showFailuresMapper,
+} from "../../components/Toast";
+import {
+  CSVImport200Errors,
+  CSVImport400Errors,
+  errorCellBody,
+} from "./errors/CSVImportErrors";
 
 export interface SRDetailState {
   id: number;
@@ -44,6 +59,7 @@ export interface SRSaleRow {
   bookTitle: string;
   quantity: number;
   unitRetailPrice: number;
+  errors?: { [key: string]: string };
 }
 
 export default function SRDetail() {
@@ -87,17 +103,24 @@ export default function SRDetail() {
   const [sales, setSales] = useState<SRSaleRow[]>(detailState.sales);
   const salesReconciliationID = detailState.id;
   const [lineData, setLineData] = useState<SRSaleRow>(emptyProduct);
-  const [bookTitlesList, setBookTitlesList] = useState<string[]>();
   const totalRevenue = detailState.totalRevenue;
-  const [bookMap, setBookMap] = useState<Map<string, number>>(new Map());
-  const isSRAddPage = useState<boolean>(detailState.isAddPage);
+  const [booksMap, setBooksMap] = useState<Map<string, number>>(new Map());
+  const [booksDropdownTitles, setBooksDropdownTitles] = useState<string[]>([]);
+  const isSRAddPage = detailState.isAddPage;
   const [isModifiable, setIsModifiable] = useState<boolean>(
     detailState.isModifiable
   );
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(detailState.isConfirmationPopupVisible);
+  const [hasUploadedCSV, setHasUploadedCSV] = useState<boolean>(false);
 
   const COLUMNS: TableColumn[] = [
+    {
+      field: "errors",
+      header: "Errors",
+      hidden: !hasUploadedCSV,
+      customBody: (rowData: SRSaleRow) => errorCellBody(rowData.errors),
+    },
     {
       field: "bookTitle",
       header: "Book",
@@ -141,29 +164,35 @@ export default function SRDetail() {
     setSales(_data);
   };
 
-  // Populate the book list on page load
-  useEffect(() => {
-    BOOKS_API.getBooksNOPaging().then((response) => {
-      const tempBookMap = new Map<string, number>();
-      for (const book of response) {
-        tempBookMap.set(book.title, book.id);
-      }
-      setBookMap(tempBookMap);
-      setBookTitlesList(response.map((book) => book.title));
-    });
-  }, []);
+  const csvUploadHandler = (event: FileUploadHandlerEvent) => {
+    const csv = event.files[0];
+    SALES_API.salesReconciliationCSVImport({ file: csv })
+      .then((response) => {
+        const sales = APIToInternalSalesCSVConversion(response.sales);
+        setSales(sales);
+        setHasUploadedCSV(true);
+
+        // Show nonblocking errors (warnings)
+        const nonBlockingErrors = response.errors;
+        showWarningsMapper(toast, nonBlockingErrors, CSVImport200Errors);
+      })
+      .catch((error) => {
+        showFailuresMapper(toast, error.data.errors, CSVImport400Errors);
+      });
+    event.options.clear();
+  };
 
   // Validate submission before making API req
   const validateSubmission = (sr: SRSaleRow[]) => {
     for (const sale of sr) {
       if (!sale.bookTitle || !(sale.unitRetailPrice >= 0) || !sale.quantity) {
-        showFailure("All fields are required");
+        showFailure(toast, "All fields are required");
         return false;
       }
     }
 
     if (!date) {
-      showFailure("All fields are required");
+      showFailure(toast, "All fields are required");
       return false;
     }
 
@@ -178,7 +207,7 @@ export default function SRDetail() {
     if (isSRAddPage) {
       const apiSales = sales.map((sale) => {
         return {
-          book: bookMap.get(sale.bookTitle),
+          book: booksMap.get(sale.bookTitle),
           quantity: sale.quantity,
           unit_retail_price: sale.unitRetailPrice,
         } as APISRSaleRow;
@@ -189,14 +218,16 @@ export default function SRDetail() {
         sales: apiSales,
       } as AddSRReq;
       SALES_API.addSalesReconciliation(salesReconciliation)
-        .then(() => showSuccess("Sales reconciliation added successfully"))
-        .catch(() => showFailure("Could not add sales reconciliation"));
+        .then(() =>
+          showSuccess(toast, "Sales reconciliation added successfully")
+        )
+        .catch(() => showFailure(toast, "Could not add sales reconciliation"));
     } else {
       // Otherwise, it is a modify page
       const apiSales = sales.map((sale) => {
         return {
           id: sale.isNewRow ? undefined : sale.id,
-          book: sale.isNewRow ? bookMap.get(sale.bookTitle) : sale.bookId,
+          book: sale.isNewRow ? booksMap.get(sale.bookTitle) : sale.bookId,
           quantity: sale.quantity,
           unit_retail_price: sale.unitRetailPrice,
         } as APISRSaleRow;
@@ -209,8 +240,12 @@ export default function SRDetail() {
       } as ModifySRReq;
 
       SALES_API.modifySalesReconciliation(salesReconciliation)
-        .then(() => showSuccess("Sales reconciliation modified successfully"))
-        .catch(() => showFailure("Could not modify sales reconciliation"));
+        .then(() =>
+          showSuccess(toast, "Sales reconciliation modified successfully")
+        )
+        .catch(() =>
+          showFailure(toast, "Could not modify sales reconciliation")
+        );
     }
   };
 
@@ -218,35 +253,6 @@ export default function SRDetail() {
 
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
-
-  const showSuccess = (message: string) => {
-    toast.current?.show({ severity: "success", summary: message });
-  };
-
-  const showFailure = (message: string) => {
-    toast.current?.show({
-      severity: "error",
-      summary: message,
-    });
-  };
-
-  const booksDropDownEditor = (options: ColumnEditorOptions) => {
-    return (
-      <Dropdown
-        value={options.value}
-        options={bookTitlesList}
-        filter
-        appendTo={"self"}
-        placeholder="Select a Book"
-        onChange={(e) => {
-          options.editorCallback?.(e.target.value);
-        }}
-        showClear
-        virtualScrollerOptions={{ itemSize: 35 }}
-        style={{ position: "absolute", zIndex: 9999 }}
-      />
-    );
-  };
 
   const actionBodyTemplate = (rowData: SRSaleRow) => {
     return (
@@ -264,16 +270,21 @@ export default function SRDetail() {
 
   const leftToolbarTemplate = () => {
     return (
-      <React.Fragment>
-        <Button
-          type="button"
-          label="New"
-          icon="pi pi-plus"
-          className="p-button-info mr-2"
-          onClick={addNewSale}
-          disabled={!isModifiable}
-        />
-      </React.Fragment>
+      <>
+        <React.Fragment>
+          <CSVUploader uploadHandler={csvUploadHandler} />
+        </React.Fragment>
+        <React.Fragment>
+          <Button
+            type="button"
+            label="New"
+            icon="pi pi-plus"
+            className="p-button-info mr-2"
+            onClick={addNewSale}
+            disabled={!isModifiable}
+          />
+        </React.Fragment>
+      </>
     );
   };
 
@@ -297,6 +308,26 @@ export default function SRDetail() {
       </React.Fragment>
     );
   };
+
+  // Get the data for the books dropdown
+  useEffect(
+    () =>
+      BooksDropdownData({
+        setBooksMap: setBooksMap,
+        setBookTitlesList: setBooksDropdownTitles,
+      }),
+    []
+  );
+
+  const booksDropDownEditor = (options: ColumnEditorOptions) => (
+    <BooksDropdown
+      // This will always be used in a table cell, so we can disable the warning
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      setSelectedBook={options.editorCallback!}
+      selectedBook={options.value}
+      bookTitlesList={booksDropdownTitles}
+    />
+  );
 
   const columns = createColumns(COLUMNS);
 

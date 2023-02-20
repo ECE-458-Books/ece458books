@@ -3,7 +3,7 @@ from rest_framework import status
 from books.models import Book
 from helpers.csv_format_checker import CSVFormatChecker
 from rest_framework.request import Request
-from helpers.csv_exceptions import ExtraHeadersException, MissingHeadersException
+from helpers.csv_exceptions import ExtraHeadersException, MissingHeadersException, DuplicateValidHeadersException
 import pandas as pd
 
 
@@ -21,7 +21,9 @@ class CSVReader:
         except pd.errors.EmptyDataError:
             return Response({"errors": "empty_csv"}, status=status.HTTP_400_BAD_REQUEST)
         try:
-            csv_format_checker.are_headers_correct(csv_df.columns.to_list())
+            csv_format_checker.are_headers_correct(csv)
+        except DuplicateValidHeadersException as dvhe:
+            return Response({"errors": str(dvhe)}, status=status.HTTP_400_BAD_REQUEST)
         except MissingHeadersException as mse:
             return Response({"errors": mse.missing_headers}, status=status.HTTP_400_BAD_REQUEST)
         except ExtraHeadersException as ehe:

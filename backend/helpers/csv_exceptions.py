@@ -12,10 +12,18 @@ class ExtraHeadersException(Exception):
         super().__init__()
 
 
+class DuplicateValidHeadersException(Exception):
+
+    def __init__(self) -> None:
+        self.message = "duplicate_valid_headers"
+        super().__init__(self.message)
+
+
 class InvalidISBN13LengthException(Exception):
 
-    def __str__(self) -> str:
-        return "invalid_isbn_13_length"
+    def __init__(self) -> None:
+        self.message = "invalid_isbn_13_length"
+        super().__init__(self.message)
 
 
 class NotInDbException(Exception):
@@ -48,6 +56,13 @@ class NotANumberException(Exception):
 
 class NegativeValueException(Exception):
 
-    def __init__(self, *args: object) -> None:
+    def __init__(self) -> None:
         self.message = "negative"
+        super().__init__(self.message)
+
+
+class EmptyValueException(Exception):
+
+    def __init__(self) -> None:
+        self.message = "empty_value"
         super().__init__(self.message)

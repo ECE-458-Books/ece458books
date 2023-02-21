@@ -346,7 +346,7 @@ export default function BookDetail() {
           </div>
         </div>
         <div className="flex col-12 justify-content-center p-1">
-          <div className="flex p-0 col-5">
+          <div className="flex p-0 col-5 -ml-2">
             <label
               className="p-component p-text-secondary text-teal-900 my-auto mr-2"
               htmlFor="pageCount"

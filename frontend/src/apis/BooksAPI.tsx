@@ -104,7 +104,7 @@ export const BOOKS_API = {
     });
   },
 
-  getBooksNOPaging: async function (): Promise<APIBookSimplified[]> {
+  getBooksNoPagination: async function (): Promise<APIBookSimplified[]> {
     return await API.request({
       url: BOOKS_EXTENSION,
       method: METHOD_GET,

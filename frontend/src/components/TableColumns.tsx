@@ -18,7 +18,7 @@ export interface TableColumn {
   // Filter Information
   filterable?: boolean; // Set to true to enabling filter
   filterPlaceholder?: string; // Sets the filter placeholder
-  customFilter?: () => JSX.Element; // Sets a custom filter
+  customFilter?: JSX.Element; // Sets a custom filter
 
   // Sorting Information
   sortable?: boolean; // Set to true to enabling sorting

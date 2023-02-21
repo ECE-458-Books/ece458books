@@ -12,11 +12,10 @@ import { APIBook, BOOKS_API } from "../../apis/BooksAPI";
 import { FormikErrors, useFormik } from "formik";
 import { Toast } from "primereact/toast";
 import { logger } from "../../util/Logger";
-import { GENRES_API } from "../../apis/GenresAPI";
-import { Dropdown } from "primereact/dropdown";
 import { CommaSeparatedStringToArray } from "../../util/StringOperations";
 import { Image } from "primereact/image";
 import { FileUpload, FileUploadHandlerEvent } from "primereact/fileupload";
+import GenreDropdown from "../../components/dropdowns/GenreDropdown";
 
 export interface BookDetailState {
   book: Book;
@@ -122,17 +121,7 @@ export default function BookDetail() {
     },
   });
 
-  // The dropdown configuration for each cell
-  const [genreList, setGenreList] = useState<string[]>([]);
   useEffect(() => {
-    GENRES_API.getGenres({
-      page: 1,
-      page_size: 30,
-      ordering: "name",
-    }).then((response) =>
-      setGenreList(response.results.map((genre) => genre.name))
-    );
-
     BOOKS_API.getImage({ id: id }).then((response) =>
       setImage({
         imageSrc: response.url,
@@ -140,6 +129,11 @@ export default function BookDetail() {
       })
     );
   }, []);
+  // The dropdown configuration for each cell
+  const genreDropdown = GenreDropdown({
+    setSelectedGenre: setGenre,
+    selectedGenre: genre,
+  });
 
   const uploadFileHandler = (event: FileUploadHandlerEvent) => {
     const file = event.files[0];
@@ -397,19 +391,7 @@ export default function BookDetail() {
             >
               Genre
             </label>
-            <Dropdown
-              value={genre}
-              options={genreList}
-              appendTo={"self"}
-              disabled={!isModifiable}
-              onChange={(e) => {
-                setGenre(e.target.value);
-              }}
-              placeholder={"Select Genre"}
-              showClear
-              virtualScrollerOptions={{ itemSize: 35 }}
-              style={{ position: "absolute", zIndex: 9999 }}
-            />
+            {genreDropdown}
           </div>
         </div>
         <div className="grid col-offset-1 col-11 justify-content-center">

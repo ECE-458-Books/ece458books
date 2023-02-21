@@ -1,8 +1,8 @@
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Button } from "primereact/button";
 import { DataTable } from "primereact/datatable";
-import { Column, ColumnEditorOptions, ColumnEvent } from "primereact/column";
+import { ColumnEditorOptions, ColumnEvent } from "primereact/column";
 import {
   isPositiveInteger,
   numberEditor,
@@ -14,13 +14,12 @@ import { Book } from "../list/BookList";
 import { Badge } from "primereact/badge";
 import { logger } from "../../util/Logger";
 import { Toast } from "primereact/toast";
-import { GENRES_API } from "../../apis/GenresAPI";
-import { Dropdown } from "primereact/dropdown";
 import {
   APIToInternalBookConversionWithDB,
   InternalToAPIBookConversion,
 } from "../../apis/Conversions";
 import { createColumns, TableColumn } from "../../components/TableColumns";
+import GenreDropdown from "../../components/dropdowns/GenreDropdown";
 
 export interface BookWithDBTag extends Book {
   fromDB: boolean;
@@ -38,34 +37,15 @@ export default function BookAdd() {
     }
   };
 
-  // The dropdown configuration for each cell
-  const [genreList, setGenreList] = useState<string[]>([]);
-  useEffect(() => {
-    GENRES_API.getGenres({
-      page: 1,
-      page_size: 30,
-      ordering: "name",
-    }).then((response) =>
-      setGenreList(response.results.map((genre) => genre.name))
-    );
-  }, []);
-
-  const genreDropdown = (options: ColumnEditorOptions) => {
-    return (
-      <Dropdown
-        value={options.value}
-        options={genreList}
-        appendTo={"self"}
-        onChange={(e) => {
-          options.editorCallback?.(e.target.value);
-        }}
-        placeholder={"Select Genre"}
-        showClear
-        virtualScrollerOptions={{ itemSize: 35 }}
-        style={{ position: "absolute", zIndex: 9999 }}
-      />
-    );
-  };
+  const genreDropdown = (options: ColumnEditorOptions) => (
+    <GenreDropdown
+      // This will always be used in a table cell, so we can disable the warning
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      setSelectedGenre={options.editorCallback!}
+      selectedGenre={options.value}
+      isTableCell
+    />
+  );
 
   // Properties of each column that change, the rest are set below when creating the actual Columns to be rendered
   const COLUMNS: TableColumn[] = [

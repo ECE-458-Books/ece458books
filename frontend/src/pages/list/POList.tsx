@@ -220,6 +220,7 @@ export default function PurchaseOrderList() {
   const editDeleteCellTemplate = EditDeleteTemplate<PurchaseOrder>({
     onEdit: (rowData) => toDetailPage(rowData, true),
     onDelete: (rowData) => deletePurchaseOrderPopup(rowData),
+    deleteDisabled: () => false,
   });
 
   // The delete popup

@@ -72,11 +72,7 @@ class PurchaseOrderSerializer(TransactionGroupBaseSerializer):
 
         # Sanity check if there exists at least one sale in PO
         if (len(purchases_data) < 1):
-            raise APIException(
-                {"error": {
-                    "query": "PO CREATE",
-                    "msg": "There must be at least one order in Purchase Orders."
-                }})
+            raise APIException({"error": {"query": "PO CREATE", "msg": "There must be at least one order in Purchase Orders."}})
 
         purchase_order = PurchaseOrder.objects.create(**validated_data)
         for purchase_data in purchases_data:
@@ -88,14 +84,7 @@ class PurchaseOrderSerializer(TransactionGroupBaseSerializer):
         book_obj = purchase_data['book']
         # Sanity check if the book is not ghost
         if (book_obj.isGhost):
-            raise APIException({
-                "error": {
-                    "query":
-                        "PO CREATE",
-                    "msg":
-                        f"Please Add Book title: {book_obj.title} and id: {book_obj.id} to the Inventory Before Creating Purchase Orders"
-                }
-            })
+            raise APIException({"error": {"query": "PO CREATE", "msg": f"Please Add Book title: {book_obj.title} and id: {book_obj.id} to the Inventory Before Creating Purchase Orders"}})
 
         book_obj.stock += purchase_data['quantity']
         book_obj.save()
@@ -216,7 +205,7 @@ class PurchaseOrderSerializer(TransactionGroupBaseSerializer):
         purchase = Purchase.objects.get(id=purchase_id, purchase_order=instance)
         purchase.book = purchase_data.get('book', purchase.book)
         purchase.quantity = purchase_data.get('quantity', purchase.quantity)
-        purchase.unit_wholesale_price = purchase_data.get('sunit_wholesale_price', purchase.unit_wholesale_price)
+        purchase.unit_wholesale_price = purchase_data.get('unit_wholesale_price', purchase.unit_wholesale_price)
         purchase.save()
 
     def update_transaction(self, instance, transaction_data, transaction_id) -> None:

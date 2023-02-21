@@ -1,6 +1,4 @@
-import { FormEvent, useEffect, useRef, useState } from "react";
-import { InputText } from "primereact/inputtext";
-import { ToggleButton } from "primereact/togglebutton";
+import { useEffect, useRef, useState } from "react";
 import ConfirmPopup from "../../components/ConfirmPopup";
 import { useLocation } from "react-router-dom";
 import { Book } from "../list/BookList";
@@ -18,8 +16,8 @@ import { FileUploadHandlerEvent } from "primereact/fileupload";
 import GenreDropdown from "../../components/dropdowns/GenreDropdown";
 import { IMAGES_API } from "../../apis/ImagesAPI";
 import ImageUploader from "../../components/ImageFileUploader";
-import { showFailure, showSuccess, showWarning } from "../../components/Toast";
-import { InputSwitch, InputSwitchChangeEvent } from "primereact/inputswitch";
+import { showFailure, showSuccess } from "../../components/Toast";
+import { InputSwitch } from "primereact/inputswitch";
 
 export interface BookDetailState {
   book: Book;

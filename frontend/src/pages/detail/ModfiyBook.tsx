@@ -112,7 +112,7 @@ export default function BookDetail() {
         height: height,
         thickness: thickness,
         stock: 0,
-        url: image,
+        urls: image,
       };
       logger.debug("Submitting Book Modify", book);
       BOOKS_API.modifyBook({ book: book })

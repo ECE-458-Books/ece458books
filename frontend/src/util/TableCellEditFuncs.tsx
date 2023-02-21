@@ -62,6 +62,14 @@ export function priceBodyTemplate(value: number | bigint) {
   }).format(value);
 }
 
-export function imageBodyTemplate(thumbnailURL: string) {
-  return <img src={thumbnailURL} alt="Image" className="product-image" />;
+export function imageBodyTemplate(thumbnailURL: string[]) {
+  return (
+    <img
+      src={thumbnailURL[0]}
+      alt="Image"
+      className="product-image"
+      width="80"
+      height="100"
+    />
+  );
 }

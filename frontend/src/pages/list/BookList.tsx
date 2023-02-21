@@ -46,7 +46,7 @@ export interface Book {
   thickness: number;
   retailPrice: number;
   stock: number;
-  thumbnailURL: string;
+  thumbnailURL: string[];
 }
 
 interface Filters {
@@ -72,7 +72,7 @@ export default function BookList() {
     thickness: 0,
     retailPrice: 0,
     stock: 0,
-    thumbnailURL: "",
+    thumbnailURL: [""],
   };
 
   // Custom dropdown selector for Genre
@@ -109,6 +109,7 @@ export default function BookList() {
       field: "thumbnailURL",
       header: "Cover Art",
       customBody: (rowData: Book) => imageBodyTemplate(rowData.thumbnailURL),
+      style: { minWidth: "9rem" },
     },
     {
       field: "title",

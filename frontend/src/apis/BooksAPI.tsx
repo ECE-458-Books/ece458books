@@ -37,7 +37,7 @@ export interface APIBook {
   thickness: number;
   retail_price: number;
   stock: number;
-  url: string;
+  urls: string[];
 }
 
 export interface GetBooksResp {

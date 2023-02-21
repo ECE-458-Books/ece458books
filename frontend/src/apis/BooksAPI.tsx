@@ -7,7 +7,6 @@ import {
 } from "./Config";
 
 const BOOKS_EXTENSION = "books";
-const IMAGE_EXTENSION = "books/image";
 
 // getBooks
 export interface GetBooksReq {
@@ -80,21 +79,6 @@ export interface AddBookFinalReq {
   book: APIBook;
 }
 
-// get image
-export interface GetImageReq {
-  id: number;
-}
-
-export interface GetImageResp {
-  url: string;
-  book: number;
-}
-
-export interface UploadImageReq {
-  id: number;
-  image: any;
-}
-
 export const BOOKS_API = {
   getBooks: async function (req: GetBooksReq): Promise<GetBooksResp> {
     return await API.request({
@@ -144,27 +128,6 @@ export const BOOKS_API = {
       url: BOOKS_EXTENSION,
       method: METHOD_POST,
       data: req.book,
-    });
-  },
-
-  getImage: async function (req: GetImageReq): Promise<GetImageResp> {
-    return await API.request({
-      url: IMAGE_EXTENSION.concat("/").concat(req.id.toString()),
-      method: METHOD_GET,
-    });
-  },
-
-  uploadImage: async function (req: UploadImageReq) {
-    const formData = new FormData();
-    formData.append("image", req.image);
-    console.log(formData);
-    return await API.request({
-      url: IMAGE_EXTENSION.concat("/").concat(req.id.toString()),
-      method: METHOD_PATCH,
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-      data: formData,
     });
   },
 };

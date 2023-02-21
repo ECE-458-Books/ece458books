@@ -20,8 +20,10 @@ import {
   APIToInternalBookConversion,
 } from "../../apis/Conversions";
 import { createColumns, TableColumn } from "../../components/TableColumns";
-import { imageBodyTemplate } from "../../util/TableCellEditFuncs";
-import { priceBodyTemplate } from "../../util/TableCellEditFuncs";
+import {
+  priceBodyTemplate,
+  imageBodyTemplate,
+} from "../../util/TableCellEditFuncs";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import GenreDropdown from "../../components/dropdowns/GenreDropdown";
 
@@ -68,6 +70,7 @@ const emptyBook: Book = {
   thickness: 0,
   retailPrice: 0,
   stock: 0,
+  thumbnailURL: [""],
 };
 
 export default function BookList() {

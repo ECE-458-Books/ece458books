@@ -14,8 +14,13 @@ import { Toast } from "primereact/toast";
 import { logger } from "../../util/Logger";
 import { CommaSeparatedStringToArray } from "../../util/StringOperations";
 import { Image } from "primereact/image";
-import { FileUpload, FileUploadHandlerEvent } from "primereact/fileupload";
+import { FileUploadHandlerEvent } from "primereact/fileupload";
 import GenreDropdown from "../../components/dropdowns/GenreDropdown";
+import { IMAGES_API } from "../../apis/ImagesAPI";
+import ImageUploader from "../../components/ImageFileUploader";
+import { showFailure, showSuccess } from "../../components/Toast";
+
+const MAX_IMAGE_HEIGHT = 300;
 
 export interface BookDetailState {
   book: Book;
@@ -25,6 +30,11 @@ export interface BookDetailState {
 
 interface ErrorDisplay {
   message: string;
+}
+
+interface ImageUrlHashStruct {
+  imageSrc: string;
+  imageHash: number;
 }
 
 export default function BookDetail() {
@@ -58,21 +68,13 @@ export default function BookDetail() {
   );
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(detailState.isConfirmationPopupVisible);
-  const [image, setImage] = useState<any>({
+  const [image, setImage] = useState<ImageUrlHashStruct>({
     imageSrc: "...",
     imageHash: Date.now(),
   });
 
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
-
-  const showSuccess = () => {
-    toast.current?.show({ severity: "success", summary: "Book Edited" });
-  };
-
-  const showFailure = (message: string) => {
-    toast.current?.show({ severity: "error", summary: message });
-  };
 
   // Validation for the form
   const formik = useFormik({
@@ -90,7 +92,7 @@ export default function BookDetail() {
       }
 
       if (errors.message) {
-        showFailure(errors.message);
+        showFailure(toast, errors.message);
       }
 
       return errors;
@@ -111,66 +113,71 @@ export default function BookDetail() {
         height: height,
         thickness: thickness,
         stock: 0,
-        urls: image,
+        urls: [""],
       };
       logger.debug("Submitting Book Modify", book);
       BOOKS_API.modifyBook({ book: book })
-        .then(() => showSuccess())
-        .catch(() => showFailure("Could not modify book"));
+        .then(() => showSuccess(toast, "Book Edited"))
+        .catch(() => showFailure(toast, "Could not modify book"));
       formik.resetForm();
     },
   });
 
   useEffect(() => {
-    BOOKS_API.getImage({ id: id }).then((response) =>
-      setImage({
-        imageSrc: response.url,
-        imageHash: Date.now(),
-      })
-    );
+    IMAGES_API.getImage({ id: id })
+      .then((response) =>
+        setImage({
+          imageSrc: response.url,
+          imageHash: Date.now(),
+        })
+      )
+      .catch((error) =>
+        showFailure(toast, "Image Cannot be Retrieved to Update Display")
+      );
   }, []);
+
   // The dropdown configuration for each cell
   const genreDropdown = GenreDropdown({
     setSelectedGenre: setGenre,
     selectedGenre: genre,
   });
 
-  const uploadFileHandler = (event: FileUploadHandlerEvent) => {
+  const uploadImageFileHandler = (event: FileUploadHandlerEvent) => {
     const file = event.files[0];
-    BOOKS_API.uploadImage({ id: id, image: file }).then((response) =>
-      BOOKS_API.getImage({ id: id }).then((response) =>
-        setImage({
-          imageSrc: response.url,
-          imageHash: Date.now(),
-        })
-      )
-    );
+    IMAGES_API.uploadImage({ id: id, image: file })
+      .then((response) => {
+        IMAGES_API.getImage({ id: id })
+          .then((response) =>
+            setImage({
+              imageSrc: response.url,
+              imageHash: Date.now(),
+            })
+          )
+          .catch((error) =>
+            showFailure(toast, "Image Cannot be Retrieved to Update Display")
+          );
+
+        showSuccess(toast, "Image Uploaded Successfully");
+      })
+      .catch((error) => showFailure(toast, "Image Upload Failed"));
     event.options.clear();
   };
 
   return (
     <div className="grid flex justify-content-center">
+      <Toast ref={toast} />
       <div className="col-12">
         <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
           Book Details
         </h1>
       </div>
-      <FileUpload
-        mode="basic"
-        name="demo[]"
-        auto
-        accept="image/*"
-        maxFileSize={1000000}
-        customUpload
-        uploadHandler={uploadFileHandler}
-      />
+      <ImageUploader uploadHandler={uploadImageFileHandler} />
       <form onSubmit={formik.handleSubmit} className="col-12">
-        <Toast ref={toast} />
         <Image
           src={`${image.imageSrc}?${image.imageHash}`}
           id="imageONpage"
           alt="Image"
-          width="250"
+          height="350"
         />
         <div className="grid col-offset-1 col-11 justify-content-center">
           <div className="col-4 card justify-content-center">

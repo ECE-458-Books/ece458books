@@ -5,6 +5,9 @@ import { InputText } from "primereact/inputtext";
 //Clean the incoming number input (integer or decimal)
 //Convert to string and correct any issues with the input number.
 //Check value of the number to ensure it a posive value and exists.
+
+const IMAGE_HEIGHT = 100;
+
 export function isPositiveInteger(val: number) {
   let str = String(val);
 
@@ -68,8 +71,12 @@ export function imageBodyTemplate(thumbnailURL: string[]) {
       src={thumbnailURL[0]}
       alt="Image"
       className="product-image"
-      width="80"
-      height="100"
+      style={{
+        objectFit: "contain",
+        maxHeight: IMAGE_HEIGHT,
+        flex: 1,
+        resize: "horizontal",
+      }}
     />
   );
 }

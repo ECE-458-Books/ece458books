@@ -6,7 +6,8 @@ import { InputText } from "primereact/inputtext";
 //Convert to string and correct any issues with the input number.
 //Check value of the number to ensure it a posive value and exists.
 
-const IMAGE_HEIGHT = 100;
+export const MAX_IMAGE_HEIGHT = 100;
+export const MAX_IMAGE_WIDTH = 100;
 
 export function isPositiveInteger(val: number) {
   let str = String(val);
@@ -68,14 +69,14 @@ export function priceBodyTemplate(value: number | bigint) {
 export function imageBodyTemplate(thumbnailURL: string[]) {
   return (
     <img
+      // Change the [0] when implementing for multiple images
       src={thumbnailURL[0]}
       alt="Image"
       className="product-image"
       style={{
         objectFit: "contain",
-        maxHeight: IMAGE_HEIGHT,
-        flex: 1,
-        resize: "horizontal",
+        maxHeight: MAX_IMAGE_HEIGHT,
+        maxWidth: MAX_IMAGE_WIDTH,
       }}
     />
   );

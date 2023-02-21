@@ -18,9 +18,8 @@ import { FileUploadHandlerEvent } from "primereact/fileupload";
 import GenreDropdown from "../../components/dropdowns/GenreDropdown";
 import { IMAGES_API } from "../../apis/ImagesAPI";
 import ImageUploader from "../../components/ImageFileUploader";
-import { showFailure, showSuccess } from "../../components/Toast";
-
-const MAX_IMAGE_HEIGHT = 300;
+import { showFailure, showSuccess, showWarning } from "../../components/Toast";
+import { InputSwitch, InputSwitchChangeEvent } from "primereact/inputswitch";
 
 export interface BookDetailState {
   book: Book;
@@ -42,6 +41,7 @@ export default function BookDetail() {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const detailState = location.state! as BookDetailState;
   const id = detailState.book.id;
+  const originalBookData = detailState.book;
   const [title, setTitle] = useState<string>(detailState.book.title);
   const [authors, setAuthors] = useState<string>(detailState.book.author);
   const [genre, setGenre] = useState<string>(detailState.book.genres);
@@ -136,10 +136,23 @@ export default function BookDetail() {
       );
   }, []);
 
+  //Restore the original Page load data back when edit toggle is turned off
+  useEffect(() => {
+    if (!isModifiable) {
+      setGenre(originalBookData.genres);
+      setHeight(originalBookData.height);
+      setWidth(originalBookData.width);
+      setThickness(originalBookData.thickness);
+      setPageCount(originalBookData.pageCount);
+      setPrice(originalBookData.retailPrice);
+    }
+  }, [isModifiable]);
+
   // The dropdown configuration for each cell
   const genreDropdown = GenreDropdown({
     setSelectedGenre: setGenre,
     selectedGenre: genre,
+    isModifiable: !isModifiable,
   });
 
   const uploadImageFileHandler = (event: FileUploadHandlerEvent) => {
@@ -167,177 +180,119 @@ export default function BookDetail() {
     <div className="grid flex justify-content-center">
       <Toast ref={toast} />
       <div className="col-12">
-        <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
+        <h1 className="p-component p-text-secondary my-3 text-5xl text-center text-900 color: var(--surface-800);">
           Book Details
         </h1>
       </div>
-      <ImageUploader uploadHandler={uploadImageFileHandler} />
-      <form onSubmit={formik.handleSubmit} className="col-12">
-        <Image
-          src={`${image.imageSrc}?${image.imageHash}`}
-          id="imageONpage"
-          alt="Image"
-          height="350"
+      <Image
+        src={`${image.imageSrc}?${image.imageHash}`}
+        id="imageONpage"
+        alt="Image"
+        height="350"
+        className="col-12 align-items-center flex justify-content-center"
+      />
+      <div className="col-12">
+        <ImageUploader
+          disabled={!isModifiable}
+          uploadHandler={uploadImageFileHandler}
         />
-        <div className="grid col-offset-1 col-11 justify-content-center">
-          <div className="col-4 card justify-content-center">
+      </div>
+      <form onSubmit={formik.handleSubmit}>
+        <div className="flex col-12 justify-content-center p-1">
+          <div className="flex p-0">
             <label
-              className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
+              className="p-component p-text-secondary text-teal-900 my-auto mr-2"
               htmlFor="title"
             >
-              Title
+              Title:
             </label>
-            <InputText
-              id="title"
-              className="w-8"
-              name="title"
-              value={title}
-              disabled={true}
-              onChange={(event: FormEvent<HTMLInputElement>): void => {
-                setTitle(event.currentTarget.value);
-              }}
-            />
+            <p className="p-component p-text-secondary text-900 text-xl text-center my-0">
+              {title}
+            </p>
           </div>
-          <div className="col-4">
+        </div>
+        <div className="flex col-12 justify-content-center p-1">
+          <div className="flex p-0">
             <label
-              className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
+              className="p-component p-text-secondary text-teal-900 my-auto mr-2"
               htmlFor="authors"
             >
-              Authors
+              Author(s):
             </label>
-            <InputText
-              id="authors"
-              className="w-8"
-              name="authors"
-              value={authors}
-              disabled={true}
-              onChange={(event: FormEvent<HTMLInputElement>): void => {
-                setAuthors(event.currentTarget.value);
-              }}
-            />
+            <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
+              {authors}
+            </p>
           </div>
-          <div className="col-4">
+        </div>
+        <div className="flex col-12 justify-content-evenly p-1">
+          <div className="flex p-0">
             <label
-              className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
+              className="p-component p-text-secondary text-teal-900 my-auto mr-2"
               htmlFor="isbn13"
             >
-              ISBN13
+              ISBN13:
             </label>
-            <InputNumber
-              id="isbn13"
-              className="w-6"
-              name="isbn13"
-              value={isbn13}
-              useGrouping={false}
-              disabled={true}
-              onValueChange={(e: InputNumberValueChangeEvent) =>
-                setISBN13(e.value ?? 0)
-              }
-            />
+            <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
+              {isbn13}
+            </p>
           </div>
-        </div>
-        <div className="grid col-offset-1 col-11 justify-content-center">
-          <div className="col-4">
+          <div className="flex p-0">
             <label
-              className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
+              className="p-component p-text-secondary text-teal-900 my-auto mr-2"
               htmlFor="isbn10"
             >
-              ISBN10
+              ISBN10:
             </label>
-            <InputNumber
-              id="isbn10"
-              className="w-6"
-              useGrouping={false}
-              name="isbn10"
-              value={isbn10}
-              disabled={true}
-              onValueChange={(e: InputNumberValueChangeEvent) =>
-                setISBN10(e.value ?? 0)
-              }
-            />
-          </div>
-          <div className="col-4">
-            <label
-              className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
-              htmlFor="publisher"
-            >
-              Publisher
-            </label>
-            <InputText
-              id="publisher"
-              className="w-8"
-              name="publisher"
-              value={publisher}
-              disabled={true}
-              onChange={(event: FormEvent<HTMLInputElement>): void => {
-                setPublisher(event.currentTarget.value);
-              }}
-            />
-          </div>
-          <div className="col-4">
-            <label
-              className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
-              htmlFor="pubYear"
-            >
-              Publication Year
-            </label>
-            <InputNumber
-              id="pubYear"
-              className="w-4"
-              name="pubYear"
-              useGrouping={false}
-              value={pubYear}
-              disabled={true}
-              onValueChange={(e: InputNumberValueChangeEvent) =>
-                setPubYear(e.value ?? 0)
-              }
-            />
+            <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
+              {isbn10}
+            </p>
           </div>
         </div>
-        <div className="grid col-offset-1 col-11 justify-content-center">
-          <div className="col-4">
+        <div className="flex col-12 justify-content-around p-1">
+          <div className="flex p-0">
             <label
-              className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
-              htmlFor="pageCount"
+              className="p-component p-text-secondary text-teal-900 my-auto mr-2"
+              htmlFor="publisher"
             >
-              Page Count
+              Publisher:
             </label>
-            <InputNumber
-              id="pageCount"
-              className="w-4"
-              name="pageCount"
-              value={pageCount}
-              disabled={!isModifiable}
-              onValueChange={(e: InputNumberValueChangeEvent) =>
-                setPageCount(e.value ?? 0)
-              }
-            />
+            <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
+              {publisher}
+            </p>
           </div>
-          <div className="col-4">
+          <div className="flex p-0">
             <label
-              className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
-              htmlFor="width"
+              className="p-component p-text-secondary text-teal-900 my-auto mr-2"
+              htmlFor="pubYear"
             >
-              Width
+              Publication Year:
             </label>
-            <InputNumber
-              id="width"
-              className="w-4"
-              name="width"
-              value={width}
-              disabled={!isModifiable}
-              maxFractionDigits={15}
-              onValueChange={(e: InputNumberValueChangeEvent) =>
-                setWidth(e.value ?? 0)
-              }
-            />
+            <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
+              {pubYear}
+            </p>
           </div>
-          <div className="col-4">
+        </div>
+        <div className="flex col-12 justify-content-center p-1">
+          <div className="flex p-0 col-4">
             <label
-              className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
+              className="p-component p-text-secondary text-teal-900 my-auto mr-2"
+              htmlFor="genre"
+            >
+              Genre:
+            </label>
+            {genreDropdown}
+          </div>
+        </div>
+        <h1 className="p-component p-text-secondary mb-1 mt-2 p-0 text-xl text-center text-900 color: var(--surface-800);">
+          Dimensions (cm)
+        </h1>
+        <div className="flex col-12 justify-content-around p-1">
+          <div className="flex p-0">
+            <label
+              className="p-component p-text-secondary text-teal-900 my-auto mr-2"
               htmlFor="height"
             >
-              Height
+              Height:
             </label>
             <InputNumber
               id="height"
@@ -351,14 +306,31 @@ export default function BookDetail() {
               }
             />
           </div>
-        </div>
-        <div className="grid col-offset-1 col-11 justify-content-center">
-          <div className="col-4">
+          <div className="flex p-0 mx-4">
             <label
-              className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
+              className="p-component p-text-secondary text-teal-900 my-auto mr-2"
+              htmlFor="width"
+            >
+              Width:
+            </label>
+            <InputNumber
+              id="width"
+              className="w-4"
+              name="width"
+              value={width}
+              disabled={!isModifiable}
+              maxFractionDigits={15}
+              onValueChange={(e: InputNumberValueChangeEvent) =>
+                setWidth(e.value ?? 0)
+              }
+            />
+          </div>
+          <div className="flex p-0">
+            <label
+              className="p-component p-text-secondary text-teal-900 my-auto mr-2"
               htmlFor="thickness"
             >
-              Thickness
+              Thickness:
             </label>
             <InputNumber
               id="thickness"
@@ -372,12 +344,45 @@ export default function BookDetail() {
               }
             />
           </div>
-          <div className="col-4">
+        </div>
+        <div className="flex col-12 justify-content-center p-1">
+          <div className="flex p-0 col-5">
             <label
-              className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
+              className="p-component p-text-secondary text-teal-900 my-auto mr-2"
+              htmlFor="pageCount"
+            >
+              Page Count:
+            </label>
+            <InputNumber
+              id="pageCount"
+              className="w-4"
+              name="pageCount"
+              value={pageCount}
+              disabled={!isModifiable}
+              onValueChange={(e: InputNumberValueChangeEvent) =>
+                setPageCount(e.value ?? 0)
+              }
+            />
+          </div>
+        </div>
+        <div className="flex col-12 justify-content-around p-1">
+          <div className="flex p-0">
+            <label
+              className="p-component p-text-secondary text-teal-900 my-auto mr-2"
+              htmlFor="genre"
+            >
+              Inventory Count:
+            </label>
+            <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
+              {stock}
+            </p>
+          </div>
+          <div className="flex p-0">
+            <label
+              className="p-component p-text-secondary text-teal-900 my-auto mr-2"
               htmlFor="retail_price"
             >
-              Retail Price
+              Retail Price ($):
             </label>
             <InputNumber
               id="retail_price"
@@ -391,45 +396,24 @@ export default function BookDetail() {
               }
             />
           </div>
-          <div className="col-4">
-            <label
-              className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
-              htmlFor="genre"
-            >
-              Genre
-            </label>
-            {genreDropdown}
-          </div>
         </div>
-        <div className="grid col-offset-1 col-11 justify-content-center">
-          <div className="col-4">
+
+        <div className="grid col-12 justify-content-evenly">
+          <div className="flex col-2 p-0">
             <label
-              className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
-              htmlFor="genre"
+              className="p-component p-text-secondary text-teal-900 my-auto mr-2"
+              htmlFor="retail_price"
             >
-              Inventory Count
+              {isModifiable ? "Reset?" : "Edit?"}
             </label>
-            <InputNumber
-              id="genre"
-              className="w-3"
-              name="genre"
-              value={stock}
-              disabled={true}
+            <InputSwitch
+              checked={isModifiable}
+              id="modifyBookToggle"
+              name="modifyBookToggle"
+              onChange={() => setIsModifiable(!isModifiable)}
+              className="my-auto "
             />
           </div>
-        </div>
-        <div className="grid col-12 justify-content-evenly">
-          <ToggleButton
-            className=""
-            id="modifyBookToggle"
-            name="modifyBookToggle"
-            onLabel="Editable"
-            offLabel="Edit"
-            onIcon="pi pi-check"
-            offIcon="pi pi-times"
-            checked={isModifiable}
-            onChange={() => setIsModifiable(!isModifiable)}
-          />
 
           <ConfirmPopup
             isVisible={isConfirmationPopupVisible}

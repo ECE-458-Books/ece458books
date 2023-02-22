@@ -90,7 +90,7 @@ export default function GenreDetail() {
               </div>
               <InputText
                 id="genre"
-                className="p-inputtext-sm"
+                className="p-inputtext"
                 name="genre"
                 value={genre}
                 disabled={!isModifiable}

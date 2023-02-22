@@ -1,7 +1,6 @@
 import { DataTable } from "primereact/datatable";
-import { useRef, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { Calendar } from "primereact/calendar";
-import ConfirmPopup from "../../components/ConfirmPopup";
 import moment from "moment";
 import { GetSalesReportResp, SALES_REPORT_API } from "../../apis/SalesRepAPI";
 import { Toast } from "primereact/toast";
@@ -9,6 +8,7 @@ import { logger } from "../../util/Logger";
 import { APIToInternalSalesReportConversion } from "../../apis/Conversions";
 import { createColumns, TableColumn } from "../../components/TableColumns";
 import { priceBodyTemplate } from "../../util/TableCellEditFuncs";
+import { Button } from "primereact/button";
 
 export interface SalesReport {
   totalRow: SalesReportTotalRow;
@@ -149,7 +149,7 @@ export default function SalesReport() {
     });
   };
 
-  const onSubmit = (): void => {
+  const onSubmit = (event: FormEvent<HTMLFormElement>): void => {
     try {
       if (dates != null) {
         if (moment(dates[1]).format("YYYY-MM-DD") !== "Invalid date") {
@@ -173,6 +173,7 @@ export default function SalesReport() {
       showFailure("Select end date");
       logger.debug(error);
     }
+    event.preventDefault();
   };
 
   return (
@@ -202,16 +203,9 @@ export default function SalesReport() {
                 />
               </div>
 
-              <ConfirmPopup
-                isVisible={isConfirmationPopupVisible}
-                hideFunc={() => setIsConfirmationPopupVisible(false)}
-                acceptFunc={onSubmit}
-                rejectFunc={() => {
-                  console.log("reject");
-                }}
-                buttonClickFunc={() => setIsConfirmationPopupVisible(true)}
-                disabled={false}
-                label={"Generate"}
+              <Button
+                label="Generate"
+                type="submit"
                 className="p-button-success p-button-raised"
               />
             </div>

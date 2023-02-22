@@ -80,13 +80,16 @@ export default function VendorDetail() {
 
             <div className="flex flex-row justify-content-center card-container col-12">
               <div className="pt-2 pr-2">
-                <label className="text-xl" htmlFor="vendor">
-                  Genre
+                <label
+                  className="text-xl p-component text-teal-900 p-text-secondary"
+                  htmlFor="vendor"
+                >
+                  Vendor
                 </label>
               </div>
               <InputText
                 id="vendor"
-                className="p-inputtext-sm"
+                className="p-inputtext"
                 name="vendor"
                 value={vendor}
                 disabled={!isModifiable}

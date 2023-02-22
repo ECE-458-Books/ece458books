@@ -7,11 +7,6 @@ function NavigationBar() {
 
   const items: MenuItem[] = [
     {
-      label: "Login",
-      icon: "pi pi-fw pi-user",
-      command: () => navigate("/"),
-    },
-    {
       label: "Books",
       icon: "pi pi-fw pi-book",
       items: [

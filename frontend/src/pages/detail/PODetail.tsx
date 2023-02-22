@@ -1,10 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ToggleButton } from "primereact/togglebutton";
-import {
-  Calendar,
-  CalendarChangeEvent,
-  CalendarProps,
-} from "primereact/calendar";
+import { Calendar, CalendarChangeEvent } from "primereact/calendar";
 import { DataTable } from "primereact/datatable";
 import { createColumns, TableColumn } from "../../components/TableColumns";
 import { Column, ColumnEditorOptions, ColumnEvent } from "primereact/column";

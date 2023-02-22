@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
 import { useLocation } from "react-router-dom";
-import { Book } from "../list/BookList";
+import { Book, emptyBook } from "../list/BookList";
 import {
   InputNumber,
   InputNumberValueChangeEvent,
@@ -18,11 +18,11 @@ import { IMAGES_API } from "../../apis/ImagesAPI";
 import ImageUploader from "../../components/uploaders/ImageFileUploader";
 import { showFailure, showSuccess } from "../../components/Toast";
 import { InputSwitch } from "primereact/inputswitch";
+import { APIToInternalBookConversion } from "../../apis/Conversions";
 
 export interface BookDetailState {
-  book: Book;
+  id: number;
   isModifiable: boolean;
-  isConfirmationPopupVisible: boolean;
 }
 
 interface ErrorDisplay {
@@ -38,38 +38,71 @@ export default function BookDetail() {
   const location = useLocation();
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const detailState = location.state! as BookDetailState;
-  const id = detailState.book.id;
-  const originalBookData = detailState.book;
-  const [title, setTitle] = useState<string>(detailState.book.title);
-  const [authors, setAuthors] = useState<string>(detailState.book.author);
-  const [genre, setGenre] = useState<string>(detailState.book.genres);
-  const [isbn13, setISBN13] = useState<number>(detailState.book.isbn13);
-  const [isbn10, setISBN10] = useState<number>(detailState.book.isbn10);
-  const [publisher, setPublisher] = useState<string>(
-    detailState.book.publisher
-  );
-  const [pubYear, setPubYear] = useState<number>(
-    detailState.book.publishedYear
-  );
-  const [pageCount, setPageCount] = useState<number>(
-    detailState.book.pageCount
-  );
-  const [price, setPrice] = useState<number>(detailState.book.retailPrice);
-  const [width, setWidth] = useState<number>(detailState.book.width);
-  const [height, setHeight] = useState<number>(detailState.book.height);
-  const [thickness, setThickness] = useState<number>(
-    detailState.book.thickness
-  );
-  const stock = detailState.book.stock;
+  // From detailState
+  const id = detailState.id;
   const [isModifiable, setIsModifiable] = useState<boolean>(
     detailState.isModifiable
   );
-  const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
-    useState<boolean>(detailState.isConfirmationPopupVisible);
+
+  const [originalBookData, setOriginalBookData] = useState<Book>(emptyBook);
+  const [title, setTitle] = useState<string>("");
+  const [authors, setAuthors] = useState<string>("");
+  const [genre, setGenre] = useState<string>("");
+  const [isbn13, setISBN13] = useState<number>(0);
+  const [isbn10, setISBN10] = useState<number>(0);
+  const [publisher, setPublisher] = useState<string>("");
+  const [pubYear, setPubYear] = useState<number>(0);
+  const [pageCount, setPageCount] = useState<number>(0);
+  const [price, setPrice] = useState<number>(0);
+  const [width, setWidth] = useState<number>(0);
+  const [height, setHeight] = useState<number>(0);
+  const [thickness, setThickness] = useState<number>(0);
+  const [stock, setStock] = useState<number>(0);
   const [image, setImage] = useState<ImageUrlHashStruct>({
     imageSrc: "",
     imageHash: Date.now(),
   });
+
+  const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
+    useState<boolean>(false);
+
+  // Load the book data on page load
+  useEffect(() => {
+    BOOKS_API.getBookDetail({ id: id })
+      .then((response) => {
+        console.log(response);
+        const book = APIToInternalBookConversion(response);
+        setOriginalBookData(book);
+        setTitle(book.title);
+        setAuthors(book.author);
+        setGenre(book.genres);
+        setISBN13(book.isbn13);
+        setISBN10(book.isbn10);
+        setPublisher(book.publisher);
+        setPubYear(book.publishedYear);
+        setPageCount(book.pageCount);
+        setPrice(book.retailPrice);
+        setWidth(book.width);
+        setHeight(book.height);
+        setThickness(book.thickness);
+        setStock(book.stock);
+      })
+      .catch(() => showFailure(toast, "Could not fetch book data"));
+  }, []);
+
+  // Load the book image on page load
+  useEffect(() => {
+    IMAGES_API.getImage({ id: id })
+      .then((response) =>
+        setImage({
+          imageSrc: response.url,
+          imageHash: Date.now(),
+        })
+      )
+      .catch(() =>
+        showFailure(toast, "Image Cannot be Retrieved to Update Display")
+      );
+  }, []);
 
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
@@ -121,19 +154,6 @@ export default function BookDetail() {
     },
   });
 
-  useEffect(() => {
-    IMAGES_API.getImage({ id: id })
-      .then((response) =>
-        setImage({
-          imageSrc: response.url,
-          imageHash: Date.now(),
-        })
-      )
-      .catch((error) =>
-        showFailure(toast, "Image Cannot be Retrieved to Update Display")
-      );
-  }, []);
-
   //Restore the original Page load data back when edit toggle is turned off
   useEffect(() => {
     if (!isModifiable) {
@@ -156,7 +176,7 @@ export default function BookDetail() {
   const uploadImageFileHandler = (event: FileUploadHandlerEvent) => {
     const file = event.files[0];
     IMAGES_API.uploadImage({ id: id, image: file })
-      .then((response) => {
+      .then(() => {
         IMAGES_API.getImage({ id: id })
           .then((response) =>
             setImage({
@@ -164,13 +184,13 @@ export default function BookDetail() {
               imageHash: Date.now(),
             })
           )
-          .catch((error) =>
+          .catch(() =>
             showFailure(toast, "Image Cannot be Retrieved to Update Display")
           );
 
         showSuccess(toast, "Image Uploaded Successfully");
       })
-      .catch((error) => showFailure(toast, "Image Upload Failed"));
+      .catch(() => showFailure(toast, "Image Upload Failed"));
     event.options.clear();
   };
 

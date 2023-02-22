@@ -113,6 +113,7 @@ export default function PODetail() {
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
   const [hasUploadedCSV, setHasUploadedCSV] = useState<boolean>(false);
+  const [key, setKey] = useState<number>(0);
 
   // Load the PO data on page load
   useEffect(() => {
@@ -139,23 +140,29 @@ export default function PODetail() {
     {
       field: "bookTitle",
       header: "Book",
-      cellEditor: (options: ColumnEditorOptions) =>
-        booksDropDownEditor(options),
+      customBody: (rowData: POPurchaseRow) =>
+        booksDropDownEditor(rowData.bookTitle, (newValue) => {
+          rowData.bookTitle = newValue;
+          setKey(Math.random());
+        }),
     },
     {
       field: "quantity",
       header: "Quantity",
-      cellEditValidator: (event: ColumnEvent) =>
-        isPositiveInteger(event.newValue),
-      cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
+      customBody: (rowData: POPurchaseRow) =>
+        numberEditor(
+          rowData.quantity,
+          (newValue) => (rowData.quantity = newValue)
+        ),
     },
     {
       field: "unitWholesalePrice",
       header: "Unit Wholesale Price ($)",
-      cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
-      cellEditor: (options: ColumnEditorOptions) => priceEditor(options),
       customBody: (rowData: POPurchaseRow) =>
-        priceBodyTemplate(rowData.unitWholesalePrice),
+        priceEditor(
+          rowData.unitWholesalePrice,
+          (newValue) => (rowData.unitWholesalePrice = newValue)
+        ),
     },
     {
       field: "subtotal",
@@ -343,13 +350,17 @@ export default function PODetail() {
     []
   );
 
-  const booksDropDownEditor = (options: ColumnEditorOptions) => (
+  const booksDropDownEditor = (
+    value: string,
+    onChange: (newValue: string) => void
+  ) => (
     <BooksDropdown
       // This will always be used in a table cell, so we can disable the warning
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      setSelectedBook={options.editorCallback!}
-      selectedBook={options.value}
+      setSelectedBook={onChange}
+      selectedBook={value}
       bookTitlesList={booksDropdownTitles}
+      refreshKey={key}
     />
   );
 

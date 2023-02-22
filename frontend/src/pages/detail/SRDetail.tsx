@@ -99,6 +99,7 @@ export default function SRDetail() {
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
   const [hasUploadedCSV, setHasUploadedCSV] = useState<boolean>(false);
+  const [key, setKey] = useState<number>(0);
 
   // Load the SR data on page load
   useEffect(() => {
@@ -124,23 +125,30 @@ export default function SRDetail() {
     {
       field: "bookTitle",
       header: "Book",
-      cellEditor: (options: ColumnEditorOptions) =>
-        booksDropDownEditor(options),
+      customBody: (rowData: SRSaleRow) =>
+        booksDropDownEditor(rowData.bookTitle, (newValue) => {
+          rowData.bookTitle = newValue;
+          setKey(Math.random());
+        }),
     },
 
     {
       field: "quantity",
       header: "Quantity",
-      cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
-      cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
+      customBody: (rowData: SRSaleRow) =>
+        numberEditor(
+          rowData.quantity,
+          (newValue) => (rowData.quantity = newValue)
+        ),
     },
     {
       field: "unitRetailPrice",
       header: "Unit Retail Price ($)",
-      cellEditor: (options: ColumnEditorOptions) => priceEditor(options),
-      cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
       customBody: (rowData: SRSaleRow) =>
-        priceBodyTemplate(rowData.unitRetailPrice),
+        priceEditor(
+          rowData.unitRetailPrice,
+          (newValue) => (rowData.unitRetailPrice = newValue)
+        ),
     },
     {
       field: "subtotal",
@@ -319,13 +327,17 @@ export default function SRDetail() {
     []
   );
 
-  const booksDropDownEditor = (options: ColumnEditorOptions) => (
+  const booksDropDownEditor = (
+    value: string,
+    onChange: (newValue: string) => void
+  ) => (
     <BooksDropdown
       // This will always be used in a table cell, so we can disable the warning
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      setSelectedBook={options.editorCallback!}
-      selectedBook={options.value}
+      setSelectedBook={onChange}
+      selectedBook={value}
       bookTitlesList={booksDropdownTitles}
+      refreshKey={key}
     />
   );
 

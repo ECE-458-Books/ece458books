@@ -1,5 +1,4 @@
 import { Dropdown } from "primereact/dropdown";
-import { createContext, useEffect, useState } from "react";
 import { BOOKS_API } from "../../apis/BooksAPI";
 
 export interface BookDropdownDataProps {
@@ -11,6 +10,7 @@ export interface BookDropdownProps {
   setSelectedBook: (arg0: string) => void; // Set the selected book
   bookTitlesList: string[]; // List of book titles
   selectedBook: string; // The selected book
+  refreshKey?: number; // Used for refreshing the dropdown, necessary for a workaround
 }
 
 export function BooksDropdownData(props: BookDropdownDataProps) {
@@ -32,12 +32,15 @@ export default function BooksDropdown(props: BookDropdownProps) {
       value={props.selectedBook}
       options={props.bookTitlesList}
       filter
-      appendTo={"self"}
-      placeholder="Select a Book"
-      onChange={(e) => props.setSelectedBook(e.value)}
+      appendTo={document.body}
+      placeholder={"Select a Book"}
+      onChange={(e) => {
+        props.setSelectedBook(e.value);
+      }}
+      key={props.refreshKey}
       showClear
       virtualScrollerOptions={{ itemSize: 35 }}
-      style={{ position: "absolute", zIndex: 9999 }}
+      style={{ minWidth: "30rem", maxWidth: "30rem" }}
     />
   );
 }

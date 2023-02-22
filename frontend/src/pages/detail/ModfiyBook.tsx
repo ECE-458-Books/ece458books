@@ -67,7 +67,7 @@ export default function BookDetail() {
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(detailState.isConfirmationPopupVisible);
   const [image, setImage] = useState<ImageUrlHashStruct>({
-    imageSrc: "...",
+    imageSrc: "",
     imageHash: Date.now(),
   });
 
@@ -174,6 +174,10 @@ export default function BookDetail() {
     event.options.clear();
   };
 
+  const imageDeleteSubtmit = () => {
+    showSuccess(toast, "Image Deleted");
+  };
+
   return (
     <div className="grid flex justify-content-center">
       <Toast ref={toast} />
@@ -190,6 +194,22 @@ export default function BookDetail() {
         className="col-12 align-items-center flex justify-content-center"
       />
       <div className="col-12">
+        <ConfirmPopup
+          className={"p-button-danger"}
+          isVisible={isConfirmationPopupVisible}
+          hideFunc={() => setIsConfirmationPopupVisible(false)}
+          acceptFunc={() => {
+            imageDeleteSubtmit;
+          }}
+          rejectFunc={() => {
+            console.log("reject");
+          }}
+          buttonClickFunc={() => {
+            setIsConfirmationPopupVisible(true);
+          }}
+          disabled={!isModifiable}
+          label={"Delete Cover Image"}
+        />
         <ImageUploader
           disabled={!isModifiable}
           uploadHandler={uploadImageFileHandler}

@@ -116,15 +116,17 @@ export default function PODetail() {
 
   // Load the PO data on page load
   useEffect(() => {
-    PURCHASES_API.getPurchaseOrderDetail({ id: purchaseOrderID })
-      .then((response) => {
-        const purchaseOrder = APIToInternalPOConversion(response);
-        setDate(purchaseOrder.date);
-        setSelectedVendorName(purchaseOrder.vendorName);
-        setPurchases(purchaseOrder.purchases);
-        setTotalCost(purchaseOrder.totalCost);
-      })
-      .catch(() => showFailure(toast, "Could not fetch purchase order data"));
+    if (!isPOAddPage) {
+      PURCHASES_API.getPurchaseOrderDetail({ id: purchaseOrderID })
+        .then((response) => {
+          const purchaseOrder = APIToInternalPOConversion(response);
+          setDate(purchaseOrder.date);
+          setSelectedVendorName(purchaseOrder.vendorName);
+          setPurchases(purchaseOrder.purchases);
+          setTotalCost(purchaseOrder.totalCost);
+        })
+        .catch(() => showFailure(toast, "Could not fetch purchase order data"));
+    }
   }, []);
 
   const COLUMNS: TableColumn[] = [

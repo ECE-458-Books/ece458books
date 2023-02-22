@@ -62,7 +62,7 @@ export interface SRSaleRow {
 }
 
 export default function SRDetail() {
-  const emptyProduct: SRSaleRow = {
+  const emptySale: SRSaleRow = {
     isNewRow: true,
     id: uuid(),
     subtotal: 0,
@@ -94,7 +94,7 @@ export default function SRDetail() {
   // The rest of the data
   const [date, setDate] = useState<Date>(new Date());
   const [sales, setSales] = useState<SRSaleRow[]>([]);
-  const [lineData, setLineData] = useState<SRSaleRow>(emptyProduct);
+  const [lineData, setLineData] = useState<SRSaleRow>(emptySale);
   const [totalRevenue, setTotalRevenue] = useState<number>(0);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
@@ -102,14 +102,16 @@ export default function SRDetail() {
 
   // Load the SR data on page load
   useEffect(() => {
-    SALES_API.getSalesReconciliationDetail({ id: salesReconciliationID })
-      .then((response) => {
-        const salesReconciliation = APIToInternalSRConversion(response);
-        setDate(salesReconciliation.date);
-        setSales(salesReconciliation.sales);
-        setTotalRevenue(salesReconciliation.totalRevenue);
-      })
-      .catch(() => showFailure(toast, "Could not fetch purchase order data"));
+    if (!isSRAddPage) {
+      SALES_API.getSalesReconciliationDetail({ id: salesReconciliationID })
+        .then((response) => {
+          const salesReconciliation = APIToInternalSRConversion(response);
+          setDate(salesReconciliation.date);
+          setSales(salesReconciliation.sales);
+          setTotalRevenue(salesReconciliation.totalRevenue);
+        })
+        .catch(() => showFailure(toast, "Could not fetch purchase order data"));
+    }
   }, []);
 
   const COLUMNS: TableColumn[] = [
@@ -148,7 +150,7 @@ export default function SRDetail() {
   ];
 
   const addNewSale = () => {
-    setLineData(emptyProduct);
+    setLineData(emptySale);
     const _lineData = lineData;
     _lineData.id = uuid();
     setLineData(_lineData);

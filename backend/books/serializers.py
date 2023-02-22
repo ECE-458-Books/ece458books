@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Book, Author
+from .models import Book, Author, BookImage
 from genres.models import Genre
 
 class BookListAddSerializer(serializers.ModelSerializer):
@@ -14,10 +14,11 @@ class BookListAddSerializer(serializers.ModelSerializer):
     """
     authors = serializers.SlugRelatedField(queryset=Author.objects.all(), many=True, slug_field='name')
     genres = serializers.SlugRelatedField(queryset=Genre.objects.all(), many=True, slug_field='name')
+    urls = serializers.StringRelatedField(many=True)
 
     class Meta:
         model = Book
-        fields = ['id', 'title', 'authors', 'genres', 'isbn_13', 'isbn_10', 'publisher', 'publishedDate', 'pageCount', 'width', 'height', 'thickness', 'retail_price', 'isGhost', 'stock']
+        fields = ['id', 'title', 'authors', 'genres', 'isbn_13', 'isbn_10', 'publisher', 'publishedDate', 'pageCount', 'width', 'height', 'thickness', 'retail_price', 'isGhost', 'stock', 'urls']
 
 class BookSerializer(serializers.ModelSerializer):
     authors = serializers.SlugRelatedField(queryset=Author.objects.all(), many=True, slug_field='name')
@@ -37,3 +38,8 @@ class AuthorSerializer(serializers.ModelSerializer):
 
 class ISBNSerializer(serializers.Serializer):
     isbns = serializers.CharField()
+
+class BookImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BookImage
+        fields = '__all__'

@@ -1,10 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ToggleButton } from "primereact/togglebutton";
-import { Calendar, CalendarProps } from "primereact/calendar";
+import {
+  Calendar,
+  CalendarChangeEvent,
+  CalendarProps,
+} from "primereact/calendar";
 import { DataTable } from "primereact/datatable";
 import { createColumns, TableColumn } from "../../components/TableColumns";
 import { Column, ColumnEditorOptions, ColumnEvent } from "primereact/column";
-import ConfirmPopup from "../../components/ConfirmPopup";
+import ConfirmPopup from "../../components/popups/ConfirmPopup";
 import { Button } from "primereact/button";
 import { Toolbar } from "primereact/toolbar";
 import { v4 as uuid } from "uuid";
@@ -21,17 +25,25 @@ import {
   ModifyPOReq,
   PURCHASES_API,
 } from "../../apis/PurchasesAPI";
-import { toYYYYMMDDWithDash } from "../../util/DateOperations";
+import { internalToExternalDate } from "../../util/DateOperations";
 import { Toast } from "primereact/toast";
 import { InputNumber } from "primereact/inputnumber";
 import { FileUploadHandlerEvent } from "primereact/fileupload";
-import { APIToInternalPurchasesCSVConversion } from "../../apis/Conversions";
-import CSVUploader from "../../components/CSVFileUploader";
+import {
+  APIToInternalPOConversion,
+  APIToInternalPurchasesCSVConversion,
+} from "../../apis/Conversions";
+import CSVUploader from "../../components/uploaders/CSVFileUploader";
 import VendorDropdown from "../../components/dropdowns/VendorDropdown";
 import BooksDropdown, {
   BooksDropdownData,
 } from "../../components/dropdowns/BookDropdown";
-import { showFailuresMapper, showWarningsMapper } from "../../components/Toast";
+import {
+  showFailure,
+  showFailuresMapper,
+  showSuccess,
+  showWarningsMapper,
+} from "../../components/Toast";
 import {
   CSVImport200Errors,
   CSVImport400Errors,
@@ -40,14 +52,8 @@ import {
 
 export interface PODetailState {
   id: number;
-  date: any;
-  purchases: POPurchaseRow[];
-  totalCost: number;
-  vendorName: string;
-  vendorID: number;
   isAddPage: boolean;
   isModifiable: boolean;
-  isConfirmationPopupVisible: boolean;
 }
 
 export interface POPurchaseRow {
@@ -69,7 +75,7 @@ export interface BooksList {
 }
 
 // Used for setting initial state
-const emptyProduct: POPurchaseRow = {
+const emptyPurchase: POPurchaseRow = {
   isNewRow: true,
   id: uuid(),
   bookId: 0,
@@ -86,52 +92,44 @@ export default function PODetail() {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const detailState = (location.state! as PODetailState) ?? {
     id: -1,
-    date: new Date(),
-    vendorName: "",
-    vendorID: 0,
-    totalCost: 0,
-    purchases: [
-      {
-        isNewRow: true,
-        id: uuid(),
-        bookTitle: "",
-        bookISBN: "",
-        subtotal: 0,
-        bookId: 0,
-        quantity: 1,
-        unitWholesalePrice: 0,
-      },
-    ],
     isAddPage: true,
     isModifiable: true,
-    isConfirmationPopupVisible: false,
   };
 
-  // Need to check, but this can likely be deleted
-  for (const purchase of detailState.purchases) {
-    purchase.isNewRow = false;
-  }
-
-  const [bookMap, setBooksMap] = useState<Map<string, number>>(new Map());
-  const [vendorMap, setVendorMap] = useState<Map<string, number>>(new Map());
-  const [date, setDate] = useState(detailState.date);
-  const [selectedVendorName, setSelectedVendorName] = useState<string>(
-    detailState.vendorName
-  );
-  const [booksDropdownTitles, setBooksDropdownTitles] = useState<string[]>([]);
-  const [purchases, setPurchases] = useState<POPurchaseRow[]>(
-    detailState.purchases
-  );
-  const totalCost = detailState.totalCost;
+  // From detailState
   const purchaseOrderID = detailState.id;
-  const [lineData, setLineData] = useState<POPurchaseRow>(emptyProduct);
   const isPOAddPage = detailState.isAddPage; // If false, this is an edit page
   const [isModifiable, setIsModifiable] = useState<boolean>(
     detailState.isModifiable
   );
+
+  // For Dropdown Menus
+  const [bookMap, setBooksMap] = useState<Map<string, number>>(new Map());
+  const [vendorMap, setVendorMap] = useState<Map<string, number>>(new Map());
+  const [booksDropdownTitles, setBooksDropdownTitles] = useState<string[]>([]);
+
+  // The rest of the data
+  const [date, setDate] = useState<Date>(new Date());
+  const [selectedVendorName, setSelectedVendorName] = useState<string>("");
+  const [purchases, setPurchases] = useState<POPurchaseRow[]>([]);
+  const [totalCost, setTotalCost] = useState<number>(0);
+  const [lineData, setLineData] = useState<POPurchaseRow>(emptyPurchase);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
-    useState<boolean>(detailState.isConfirmationPopupVisible);
+    useState<boolean>(false);
   const [hasUploadedCSV, setHasUploadedCSV] = useState<boolean>(false);
+
+  // Load the PO data on page load
+  useEffect(() => {
+    PURCHASES_API.getPurchaseOrderDetail({ id: purchaseOrderID })
+      .then((response) => {
+        const purchaseOrder = APIToInternalPOConversion(response);
+        setDate(purchaseOrder.date);
+        setSelectedVendorName(purchaseOrder.vendorName);
+        setPurchases(purchaseOrder.purchases);
+        setTotalCost(purchaseOrder.totalCost);
+      })
+      .catch(() => showFailure(toast, "Could not fetch purchase order data"));
+  }, []);
 
   const COLUMNS: TableColumn[] = [
     {
@@ -173,7 +171,7 @@ export default function PODetail() {
 
   // Adds a row to the PO
   const addNewPurchase = () => {
-    setLineData(emptyProduct);
+    setLineData(emptyPurchase);
     const _lineData = lineData;
     _lineData.id = uuid();
     setLineData(_lineData);
@@ -215,13 +213,13 @@ export default function PODetail() {
         !(purchase.unitWholesalePrice >= 0) ||
         !purchase.quantity
       ) {
-        showFailure("All fields are required");
+        showFailure(toast, "All fields are required");
         return false;
       }
     }
 
     if (!date || !selectedVendorName) {
-      showFailure("All fields are required");
+      showFailure(toast, "All fields are required");
       return false;
     }
 
@@ -245,14 +243,14 @@ export default function PODetail() {
       });
 
       const purchaseOrder = {
-        date: toYYYYMMDDWithDash(date),
+        date: internalToExternalDate(date),
         vendor: vendorMap.get(selectedVendorName),
         purchases: apiPurchases,
       } as AddPOReq;
 
       PURCHASES_API.addPurchaseOrder(purchaseOrder)
-        .then(() => showSuccess("Purchase order added successfully"))
-        .catch(() => showFailure("Could not add purchase order"));
+        .then(() => showSuccess(toast, "Purchase order added successfully"))
+        .catch(() => showFailure(toast, "Could not add purchase order"));
     } else {
       // Otherwise, it is a modify page
       const apiPurchases = purchases.map((purchase) => {
@@ -268,14 +266,14 @@ export default function PODetail() {
 
       const purchaseOrder = {
         id: purchaseOrderID,
-        date: toYYYYMMDDWithDash(date),
+        date: internalToExternalDate(date),
         vendor: vendorMap.get(selectedVendorName),
         purchases: apiPurchases,
       } as ModifyPOReq;
 
       PURCHASES_API.modifyPurchaseOrder(purchaseOrder)
-        .then(() => showSuccess("Purchase order modified successfully"))
-        .catch(() => showFailure("Could not modify purchase order"));
+        .then(() => showSuccess(toast, "Purchase order modified successfully"))
+        .catch(() => showFailure(toast, "Could not modify purchase order"));
     }
   };
 
@@ -283,17 +281,6 @@ export default function PODetail() {
 
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
-
-  const showSuccess = (message: string) => {
-    toast.current?.show({ severity: "success", summary: message });
-  };
-
-  const showFailure = (message: string) => {
-    toast.current?.show({
-      severity: "error",
-      summary: message,
-    });
-  };
 
   const actionBodyTemplate = (rowData: POPurchaseRow) => {
     return (
@@ -446,8 +433,8 @@ export default function PODetail() {
                   disabled={!isModifiable}
                   value={date}
                   readOnlyInput
-                  onChange={(event: CalendarProps): void => {
-                    setDate(event.value);
+                  onChange={(event: CalendarChangeEvent): void => {
+                    setDate(event.value as Date);
                   }}
                 />
               </div>

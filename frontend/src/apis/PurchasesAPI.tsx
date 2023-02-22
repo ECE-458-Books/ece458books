@@ -42,6 +42,11 @@ export interface GetPOsResp {
   count: number;
 }
 
+// getPurchaseOrderDetail
+export interface GetPODetailReq {
+  id: number;
+}
+
 // deletePurchaseOrders
 export interface DeletePOReq {
   id: number;
@@ -79,6 +84,13 @@ export const PURCHASES_API = {
       url: PURCHASES_EXTENSION,
       method: METHOD_GET,
       params: req,
+    });
+  },
+
+  getPurchaseOrderDetail: async function (req: GetPODetailReq): Promise<APIPO> {
+    return await API.request({
+      url: PURCHASES_EXTENSION.concat("/".concat(req.id.toString())),
+      method: METHOD_GET,
     });
   },
 

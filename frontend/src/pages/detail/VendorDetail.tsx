@@ -1,17 +1,16 @@
-import { FormEvent, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { ToggleButton } from "primereact/togglebutton";
-import ConfirmPopup from "../../components/ConfirmPopup";
+import ConfirmPopup from "../../components/popups/ConfirmPopup";
 import { useLocation } from "react-router-dom";
 import { ModifyVendorReq, VENDORS_API } from "../../apis/VendorsAPI";
 import { logger } from "../../util/Logger";
 import { Toast } from "primereact/toast";
+import { showFailure, showSuccess } from "../../components/Toast";
 
 export interface VendorDetailState {
   id: number;
-  vendor: string;
   isModifiable: boolean;
-  isConfirmationPopupVisible: boolean;
 }
 
 export default function VendorDetail() {
@@ -19,34 +18,30 @@ export default function VendorDetail() {
   // If we are on this page, we know that the state is not null
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const detailState = location.state! as VendorDetailState;
-  const [vendor, setVendor] = useState<string>(detailState.vendor);
   const id = detailState.id;
+  const [vendorName, setVendorName] = useState<string>("");
   const [isModifiable, setIsModifiable] = useState<boolean>(
     detailState.isModifiable
   );
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
-    useState<boolean>(detailState.isConfirmationPopupVisible);
+    useState<boolean>(false);
 
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
 
-  const showSuccess = () => {
-    toast.current?.show({ severity: "success", summary: "Vendor modified" });
-  };
-
-  const showFailure = () => {
-    toast.current?.show({
-      severity: "error",
-      summary: "Vendor could not be modified",
-    });
-  };
+  // Load the Vendor data on page load
+  useEffect(() => {
+    VENDORS_API.getVendorDetail({ id: id })
+      .then((response) => setVendorName(response.name))
+      .catch(() => showFailure(toast, "Could not fetch vendor data"));
+  }, []);
 
   const onSubmit = (): void => {
-    const modifiedVendor: ModifyVendorReq = { id: id, name: vendor };
+    const modifiedVendor: ModifyVendorReq = { id: id, name: vendorName };
     logger.debug("Edit Vendor Submitted", modifiedVendor);
     VENDORS_API.modifyVendor(modifiedVendor)
-      .then(() => showSuccess())
-      .catch(() => showFailure());
+      .then(() => showSuccess(toast, "Vendor modified"))
+      .catch(() => showFailure(toast, "Vendor could not be modified"));
     setIsModifiable(false);
   };
 
@@ -91,10 +86,10 @@ export default function VendorDetail() {
                 id="vendor"
                 className="p-inputtext"
                 name="vendor"
-                value={vendor}
+                value={vendorName}
                 disabled={!isModifiable}
                 onChange={(event: FormEvent<HTMLInputElement>): void => {
-                  setVendor(event.currentTarget.value);
+                  setVendorName(event.currentTarget.value);
                 }}
               />
             </div>

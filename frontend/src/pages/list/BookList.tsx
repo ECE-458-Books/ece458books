@@ -10,7 +10,7 @@ import { Column } from "primereact/column";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import { useEffect, useRef, useState } from "react";
 import { DataTableFilterMetaData } from "primereact/datatable";
-import DeletePopup from "../../components/DeletePopup";
+import DeletePopup from "../../components/popups/DeletePopup";
 import { logger } from "../../util/Logger";
 import { BookDetailState } from "../detail/ModfiyBook";
 import { useLocation, useNavigate } from "react-router-dom";

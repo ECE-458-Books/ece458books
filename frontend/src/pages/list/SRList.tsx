@@ -10,20 +10,23 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   APISRSortFieldMap,
-  APItoInternalSRConversion,
+  APIToInternalSRConversion,
 } from "../../apis/Conversions";
 import { GetSRsResp, SALES_API } from "../../apis/SalesAPI";
-import DeletePopup from "../../components/DeletePopup";
+import DeletePopup from "../../components/popups/DeletePopup";
 import { createColumns, TableColumn } from "../../components/TableColumns";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import { logger } from "../../util/Logger";
-import { priceBodyTemplate } from "../../util/TableCellEditFuncs";
+import {
+  dateBodyTemplate,
+  priceBodyTemplate,
+} from "../../util/TableCellEditFuncs";
 import { SRDetailState, SRSaleRow } from "../detail/SRDetail";
 import { NUM_ROWS } from "./BookList";
 
 export interface SalesReconciliation {
   id: number;
-  date: string;
+  date: Date;
   sales: SRSaleRow[];
   uniqueBooks: number;
   totalBooks: number;
@@ -35,6 +38,8 @@ const COLUMNS: TableColumn[] = [
     field: "date",
     header: "Date (YYYY-MM-DD)",
     sortable: true,
+    customBody: (rowData: SalesReconciliation) =>
+      dateBodyTemplate(rowData.date),
   },
   {
     field: "uniqueBooks",
@@ -58,7 +63,7 @@ const COLUMNS: TableColumn[] = [
 // Empty sales reconciliation, used to initialize state
 const emptySalesReconciliation: SalesReconciliation = {
   id: 0,
-  date: "",
+  date: new Date(),
   sales: [],
   uniqueBooks: 0,
   totalBooks: 0,
@@ -102,13 +107,9 @@ export default function SalesReconciliationList() {
   const toDetailPage = (sr: SalesReconciliation, isModifiable: boolean) => {
     logger.debug("Edit Sales Reconciliation Clicked", sr);
     const detailState: SRDetailState = {
-      date: new Date(sr.date.replace("-", "/")),
-      sales: sr.sales,
-      totalRevenue: sr.totalRevenue,
       id: sr.id,
       isAddPage: false,
       isModifiable: isModifiable,
-      isConfirmationPopupVisible: false,
     };
 
     navigate("/sales-reconciliations/detail", { state: detailState });
@@ -184,7 +185,7 @@ export default function SalesReconciliationList() {
   // Set state when response to API call is received
   const onAPIResponse = (response: GetSRsResp) => {
     setSalesReconciliations(
-      response.results.map((sr) => APItoInternalSRConversion(sr))
+      response.results.map((sr) => APIToInternalSRConversion(sr))
     );
     setNumberOfSalesReconciliations(response.count);
     setLoading(false);

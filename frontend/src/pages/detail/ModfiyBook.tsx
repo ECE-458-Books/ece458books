@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import ConfirmPopup from "../../components/ConfirmPopup";
+import ConfirmPopup from "../../components/popups/ConfirmPopup";
 import { useLocation } from "react-router-dom";
 import { Book } from "../list/BookList";
 import {
@@ -15,7 +15,7 @@ import { Image } from "primereact/image";
 import { FileUploadHandlerEvent } from "primereact/fileupload";
 import GenreDropdown from "../../components/dropdowns/GenreDropdown";
 import { IMAGES_API } from "../../apis/ImagesAPI";
-import ImageUploader from "../../components/ImageFileUploader";
+import ImageUploader from "../../components/uploaders/ImageFileUploader";
 import { showFailure, showSuccess } from "../../components/Toast";
 import { InputSwitch } from "primereact/inputswitch";
 

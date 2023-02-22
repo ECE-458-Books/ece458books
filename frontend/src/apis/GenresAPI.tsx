@@ -26,6 +26,11 @@ export interface GetGenresResp {
   count: number;
 }
 
+// getGenreDetail
+export interface GetGenreDetailReq {
+  id: number;
+}
+
 // deleteGenre
 export interface DeleteGenreReq {
   id: number;
@@ -48,6 +53,13 @@ export const GENRES_API = {
       url: GENRES_EXTENSION,
       method: METHOD_GET,
       params: req,
+    });
+  },
+
+  getGenreDetail: async function (req: GetGenreDetailReq): Promise<APIGenre> {
+    return await API.request({
+      url: GENRES_EXTENSION.concat("/".concat(req.id.toString())),
+      method: METHOD_GET,
     });
   },
 

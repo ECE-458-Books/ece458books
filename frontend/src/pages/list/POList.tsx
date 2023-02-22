@@ -13,17 +13,20 @@ import {
   APIToInternalPOConversion,
 } from "../../apis/Conversions";
 import { GetPOsResp, PURCHASES_API } from "../../apis/PurchasesAPI";
-import DeletePopup from "../../components/DeletePopup";
+import DeletePopup from "../../components/popups/DeletePopup";
 import { createColumns, TableColumn } from "../../components/TableColumns";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import { logger } from "../../util/Logger";
-import { priceBodyTemplate } from "../../util/TableCellEditFuncs";
+import {
+  dateBodyTemplate,
+  priceBodyTemplate,
+} from "../../util/TableCellEditFuncs";
 import { PODetailState, POPurchaseRow } from "../detail/PODetail";
 import { NUM_ROWS } from "./BookList";
 
 export interface PurchaseOrder {
   id: number;
-  date: string;
+  date: Date;
   vendorName: string;
   vendorId: number;
   uniqueBooks: number;
@@ -37,6 +40,7 @@ const COLUMNS: TableColumn[] = [
     field: "date",
     header: "Date (YYYY-MM-DD)",
     sortable: true,
+    customBody: (rowData: PurchaseOrder) => dateBodyTemplate(rowData.date),
   },
   {
     field: "vendorName",
@@ -65,7 +69,7 @@ const COLUMNS: TableColumn[] = [
 // Empty purchase order, used to initialize state
 const emptyPurchaseOrder: PurchaseOrder = {
   id: 0,
-  date: "",
+  date: new Date(),
   vendorName: "",
   vendorId: 0,
   uniqueBooks: 0,
@@ -107,15 +111,9 @@ export default function PurchaseOrderList() {
   const toDetailPage = (po: PurchaseOrder, isModifiable: boolean) => {
     logger.debug("Edit Purchase Order Clicked", po);
     const detailState: PODetailState = {
-      date: new Date(po.date.replace("-", "/")),
-      purchases: po.purchases,
-      totalCost: po.totalCost,
       id: po.id,
-      vendorName: po.vendorName,
-      vendorID: po.vendorId,
       isAddPage: false,
       isModifiable: isModifiable,
-      isConfirmationPopupVisible: false,
     };
 
     navigate("/purchase-orders/detail", { state: detailState });

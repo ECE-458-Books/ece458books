@@ -1,10 +1,10 @@
-import React, { ReactElement, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ToggleButton } from "primereact/togglebutton";
 import { Calendar, CalendarProps } from "primereact/calendar";
 import { DataTable } from "primereact/datatable";
 import { Column, ColumnEditorOptions, ColumnEvent } from "primereact/column";
 import { createColumns, TableColumn } from "../../components/TableColumns";
-import ConfirmPopup from "../../components/ConfirmPopup";
+import ConfirmPopup from "../../components/popups/ConfirmPopup";
 import { v4 as uuid } from "uuid";
 import {
   numberEditor,
@@ -21,14 +21,17 @@ import {
   SALES_API,
 } from "../../apis/SalesAPI";
 import { Toast } from "primereact/toast";
-import { toYYYYMMDDWithDash } from "../../util/DateOperations";
+import { internalToExternalDate } from "../../util/DateOperations";
 import { InputNumber } from "primereact/inputnumber";
 import BooksDropdown, {
   BooksDropdownData,
 } from "../../components/dropdowns/BookDropdown";
-import CSVUploader from "../../components/CSVFileUploader";
+import CSVUploader from "../../components/uploaders/CSVFileUploader";
 import { FileUploadHandlerEvent } from "primereact/fileupload";
-import { APIToInternalSalesCSVConversion } from "../../apis/Conversions";
+import {
+  APIToInternalSalesCSVConversion,
+  APIToInternalSRConversion,
+} from "../../apis/Conversions";
 import {
   showFailure,
   showSuccess,
@@ -43,12 +46,8 @@ import {
 
 export interface SRDetailState {
   id: number;
-  date: any;
-  totalRevenue: number;
-  sales: SRSaleRow[];
   isAddPage: boolean;
   isModifiable: boolean;
-  isConfirmationPopupVisible: boolean;
 }
 
 export interface SRSaleRow {
@@ -77,42 +76,41 @@ export default function SRDetail() {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const detailState = (location.state! as SRDetailState) ?? {
     id: -1,
-    date: new Date(),
-    totalRevenue: 0,
-    sales: [
-      {
-        isNewRow: true,
-        id: uuid(),
-        bookId: 0,
-        subtotal: 0,
-        bookTitle: "",
-        quantity: 1,
-        unitRetailPrice: 0,
-      },
-    ],
     isAddPage: true,
     isModifiable: true,
-    isConfirmationPopupVisible: false,
   };
 
-  for (const sale of detailState.sales) {
-    sale.isNewRow = false;
-  }
-
-  const [date, setDate] = useState(detailState.date);
-  const [sales, setSales] = useState<SRSaleRow[]>(detailState.sales);
+  // From detailState
   const salesReconciliationID = detailState.id;
-  const [lineData, setLineData] = useState<SRSaleRow>(emptyProduct);
-  const totalRevenue = detailState.totalRevenue;
-  const [booksMap, setBooksMap] = useState<Map<string, number>>(new Map());
-  const [booksDropdownTitles, setBooksDropdownTitles] = useState<string[]>([]);
   const isSRAddPage = detailState.isAddPage;
   const [isModifiable, setIsModifiable] = useState<boolean>(
     detailState.isModifiable
   );
+
+  // For dropdown menus
+  const [booksMap, setBooksMap] = useState<Map<string, number>>(new Map());
+  const [booksDropdownTitles, setBooksDropdownTitles] = useState<string[]>([]);
+
+  // The rest of the data
+  const [date, setDate] = useState<Date>(new Date());
+  const [sales, setSales] = useState<SRSaleRow[]>([]);
+  const [lineData, setLineData] = useState<SRSaleRow>(emptyProduct);
+  const [totalRevenue, setTotalRevenue] = useState<number>(0);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
-    useState<boolean>(detailState.isConfirmationPopupVisible);
+    useState<boolean>(false);
   const [hasUploadedCSV, setHasUploadedCSV] = useState<boolean>(false);
+
+  // Load the SR data on page load
+  useEffect(() => {
+    SALES_API.getSalesReconciliationDetail({ id: salesReconciliationID })
+      .then((response) => {
+        const salesReconciliation = APIToInternalSRConversion(response);
+        setDate(salesReconciliation.date);
+        setSales(salesReconciliation.sales);
+        setTotalRevenue(salesReconciliation.totalRevenue);
+      })
+      .catch(() => showFailure(toast, "Could not fetch purchase order data"));
+  }, []);
 
   const COLUMNS: TableColumn[] = [
     {
@@ -214,7 +212,7 @@ export default function SRDetail() {
       });
 
       const salesReconciliation = {
-        date: toYYYYMMDDWithDash(date),
+        date: internalToExternalDate(date),
         sales: apiSales,
       } as AddSRReq;
       SALES_API.addSalesReconciliation(salesReconciliation)
@@ -235,7 +233,7 @@ export default function SRDetail() {
 
       const salesReconciliation = {
         id: salesReconciliationID,
-        date: toYYYYMMDDWithDash(date),
+        date: internalToExternalDate(date),
         sales: apiSales,
       } as ModifySRReq;
 
@@ -399,7 +397,7 @@ export default function SRDetail() {
                   value={date}
                   readOnlyInput
                   onChange={(event: CalendarProps): void => {
-                    setDate(event.value);
+                    setDate(event.value as Date);
                   }}
                 />
               </div>

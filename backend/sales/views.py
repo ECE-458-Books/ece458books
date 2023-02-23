@@ -5,7 +5,7 @@ from rest_framework.request import Request
 from rest_framework import status, filters
 from rest_framework.views import APIView
 from .models import SalesReconciliation, Sale
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from .paginations import SalesReconciliationPagination
 from django.db.models import OuterRef, Subquery, Func, Count, Sum, F
 from purchase_orders.models import Purchase, PurchaseOrder
@@ -13,7 +13,6 @@ from purchase_orders.serializers import PurchaseOrderSerializer
 import datetime, pytz
 from datetime import datetime, timedelta
 from books.models import Book
-from rest_framework.exceptions import APIException
 from helpers.csv_reader import CSVReader
 
 
@@ -187,21 +186,15 @@ class RetrieveSalesReportAPIView(APIView):
             SalesReconciliation.objects.filter(date__range=(start_date, end_date)).values(book_id=F('sales__book')).annotate(num_books_sold=Sum('sales__quantity')).annotate(
                 book_revenue=Sum('sales__revenue')).order_by('-num_books_sold'))[:10]
 
-        # Keeeping this code to find books purchased quantities if needed for future
-        # order by date, then by id, since higher id means was entered later than lower id, so could mean more recent price... just need any way to decide on one price if two separate purchases are logged on same day of same book to know which unit wholesale price to use
-        # books_purchased_quantities = list(PurchaseOrder.objects.filter(date__lte=end_date).values('purchases__book').annotate(num_books_purchased=Sum('purchases__quantity')).values('purchases__book', 'num_books_purchased'))
-        # book_id_to_num_purchased_dict = {x['purchases__book']:x['num_books_purchased'] for x in books_purchased_quantities}
-
         for book_sale in list(sales_data_by_book):
             try:
                 most_recent_unit_wholesale_price = PurchaseOrder.objects.filter(date__lte=end_date).order_by('-date', '-id').annotate(
                     book_wholesale_price=Subquery(Purchase.objects.filter(purchase_order=OuterRef('id')).filter(
                         book=book_sale['book_id']).order_by('-id')[:1].values('unit_wholesale_price'))).values('book_wholesale_price').exclude(
                             book_wholesale_price=None).first()['book_wholesale_price']
-            except:  # If the sale occurs prior to the purchase, and the purchase is outside the sales report window
-                raise APIException("Cannot sell a book that has not been purchased.")
-            else:
-                book_sale['total_cost_most_recent'] = round(most_recent_unit_wholesale_price * book_sale['num_books_sold'], 2)
+            except:  # A book should not be allowed to be sold before the first time it is purchased
+                return Response({"error": "Attempting to sell a book that has never previously been purchased."}, status=status.HTTP_400_BAD_REQUEST)
+            book_sale['total_cost_most_recent'] = round(most_recent_unit_wholesale_price * book_sale['num_books_sold'], 2)
 
         for book_sale in sales_data_by_book:
             book_sale['book_title'] = Book.objects.filter(id=book_sale['book_id']).get().title

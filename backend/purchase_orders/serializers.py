@@ -40,7 +40,7 @@ class PurchaseOrderSerializer(TransactionGroupBaseSerializer):
         transaction_name = "purchase"
         return f'{transaction_name}s' if plural else transaction_name
 
-    def validate_before_creation(self, transaction_quantities):
+    def validate_before_creation(self, transaction_quantities, date):
         pass
 
     def get_total_cost(self, instance):

@@ -112,7 +112,8 @@ export default function PODetail() {
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
   const [hasUploadedCSV, setHasUploadedCSV] = useState<boolean>(false);
-  const [key, setKey] = useState<number>(0);
+  const [bookDropdownRefreshKey, setBookDropdownRefreshKey] =
+    useState<number>(0);
 
   // Load the PO data on page load
   useEffect(() => {
@@ -142,7 +143,7 @@ export default function PODetail() {
       customBody: (rowData: POPurchaseRow) =>
         booksDropDownEditor(rowData.bookTitle, (newValue) => {
           rowData.bookTitle = newValue;
-          setKey(Math.random());
+          setBookDropdownRefreshKey(Math.random());
         }),
     },
     {
@@ -362,7 +363,7 @@ export default function PODetail() {
       setSelectedBook={onChange}
       selectedBook={value}
       bookTitlesList={booksDropdownTitles}
-      refreshKey={key}
+      refreshKey={bookDropdownRefreshKey}
       placeholder={value}
     />
   );

@@ -2,13 +2,7 @@ import { FormEvent, useRef, useState } from "react";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Button } from "primereact/button";
 import { DataTable } from "primereact/datatable";
-import { ColumnEditorOptions, ColumnEvent } from "primereact/column";
-import {
-  isPositiveInteger,
-  numberEditor,
-  priceBodyTemplate,
-  priceEditor,
-} from "../../util/TableCellEditFuncs";
+import { numberEditor, priceEditor } from "../../util/TableCellEditFuncs";
 import { BOOKS_API } from "../../apis/BooksAPI";
 import { Book } from "../list/BookList";
 import { Badge } from "primereact/badge";
@@ -20,6 +14,7 @@ import {
 } from "../../apis/Conversions";
 import { createColumns, TableColumn } from "../../components/TableColumns";
 import GenreDropdown from "../../components/dropdowns/GenreDropdown";
+import { ColumnEditorOptions } from "primereact/column";
 
 export interface BookWithDBTag extends Book {
   fromDB: boolean;
@@ -68,7 +63,7 @@ export default function BookAdd() {
     {
       field: "genres",
       header: "Genre",
-      style: { width: "10%" },
+      style: { width: "20%" },
       cellEditor: (options) => genreDropdown(options),
     },
     {
@@ -95,39 +90,45 @@ export default function BookAdd() {
       field: "pageCount",
       header: "Page Count",
       style: { width: "5%" },
-      cellEditValidator: (event: ColumnEvent) =>
-        isPositiveInteger(event.newValue),
-      cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
+      customBody: (rowData: BookWithDBTag) =>
+        numberEditor(
+          rowData.pageCount,
+          (newValue) => (rowData.pageCount = newValue)
+        ),
     },
     {
       field: "width",
       header: "Width",
       style: { width: "5%" },
-      cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
-      cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
+      customBody: (rowData: BookWithDBTag) =>
+        numberEditor(rowData.width, (newValue) => (rowData.width = newValue)),
     },
     {
       field: "height",
       header: "Height",
       style: { width: "5%" },
-      cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
-      cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
+      customBody: (rowData: BookWithDBTag) =>
+        numberEditor(rowData.height, (newValue) => (rowData.height = newValue)),
     },
     {
       field: "thickness",
       header: "Thickness",
       style: { width: "5%" },
-      cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
-      cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
+      customBody: (rowData: BookWithDBTag) =>
+        numberEditor(
+          rowData.thickness,
+          (newValue) => (rowData.thickness = newValue)
+        ),
     },
     {
       field: "retailPrice",
       header: "Retail Price",
       style: { width: "5%" },
-      cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
-      cellEditor: (options: ColumnEditorOptions) => priceEditor(options),
       customBody: (rowData: BookWithDBTag) =>
-        priceBodyTemplate(rowData.retailPrice),
+        priceEditor(
+          rowData.retailPrice,
+          (newValue) => (rowData.retailPrice = newValue)
+        ),
     },
   ];
 

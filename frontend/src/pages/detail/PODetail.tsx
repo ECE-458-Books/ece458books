@@ -211,8 +211,8 @@ export default function PODetail() {
       });
   };
 
-  const validateSubmission = (po: POPurchaseRow[]) => {
-    for (const purchase of po) {
+  const validateSubmission = () => {
+    for (const purchase of purchases) {
       if (
         !purchase.bookTitle ||
         !(purchase.unitWholesalePrice >= 0) ||
@@ -236,7 +236,7 @@ export default function PODetail() {
 
   // On submission of the PO, we either add/edit depending on the page type
   const onSubmit = (): void => {
-    if (!validateSubmission(purchases)) {
+    if (!validateSubmission()) {
       return;
     }
 

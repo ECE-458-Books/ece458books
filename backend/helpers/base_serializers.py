@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import APIException
 from books.models import Book
 from django.db import models
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 
 
 class TransactionBaseSerializer(serializers.ModelSerializer):
@@ -27,23 +27,8 @@ class TransactionBaseSerializer(serializers.ModelSerializer):
 
 
 class TransactionGroupBaseSerializer(serializers.ModelSerializer):
-    # __metaclass__ = ABCMeta
     num_books = serializers.SerializerMethodField()
     num_unique_books = serializers.SerializerMethodField()
-
-    def get_num_books(self, instance):
-        num_books = 0
-        transactions = self.get_transaction_model().objects.filter(**{self.get_transaction_group_name(): instance.id})
-        for transaction in transactions:
-            num_books += transaction.quantity
-        return num_books
-
-    def get_num_unique_books(self, instance):
-        unique_books = set()
-        transactions = self.get_transaction_model().objects.filter(**{self.get_transaction_group_name(): instance.id})
-        for transaction in transactions:
-            unique_books.add(transaction.book)
-        return len(unique_books)
 
     @abstractmethod
     def get_price_name(self) -> str:
@@ -51,6 +36,10 @@ class TransactionGroupBaseSerializer(serializers.ModelSerializer):
 
     @abstractmethod
     def get_transaction_model(self) -> models.Model:
+        pass
+
+    @abstractmethod
+    def get_transaction_group_model(self) -> models.Model:
         pass
 
     @abstractmethod
@@ -73,6 +62,24 @@ class TransactionGroupBaseSerializer(serializers.ModelSerializer):
     def update_non_nested_fields(self, instance, validated_data):
         pass
 
+    @abstractmethod
+    def validate_before_creation(self, transaction_quantities):
+        pass
+
+    def get_num_books(self, instance):
+        num_books = 0
+        transactions = self.get_transaction_model().objects.filter(**{self.get_transaction_group_name(): instance.id})
+        for transaction in transactions:
+            num_books += transaction.quantity
+        return num_books
+
+    def get_num_unique_books(self, instance):
+        unique_books = set()
+        transactions = self.get_transaction_model().objects.filter(**{self.get_transaction_group_name(): instance.id})
+        for transaction in transactions:
+            unique_books.add(transaction.book)
+        return len(unique_books)
+
     def get_total_of_transactions(self, instance):
         total = 0
         transactions = self.get_transaction_model().objects.filter(**{self.get_transaction_group_name(): instance.id})
@@ -82,7 +89,14 @@ class TransactionGroupBaseSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         transactions_update_data = validated_data.pop(self.get_transaction_name(plural=True))  # Get list of transaction info to use to do update
+
         existing_transactions = self.get_transaction_model().objects.filter(**{self.get_transaction_group_name(): instance.id})  # Get the existing transactions in this transaction group
+
+        # Check to make sure no books in the transaction group that is being updated have been deleted
+        # Will block this operation if this is the case, even if that specific transaction isn't being changed.
+        self.check_for_ghost_books([t['book'] for t in transactions_update_data])
+        self.check_for_ghost_books([t.book for t in existing_transactions])
+
         existing_transactions_ids = set([transaction.id for transaction in existing_transactions])
         transactions_to_delete_ids = existing_transactions_ids.copy()  # set of ids which at the end will contain the ids of transactions to delete. We will remove ids that shouldn't be deleted
         books_stock_change = {}  # Holds how a given book's stock will change due to this update, which will be used to check validity later
@@ -130,6 +144,11 @@ class TransactionGroupBaseSerializer(serializers.ModelSerializer):
         self.update_non_nested_fields(instance, validated_data)
         return instance
 
+    def check_for_ghost_books(self, books_list):
+        for book in set(books_list):
+            if book.isGhost:
+                raise serializers.ValidationError(f'{book.title} was previously deleted. Please add it to books list again.')
+
     def handle_existing_transaction(self, transactions_to_delete_ids, books_stock_change, transaction_data, transaction_id):
         # Two possible cases may occur:
         update_transaction_book = transaction_data["book"]
@@ -149,3 +168,32 @@ class TransactionGroupBaseSerializer(serializers.ModelSerializer):
     def calculate_updated_stock_on_new_transaction(self, books_stock_change, transaction_data):
         """Determines what the stock of a given book will be after a given transaction is updated"""
         return books_stock_change.get(transaction_data['book'].id, 0) + (transaction_data['quantity'] * (-1 if self.get_measure_name() == "revenue" else 1))
+
+    def create(self, data):
+        transactions_data = data.pop(self.get_transaction_name(plural=True))
+        transaction_quantities = {}
+        for transaction_data in transactions_data:
+            transaction_quantities[transaction_data['book'].id] = transaction_quantities.get(transaction_data['book'].id, 0) + (
+                transaction_data['quantity'] * (-1 if self.get_measure_name() == "revenue" else 1))  # negative if sale, positive if purchase
+
+        self.validate_before_creation(transaction_quantities)
+
+        #Check that books aren't ghosted
+        for transaction_data in transactions_data:
+            book_obj = transaction_data['book']
+            if book_obj.isGhost:
+                raise APIException()  # exception based on casey
+
+        # AT THIS POINT, WE HAVE CONFIRMED WE CAN CREATE THE TRANSACTION GROUP
+
+        transaction_group = self.get_transaction_group_model().objects.create(**data)
+        for transaction_data in transactions_data:
+            self.get_transaction_model().objects.create(**{self.get_transaction_group_name(): transaction_group}, **transaction_data)
+
+        # Update book stocks
+        for book_id, transaction_quantity in transaction_quantities.items():
+            book = Book.objects.get(id=book_id)
+            book.stock += transaction_quantity
+            book.save()
+
+        return transaction_group

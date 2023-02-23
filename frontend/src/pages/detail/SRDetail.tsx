@@ -45,6 +45,7 @@ import {
 } from "./errors/CSVImportErrors";
 import { Book } from "../list/BookList";
 import { useImmer } from "use-immer";
+import { findById } from "../../util/FindBy";
 
 export interface SRDetailState {
   id: number;
@@ -101,10 +102,6 @@ export default function SRDetail() {
     useState<boolean>(false);
   const [hasUploadedCSV, setHasUploadedCSV] = useState<boolean>(false);
 
-  const findSaleById = (id: string, purchases: SRSaleRow[]) => {
-    return purchases.find((purchase) => purchase.id === id);
-  };
-
   // Load the SR data on page load
   useEffect(() => {
     if (!isSRAddPage) {
@@ -132,7 +129,7 @@ export default function SRDetail() {
       customBody: (rowData: SRSaleRow) =>
         booksDropDownEditor(rowData.bookTitle, (newValue) => {
           setSales((draft) => {
-            const purchase = findSaleById(rowData.id, draft);
+            const purchase = findById(draft, rowData.id);
             purchase!.bookTitle = newValue;
           });
         }),
@@ -144,7 +141,7 @@ export default function SRDetail() {
       customBody: (rowData: SRSaleRow) =>
         numberEditor(rowData.quantity, (newValue) => {
           setSales((draft) => {
-            const purchase = findSaleById(rowData.id, draft);
+            const purchase = findById(draft, rowData.id);
             purchase!.quantity = newValue;
           });
         }),
@@ -155,7 +152,7 @@ export default function SRDetail() {
       customBody: (rowData: SRSaleRow) =>
         priceEditor(rowData.unitRetailPrice, (newValue) => {
           setSales((draft) => {
-            const purchase = findSaleById(rowData.id, draft);
+            const purchase = findById(draft, rowData.id);
             purchase!.unitRetailPrice = newValue;
           });
         }),

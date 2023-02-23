@@ -46,6 +46,7 @@ import {
 } from "./errors/CSVImportErrors";
 import { Book } from "../list/BookList";
 import { useImmer } from "use-immer";
+import { findById } from "../../util/FindBy";
 
 export interface PODetailState {
   id: number;
@@ -114,10 +115,6 @@ export default function PODetail() {
     useState<boolean>(false);
   const [hasUploadedCSV, setHasUploadedCSV] = useState<boolean>(false);
 
-  const findPurchaseById = (id: string, purchases: POPurchaseRow[]) => {
-    return purchases.find((purchase) => purchase.id === id);
-  };
-
   // Load the PO data on page load
   useEffect(() => {
     if (!isPOAddPage) {
@@ -146,7 +143,7 @@ export default function PODetail() {
       customBody: (rowData: POPurchaseRow) =>
         booksDropDownEditor(rowData.bookTitle, (newValue) => {
           setPurchases((draft) => {
-            const purchase = findPurchaseById(rowData.id, draft);
+            const purchase = findById(draft, rowData.id);
             purchase!.bookTitle = newValue;
           });
         }),
@@ -157,7 +154,7 @@ export default function PODetail() {
       customBody: (rowData: POPurchaseRow) =>
         numberEditor(rowData.quantity, (newValue) => {
           setPurchases((draft) => {
-            const purchase = findPurchaseById(rowData.id, draft);
+            const purchase = findById(draft, rowData.id);
             purchase!.quantity = newValue;
           });
         }),
@@ -168,7 +165,7 @@ export default function PODetail() {
       customBody: (rowData: POPurchaseRow) =>
         priceEditor(rowData.unitWholesalePrice, (newValue) => {
           setPurchases((draft) => {
-            const purchase = findPurchaseById(rowData.id, draft);
+            const purchase = findById(draft, rowData.id);
             purchase!.unitWholesalePrice = newValue;
           });
         }),

@@ -31,6 +31,8 @@ import { APIVendor } from "./VendorsAPI";
 // Internal data type -> ordering required for book get API
 export const APIBookSortFieldMap = new Map<string, string>([
   ["isbn13", "isbn_13"],
+  ["isbn10", "isbn_10"],
+  ["genres", "genre"],
   ["retailPrice", "retail_price"],
   ["title", "title"],
   ["author", "author"],

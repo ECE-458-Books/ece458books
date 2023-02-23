@@ -1,8 +1,10 @@
 import { Dropdown } from "primereact/dropdown";
 import { BOOKS_API } from "../../apis/BooksAPI";
+import { APIToInternalBookConversion } from "../../apis/Conversions";
+import { Book } from "../../pages/list/BookList";
 
 export interface BookDropdownDataProps {
-  setBooksMap: (arg0: Map<string, number>) => void; // Setter for book map
+  setBooksMap: (arg0: Map<string, Book>) => void; // Setter for book map
   setBookTitlesList: (arg0: string[]) => void; // Setter for book title list
 }
 
@@ -16,9 +18,10 @@ export interface BookDropdownProps {
 
 export function BooksDropdownData(props: BookDropdownDataProps) {
   BOOKS_API.getBooksNoPagination().then((response) => {
-    const tempBookMap = new Map<string, number>();
+    const tempBookMap = new Map<string, Book>();
     for (const book of response) {
-      tempBookMap.set(book.title, book.id);
+      const convertedBook = APIToInternalBookConversion(book);
+      tempBookMap.set(book.title, convertedBook);
     }
     props.setBooksMap(tempBookMap);
     props.setBookTitlesList(response.map((book) => book.title));

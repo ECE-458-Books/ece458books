@@ -20,7 +20,6 @@ export interface APISRSaleRow {
   book: number;
   book_title: string;
   book_isbn: string;
-  subtotal: number;
   quantity: number;
   unit_retail_price: number;
 }

@@ -45,6 +45,7 @@ import {
   errorCellBody,
 } from "./errors/CSVImportErrors";
 import { Book } from "../list/BookList";
+import { useImmer } from "use-immer";
 
 export interface PODetailState {
   id: number;
@@ -55,7 +56,6 @@ export interface PODetailState {
 export interface POPurchaseRow {
   isNewRow: boolean; // true if the user added this row, false if it already existed
   id: string;
-  subtotal: number;
   bookId: number;
   bookISBN: string;
   bookTitle: string;
@@ -76,7 +76,6 @@ const emptyPurchase: POPurchaseRow = {
   id: uuid(),
   bookId: 0,
   bookISBN: "",
-  subtotal: 0,
   bookTitle: "",
   quantity: 1,
   unitWholesalePrice: 0,
@@ -107,14 +106,17 @@ export default function PODetail() {
   // The rest of the data
   const [date, setDate] = useState<Date>(new Date());
   const [selectedVendorName, setSelectedVendorName] = useState<string>("");
-  const [purchases, setPurchases] = useState<POPurchaseRow[]>([]);
+  // useImmer is used to set state for nested data in a simplified format
+  const [purchases, setPurchases] = useImmer<POPurchaseRow[]>([]);
   const [totalCost, setTotalCost] = useState<number>(0);
   const [lineData, setLineData] = useState<POPurchaseRow>(emptyPurchase);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
   const [hasUploadedCSV, setHasUploadedCSV] = useState<boolean>(false);
-  const [bookDropdownRefreshKey, setBookDropdownRefreshKey] =
-    useState<number>(0);
+
+  const findPurchaseById = (id: string, purchases: POPurchaseRow[]) => {
+    return purchases.find((purchase) => purchase.id === id);
+  };
 
   // Load the PO data on page load
   useEffect(() => {
@@ -143,33 +145,39 @@ export default function PODetail() {
       header: "Book",
       customBody: (rowData: POPurchaseRow) =>
         booksDropDownEditor(rowData.bookTitle, (newValue) => {
-          rowData.bookTitle = newValue;
-          setBookDropdownRefreshKey(Math.random());
+          setPurchases((draft) => {
+            const purchase = findPurchaseById(rowData.id, draft);
+            purchase!.bookTitle = newValue;
+          });
         }),
     },
     {
       field: "quantity",
       header: "Quantity",
       customBody: (rowData: POPurchaseRow) =>
-        numberEditor(
-          rowData.quantity,
-          (newValue) => (rowData.quantity = newValue)
-        ),
+        numberEditor(rowData.quantity, (newValue) => {
+          setPurchases((draft) => {
+            const purchase = findPurchaseById(rowData.id, draft);
+            purchase!.quantity = newValue;
+          });
+        }),
     },
     {
       field: "unitWholesalePrice",
       header: "Unit Wholesale Price ($)",
       customBody: (rowData: POPurchaseRow) =>
-        priceEditor(
-          rowData.unitWholesalePrice,
-          (newValue) => (rowData.unitWholesalePrice = newValue)
-        ),
+        priceEditor(rowData.unitWholesalePrice, (newValue) => {
+          setPurchases((draft) => {
+            const purchase = findPurchaseById(rowData.id, draft);
+            purchase!.unitWholesalePrice = newValue;
+          });
+        }),
     },
     {
       field: "subtotal",
       header: "Subtotal ($)",
       customBody: (rowData: POPurchaseRow) =>
-        priceBodyTemplate(rowData.subtotal),
+        priceBodyTemplate(rowData.unitWholesalePrice * rowData.quantity),
     },
   ];
 
@@ -371,7 +379,6 @@ export default function PODetail() {
       setSelectedBook={onChange}
       selectedBook={value}
       bookTitlesList={booksDropdownTitles}
-      refreshKey={bookDropdownRefreshKey}
       placeholder={value}
     />
   );

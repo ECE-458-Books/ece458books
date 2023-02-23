@@ -157,7 +157,6 @@ export function APIToInternalPOPurchaseConversion(
     // (id is always defined from API)
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     id: purchase.id!.toString(),
-    subtotal: purchase.subtotal,
     bookId: purchase.book,
     bookTitle: purchase.book_title,
     bookISBN: purchase.book_isbn,
@@ -211,7 +210,6 @@ function APIToInternalSRSaleConversion(sale: APISRSaleRow): SRSaleRow {
     id: sale.id!.toString(),
     bookId: sale.book,
     bookTitle: sale.book_title,
-    subtotal: sale.subtotal,
     quantity: sale.quantity,
     unitRetailPrice: sale.unit_retail_price,
   };

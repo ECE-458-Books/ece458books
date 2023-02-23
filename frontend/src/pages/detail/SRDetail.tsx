@@ -44,6 +44,7 @@ import {
   errorCellBody,
 } from "./errors/CSVImportErrors";
 import { Book } from "../list/BookList";
+import { useImmer } from "use-immer";
 
 export interface SRDetailState {
   id: number;
@@ -54,7 +55,6 @@ export interface SRDetailState {
 export interface SRSaleRow {
   isNewRow: boolean;
   id: string;
-  subtotal: number;
   bookId: number;
   bookTitle: string;
   quantity: number;
@@ -66,7 +66,6 @@ export default function SRDetail() {
   const emptySale: SRSaleRow = {
     isNewRow: true,
     id: uuid(),
-    subtotal: 0,
     bookId: 0,
     bookTitle: "",
     quantity: 1,
@@ -94,13 +93,17 @@ export default function SRDetail() {
 
   // The rest of the data
   const [date, setDate] = useState<Date>(new Date());
-  const [sales, setSales] = useState<SRSaleRow[]>([]);
+  // useImmer is used to set state for nested data in a simplified format
+  const [sales, setSales] = useImmer<SRSaleRow[]>([]);
   const [lineData, setLineData] = useState<SRSaleRow>(emptySale);
   const [totalRevenue, setTotalRevenue] = useState<number>(0);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
   const [hasUploadedCSV, setHasUploadedCSV] = useState<boolean>(false);
-  const [key, setKey] = useState<number>(0);
+
+  const findSaleById = (id: string, purchases: SRSaleRow[]) => {
+    return purchases.find((purchase) => purchase.id === id);
+  };
 
   // Load the SR data on page load
   useEffect(() => {
@@ -128,9 +131,10 @@ export default function SRDetail() {
       header: "Book",
       customBody: (rowData: SRSaleRow) =>
         booksDropDownEditor(rowData.bookTitle, (newValue) => {
-          rowData.bookTitle = newValue;
-          setKey(Math.random());
-          rowData.unitRetailPrice = booksMap.get(newValue)?.retailPrice ?? 0; // Default URP to that of book
+          setSales((draft) => {
+            const purchase = findSaleById(rowData.id, draft);
+            purchase!.bookTitle = newValue;
+          });
         }),
     },
 
@@ -138,24 +142,29 @@ export default function SRDetail() {
       field: "quantity",
       header: "Quantity",
       customBody: (rowData: SRSaleRow) =>
-        numberEditor(
-          rowData.quantity,
-          (newValue) => (rowData.quantity = newValue)
-        ),
+        numberEditor(rowData.quantity, (newValue) => {
+          setSales((draft) => {
+            const purchase = findSaleById(rowData.id, draft);
+            purchase!.quantity = newValue;
+          });
+        }),
     },
     {
       field: "unitRetailPrice",
       header: "Unit Retail Price ($)",
       customBody: (rowData: SRSaleRow) =>
-        priceEditor(
-          rowData.unitRetailPrice,
-          (newValue) => (rowData.unitRetailPrice = newValue)
-        ),
+        priceEditor(rowData.unitRetailPrice, (newValue) => {
+          setSales((draft) => {
+            const purchase = findSaleById(rowData.id, draft);
+            purchase!.unitRetailPrice = newValue;
+          });
+        }),
     },
     {
       field: "subtotal",
       header: "Subtotal ($)",
-      customBody: (rowData: SRSaleRow) => priceBodyTemplate(rowData.subtotal),
+      customBody: (rowData: SRSaleRow) =>
+        priceBodyTemplate(rowData.unitRetailPrice * rowData.quantity),
     },
   ];
 
@@ -349,7 +358,6 @@ export default function SRDetail() {
       setSelectedBook={onChange}
       selectedBook={value}
       bookTitlesList={booksDropdownTitles}
-      refreshKey={key}
       placeholder={value}
     />
   );

@@ -191,16 +191,19 @@ export default function SRDetail() {
   };
 
   // Validate submission before making API req
-  const validateSubmission = (sr: SRSaleRow[]) => {
-    for (const sale of sr) {
+  const validateSubmission = () => {
+    for (const sale of sales) {
       if (!sale.bookTitle || !(sale.unitRetailPrice >= 0) || !sale.quantity) {
-        showFailure(toast, "All fields are required");
+        showFailure(
+          toast,
+          "Book, retail price, and quantity are required for all line items"
+        );
         return false;
       }
     }
 
     if (!date) {
-      showFailure(toast, "All fields are required");
+      showFailure(toast, "Date is a required field");
       return false;
     }
 
@@ -208,7 +211,7 @@ export default function SRDetail() {
   };
 
   const onSubmit = (): void => {
-    if (!validateSubmission(sales)) {
+    if (!validateSubmission()) {
       return;
     }
 

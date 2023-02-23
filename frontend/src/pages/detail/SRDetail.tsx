@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { ToggleButton } from "primereact/togglebutton";
 import { Calendar, CalendarProps } from "primereact/calendar";
 import { DataTable } from "primereact/datatable";
-import { Column, ColumnEditorOptions, ColumnEvent } from "primereact/column";
+import { Column } from "primereact/column";
 import { createColumns, TableColumn } from "../../components/TableColumns";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
 import { v4 as uuid } from "uuid";
@@ -341,6 +341,7 @@ export default function SRDetail() {
       selectedBook={value}
       bookTitlesList={booksDropdownTitles}
       refreshKey={key}
+      placeholder={value}
     />
   );
 

@@ -10,6 +10,7 @@ export interface BookDropdownProps {
   setSelectedBook: (arg0: string) => void; // Set the selected book
   bookTitlesList: string[]; // List of book titles
   selectedBook: string; // The selected book
+  placeholder?: string; // Placeholder for the dropdown
   refreshKey?: number; // Used for refreshing the dropdown, necessary for a workaround
 }
 
@@ -33,14 +34,17 @@ export default function BooksDropdown(props: BookDropdownProps) {
       options={props.bookTitlesList}
       filter
       appendTo={document.body}
-      placeholder={"Select a Book"}
+      placeholder={props.placeholder ?? "Select a book"}
       onChange={(e) => {
         props.setSelectedBook(e.value);
       }}
       key={props.refreshKey}
       showClear
       virtualScrollerOptions={{ itemSize: 35 }}
-      style={{ minWidth: "30rem", maxWidth: "30rem" }}
+      style={{
+        minWidth: "30rem",
+        maxWidth: "30rem",
+      }}
     />
   );
 }

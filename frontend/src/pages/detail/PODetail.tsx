@@ -3,13 +3,12 @@ import { ToggleButton } from "primereact/togglebutton";
 import { Calendar, CalendarChangeEvent } from "primereact/calendar";
 import { DataTable } from "primereact/datatable";
 import { createColumns, TableColumn } from "../../components/TableColumns";
-import { Column, ColumnEditorOptions, ColumnEvent } from "primereact/column";
+import { Column } from "primereact/column";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
 import { Button } from "primereact/button";
 import { Toolbar } from "primereact/toolbar";
 import { v4 as uuid } from "uuid";
 import {
-  isPositiveInteger,
   numberEditor,
   priceBodyTemplate,
   priceEditor,
@@ -364,6 +363,7 @@ export default function PODetail() {
       selectedBook={value}
       bookTitlesList={booksDropdownTitles}
       refreshKey={key}
+      placeholder={value}
     />
   );
 

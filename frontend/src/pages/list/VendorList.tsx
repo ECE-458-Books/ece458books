@@ -1,4 +1,3 @@
-import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import {
   DataTable,

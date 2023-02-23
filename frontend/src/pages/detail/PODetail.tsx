@@ -47,6 +47,7 @@ import {
 import { Book } from "../list/BookList";
 import { useImmer } from "use-immer";
 import { findById } from "../../util/FindBy";
+import { calculateTotal } from "../../util/CalculateTotal";
 
 export interface PODetailState {
   id: number;
@@ -61,7 +62,7 @@ export interface POPurchaseRow {
   bookISBN: string;
   bookTitle: string;
   quantity: number;
-  unitWholesalePrice: number;
+  price: number;
   errors?: { [key: string]: string }; // Only present on CSV import
 }
 
@@ -79,7 +80,7 @@ const emptyPurchase: POPurchaseRow = {
   bookISBN: "",
   bookTitle: "",
   quantity: 1,
-  unitWholesalePrice: 0,
+  price: 0,
 };
 
 export default function PODetail() {
@@ -156,6 +157,7 @@ export default function PODetail() {
           setPurchases((draft) => {
             const purchase = findById(draft, rowData.id);
             purchase!.quantity = newValue;
+            setTotalCost(calculateTotal(draft));
           });
         }),
     },
@@ -163,10 +165,11 @@ export default function PODetail() {
       field: "unitWholesalePrice",
       header: "Unit Wholesale Price ($)",
       customBody: (rowData: POPurchaseRow) =>
-        priceEditor(rowData.unitWholesalePrice, (newValue) => {
+        priceEditor(rowData.price, (newValue) => {
           setPurchases((draft) => {
             const purchase = findById(draft, rowData.id);
-            purchase!.unitWholesalePrice = newValue;
+            purchase!.price = newValue;
+            setTotalCost(calculateTotal(draft));
           });
         }),
     },
@@ -174,7 +177,7 @@ export default function PODetail() {
       field: "subtotal",
       header: "Subtotal ($)",
       customBody: (rowData: POPurchaseRow) =>
-        priceBodyTemplate(rowData.unitWholesalePrice * rowData.quantity),
+        priceBodyTemplate(rowData.price * rowData.quantity),
     },
   ];
 
@@ -219,11 +222,7 @@ export default function PODetail() {
 
   const validateSubmission = () => {
     for (const purchase of purchases) {
-      if (
-        !purchase.bookTitle ||
-        !(purchase.unitWholesalePrice >= 0) ||
-        !purchase.quantity
-      ) {
+      if (!purchase.bookTitle || !(purchase.price >= 0) || !purchase.quantity) {
         showFailure(
           toast,
           "Book, wholesale, and quantity are required for all line items"
@@ -259,7 +258,7 @@ export default function PODetail() {
       return {
         book: bookMap.get(purchase.bookTitle)?.id,
         quantity: purchase.quantity,
-        unit_wholesale_price: purchase.unitWholesalePrice,
+        unit_wholesale_price: purchase.price,
       } as APIPOPurchaseRow;
     });
 
@@ -282,7 +281,7 @@ export default function PODetail() {
         quantity: purchase.quantity,
         // If the book has been deleted, will have to use the id in the row
         book: bookMap.get(purchase.bookTitle)?.id ?? purchase.bookId,
-        unit_wholesale_price: purchase.unitWholesalePrice,
+        unit_wholesale_price: purchase.price,
       } as APIPOPurchaseRow;
     });
 

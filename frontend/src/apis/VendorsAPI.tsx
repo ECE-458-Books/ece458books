@@ -25,6 +25,11 @@ export interface GetVendorsResp {
   count: number;
 }
 
+// getVendorDetail
+export interface GetVendorDetailReq {
+  id: number;
+}
+
 // deleteVendor
 export interface DeleteVendorReq {
   id: number;
@@ -47,6 +52,15 @@ export const VENDORS_API = {
       url: VENDORS_EXTENSION,
       method: METHOD_GET,
       params: req,
+    });
+  },
+
+  getVendorDetail: async function (
+    req: GetVendorDetailReq
+  ): Promise<APIVendor> {
+    return await API.request({
+      url: VENDORS_EXTENSION.concat("/".concat(req.id.toString())),
+      method: METHOD_GET,
     });
   },
 

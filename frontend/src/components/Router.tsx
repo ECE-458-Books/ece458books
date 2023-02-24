@@ -6,7 +6,7 @@ import GenreList from "../pages/list/GenreList";
 import LoginPage from "../pages/LoginPage";
 import VendorList from "../pages/list/VendorList";
 import SalesReconciliationList from "../pages/list/SRList";
-import ModifyBook from "../pages/detail/ModfiyBook";
+import ModifyBook from "../pages/detail/BookDetail";
 import ModifySR from "../pages/detail/SRDetail";
 import ModifyPO from "../pages/detail/PODetail";
 import BookAdd from "../pages/add/BookAdd";

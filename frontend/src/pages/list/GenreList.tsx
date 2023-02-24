@@ -1,4 +1,3 @@
-import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import {
   DataTable,
@@ -15,7 +14,7 @@ import {
   APIToInternalGenreConversion,
 } from "../../apis/Conversions";
 import { GENRES_API, GetGenresResp } from "../../apis/GenresAPI";
-import DeletePopup from "../../components/DeletePopup";
+import DeletePopup from "../../components/popups/DeletePopup";
 import { createColumns, TableColumn } from "../../components/TableColumns";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import { logger } from "../../util/Logger";
@@ -82,9 +81,7 @@ export default function GenreList() {
     logger.debug("Edit Genre Clicked", genre);
     const detailState: GenreDetailState = {
       id: genre.id,
-      genre: genre.name,
       isModifiable: true,
-      isConfirmationPopupVisible: false,
     };
 
     navigate("/genres/detail", { state: detailState });

@@ -1,10 +1,4 @@
-import {
-  API,
-  METHOD_DELETE,
-  METHOD_GET,
-  METHOD_PATCH,
-  METHOD_POST,
-} from "./Config";
+import { API, METHOD_GET, METHOD_PATCH } from "./Config";
 
 const IMAGE_EXTENSION = "books/image";
 

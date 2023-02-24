@@ -1,6 +1,7 @@
 import { ColumnEditorOptions } from "primereact/column";
 import { InputNumber } from "primereact/inputnumber";
 import { InputText } from "primereact/inputtext";
+import { internalToExternalDate } from "./DateOperations";
 
 export const MAX_IMAGE_HEIGHT = 100;
 export const MAX_IMAGE_WIDTH = 100;
@@ -33,23 +34,29 @@ export function textEditor(options: ColumnEditorOptions) {
   );
 }
 
-export function numberEditor(options: ColumnEditorOptions) {
+export function numberEditor(
+  value: number,
+  onChange: (newValue: number) => void
+) {
   return (
     <InputNumber
-      autoFocus
-      value={options.value}
-      onValueChange={(e) => options.editorCallback?.(e.target.value)}
+      min={1}
+      value={value}
+      onValueChange={(e) => onChange(e.target.value ?? 1)}
       mode="decimal"
       maxFractionDigits={2}
     />
   );
 }
 
-export function priceEditor(options: ColumnEditorOptions) {
+export function priceEditor(
+  value: number,
+  onChange: (newValue: number) => void
+) {
   return (
     <InputNumber
-      value={options.value}
-      onValueChange={(e) => options.editorCallback?.(e.target.value)}
+      value={value}
+      onValueChange={(e) => onChange(e.target.value ?? 0)}
       mode="currency"
       currency="USD"
       locale="en-US"
@@ -79,4 +86,8 @@ export function imageBodyTemplate(thumbnailURL: string[]) {
       }}
     />
   );
+}
+
+export function dateBodyTemplate(date: Date) {
+  return internalToExternalDate(date);
 }

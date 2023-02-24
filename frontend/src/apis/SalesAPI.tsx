@@ -39,6 +39,11 @@ export interface GetSRsResp {
   count: number;
 }
 
+// getSalesReconciliationDetail
+export interface GetSRDetailReq {
+  id: number;
+}
+
 // deleteSalesReconciliation
 export interface DeleteSRReq {
   id: number;
@@ -77,6 +82,15 @@ export const SALES_API = {
       url: SALES_EXTENSION,
       method: METHOD_GET,
       params: req,
+    });
+  },
+
+  getSalesReconciliationDetail: async function (
+    req: GetSRDetailReq
+  ): Promise<APISR> {
+    return await API.request({
+      url: SALES_EXTENSION.concat("/".concat(req.id.toString())),
+      method: METHOD_GET,
     });
   },
 

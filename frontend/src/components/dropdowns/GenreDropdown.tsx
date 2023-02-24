@@ -31,7 +31,7 @@ export default function GenreDropdown(props: GenreDropdownProps) {
       onChange={(e) => props.setSelectedGenre(e.value)}
       placeholder={"Select Genre"}
       showClear
-      disabled={props.isModifiable ?? true}
+      disabled={props.isModifiable ?? false}
       style={
         props.isTableCell ? { position: "absolute", zIndex: 9999 } : undefined
       }

@@ -9,21 +9,9 @@ class TransactionBaseSerializer(serializers.ModelSerializer):
     book = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all())
     book_title = serializers.SerializerMethodField()
     id = serializers.IntegerField(required=False)
-    subtotal = serializers.SerializerMethodField()
 
     def get_book_title(self, instance):
         return instance.book.title
-
-    def get_subtotal(self, instance):
-        try:
-            price = instance.unit_wholesale_price
-        except AttributeError:
-            try:
-                price = instance.unit_retail_price
-            except AttributeError:
-                price = instance.unit_buyback_price
-
-        return float(format(instance.quantity * price, '.2f'))
 
 
 class TransactionGroupBaseSerializer(serializers.ModelSerializer):

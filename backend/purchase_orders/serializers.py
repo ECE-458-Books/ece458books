@@ -8,7 +8,7 @@ class PurchaseSerializer(TransactionBaseSerializer):
 
     class Meta:
         model = Purchase
-        fields = ['id', 'book', 'book_title', 'quantity', 'unit_wholesale_price', 'subtotal']
+        fields = ['id', 'book', 'book_title', 'quantity', 'unit_wholesale_price']
 
 
 class PurchaseOrderSerializer(TransactionGroupBaseSerializer):

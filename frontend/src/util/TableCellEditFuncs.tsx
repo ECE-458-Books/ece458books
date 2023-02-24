@@ -3,8 +3,8 @@ import { InputNumber } from "primereact/inputnumber";
 import { InputText } from "primereact/inputtext";
 import { internalToExternalDate } from "./DateOperations";
 
-export const MAX_IMAGE_HEIGHT = 100;
-export const MAX_IMAGE_WIDTH = 100;
+export const MAX_IMAGE_HEIGHT = 80;
+export const MAX_IMAGE_WIDTH = 80;
 
 //Clean the incoming number input (integer or decimal)
 //Convert to string and correct any issues with the input number.

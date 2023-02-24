@@ -199,6 +199,8 @@ export default function SalesReport() {
                   selectionMode="range"
                   required
                   readOnlyInput
+                  showButtonBar
+                  placeholder="Start - End"
                   className="p-datepicker-current-day"
                 />
               </div>

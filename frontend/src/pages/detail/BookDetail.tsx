@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Book, emptyBook } from "../list/BookList";
 import {
   InputNumber,
@@ -19,6 +19,7 @@ import ImageUploader from "../../components/uploaders/ImageFileUploader";
 import { showFailure, showSuccess } from "../../components/Toast";
 import { InputSwitch } from "primereact/inputswitch";
 import { APIToInternalBookConversion } from "../../apis/Conversions";
+import { Button } from "primereact/button";
 
 export interface BookDetailState {
   id: number;
@@ -65,6 +66,10 @@ export default function BookDetail() {
 
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
+  const [
+    isConfirmationPopupVisibleImageDelete,
+    setIsConfirmationPopupVisibleImageDelete,
+  ] = useState<boolean>(false);
 
   // Load the book data on page load
   useEffect(() => {
@@ -151,6 +156,24 @@ export default function BookDetail() {
         .then(() => showSuccess(toast, "Book Edited"))
         .catch(() => showFailure(toast, "Could not modify book"));
       formik.resetForm();
+      setOriginalBookData({
+        id: id,
+        title: title,
+        author: authors,
+        isbn10: isbn10,
+        isbn13: isbn13,
+        publisher: publisher,
+        publishedYear: pubYear,
+        genres: genre,
+        height: height,
+        width: width,
+        thickness: thickness,
+        pageCount: pageCount,
+        stock: stock,
+        retailPrice: price,
+        thumbnailURL: [image.imageSrc],
+      });
+      setIsModifiable(false);
     },
   });
 
@@ -196,13 +219,26 @@ export default function BookDetail() {
 
   const imageDeleteSubtmit = () => {
     showSuccess(toast, "Image Deleted");
+    console.log("submit image delete");
   };
+
+  // The navigator to switch pages
+  const navigate = useNavigate();
 
   return (
     <div className="grid flex justify-content-center">
       <Toast ref={toast} />
-      <div className="col-12">
-        <h1 className="p-component p-text-secondary my-3 text-5xl text-center text-900 color: var(--surface-800);">
+      <div className="grid col-12">
+        <div className="flex col-1">
+          <Button
+            type="button"
+            label="Back"
+            icon="pi pi-arrow-left"
+            onClick={() => navigate("/books")}
+            className="p-button-sm my-auto ml-1"
+          />
+        </div>
+        <h1 className="p-component col-10 p-text-secondary my-3 text-5xl text-center text-900 color: var(--surface-800);">
           Book Details
         </h1>
       </div>
@@ -214,26 +250,32 @@ export default function BookDetail() {
         className="col-12 align-items-center flex justify-content-center"
       />
       <div className="col-12">
-        <ConfirmPopup
-          className={"p-button-danger"}
-          isVisible={isConfirmationPopupVisible}
-          hideFunc={() => setIsConfirmationPopupVisible(false)}
-          acceptFunc={() => {
-            imageDeleteSubtmit;
-          }}
-          rejectFunc={() => {
-            console.log("reject");
-          }}
-          buttonClickFunc={() => {
-            setIsConfirmationPopupVisible(true);
-          }}
-          disabled={!isModifiable}
-          label={"Delete Cover Image"}
-        />
-        <ImageUploader
-          disabled={!isModifiable}
-          uploadHandler={uploadImageFileHandler}
-        />
+        {isModifiable && (
+          <ImageUploader
+            disabled={!isModifiable}
+            uploadHandler={uploadImageFileHandler}
+          />
+        )}
+        {isModifiable && (
+          <div className="card flex justify-content-center my-3">
+            <ConfirmPopup
+              id={"deleteImage"}
+              name={"deleteImage"}
+              className={"p-button-danger flex"}
+              isVisible={isConfirmationPopupVisibleImageDelete}
+              hideFunc={() => setIsConfirmationPopupVisibleImageDelete(false)}
+              acceptFunc={imageDeleteSubtmit}
+              rejectFunc={() => {
+                console.log("reject2");
+              }}
+              buttonClickFunc={() => {
+                setIsConfirmationPopupVisibleImageDelete(true);
+              }}
+              disabled={!isModifiable}
+              label={"Delete Cover Image"}
+            />
+          </div>
+        )}
       </div>
       <form onSubmit={formik.handleSubmit}>
         <div className="flex col-12 justify-content-center p-1">
@@ -244,7 +286,7 @@ export default function BookDetail() {
             >
               Title:
             </label>
-            <p className="p-component p-text-secondary text-900 text-xl text-center my-0">
+            <p className="p-component p-text-secondary text-900 text-3xl text-center my-0">
               {title}
             </p>
           </div>
@@ -257,7 +299,7 @@ export default function BookDetail() {
             >
               Author(s):
             </label>
-            <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
+            <p className="p-component p-text-secondary text-900 text-2xl text-center m-0">
               {authors}
             </p>
           </div>
@@ -436,8 +478,17 @@ export default function BookDetail() {
           </div>
         </div>
 
-        <div className="grid col-12 justify-content-evenly">
-          <div className="flex col-2 p-0">
+        <div className="grid col-12 justify-content-evenly mt-2">
+          {isModifiable && (
+            <Button
+              type="button"
+              label="Cancel"
+              icon="pi pi-times"
+              className="p-button-warning"
+              onClick={() => setIsModifiable(false)}
+            />
+          )}
+          {/* <div className="flex col-2 p-0">
             <label
               className="p-component p-text-secondary text-teal-900 my-auto mr-2"
               htmlFor="retail_price"
@@ -451,22 +502,34 @@ export default function BookDetail() {
               onChange={() => setIsModifiable(!isModifiable)}
               className="my-auto "
             />
-          </div>
-
-          <ConfirmPopup
-            isVisible={isConfirmationPopupVisible}
-            hideFunc={() => setIsConfirmationPopupVisible(false)}
-            acceptFunc={formik.handleSubmit}
-            rejectFunc={() => {
-              console.log("reject");
-            }}
-            buttonClickFunc={() => {
-              setIsConfirmationPopupVisible(true);
-            }}
-            disabled={!isModifiable}
-            label={"Update"}
-            className="p-button-success p-button-raised"
-          />
+          </div> */}
+          {!isModifiable && (
+            <Button
+              type="button"
+              label="Edit"
+              icon="pi pi-pencil"
+              onClick={() => setIsModifiable(true)}
+            />
+          )}
+          {isModifiable && (
+            <ConfirmPopup
+              id={"bookDetailSubmit"}
+              name={"bookDetailSubmit"}
+              isVisible={isConfirmationPopupVisible}
+              hideFunc={() => setIsConfirmationPopupVisible(false)}
+              acceptFunc={formik.handleSubmit}
+              rejectFunc={() => {
+                console.log("reject");
+              }}
+              buttonClickFunc={() => {
+                setIsConfirmationPopupVisible(true);
+              }}
+              disabled={!isModifiable}
+              label={"Update"}
+              className="p-button-success p-button-raised"
+              icons="pi pi-save"
+            />
+          )}
         </div>
         {/* Maybe be needed in case the confrim button using the popup breaks */}
         {/* <Button disabled={!this.state.isModifiable} label="submit" type="submit" /> */}

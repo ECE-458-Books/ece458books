@@ -45,6 +45,18 @@ export interface GetBooksResp {
 }
 
 // getBooksNoPagination
+export interface GetBooksNoPageReq {
+  no_pagination: boolean;
+  ordering: string;
+  genre: string;
+  search: string;
+  title_only: boolean;
+  publisher_only: boolean;
+  author_only: boolean;
+  isbn_only: boolean;
+}
+
+// getBooksNamesListNoPagination
 export interface APIBookSimplified {
   id: number;
   title: string;
@@ -93,7 +105,19 @@ export const BOOKS_API = {
     });
   },
 
-  getBooksNoPagination: async function (): Promise<APIBookSimplified[]> {
+  getBooksNoPagination: async function (
+    req: GetBooksNoPageReq
+  ): Promise<APIBook[]> {
+    return await API.request({
+      url: BOOKS_EXTENSION,
+      method: METHOD_GET,
+      params: req,
+    });
+  },
+
+  getBooksNameListNoPagination: async function (): Promise<
+    APIBookSimplified[]
+  > {
     return await API.request({
       url: BOOKS_EXTENSION,
       method: METHOD_GET,

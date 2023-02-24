@@ -1,4 +1,4 @@
-import { BOOKS_API, GetBooksResp } from "../../apis/BooksAPI";
+import { APIBook, BOOKS_API, GetBooksResp } from "../../apis/BooksAPI";
 import {
   DataTable,
   DataTableFilterEvent,
@@ -26,6 +26,8 @@ import {
 } from "../../util/TableCellEditFuncs";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import GenreDropdown from "../../components/dropdowns/GenreDropdown";
+import PaginatorPageChangeEvent from "primereact/paginator";
+import { InputSwitch } from "primereact/inputswitch";
 
 export const NUM_ROWS = 10;
 
@@ -84,6 +86,8 @@ export default function BookList() {
     location.state?.genre ?? ""
   ); // Initialize genre to the genre passed, if coming from genre list
   const [selectedDeleteBook, setSelectedDeleteBook] = useState<Book>(emptyBook); // track the current book that has been selected to be deleted
+  const [rows, setRows] = useState<number>(NUM_ROWS);
+  const [isNoPagination, setIsNoPagination] = useState<boolean>(false);
 
   // The current state of sorting.
   const [sortParams, setSortParams] = useState<DataTableSortEvent>({
@@ -277,23 +281,42 @@ export default function BookList() {
       sortField = "-".concat(sortField);
     }
 
-    BOOKS_API.getBooks({
-      page: (pageParams.page ?? 0) + 1,
-      page_size: pageParams.rows,
-      ordering: sortField,
-      genre: selectedGenre,
-      search: search_string,
-      title_only: title_only,
-      publisher_only: publisher_only,
-      author_only: author_only,
-      isbn_only: isbn_only,
-    }).then((response) => onAPIResponse(response));
+    if (isNoPagination) {
+      BOOKS_API.getBooksNoPagination({
+        no_pagination: true,
+        ordering: sortField,
+        genre: selectedGenre,
+        search: search_string,
+        title_only: title_only,
+        publisher_only: publisher_only,
+        author_only: author_only,
+        isbn_only: isbn_only,
+      }).then((response) => onAPIResponseNoPage(response));
+    } else {
+      BOOKS_API.getBooks({
+        page: (pageParams.page ?? 0) + 1,
+        page_size: pageParams.rows,
+        ordering: sortField,
+        genre: selectedGenre,
+        search: search_string,
+        title_only: title_only,
+        publisher_only: publisher_only,
+        author_only: author_only,
+        isbn_only: isbn_only,
+      }).then((response) => onAPIResponse(response));
+    }
   };
 
   // Set state when response to API call is received
   const onAPIResponse = (response: GetBooksResp) => {
     setBooks(response.results.map((book) => APIToInternalBookConversion(book)));
     setNumberOfBooks(response.count);
+    setLoading(false);
+  };
+
+  // Set state when response to API call is received
+  const onAPIResponseNoPage = (response: APIBook[]) => {
+    setBooks(response.map((book) => APIToInternalBookConversion(book)));
     setLoading(false);
   };
 
@@ -320,6 +343,7 @@ export default function BookList() {
   // Called when the paginator page is switched
   const onPage = (event: DataTablePageEvent) => {
     logger.debug("Page Applied", event);
+    setRows(event.rows);
     setLoading(true);
     setPageParams(event);
   };
@@ -336,7 +360,7 @@ export default function BookList() {
   // Call endpoint on page load whenever any of these variables change
   useEffect(() => {
     callAPI();
-  }, [sortParams, pageParams, filterParams, selectedGenre]);
+  }, [sortParams, pageParams, filterParams, selectedGenre, isNoPagination]);
 
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
@@ -370,12 +394,14 @@ export default function BookList() {
         selectionMode={"single"}
         onRowClick={(event) => onRowClick(event)}
         // Paginator
-        paginator
+        paginator={!isNoPagination}
         first={pageParams.first}
-        rows={NUM_ROWS}
+        rows={rows}
         totalRecords={numberOfBooks}
-        paginatorTemplate="PrevPageLink NextPageLink"
+        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
         onPage={onPage}
+        rowsPerPageOptions={[5, 10, 25, 50]}
+        paginatorPosition="both"
         // Sorting
         onSort={onSort}
         sortField={sortParams.sortField}
@@ -388,6 +414,21 @@ export default function BookList() {
         <Column body={editDeleteCellTemplate} style={{ minWidth: "9rem" }} />
       </DataTable>
       {deletePopupVisible && deletePopup}
+      <div className="flex col-2 p-0">
+        <label
+          className="p-component p-text-secondary text-teal-900 my-auto mr-2"
+          htmlFor="retail_price"
+        >
+          No Pagination
+        </label>
+        <InputSwitch
+          checked={isNoPagination}
+          id="modifyBookToggle"
+          name="modifyBookToggle"
+          onChange={() => setIsNoPagination(!isNoPagination)}
+          className="my-auto "
+        />
+      </div>
     </div>
   );
 }

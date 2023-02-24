@@ -4,7 +4,7 @@ import { logger } from "../util/Logger";
 import { AUTH_API } from "./AuthAPI";
 import createAuthRefreshInterceptor from "axios-auth-refresh";
 
-//const TEST_ENDPOINT = "https://books-test.colab.duke.edu/api/v1/";
+const TEST_ENDPOINT = "https://books-test.colab.duke.edu/api/v1/";
 export const BACKEND_ENDPOINT = process.env.REACT_APP_BACKEND_ENDPOINT;
 export const JSON_HEADER = { "Content-Type": "application/json" };
 export const METHOD_POST = "POST";
@@ -17,7 +17,7 @@ export const API = axios.create({
   paramsSerializer: {
     serialize: (params) => stringify(params, { arrayFormat: "brackets" }),
   },
-  baseURL: BACKEND_ENDPOINT,
+  baseURL: TEST_ENDPOINT,
   headers: {
     "Content-Type": "application/json",
   },

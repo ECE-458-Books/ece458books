@@ -43,6 +43,7 @@ import {
   CSVImport400Errors,
   errorCellBody,
 } from "./errors/CSVImportErrors";
+import { Book } from "../list/BookList";
 
 export interface SRDetailState {
   id: number;
@@ -88,7 +89,7 @@ export default function SRDetail() {
   );
 
   // For dropdown menus
-  const [booksMap, setBooksMap] = useState<Map<string, number>>(new Map());
+  const [booksMap, setBooksMap] = useState<Map<string, Book>>(new Map());
   const [booksDropdownTitles, setBooksDropdownTitles] = useState<string[]>([]);
 
   // The rest of the data
@@ -129,6 +130,7 @@ export default function SRDetail() {
         booksDropDownEditor(rowData.bookTitle, (newValue) => {
           rowData.bookTitle = newValue;
           setKey(Math.random());
+          rowData.unitRetailPrice = booksMap.get(newValue)?.retailPrice ?? 0; // Default URP to that of book
         }),
     },
 
@@ -216,48 +218,55 @@ export default function SRDetail() {
     }
 
     if (isSRAddPage) {
-      const apiSales = sales.map((sale) => {
-        return {
-          book: booksMap.get(sale.bookTitle),
-          quantity: sale.quantity,
-          unit_retail_price: sale.unitRetailPrice,
-        } as APISRSaleRow;
-      });
-
-      const salesReconciliation = {
-        date: internalToExternalDate(date),
-        sales: apiSales,
-      } as AddSRReq;
-      SALES_API.addSalesReconciliation(salesReconciliation)
-        .then(() =>
-          showSuccess(toast, "Sales reconciliation added successfully")
-        )
-        .catch(() => showFailure(toast, "Could not add sales reconciliation"));
+      callAddSRAPI();
     } else {
       // Otherwise, it is a modify page
-      const apiSales = sales.map((sale) => {
-        return {
-          id: sale.isNewRow ? undefined : sale.id,
-          book: sale.isNewRow ? booksMap.get(sale.bookTitle) : sale.bookId,
-          quantity: sale.quantity,
-          unit_retail_price: sale.unitRetailPrice,
-        } as APISRSaleRow;
-      });
-
-      const salesReconciliation = {
-        id: salesReconciliationID,
-        date: internalToExternalDate(date),
-        sales: apiSales,
-      } as ModifySRReq;
-
-      SALES_API.modifySalesReconciliation(salesReconciliation)
-        .then(() =>
-          showSuccess(toast, "Sales reconciliation modified successfully")
-        )
-        .catch(() =>
-          showFailure(toast, "Could not modify sales reconciliation")
-        );
+      callModifySRAPI();
     }
+  };
+
+  // Add the sales reconciliation
+  const callAddSRAPI = () => {
+    const apiSales = sales.map((sale) => {
+      return {
+        book: booksMap.get(sale.bookTitle)?.id,
+        quantity: sale.quantity,
+        unit_retail_price: sale.unitRetailPrice,
+      } as APISRSaleRow;
+    });
+
+    const salesReconciliation = {
+      date: internalToExternalDate(date),
+      sales: apiSales,
+    } as AddSRReq;
+    SALES_API.addSalesReconciliation(salesReconciliation)
+      .then(() => showSuccess(toast, "Sales reconciliation added successfully"))
+      .catch(() => showFailure(toast, "Could not add sales reconciliation"));
+  };
+
+  // Modify the sales reconciliation
+  const callModifySRAPI = () => {
+    const apiSales = sales.map((sale) => {
+      return {
+        id: sale.isNewRow ? undefined : sale.id,
+        // If the book has been deleted, will have to use the id in the row
+        book: booksMap.get(sale.bookTitle)?.id ?? sale.bookId,
+        quantity: sale.quantity,
+        unit_retail_price: sale.unitRetailPrice,
+      } as APISRSaleRow;
+    });
+
+    const salesReconciliation = {
+      id: salesReconciliationID,
+      date: internalToExternalDate(date),
+      sales: apiSales,
+    } as ModifySRReq;
+
+    SALES_API.modifySalesReconciliation(salesReconciliation)
+      .then(() =>
+        showSuccess(toast, "Sales reconciliation modified successfully")
+      )
+      .catch(() => showFailure(toast, "Could not modify sales reconciliation"));
   };
 
   // -------- TEMPLATES/VISUAL ELEMENTS --------

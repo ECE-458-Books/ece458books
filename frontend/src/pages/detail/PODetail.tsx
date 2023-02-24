@@ -44,6 +44,7 @@ import {
   CSVImport400Errors,
   errorCellBody,
 } from "./errors/CSVImportErrors";
+import { Book } from "../list/BookList";
 
 export interface PODetailState {
   id: number;
@@ -99,7 +100,7 @@ export default function PODetail() {
   );
 
   // For Dropdown Menus
-  const [bookMap, setBooksMap] = useState<Map<string, number>>(new Map());
+  const [bookMap, setBooksMap] = useState<Map<string, Book>>(new Map());
   const [vendorMap, setVendorMap] = useState<Map<string, number>>(new Map());
   const [booksDropdownTitles, setBooksDropdownTitles] = useState<string[]>([]);
 
@@ -241,49 +242,56 @@ export default function PODetail() {
     }
 
     if (isPOAddPage) {
-      // Create API Format
-      const apiPurchases = purchases.map((purchase) => {
-        return {
-          book: bookMap.get(purchase.bookTitle),
-          quantity: purchase.quantity,
-          unit_wholesale_price: purchase.unitWholesalePrice,
-        } as APIPOPurchaseRow;
-      });
-
-      const purchaseOrder = {
-        date: internalToExternalDate(date),
-        vendor: vendorMap.get(selectedVendorName),
-        purchases: apiPurchases,
-      } as AddPOReq;
-
-      PURCHASES_API.addPurchaseOrder(purchaseOrder)
-        .then(() => showSuccess(toast, "Purchase order added successfully"))
-        .catch(() => showFailure(toast, "Could not add purchase order"));
+      callAddPOAPI();
     } else {
-      // Otherwise, it is a modify page
-      const apiPurchases = purchases.map((purchase) => {
-        return {
-          id: purchase.isNewRow ? undefined : purchase.id,
-          book: purchase.isNewRow
-            ? bookMap.get(purchase.bookTitle)
-            : purchase.bookId,
-          quantity: purchase.quantity,
-          unit_wholesale_price: purchase.unitWholesalePrice,
-        } as APIPOPurchaseRow;
-      });
-
-      const purchaseOrder = {
-        id: purchaseOrderID,
-        date: internalToExternalDate(date),
-        vendor: vendorMap.get(selectedVendorName),
-        purchases: apiPurchases,
-      } as ModifyPOReq;
-
-      PURCHASES_API.modifyPurchaseOrder(purchaseOrder)
-        .then(() => showSuccess(toast, "Purchase order modified successfully"))
-        .catch(() => showFailure(toast, "Could not modify purchase order"));
+      callModifyPOAPI();
     }
   };
+
+  // Add the purchase order
+  function callAddPOAPI() {
+    const apiPurchases = purchases.map((purchase) => {
+      return {
+        book: bookMap.get(purchase.bookTitle)?.id,
+        quantity: purchase.quantity,
+        unit_wholesale_price: purchase.unitWholesalePrice,
+      } as APIPOPurchaseRow;
+    });
+
+    const purchaseOrder = {
+      date: internalToExternalDate(date),
+      vendor: vendorMap.get(selectedVendorName),
+      purchases: apiPurchases,
+    } as AddPOReq;
+
+    PURCHASES_API.addPurchaseOrder(purchaseOrder)
+      .then(() => showSuccess(toast, "Purchase order added successfully"))
+      .catch(() => showFailure(toast, "Could not add purchase order"));
+  }
+
+  // Modify the purchase order
+  function callModifyPOAPI() {
+    const apiPurchases = purchases.map((purchase) => {
+      return {
+        id: purchase.isNewRow ? undefined : purchase.id,
+        quantity: purchase.quantity,
+        // If the book has been deleted, will have to use the id in the row
+        book: bookMap.get(purchase.bookTitle)?.id ?? purchase.bookId,
+        unit_wholesale_price: purchase.unitWholesalePrice,
+      } as APIPOPurchaseRow;
+    });
+
+    const purchaseOrder = {
+      id: purchaseOrderID,
+      date: internalToExternalDate(date),
+      vendor: vendorMap.get(selectedVendorName),
+      purchases: apiPurchases,
+    } as ModifyPOReq;
+
+    PURCHASES_API.modifyPurchaseOrder(purchaseOrder)
+      .then(() => showSuccess(toast, "Purchase order modified successfully"))
+      .catch(() => showFailure(toast, "Could not modify purchase order"));
+  }
 
   // -------- TEMPLATES/VISUAL ELEMENTS --------
 

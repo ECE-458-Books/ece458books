@@ -49,6 +49,11 @@ export interface GetBookDetailReq {
   id: number;
 }
 
+// getBookDetail
+export interface GetBookDetailReq {
+  id: number;
+}
+
 // modifyBook
 export interface ModifyBookReq {
   book: APIBook;

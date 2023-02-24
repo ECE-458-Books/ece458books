@@ -13,7 +13,7 @@ import {
   priceBodyTemplate,
   priceEditor,
 } from "../../util/TableCellEditFuncs";
-import { useLocation, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import {
   AddPOReq,
   APIPOPurchaseRow,
@@ -46,11 +46,6 @@ import {
 } from "./errors/CSVImportErrors";
 import { Book } from "../list/BookList";
 
-export interface PODetailState {
-  isAddPage: boolean;
-  isModifiable: boolean;
-}
-
 export interface POPurchaseRow {
   isNewRow: boolean; // true if the user added this row, false if it already existed
   id: string;
@@ -77,21 +72,11 @@ const emptyPurchase: POPurchaseRow = {
 
 export default function PODetail() {
   // -------- STATE --------
-  const location = useLocation();
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const detailState: PODetailState = location.state! ?? {
-    isAddPage: true,
-    isModifiable: true,
-  };
 
   // From URL
   const { id } = useParams();
-
-  // From detailState
-  const isPOAddPage = detailState.isAddPage; // If false, this is an edit page
-  const [isModifiable, setIsModifiable] = useState<boolean>(
-    detailState.isModifiable
-  );
+  const isPOAddPage = id === undefined;
+  const [isModifiable, setIsModifiable] = useState<boolean>(id === undefined);
 
   // For Dropdown Menus
   const [bookMap, setBooksMap] = useState<Map<string, Book>>(new Map());

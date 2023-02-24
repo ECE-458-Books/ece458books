@@ -41,12 +41,12 @@ export interface GetSRsResp {
 
 // getSalesReconciliationDetail
 export interface GetSRDetailReq {
-  id: number;
+  id: string;
 }
 
 // deleteSalesReconciliation
 export interface DeleteSRReq {
-  id: number;
+  id: string;
 }
 
 // addSalesReconciliation
@@ -57,7 +57,7 @@ export interface AddSRReq {
 
 // modifySalesReconciliation
 export interface ModifySRReq extends AddSRReq {
-  id: number;
+  id: string;
 }
 
 // puchaseOrdersCSVImport

@@ -21,7 +21,7 @@ import {
   dateBodyTemplate,
   priceBodyTemplate,
 } from "../../util/TableCellEditFuncs";
-import { PODetailState, POPurchaseRow } from "../detail/PODetail";
+import { POPurchaseRow } from "../detail/PODetail";
 import { NUM_ROWS } from "./BookList";
 
 export interface PurchaseOrder {
@@ -108,14 +108,9 @@ export default function PurchaseOrderList() {
   const navigate = useNavigate();
 
   // Callback functions for edit/delete buttons
-  const toDetailPage = (po: PurchaseOrder, isModifiable: boolean) => {
+  const toDetailPage = (po: PurchaseOrder) => {
     logger.debug("Edit Purchase Order Clicked", po);
-    const detailState: PODetailState = {
-      isAddPage: false,
-      isModifiable: isModifiable,
-    };
-
-    navigate(`/purchase-orders/detail/${po.id}`, { state: detailState });
+    navigate(`/purchase-orders/detail/${po.id}`);
   };
 
   // Called to make delete pop up show
@@ -161,7 +156,7 @@ export default function PurchaseOrderList() {
     const index = event.index - NUM_ROWS * (pageParams.page ?? 0);
     const purchaseOrder = purchaseOrders[index];
     logger.debug("Purchase Order Row Clicked", purchaseOrder);
-    toDetailPage(purchaseOrder, false);
+    toDetailPage(purchaseOrder);
   };
 
   // When any of the list of params are changed, useEffect is called to hit the API endpoint
@@ -215,7 +210,7 @@ export default function PurchaseOrderList() {
 
   // Edit/Delete Cell Template
   const editDeleteCellTemplate = EditDeleteTemplate<PurchaseOrder>({
-    onEdit: (rowData) => toDetailPage(rowData, true),
+    onEdit: (rowData) => toDetailPage(rowData),
     onDelete: (rowData) => deletePurchaseOrderPopup(rowData),
     deleteDisabled: () => false,
   });

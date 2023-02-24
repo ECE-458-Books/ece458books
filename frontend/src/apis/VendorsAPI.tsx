@@ -27,17 +27,17 @@ export interface GetVendorsResp {
 
 // getVendorDetail
 export interface GetVendorDetailReq {
-  id: number;
+  id: string;
 }
 
 // deleteVendor
 export interface DeleteVendorReq {
-  id: number;
+  id: string;
 }
 
 // modifyVendor
 export interface ModifyVendorReq {
-  id: number;
+  id: string;
   name: string;
 }
 

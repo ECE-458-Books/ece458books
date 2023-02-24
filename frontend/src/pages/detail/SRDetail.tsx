@@ -11,7 +11,7 @@ import {
   priceBodyTemplate,
   priceEditor,
 } from "../../util/TableCellEditFuncs";
-import { useLocation } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { Toolbar } from "primereact/toolbar";
 import { Button } from "primereact/button";
 import {
@@ -45,12 +45,6 @@ import {
 } from "./errors/CSVImportErrors";
 import { Book } from "../list/BookList";
 
-export interface SRDetailState {
-  id: number;
-  isAddPage: boolean;
-  isModifiable: boolean;
-}
-
 export interface SRSaleRow {
   isNewRow: boolean;
   id: string;
@@ -73,20 +67,10 @@ export default function SRDetail() {
     unitRetailPrice: 0,
   };
 
-  const location = useLocation();
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const detailState = (location.state! as SRDetailState) ?? {
-    id: -1,
-    isAddPage: true,
-    isModifiable: true,
-  };
-
-  // From detailState
-  const salesReconciliationID = detailState.id;
-  const isSRAddPage = detailState.isAddPage;
-  const [isModifiable, setIsModifiable] = useState<boolean>(
-    detailState.isModifiable
-  );
+  // From URL
+  const { id } = useParams();
+  const isSRAddPage = id === undefined;
+  const [isModifiable, setIsModifiable] = useState<boolean>(id === undefined);
 
   // For dropdown menus
   const [booksMap, setBooksMap] = useState<Map<string, Book>>(new Map());
@@ -105,7 +89,7 @@ export default function SRDetail() {
   // Load the SR data on page load
   useEffect(() => {
     if (!isSRAddPage) {
-      SALES_API.getSalesReconciliationDetail({ id: salesReconciliationID })
+      SALES_API.getSalesReconciliationDetail({ id: id! })
         .then((response) => {
           const salesReconciliation = APIToInternalSRConversion(response);
           setDate(salesReconciliation.date);
@@ -257,7 +241,7 @@ export default function SRDetail() {
     });
 
     const salesReconciliation = {
-      id: salesReconciliationID,
+      id: id,
       date: internalToExternalDate(date),
       sales: apiSales,
     } as ModifySRReq;

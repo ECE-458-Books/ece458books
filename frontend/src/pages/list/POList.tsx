@@ -25,7 +25,7 @@ import { PODetailState, POPurchaseRow } from "../detail/PODetail";
 import { NUM_ROWS } from "./BookList";
 
 export interface PurchaseOrder {
-  id: number;
+  id: string;
   date: Date;
   vendorName: string;
   vendorId: number;
@@ -68,7 +68,7 @@ const COLUMNS: TableColumn[] = [
 
 // Empty purchase order, used to initialize state
 const emptyPurchaseOrder: PurchaseOrder = {
-  id: 0,
+  id: "0",
   date: new Date(),
   vendorName: "",
   vendorId: 0,
@@ -111,12 +111,11 @@ export default function PurchaseOrderList() {
   const toDetailPage = (po: PurchaseOrder, isModifiable: boolean) => {
     logger.debug("Edit Purchase Order Clicked", po);
     const detailState: PODetailState = {
-      id: po.id,
       isAddPage: false,
       isModifiable: isModifiable,
     };
 
-    navigate("/purchase-orders/detail", { state: detailState });
+    navigate(`/purchase-orders/detail/${po.id}`, { state: detailState });
   };
 
   // Called to make delete pop up show

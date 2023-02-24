@@ -13,7 +13,7 @@ import {
   priceBodyTemplate,
   priceEditor,
 } from "../../util/TableCellEditFuncs";
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import {
   AddPOReq,
   APIPOPurchaseRow,
@@ -47,7 +47,6 @@ import {
 import { Book } from "../list/BookList";
 
 export interface PODetailState {
-  id: number;
   isAddPage: boolean;
   isModifiable: boolean;
 }
@@ -62,12 +61,6 @@ export interface POPurchaseRow {
   quantity: number;
   unitWholesalePrice: number;
   errors?: { [key: string]: string }; // Only present on CSV import
-}
-
-// The books Interface lol no
-export interface BooksList {
-  id: number;
-  title: string;
 }
 
 // Used for setting initial state
@@ -86,14 +79,15 @@ export default function PODetail() {
   // -------- STATE --------
   const location = useLocation();
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const detailState = (location.state! as PODetailState) ?? {
-    id: -1,
+  const detailState: PODetailState = location.state! ?? {
     isAddPage: true,
     isModifiable: true,
   };
 
+  // From URL
+  const { id } = useParams();
+
   // From detailState
-  const purchaseOrderID = detailState.id;
   const isPOAddPage = detailState.isAddPage; // If false, this is an edit page
   const [isModifiable, setIsModifiable] = useState<boolean>(
     detailState.isModifiable
@@ -119,7 +113,7 @@ export default function PODetail() {
   // Load the PO data on page load
   useEffect(() => {
     if (!isPOAddPage) {
-      PURCHASES_API.getPurchaseOrderDetail({ id: purchaseOrderID })
+      PURCHASES_API.getPurchaseOrderDetail({ id: id! })
         .then((response) => {
           const purchaseOrder = APIToInternalPOConversion(response);
           setDate(purchaseOrder.date);
@@ -127,7 +121,7 @@ export default function PODetail() {
           setPurchases(purchaseOrder.purchases);
           setTotalCost(purchaseOrder.totalCost);
         })
-        .catch(() => showFailure(toast, "Could not fetch purchase order data"));
+        .catch(() => console.log(id));
     }
   }, []);
 
@@ -282,7 +276,7 @@ export default function PODetail() {
     });
 
     const purchaseOrder = {
-      id: purchaseOrderID,
+      id: id,
       date: internalToExternalDate(date),
       vendor: vendorMap.get(selectedVendorName),
       purchases: apiPurchases,

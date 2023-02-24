@@ -174,7 +174,7 @@ export function APIToInternalPOConversion(po: APIPO): PurchaseOrder {
   );
 
   return {
-    id: po.id,
+    id: po.id.toString(),
     date: externalToInternalDate(po.date),
     vendorName: po.vendor_name,
     vendorId: po.vendor_id,

@@ -60,7 +60,7 @@ export interface ModifySRReq extends AddSRReq {
   id: number;
 }
 
-// puchaseOrdersCSVImport
+// salesReconciliationsCSVImport
 export interface SRCSVImportReq {
   file: File;
 }

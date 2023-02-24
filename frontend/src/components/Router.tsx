@@ -9,6 +9,7 @@ import SalesReconciliationList from "../pages/list/SRList";
 import ModifyBook from "../pages/detail/BookDetail";
 import ModifySR from "../pages/detail/SRDetail";
 import ModifyPO from "../pages/detail/PODetail";
+import ModifyBB from "../pages/detail/BBDetail";
 import BookAdd from "../pages/add/BookAdd";
 import GenreAdd from "../pages/add/GenreAdd";
 import VendorAdd from "../pages/add/VendorAdd";
@@ -17,6 +18,7 @@ import VendorDetail from "../pages/detail/VendorDetail";
 import PurchaseOrderList from "../pages/list/POList";
 import PasswordChangePage from "../pages/auth/PasswordChange";
 import SalesReportPage from "../pages/list/SalesReport";
+import BuyBackList from "../pages/list/BuyBackList";
 
 const WithNavBar = () => {
   return (
@@ -60,6 +62,7 @@ export default function Router() {
           element={<SalesReconciliationList />}
         />
         <Route path="vendors" element={<VendorList />} />
+        <Route path="buy-backs" element={<BuyBackList />} />
         <Route path="books/add" element={<BookAdd />} />
         <Route path="books/detail" element={<ModifyBook />} />
         <Route path="genres/add" element={<GenreAdd />} />
@@ -70,6 +73,8 @@ export default function Router() {
         <Route path="sales-reconciliations/detail" element={<ModifySR />} />
         <Route path="vendors/add" element={<VendorAdd />} />
         <Route path="vendors/detail" element={<VendorDetail />} />
+        <Route path="buy-backs/add" element={<ModifyBB />} />
+        <Route path="buy-backs/detail" element={<ModifyBB />} />
         <Route path="change-password" element={<PasswordChangePage />} />
         <Route path="sales-report" element={<SalesReportPage />} />
       </Route>

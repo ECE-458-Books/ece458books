@@ -87,6 +87,22 @@ function NavigationBar() {
       ],
     },
     {
+      label: "Buy Backs",
+      icon: "pi pi-fw pi-chart-bar",
+      items: [
+        {
+          label: "List",
+          icon: "pi pi-fw pi-list",
+          command: () => navigate("/buy-backs"),
+        },
+        {
+          label: "Add",
+          icon: "pi pi-fw pi-plus",
+          command: () => navigate("/buy-backs/add"),
+        },
+      ],
+    },
+    {
       label: "Sales Report",
       icon: "pi pi-dollar",
       command: () => navigate("/sales-report"),

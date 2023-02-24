@@ -120,6 +120,17 @@ class ISBNTools:
         """
         return [self.parse_isbn(raw_isbn) if self.is_valid_isbn(raw_isbn) else raw_isbn for raw_isbn in isbn_list]
     
+    def get_image(self, isbn_13):
+        end_url = self._image_base_url + f'/{isbn_13}-L.jpg?default=false'
+
+        try:
+            resp = urlopen(end_url)
+        except Exception as e:
+            # Case where defualt image does not exist
+            host = self._scp_toolbox.get_host()
+            return f"https://{host}/{DEFAULT_IMG}"
+
+    
     def create_image(self, book_id, isbn_13):
         end_url = self._image_base_url + f'/{isbn_13}-L.jpg?default=false'
 

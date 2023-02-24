@@ -143,6 +143,7 @@ export default function BookList() {
       header: "Genre",
       filterPlaceholder: "Search by Genre",
       filterable: true,
+      sortable: true,
       customFilter: genreFilter,
     },
     {
@@ -156,7 +157,7 @@ export default function BookList() {
       field: "isbn10",
       header: "ISBN 10",
       filterPlaceholder: "Search by ISBN",
-      sortable: false,
+      sortable: true,
       filterable: false,
     },
     {

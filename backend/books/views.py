@@ -1,18 +1,19 @@
-import re
+import re, os
 
 from django.db.models import OuterRef, Subquery
 
 from rest_framework import status, filters
 from rest_framework.views import APIView
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveUpdateAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
-from .serializers import BookListAddSerializer, BookSerializer, ISBNSerializer
+from .serializers import BookListAddSerializer, BookSerializer, ISBNSerializer, BookImageSerializer
 from .isbn import ISBNTools
-from .models import Book, Author
+from .models import Book, Author, BookImage
 from .paginations import BookPagination
 from .search_filters import CustomSearchFilter
+from .scpconnect import SCPTools
 
 from genres.models import Genre
 
@@ -86,6 +87,7 @@ class ListCreateBookAPIView(ListCreateAPIView):
     ordering_fields = '__all__'
     ordering = ['id']
     search_fields = ['authors__name', 'title', '=publisher', '=isbn_10', '=isbn_13']
+    isbn_toolbox = ISBNTools()
 
     def paginate_queryset(self, queryset):
         if 'no_pagination' in self.request.query_params:
@@ -117,8 +119,28 @@ class ListCreateBookAPIView(ListCreateAPIView):
 
         serializer.is_valid(raise_exception=True)
         serializer.save()
+
+        # Get or Create the Image
+        self.bookimage_get_and_create(serializer.data.get('isbn_13'))
+
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
+    def bookimage_get_and_create(self, isbn_13):
+        book = Book.objects.filter(isbn_13=isbn_13)
+
+        # This creates an image in temp_media and sends a file
+        url = self.isbn_toolbox.create_image(book[0].id, isbn_13)
+
+        obj, created = BookImage.objects.get_or_create(
+            book=book[0],
+            url=url
+        )
+
+        # We need to patch the url if it is a get
+        if obj is not None:
+            obj.url = url
+            obj.save()
     
     def getOrCreateModel(self, item_list, model):
         for item in item_list:
@@ -158,7 +180,7 @@ class ListCreateBookAPIView(ListCreateAPIView):
             # The requirements for Evolution 1 requires filtering by genre.
             # Thus if a query key 'genre' exists, we only consider the query_set having that specific genre
             return default_query_set.filter(genres__name=genre)
-
+        
         return default_query_set
 
 class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
@@ -190,3 +212,34 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
 
         return Response({"status" : f"Book: {instance.title}(id:{instance.id}) is now a ghost"}, status=status.HTTP_204_NO_CONTENT)
 
+class RetrieveUpdateBookImageAPIView(RetrieveUpdateAPIView):
+    serializer_class = BookImageSerializer
+    queryset = BookImage.objects.all()
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'book_id' # looks up using the book_id field
+    lookup_url_kwarg = 'book_id'
+    scp_toolbox = SCPTools()
+
+    def update(self, request, *args, **kwargs):
+        book_id = request.build_absolute_uri().split('/')[-1].strip()
+        file_uploaded = request.FILES.get('image')
+        content_type = file_uploaded.content_type
+        extension = content_type.split('/')[-1].strip()
+        file_bytes = file_uploaded.read()
+
+        filename = f'{book_id}.{extension}'
+        location = f'/temp_media/{filename}'
+        absolute_location = os.getcwd()+location
+
+        HOST = self.scp_toolbox.send_image_data(file_bytes, absolute_location)
+
+        # Now update URL of BookImage
+        instance = self.get_object()
+        data = {
+            "url" : f"https://{HOST}/{filename}"
+        }
+        serializer = self.get_serializer(instance, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        return Response('If no errors occurred, should work. If not, slack Hosung')

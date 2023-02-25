@@ -14,9 +14,9 @@ class Buyback(models.Model):
     quantity = models.PositiveBigIntegerField()
     unit_buyback_price = models.FloatField(validators=[MinValueValidator(0)])
     buyback_order = models.ForeignKey(BuybackOrder, related_name='buybacks', on_delete=models.CASCADE)
-    cost = models.FloatField()
+    revenue = models.FloatField()
 
     def save(self, *args, **kwargs):
-        self.cost = round(self.quantity * self.unit_buyback_price, 2)
+        self.revenue = round(self.quantity * self.unit_buyback_price, 2)
         self.unit_buyback_price = round(self.unit_buyback_price, 2)
         super(Buyback, self).save(*args, **kwargs)

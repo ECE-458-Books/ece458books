@@ -1,13 +1,22 @@
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, filters
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from .paginations import BuybackPagination
+from .models import Buyback, BuybackOrder
+from .serializers import BuybackOrderSerializer, BuybackSerializer
+from django.db.models import Sum
+from books.models import Book
 
 
 class ListCreateBuybackAPIView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = BuybackOrderSerializer
+    queryset = BuybackOrder.objects.all()
     pagination_class = BuybackPagination
+    filter_backends = [filters.OrderingFilter, filters.SearchFilter]
+    ordering_fields = '__all__'
+    ordering = ['id']
 
     def paginate_queryset(self, queryset):
         if 'no_pagination' in self.request.query_params:
@@ -16,95 +25,52 @@ class ListCreateBuybackAPIView(ListCreateAPIView):
             return super().paginate_queryset(queryset)
 
     def create(self, request, *args, **kwargs):
-        return Response(
-            {
-                "id": 86,
-                "date": "2022-12-01",
-                "buybacks": [{
-                    "id": 118,
-                    "book": 104,
-                    "book_title": "The Google Story",
-                    "quantity": 10,
-                    "unit_buyback_price": 10.01
-                }, {
-                    "id": 119,
-                    "book": 105,
-                    "book_title": "Moby Dick",
-                    "quantity": 10,
-                    "unit_buyback_price": 10.0,
-                    "subtotal": 100.0
-                }, {
-                    "id": 120,
-                    "book": 106,
-                    "book_title": "The Catcher in the Rye",
-                    "quantity": 1,
-                    "unit_buyback_price": 2.0
-                }, {
-                    "id": 124,
-                    "book": 107,
-                    "book_title": "Harry Potter and the Sorcerer's Stone",
-                    "quantity": 1,
-                    "unit_buyback_price": 200.0
-                }],
-                "vendor": 49,
-                "vendor_name": "Adams Publishing",
-                "num_books": 22,
-                "num_unique_books": 4
-            },
-            status=status.HTTP_200_OK)
+        serializer = BuybackOrderSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        saved_buyback_order = serializer.save()
+
+        response_data = serializer.data
+        response_data['id'] = saved_buyback_order.id
+        return Response(response_data, status=status.HTTP_201_CREATED)
 
 
 class RetrieveUpdateDestroyBuybackAPIView(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = BuybackOrderSerializer
+    lookup_field = 'id'
     pagination_class = BuybackPagination
 
+    def get_queryset(self):
+        return BuybackOrder.objects.filter(id=self.kwargs['id'])
+
     def retrieve(self, request, *args, **kwargs):
-        return Response(
-            {
-                "id": 127,
-                "date": "2022-12-02",
-                "buybacks": [{
-                    "id": 309,
-                    "book": 104,
-                    "book_title": "The Google Story",
-                    "quantity": 5,
-                    "unit_buyback_price": 20.0
-                }, {
-                    "id": 310,
-                    "book": 105,
-                    "book_title": "Moby Dick",
-                    "quantity": 4,
-                    "unit_buyback_price": 15.0
-                }],
-                "num_books": 9,
-                "num_unique_books": 2,
-                "vendor": 49,
-                "vendor_name": "Adams Publishing"
-            },
-            status=status.HTTP_200_OK)
+        invalid_id_response = self.verify_existance()
+        if invalid_id_response:
+            return invalid_id_response
+        (buyback_order,) = self.get_queryset()
+        serializer = self.get_serializer(buyback_order)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def update(self, request, *args, **kwargs):
-        return Response(
-            {
-                "id": 127,
-                "date": "2022-12-02",
-                "buybacks": [{
-                    "id": 309,
-                    "book": 104,
-                    "book_title": "The Google Story",
-                    "quantity": 5,
-                    "unit_buyback_price": 20.0
-                }, {
-                    "id": 310,
-                    "book": 105,
-                    "book_title": "Moby Dick",
-                    "quantity": 4,
-                    "unit_buyback_price": 15.0
-                }],
-                "num_books": 9,
-                "num_unique_books": 2
-            },
-            status=status.HTTP_200_OK)
+        invalid_id_response = self.verify_existance()
+        if invalid_id_response:
+            return invalid_id_response
+        partial = kwargs.pop('partial', False)
+        (buyback_order,) = self.get_queryset()
+        serializer = self.get_serializer(buyback_order, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def verify_existance(self):
+        if (len(self.get_queryset()) == 0):
+            return Response({"id": "No buyback order with queried id."}, status=status.HTTP_400_BAD_REQUEST)
+        return None
 
     def destroy(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        buyback_book_quantities = Buyback.objects.filter(buyback_order=self.get_object().id).values('book').annotate(num_books=Sum('quantity')).values('book', 'num_books')
+        for buyback_book_quantity in buyback_book_quantities:
+            book_to_remove_buyback = Book.objects.filter(id=buyback_book_quantity['book']).get()
+            book_to_remove_buyback.stock += buyback_book_quantity['num_books']
+            book_to_remove_buyback.save()
+        return super().destroy(request, *args, **kwargs)

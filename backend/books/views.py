@@ -1,11 +1,11 @@
-import re, os
+import re
 
 from django.conf import settings
-from django.db.models import OuterRef, Subquery
+from django.db.models import OuterRef, Subquery, F
 
 from rest_framework import status, filters
 from rest_framework.views import APIView
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveUpdateAPIView, RetrieveAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
@@ -14,10 +14,11 @@ from .isbn import ISBNTools
 from .models import Book, Author, BookImage
 from .paginations import BookPagination
 from .search_filters import CustomSearchFilter
-from .scpconnect import SCPTools
-from .utils import delete_all_files_in_folder_location, ImageTools
+from .utils import delete_all_files_in_folder_location
+from purchase_orders.models import Purchase
 
 from genres.models import Genre
+
 
 class ISBNSearchView(APIView):
     """
@@ -58,7 +59,7 @@ class ISBNSearchView(APIView):
             query_set = Book.objects.filter(isbn_13=isbn)
 
             # If ISBN exist in DB get from DB
-            if(len(query_set) == 0):
+            if (len(query_set) == 0):
                 # Get book data from external source
                 external_data = self.isbn_toolbox.fetch_isbn_data(isbn, uri)
                 if "Invalid ISBN" in external_data:
@@ -70,7 +71,7 @@ class ISBNSearchView(APIView):
                 data_populated_isbns['books'].append(self.parseDBBookModel(query_set[0], uri))
 
         return Response(data_populated_isbns)
-    
+
     def parseDBBookModel(self, book, uri):
         # Returns a parsed Book json from Book Model
         ret = dict()
@@ -86,14 +87,15 @@ class ISBNSearchView(APIView):
         # Get Genres
         for genre in book.genres.all():
             ret.setdefault("genres", []).append(genre.name)
-        
+
         images = BookImage.objects.filter(book=book)
-        
+
         local_url = self.isbn_toolbox.download_existing_image_to_local(images[0].url, book.isbn_13, uri)
         ret["image_url"] = local_url
         ret["fromDB"] = True
 
         return ret
+
 
 class ListCreateBookAPIView(ListCreateAPIView):
     serializer_class = BookListAddSerializer
@@ -132,7 +134,7 @@ class ListCreateBookAPIView(ListCreateAPIView):
         else:
             # This is different from the above serializer because this is creating a new row in the table
             serializer = self.get_serializer(data=request.data)
-        
+
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
@@ -141,7 +143,7 @@ class ListCreateBookAPIView(ListCreateAPIView):
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-    
+
     def bookimage_get_and_create(self, request, isbn_13):
         book = Book.objects.filter(isbn_13=isbn_13)
 
@@ -157,16 +159,14 @@ class ListCreateBookAPIView(ListCreateAPIView):
         if not created:
             obj.url = url
             obj.save()
-    
+
     def getOrCreateModel(self, item_list, model):
         if isinstance(item_list, str):
             item_list = item_list.split(',')
 
         for item in item_list:
-            obj, created = model.objects.get_or_create(
-                name=item.strip(),
-            )
-    
+            obj, created = model.objects.get_or_create(name=item.strip(),)
+
     def get_queryset(self):
         default_query_set = Book.objects.filter(isGhost=False)
         # Books have a ManyToMany relationship with Author & Genre
@@ -180,18 +180,11 @@ class ListCreateBookAPIView(ListCreateAPIView):
                 Author.objects.filter(
                     # We filter the authors by the primary key of the book
                     book=OuterRef('pk')
-                # Here we order by the name in ascending order and get the first author from the list
-                ).order_by('name').values('name')[:1] # [:1] is used to avoid index out of bounds error when the filter returns an empty list
-            )
-        )
-        
-        default_query_set = default_query_set.annotate(
-            genre=Subquery(
-                Genre.objects.filter(
-                    book=OuterRef('pk')
-                ).order_by('name').values('name')[:1]
-            )
-        )
+                    # Here we order by the name in ascending order and get the first author from the list
+                ).order_by('name').values('name')[:1]  # [:1] is used to avoid index out of bounds error when the filter returns an empty list
+            ))
+
+        default_query_set = default_query_set.annotate(genre=Subquery(Genre.objects.filter(book=OuterRef('pk')).order_by('name').values('name')[:1]))
 
         # Filter for a specific genre
         # If a genre exists, the default query_set needs to be filtered by that specific genre
@@ -199,11 +192,17 @@ class ListCreateBookAPIView(ListCreateAPIView):
             # The requirements for Evolution 1 requires filtering by genre.
             # Thus if a query key 'genre' exists, we only consider the query_set having that specific genre
             return default_query_set.filter(genres__name=genre)
-        
+
+        # Search for books that a specific vendor has sold
+        vendor = self.request.GET.get('vendor')
+        if vendor is not None:
+            default_query_set = default_query_set.filter(id__in=Purchase.objects.all().annotate(vendor_id=F('purchase_order__vendor')).filter(vendor_id=vendor).values('book')).distinct()
+
         return default_query_set
 
+
 class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
-    serializer_class = BookSerializer 
+    serializer_class = BookSerializer
     queryset = Book.objects.all()
     permission_classes = [IsAuthenticated]
     lookup_url_kwarg = 'id'
@@ -215,7 +214,7 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
-    
+
         # Get and Create the Image
         url = self.bookimage_get_and_create(request, serializer.data.get('isbn_13'))
         serializer.data['url'] = url
@@ -237,7 +236,7 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
         if not created:
             obj.url = url
             obj.save()
-        
+
         return url
 
     def destroy(self, request, *args, **kwargs):
@@ -261,11 +260,12 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        return Response({"status" : f"Book: {instance.title}(id:{instance.id}) is now a ghost"}, status=status.HTTP_204_NO_CONTENT)
+        return Response({"status": f"Book: {instance.title}(id:{instance.id}) is now a ghost"}, status=status.HTTP_204_NO_CONTENT)
+
 
 class RetrieveExternalBookImageAPIView(RetrieveAPIView):
     serializer_class = BookImageSerializer
     queryset = BookImage.objects.all()
     permission_classes = [IsAuthenticated]
-    lookup_field = 'book_id' # looks up using the book_id field
+    lookup_field = 'book_id'  # looks up using the book_id field
     lookup_url_kwarg = 'book_id'

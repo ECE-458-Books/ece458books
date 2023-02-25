@@ -67,7 +67,10 @@ export default function BookDetail() {
   //const [image, setImage] = useState<string>("");
   const [imageFile, setImageFile] = useState<File>(new File([""], "filename"));
   const [isImageUploaded, setIsImageUploaded] = useState<boolean>(false);
-  const defaultImage = "../DefaultNoImage";
+  const defaultImage = "../DefaultNoImageAvailable.jpeg";
+  const [defaultImageFile, setDefaultImageFile] = useState<File>(
+    new File([""], "filename")
+  );
 
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
@@ -114,6 +117,13 @@ export default function BookDetail() {
       .catch(() =>
         showFailure(toast, "Image Cannot be Retrieved to Update Display")
       );
+
+    fetch(defaultImage).then(async (response) => {
+      const blob = await response.blob();
+      const file = new File([blob], "defaultImage", { type: "image/jpeg" });
+      setDefaultImageFile(file);
+      console.log(file);
+    });
 
     // fetch(image.imageSrc)
     // .then(async (response) => {
@@ -236,6 +246,11 @@ export default function BookDetail() {
     isModifiable: !isModifiable,
   });
 
+  const onImageDelete = () => {
+    setImage({ imageSrc: defaultImage, imageHash: "" });
+    setImageFile(defaultImageFile);
+  };
+
   const uploadImageFileHandler = (event: FileUploadHandlerEvent) => {
     const file = event.files[0];
     setImageFile(file);
@@ -259,11 +274,6 @@ export default function BookDetail() {
     //   })
     //   .catch(() => showFailure(toast, "Image Upload Failed"));
     event.options.clear();
-  };
-
-  const imageDeleteSubtmit = () => {
-    showSuccess(toast, "Image Deleted");
-    console.log("submit image delete");
   };
 
   // The navigator to switch pages
@@ -312,7 +322,7 @@ export default function BookDetail() {
               className={"p-button-danger flex"}
               isVisible={isConfirmationPopupVisibleImageDelete}
               hideFunc={() => setIsConfirmationPopupVisibleImageDelete(false)}
-              acceptFunc={imageDeleteSubtmit}
+              acceptFunc={onImageDelete}
               rejectFunc={() => {
                 console.log("reject2");
               }}

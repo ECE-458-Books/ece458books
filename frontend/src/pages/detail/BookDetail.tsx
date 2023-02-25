@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
-import { useLocation, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { Book, emptyBook } from "../list/BookList";
 import {
   InputNumber,
@@ -119,8 +119,9 @@ export default function BookDetail() {
       return errors;
     },
     onSubmit: () => {
+      // TOOD: Change this to use InternalToAPIBookConversion
       const book: APIBook = {
-        id: id!,
+        id: Number(id!),
         title: title,
         authors: CommaSeparatedStringToArray(authors),
         genres: [genre],

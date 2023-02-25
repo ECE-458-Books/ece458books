@@ -12,7 +12,7 @@ import { showFailure, showSuccess } from "../../components/Toast";
 export default function GenreDetail() {
   // From URL
   const { id } = useParams();
-  const [isModifiable, setIsModifiable] = useState<boolean>(id === undefined);
+  const [isModifiable, setIsModifiable] = useState<boolean>(false);
 
   const [genreName, setGenreName] = useState<string>("");
   const [isConfirmationPopVisible, setIsConfirmationPopupVisible] =

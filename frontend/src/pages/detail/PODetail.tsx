@@ -235,7 +235,7 @@ export default function PODetail() {
   function callAddPOAPI() {
     const apiPurchases = purchases.map((purchase) => {
       return {
-        book: bookMap.get(purchase.bookTitle)?.id,
+        book: Number(bookMap.get(purchase.bookTitle)?.id),
         quantity: purchase.quantity,
         unit_wholesale_price: purchase.price,
       } as APIPOPurchaseRow;
@@ -258,7 +258,7 @@ export default function PODetail() {
       return {
         id: purchase.isNewRow ? undefined : purchase.id,
         quantity: purchase.quantity,
-        // If the book has been deleted, will have to use the id in the row
+        // If the book has been deleted, will have to use the id that is already present in the row
         book: bookMap.get(purchase.bookTitle)?.id ?? purchase.bookId,
         unit_wholesale_price: purchase.price,
       } as APIPOPurchaseRow;

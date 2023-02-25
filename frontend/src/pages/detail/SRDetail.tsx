@@ -224,7 +224,7 @@ export default function SRDetail() {
   const callAddSRAPI = () => {
     const apiSales = sales.map((sale) => {
       return {
-        book: booksMap.get(sale.bookTitle)?.id,
+        book: Number(booksMap.get(sale.bookTitle)!.id),
         quantity: sale.quantity,
         unit_retail_price: sale.price,
       } as APISRSaleRow;
@@ -234,6 +234,7 @@ export default function SRDetail() {
       date: internalToExternalDate(date),
       sales: apiSales,
     } as AddSRReq;
+
     SALES_API.addSalesReconciliation(salesReconciliation)
       .then(() => showSuccess(toast, "Sales reconciliation added successfully"))
       .catch(() => showFailure(toast, "Could not add sales reconciliation"));
@@ -244,7 +245,7 @@ export default function SRDetail() {
     const apiSales = sales.map((sale) => {
       return {
         id: sale.isNewRow ? undefined : sale.id,
-        // If the book has been deleted, will have to use the id in the row
+        // If the book has been deleted, will have to use the id that is already present in the row
         book: booksMap.get(sale.bookTitle)?.id ?? sale.bookId,
         quantity: sale.quantity,
         unit_retail_price: sale.price,

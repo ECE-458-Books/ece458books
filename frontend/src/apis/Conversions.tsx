@@ -68,7 +68,7 @@ export const APISRSortFieldMap = new Map<string, string>([
 
 export function APIToInternalBookConversion(book: APIBook): Book {
   return {
-    id: book.id,
+    id: book.id.toString(),
     author: ArrayToCommaSeparatedString(book.authors),
     genres: ArrayToCommaSeparatedString(book.genres),
     title: book.title,
@@ -88,7 +88,7 @@ export function APIToInternalBookConversion(book: APIBook): Book {
 
 export function InternalToAPIBookConversion(book: Book): APIBook {
   return {
-    id: book.id,
+    id: Number(book.id),
     authors: CommaSeparatedStringToArray(book.author),
     genres: CommaSeparatedStringToArray(book.genres),
     title: book.title,
@@ -110,7 +110,7 @@ export function APIToInternalBookConversionWithDB(
   book: APIBookWithDBTag
 ): BookWithDBTag {
   return {
-    id: book.id,
+    id: book.id.toString(),
     author: ArrayToCommaSeparatedString(book.authors),
     genres: ArrayToCommaSeparatedString(book.genres ?? []),
     title: book.title,
@@ -133,7 +133,7 @@ export function APIToInternalBookConversionWithDB(
 
 export function APIToInternalVendorConversion(vendor: APIVendor): Vendor {
   return {
-    id: vendor.id,
+    id: vendor.id.toString(),
     name: vendor.name,
     numPO: vendor.num_purchase_orders,
   };
@@ -143,7 +143,7 @@ export function APIToInternalVendorConversion(vendor: APIVendor): Vendor {
 
 export function APIToInternalGenreConversion(genre: APIGenre): Genre {
   return {
-    id: genre.id,
+    id: genre.id.toString(),
     name: genre.name,
     bookCount: genre.book_cnt,
   };
@@ -223,7 +223,7 @@ export function APIToInternalSRConversion(sr: APISR): SalesReconciliation {
   );
 
   return {
-    id: sr.id,
+    id: sr.id.toString(),
     date: externalToInternalDate(sr.date),
     totalBooks: sr.num_books,
     uniqueBooks: sr.num_unique_books,

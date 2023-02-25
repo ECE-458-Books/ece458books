@@ -15,6 +15,7 @@ import AddRowButton from "../components/buttons/AddRowButton";
 import { DataTable } from "primereact/datatable";
 import { Toolbar } from "primereact/toolbar";
 import { Column } from "primereact/column";
+import { calculateTotalForField } from "../util/CalculateTotal";
 
 const DEFAULT_WIDTH = 5;
 const DEFAULT_HEIGHT = 8;
@@ -148,6 +149,7 @@ export default function ShelfCalculator() {
       row.maxDisplayCount = calculateMaxDisplayCount(row);
       row.displayCount = calculateMaxDisplayCount(row);
       row.shelfSpace = calculateShelfSpace(row);
+      updateTotalShelfSpace(draft);
     });
   };
 
@@ -159,6 +161,7 @@ export default function ShelfCalculator() {
       const row = findById(draft, rowData.id)!;
       row.displayCount = newDisplayCount;
       row.shelfSpace = calculateShelfSpace(row);
+      updateTotalShelfSpace(draft);
     });
   };
 
@@ -172,7 +175,13 @@ export default function ShelfCalculator() {
       row.maxDisplayCount = calculateMaxDisplayCount(row);
       row.displayCount = calculateCurrentDisplayCount(row);
       row.shelfSpace = calculateShelfSpace(row);
+      updateTotalShelfSpace(draft);
     });
+  };
+
+  const updateTotalShelfSpace = (rows: ShelfCalculatorRow[]) => {
+    const total = rows.reduce((total, item) => total + item.shelfSpace, 0);
+    setTotalShelfSpace(total);
   };
 
   // Dropdowns
@@ -239,7 +248,11 @@ export default function ShelfCalculator() {
             </h1>
           </div>
 
-          <Toolbar className="mb-4" left={rowAddButton} />
+          <Toolbar
+            className="mb-4"
+            left={rowAddButton}
+            right={`Total Shelf Space: ${totalShelfSpace}`}
+          />
           <DataTable
             showGridlines
             value={rows}

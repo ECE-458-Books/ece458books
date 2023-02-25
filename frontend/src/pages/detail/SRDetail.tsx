@@ -44,6 +44,9 @@ import {
   errorCellBody,
 } from "./errors/CSVImportErrors";
 import { Book } from "../list/BookList";
+import { useImmer } from "use-immer";
+import { findById } from "../../util/FindBy";
+import { calculateTotal } from "../../util/CalculateTotal";
 
 export interface SRDetailState {
   id: number;
@@ -54,11 +57,10 @@ export interface SRDetailState {
 export interface SRSaleRow {
   isNewRow: boolean;
   id: string;
-  subtotal: number;
   bookId: number;
   bookTitle: string;
   quantity: number;
-  unitRetailPrice: number;
+  price: number;
   errors?: { [key: string]: string };
 }
 
@@ -66,11 +68,10 @@ export default function SRDetail() {
   const emptySale: SRSaleRow = {
     isNewRow: true,
     id: uuid(),
-    subtotal: 0,
     bookId: 0,
     bookTitle: "",
     quantity: 1,
-    unitRetailPrice: 0,
+    price: 0,
   };
 
   const location = useLocation();
@@ -94,13 +95,13 @@ export default function SRDetail() {
 
   // The rest of the data
   const [date, setDate] = useState<Date>(new Date());
-  const [sales, setSales] = useState<SRSaleRow[]>([]);
+  // useImmer is used to set state for nested data in a simplified format
+  const [sales, setSales] = useImmer<SRSaleRow[]>([]);
   const [lineData, setLineData] = useState<SRSaleRow>(emptySale);
   const [totalRevenue, setTotalRevenue] = useState<number>(0);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
   const [hasUploadedCSV, setHasUploadedCSV] = useState<boolean>(false);
-  const [key, setKey] = useState<number>(0);
 
   // Load the SR data on page load
   useEffect(() => {
@@ -128,9 +129,12 @@ export default function SRDetail() {
       header: "Book",
       customBody: (rowData: SRSaleRow) =>
         booksDropDownEditor(rowData.bookTitle, (newValue) => {
-          rowData.bookTitle = newValue;
-          setKey(Math.random());
-          rowData.unitRetailPrice = booksMap.get(newValue)?.retailPrice ?? 0; // Default URP to that of book
+          setSales((draft) => {
+            const purchase = findById(draft, rowData.id);
+            purchase!.bookTitle = newValue;
+            purchase!.price = booksMap.get(newValue)!.retailPrice;
+            setTotalRevenue(calculateTotal(draft));
+          });
         }),
     },
 
@@ -138,24 +142,31 @@ export default function SRDetail() {
       field: "quantity",
       header: "Quantity",
       customBody: (rowData: SRSaleRow) =>
-        numberEditor(
-          rowData.quantity,
-          (newValue) => (rowData.quantity = newValue)
-        ),
+        numberEditor(rowData.quantity, (newValue) => {
+          setSales((draft) => {
+            const purchase = findById(draft, rowData.id);
+            purchase!.quantity = newValue;
+            setTotalRevenue(calculateTotal(draft));
+          });
+        }),
     },
     {
-      field: "unitRetailPrice",
+      field: "price",
       header: "Unit Retail Price ($)",
       customBody: (rowData: SRSaleRow) =>
-        priceEditor(
-          rowData.unitRetailPrice,
-          (newValue) => (rowData.unitRetailPrice = newValue)
-        ),
+        priceEditor(rowData.price, (newValue) => {
+          setSales((draft) => {
+            const purchase = findById(draft, rowData.id);
+            purchase!.price = newValue;
+            setTotalRevenue(calculateTotal(draft));
+          });
+        }),
     },
     {
       field: "subtotal",
       header: "Subtotal ($)",
-      customBody: (rowData: SRSaleRow) => priceBodyTemplate(rowData.subtotal),
+      customBody: (rowData: SRSaleRow) =>
+        priceBodyTemplate(rowData.price * rowData.quantity),
     },
   ];
 
@@ -195,7 +206,7 @@ export default function SRDetail() {
   // Validate submission before making API req
   const validateSubmission = () => {
     for (const sale of sales) {
-      if (!sale.bookTitle || !(sale.unitRetailPrice >= 0) || !sale.quantity) {
+      if (!sale.bookTitle || !(sale.price >= 0) || !sale.quantity) {
         showFailure(
           toast,
           "Book, retail price, and quantity are required for all line items"
@@ -231,7 +242,7 @@ export default function SRDetail() {
       return {
         book: booksMap.get(sale.bookTitle)?.id,
         quantity: sale.quantity,
-        unit_retail_price: sale.unitRetailPrice,
+        unit_retail_price: sale.price,
       } as APISRSaleRow;
     });
 
@@ -252,7 +263,7 @@ export default function SRDetail() {
         // If the book has been deleted, will have to use the id in the row
         book: booksMap.get(sale.bookTitle)?.id ?? sale.bookId,
         quantity: sale.quantity,
-        unit_retail_price: sale.unitRetailPrice,
+        unit_retail_price: sale.price,
       } as APISRSaleRow;
     });
 
@@ -349,7 +360,6 @@ export default function SRDetail() {
       setSelectedBook={onChange}
       selectedBook={value}
       bookTitlesList={booksDropdownTitles}
-      refreshKey={key}
       placeholder={value}
     />
   );

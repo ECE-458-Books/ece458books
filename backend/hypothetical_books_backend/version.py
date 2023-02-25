@@ -1,0 +1,2 @@
+API_VERSION = 1
+API_PREFIX = f'api/v{API_VERSION}/'

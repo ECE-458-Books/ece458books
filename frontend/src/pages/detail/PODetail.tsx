@@ -46,7 +46,7 @@ import {
 } from "./errors/CSVImportErrors";
 import { Book } from "../list/BookList";
 import { useImmer } from "use-immer";
-import { findById } from "../../util/FindBy";
+import { findById } from "../../util/IDOperations";
 import { calculateTotal } from "../../util/CalculateTotal";
 
 export interface POPurchaseRow {

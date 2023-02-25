@@ -45,7 +45,7 @@ import {
 } from "./errors/CSVImportErrors";
 import { Book } from "../list/BookList";
 import { useImmer } from "use-immer";
-import { findById } from "../../util/FindBy";
+import { findById } from "../../util/IDOperations";
 import { calculateTotal } from "../../util/CalculateTotal";
 
 export interface SRSaleRow {
@@ -270,7 +270,7 @@ export default function SRDetail() {
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
 
-  const actionBodyTemplate = (rowData: SRSaleRow) => {
+  const rowDeleteButton = (rowData: SRSaleRow) => {
     return (
       <React.Fragment>
         <Button
@@ -439,7 +439,7 @@ export default function SRDetail() {
             >
               {columns}
               <Column
-                body={actionBodyTemplate}
+                body={rowDeleteButton}
                 exportable={false}
                 style={{ minWidth: "8rem" }}
               ></Column>

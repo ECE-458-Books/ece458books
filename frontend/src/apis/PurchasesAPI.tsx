@@ -18,7 +18,6 @@ export interface GetPOsReq {
 
 export interface APIPOPurchaseRow {
   id?: number; // ID only for new rows, not already existing ones
-  subtotal: number; // Soon to be deprecated
   book: number;
   book_title: string;
   book_isbn: string;

@@ -14,20 +14,21 @@ class BookListAddSerializer(serializers.ModelSerializer):
     """
     authors = serializers.SlugRelatedField(queryset=Author.objects.all(), many=True, slug_field='name')
     genres = serializers.SlugRelatedField(queryset=Genre.objects.all(), many=True, slug_field='name')
-    urls = serializers.StringRelatedField(many=True)
+    url = serializers.StringRelatedField()
 
     class Meta:
         model = Book
-        fields = ['id', 'title', 'authors', 'genres', 'isbn_13', 'isbn_10', 'publisher', 'publishedDate', 'pageCount', 'width', 'height', 'thickness', 'retail_price', 'isGhost', 'stock', 'urls']
+        fields = ['id', 'title', 'authors', 'genres', 'isbn_13', 'isbn_10', 'publisher', 'publishedDate', 'pageCount', 'width', 'height', 'thickness', 'retail_price', 'isGhost', 'stock', 'url']
 
 class BookSerializer(serializers.ModelSerializer):
     authors = serializers.SlugRelatedField(queryset=Author.objects.all(), many=True, slug_field='name')
     genres = serializers.SlugRelatedField(queryset=Genre.objects.all(), many=True, slug_field='name')
+    url = serializers.StringRelatedField()
 
     class Meta:
         model = Book
         fields = '__all__'
-        read_only_fields = ['title', 'authors', 'isbn_13', 'isbn_10', 'publisher', 'publishedDate']
+        read_only_fields = ['title', 'authors', 'isbn_13', 'isbn_10', 'publisher', 'publishedDate', 'url']
 
 class AuthorSerializer(serializers.ModelSerializer):
     book_list = BookSerializer(many=True, read_only=True)

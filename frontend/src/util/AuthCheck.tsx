@@ -7,7 +7,6 @@ export default function GoToLoginPageIfNotLoggedIn() {
   const navigate = useNavigate();
 
   if (!loginTime || AddOneDay(loginTime!) < now) {
-    console.log(new Date(loginTime! + 1) < now);
     navigate("/");
     return <LoginPage />;
   }

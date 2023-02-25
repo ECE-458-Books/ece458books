@@ -205,7 +205,7 @@ class ISBNTools:
     
     def commit_image_raw_bytes(self, request, book_id, isbn_13):
         # Get the image raw_bytes
-        file_uploaded = request.FILES.get('image')
+        file_uploaded = request.data.get('image')
         content_type = file_uploaded.content_type
         extension = content_type.split('/')[-1].strip()
         file_bytes = file_uploaded.read()
@@ -216,6 +216,9 @@ class ISBNTools:
         HOST = self._scp_toolbox.send_image_data(absolute_location)
 
         return f"https://{HOST}/{filename}"
+        
+    def get_default_image_url(self,):
+        return f'{self._internal_image_base_url}/{self._default_image_name}'
 
 
 

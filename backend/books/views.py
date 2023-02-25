@@ -15,7 +15,7 @@ from .models import Book, Author, BookImage
 from .paginations import BookPagination
 from .search_filters import CustomSearchFilter
 from .scpconnect import SCPTools
-from .utils import delete_all_files_in_folder_location, ImageTools
+from .utils import delete_all_files_in_folder_location, str2bool
 
 from genres.models import Genre
 
@@ -136,17 +136,24 @@ class ListCreateBookAPIView(ListCreateAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
+        res = serializer.data
+
         # Get and Create the Image
-        self.bookimage_get_and_create(request, serializer.data.get('isbn_13'))
+        setDefaultImage = str2bool(request.data.get('setDefaultImage'))
+        url = self.bookimage_get_and_create(request, res.get('isbn_13'), setDefaultImage)
+        res['url'] = url
 
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(res, status=status.HTTP_201_CREATED, headers=headers)
     
-    def bookimage_get_and_create(self, request, isbn_13):
+    def bookimage_get_and_create(self, request, isbn_13, setDefaultImage):
         book = Book.objects.filter(isbn_13=isbn_13)
 
         # This creates an image in static and sends a file
-        url = self.isbn_toolbox.commit_image_raw_bytes(request, book[0].id, isbn_13)
+        if setDefaultImage:
+            url = self.isbn_toolbox.get_default_image_url()
+        else:
+            url = self.isbn_toolbox.commit_image_raw_bytes(request, book[0].id, isbn_13)
 
         obj, created = BookImage.objects.get_or_create(
             book_id=book[0].id,
@@ -157,6 +164,8 @@ class ListCreateBookAPIView(ListCreateAPIView):
         if not created:
             obj.url = url
             obj.save()
+
+        return url
     
     def getOrCreateModel(self, item_list, model):
         if isinstance(item_list, str):
@@ -215,18 +224,28 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
-    
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
         # Get and Create the Image
-        url = self.bookimage_get_and_create(request, serializer.data.get('isbn_13'))
-        serializer.data['url'] = url
+        res = serializer.data
+        setDefaultImage = str2bool(request.data.get('setDefaultImage'))
+        url = self.bookimage_get_and_create(request, serializer.data.get('isbn_13'), setDefaultImage)
+        res['url'] = url
 
-        return Response(serializer.data)
+        return Response(res)
 
-    def bookimage_get_and_create(self, request, isbn_13):
+    def bookimage_get_and_create(self, request, isbn_13, setDefaultImage):
         book = Book.objects.filter(isbn_13=isbn_13)
 
         # This creates an image in static and sends a file
-        url = self.isbn_toolbox.commit_image_raw_bytes(request, book[0].id, isbn_13)
+        if setDefaultImage:
+            url = self.isbn_toolbox.get_default_image_url()
+        else:
+            url = self.isbn_toolbox.commit_image_raw_bytes(request, book[0].id, isbn_13)
 
         obj, created = BookImage.objects.get_or_create(
             book_id=book[0].id,

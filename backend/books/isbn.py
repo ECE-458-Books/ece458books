@@ -7,6 +7,7 @@ import PIL.Image as Image
 from django.conf import settings
 
 from .scpconnect import SCPTools
+from .utils import uri_to_local_image_location
 
 class ISBNTools:
     def __init__(
@@ -141,7 +142,7 @@ class ISBNTools:
         return self.get_book_local_image_url(end_url, 'default', uri)
     
     def download_existing_image_to_local(self, end_url, isbn_13, uri):
-        local_image_location = self.uri_to_local_image_location(uri)
+        local_image_location = uri_to_local_image_location(uri)
 
         # Do not fetch default.png from server
         if self._default_image_name in end_url:
@@ -163,7 +164,7 @@ class ISBNTools:
         Returns:
             str: Static URL to get book image
         """
-        local_image_location = self.uri_to_local_image_location(uri)
+        local_image_location = uri_to_local_image_location(uri)
         
         image_raw_bytes = self.get_image_raw_bytes(end_url, isbn_13)
         filename = f'{isbn_13}.jpg'

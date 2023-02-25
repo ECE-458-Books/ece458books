@@ -10,7 +10,6 @@ import { createColumns, TableColumn } from "../components/TableColumns";
 import { filterById, findById } from "../util/IDOperations";
 import { numberEditor } from "../util/TableCellEditFuncs";
 import { Book } from "./list/BookList";
-import { v4 as uuid } from "uuid";
 import { DeleteTemplate } from "../util/EditDeleteTemplate";
 import AddRowButton from "../components/buttons/AddRowButton";
 import { DataTable } from "primereact/datatable";
@@ -27,6 +26,7 @@ interface ShelfCalculatorRow {
   bookTitle: string;
   stock: number;
   displayCount: number;
+  maxDisplayCount: number;
   displayMode: DisplayMode;
   shelfSpace: number; // This measures the horizontal distance on store shelves
   hasUnknownDimensions: boolean;
@@ -37,6 +37,7 @@ const emptyRow: ShelfCalculatorRow = {
   bookTitle: "",
   stock: 1,
   displayCount: 1,
+  maxDisplayCount: 1,
   displayMode: DisplayMode.SPINE_OUT,
   shelfSpace: 0,
   hasUnknownDimensions: false,
@@ -69,9 +70,14 @@ export default function ShelfCalculator() {
       field: "displayCount",
       header: "Display Count",
       customBody: (rowData: ShelfCalculatorRow) =>
-        numberEditor(rowData.displayCount, (newValue) => {
-          handleDisplayCountChange(rowData, newValue);
-        }),
+        numberEditor(
+          rowData.displayCount,
+          (newValue) => {
+            handleDisplayCountChange(rowData, newValue);
+          },
+          0, // min
+          rowData.maxDisplayCount // max
+        ),
       style: { width: "10%" },
     },
     {
@@ -102,6 +108,32 @@ export default function ShelfCalculator() {
     }
   };
 
+  const calculateMaxDisplayCount = (row: ShelfCalculatorRow) => {
+    const book = booksMap.get(row.bookTitle)!;
+    const thickness = book.thickness ?? DEFAULT_THICKNESS;
+
+    if (row.displayMode == DisplayMode.SPINE_OUT) {
+      return row.stock;
+    } else {
+      const maxBooksThatFit = Math.floor(SHELF_DEPTH / thickness);
+      return Math.min(maxBooksThatFit, row.stock);
+    }
+  };
+
+  const calculateCurrentDisplayCount = (row: ShelfCalculatorRow) => {
+    const book = booksMap.get(row.bookTitle)!;
+    const thickness = book.thickness ?? DEFAULT_THICKNESS;
+
+    if (row.displayMode == DisplayMode.SPINE_OUT) {
+      return Math.min(row.stock, row.displayCount);
+    } else {
+      const maxBooksThatFit = Math.floor(SHELF_DEPTH / thickness);
+      // We take the minimum of the stock of this book, the currently selected
+      // display count, and the maximum number of books that can fit on the shelf
+      return Math.min(maxBooksThatFit, row.stock, row.displayCount);
+    }
+  };
+
   // Handlers for when data is changed
   const handleBookChange = (
     rowData: ShelfCalculatorRow,
@@ -113,7 +145,9 @@ export default function ShelfCalculator() {
 
       row.bookTitle = book.title;
       row.stock = book.stock;
-      row.shelfSpace = calculateShelfSpace(row!);
+      row.maxDisplayCount = calculateMaxDisplayCount(row);
+      row.displayCount = calculateMaxDisplayCount(row);
+      row.shelfSpace = calculateShelfSpace(row);
     });
   };
 
@@ -124,7 +158,7 @@ export default function ShelfCalculator() {
     setRows((draft) => {
       const row = findById(draft, rowData.id)!;
       row.displayCount = newDisplayCount;
-      row.shelfSpace = calculateShelfSpace(row!);
+      row.shelfSpace = calculateShelfSpace(row);
     });
   };
 
@@ -135,7 +169,9 @@ export default function ShelfCalculator() {
     setRows((draft) => {
       const row = findById(draft, rowData.id)!;
       row.displayMode = newDisplayMode;
-      row.shelfSpace = calculateShelfSpace(row!);
+      row.maxDisplayCount = calculateMaxDisplayCount(row);
+      row.displayCount = calculateCurrentDisplayCount(row);
+      row.shelfSpace = calculateShelfSpace(row);
     });
   };
 

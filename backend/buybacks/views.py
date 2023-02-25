@@ -5,8 +5,10 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from .paginations import BuybackPagination
 from .models import Buyback, BuybackOrder
 from .serializers import BuybackOrderSerializer, BuybackSerializer
-from django.db.models import Sum
+from django.db.models import Sum, OuterRef, Subquery, Func, Count
 from books.models import Book
+import datetime, pytz
+from datetime import datetime, timedelta
 
 
 class ListCreateBuybackAPIView(ListCreateAPIView):
@@ -32,6 +34,84 @@ class ListCreateBuybackAPIView(ListCreateAPIView):
         response_data = serializer.data
         response_data['id'] = saved_buyback_order.id
         return Response(response_data, status=status.HTTP_201_CREATED)
+
+    def get_queryset(self):
+        default_query_set = BuybackOrder.objects.all()
+
+        # Create a subquery to aggregate the 'revenue' value for each buyback in BuybackOrder
+        revenue_subquery = Buyback.objects.filter(buyback_order=OuterRef('id')).values_list(Func(
+            'revenue',
+            function='SUM',
+        ),)
+
+        default_query_set = default_query_set.annotate(total_revenue=Subquery(revenue_subquery))
+
+        # Filter by quantity of books in BuybackOrder
+        num_books_subquery = Buyback.objects.filter(buyback_order=OuterRef('id')).values_list(Func('quantity', function='SUM'),)
+
+        default_query_set = default_query_set.annotate(num_books=Subquery(num_books_subquery))
+
+        default_query_set = default_query_set.annotate(num_unique_books=Count('buybacks__book', distinct=True))
+
+        # Filter by date
+        start_date = self.request.GET.get('start')
+        end_date = self.request.GET.get('end')
+        if start_date is not None and end_date is not None:
+            default_query_set = default_query_set.filter(date__range=(start_date, end_date))
+        elif start_date is not None:
+            default_query_set = default_query_set.filter(date__range=(start_date, datetime.datetime.now(pytz.timezone('US/Eastern'))))
+
+        # Filter by book
+        book = self.request.GET.get('book')
+        if book is not None:
+            default_query_set = default_query_set.filter(buybacks__book=book).distinct()
+
+        # Filter by >= revenue
+        buyback_revenue__gte = self.request.GET.get('buyback_revenue__gte')
+        if buyback_revenue__gte is not None:
+            default_query_set = default_query_set.filter(buybacks__revenue__gte=buyback_revenue__gte).distinct()
+
+        # Filter by <= revenue
+        buyback_revenue__lte = self.request.GET.get('buyback_revenue__lte')
+        if buyback_revenue__lte is not None:
+            default_query_set = default_query_set.filter(buybacks__revenue__lte=buyback_revenue__lte).distinct()
+
+        # Filter by <= revenue
+        buyback_revenue = self.request.GET.get('buyback_revenue')
+        if buyback_revenue is not None:
+            default_query_set = default_query_set.filter(buybacks__revenue=buyback_revenue).distinct()
+
+        # Filter by >= quantity
+        buyback_quantity__gte = self.request.GET.get('buyback_quantity__gte')
+        if buyback_quantity__gte is not None:
+            default_query_set = default_query_set.filter(buybacks__quantity__gte=buyback_quantity__gte).distinct()
+
+        # Filter by <= quantity
+        buyback_quantity__lte = self.request.GET.get('buyback_quantity__lte')
+        if buyback_quantity__lte is not None:
+            default_query_set = default_query_set.filter(buybacks__quantity__lte=buyback_quantity__lte).distinct()
+
+        # Filter by == quantity
+        buyback_quantity = self.request.GET.get('buyback_quantity')
+        if buyback_quantity is not None:
+            default_query_set = default_query_set.filter(buybacks__quantity=buyback_quantity).distinct()
+
+        # Filter by >= unit_buyback_price
+        buyback_unit_buyback_price__gte = self.request.GET.get('buyback_unit_buyback_price__gte')
+        if buyback_unit_buyback_price__gte is not None:
+            default_query_set = default_query_set.filter(buybacks__unit_buyback_price__gte=buyback_unit_buyback_price__gte).distinct()
+
+        # Filter by <= unit_buyback_price
+        buyback_unit_buyback_price__lte = self.request.GET.get('buyback_unit_buyback_price__lte')
+        if buyback_unit_buyback_price__lte is not None:
+            default_query_set = default_query_set.filter(buybacks__unit_buyback_price__lte=buyback_unit_buyback_price__lte).distinct()
+
+        # Filter by == unit_buyback_price
+        buyback_unit_buyback_price = self.request.GET.get('buyback_unit_buyback_price')
+        if buyback_unit_buyback_price is not None:
+            default_query_set = default_query_set.filter(buybacks__unit_buyback_price=buyback_unit_buyback_price).distinct()
+
+        return default_query_set
 
 
 class RetrieveUpdateDestroyBuybackAPIView(RetrieveUpdateDestroyAPIView):

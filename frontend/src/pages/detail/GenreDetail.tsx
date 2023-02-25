@@ -1,18 +1,17 @@
-import React, { FormEvent, useRef, useState } from "react";
+import React, { FormEvent, useEffect, useRef, useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { ToggleButton } from "primereact/togglebutton";
-import ConfirmButton from "../../components/ConfirmPopup";
+import ConfirmButton from "../../components/popups/ConfirmPopup";
 import { useLocation } from "react-router-dom";
 import { GENRES_API } from "../../apis/GenresAPI";
 import { Genre } from "../list/GenreList";
 import { logger } from "../../util/Logger";
 import { Toast } from "primereact/toast";
+import { showFailure, showSuccess } from "../../components/Toast";
 
 export interface GenreDetailState {
   id: number;
-  genre: string;
   isModifiable: boolean;
-  isConfirmationPopupVisible: boolean;
 }
 
 export default function GenreDetail() {
@@ -20,34 +19,30 @@ export default function GenreDetail() {
   // Only end up on this page when we are passing genre data
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const detailState = location.state! as GenreDetailState;
-  const [genre, setGenre] = useState<string>(detailState.genre);
   const id = detailState.id;
+  const [genreName, setGenreName] = useState<string>("");
   const [isModifiable, setIsModifiable] = useState<boolean>(
     detailState.isModifiable
   );
   const [isConfirmationPopVisible, setIsConfirmationPopupVisible] =
-    useState<boolean>(detailState.isConfirmationPopupVisible);
+    useState<boolean>(false);
 
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
 
-  const showSuccess = () => {
-    toast.current?.show({ severity: "success", summary: "Genre modified" });
-  };
-
-  const showFailure = () => {
-    toast.current?.show({
-      severity: "error",
-      summary: "Genre could not be modified",
-    });
-  };
+  // Load the Genre data on page load
+  useEffect(() => {
+    GENRES_API.getGenreDetail({ id: id })
+      .then((response) => setGenreName(response.name))
+      .catch(() => showFailure(toast, "Could not fetch genre data"));
+  }, []);
 
   const onSubmit = (): void => {
-    const modifiedGenre: Genre = { id: id, name: genre, bookCount: 0 };
+    const modifiedGenre: Genre = { id: id, name: genreName, bookCount: 0 };
     logger.debug("Edit Genre Submitted", modifiedGenre);
     GENRES_API.modifyGenre(modifiedGenre)
-      .then(() => showSuccess())
-      .catch(() => showFailure());
+      .then(() => showSuccess(toast, "Genre modified"))
+      .catch(() => showFailure(toast, "Genre could not be modified"));
     setIsModifiable(false);
   };
 
@@ -92,10 +87,10 @@ export default function GenreDetail() {
                 id="genre"
                 className="p-inputtext"
                 name="genre"
-                value={genre}
+                value={genreName}
                 disabled={!isModifiable}
                 onChange={(event: FormEvent<HTMLInputElement>): void => {
-                  setGenre(event.currentTarget.value);
+                  setGenreName(event.currentTarget.value);
                 }}
               />
             </div>

@@ -1,9 +1,10 @@
 import { Dropdown } from "primereact/dropdown";
-import { createContext, useEffect, useState } from "react";
 import { BOOKS_API } from "../../apis/BooksAPI";
+import { APIToInternalBookConversion } from "../../apis/Conversions";
+import { Book } from "../../pages/list/BookList";
 
 export interface BookDropdownDataProps {
-  setBooksMap: (arg0: Map<string, number>) => void; // Setter for book map
+  setBooksMap: (arg0: Map<string, Book>) => void; // Setter for book map
   setBookTitlesList: (arg0: string[]) => void; // Setter for book title list
 }
 
@@ -11,13 +12,16 @@ export interface BookDropdownProps {
   setSelectedBook: (arg0: string) => void; // Set the selected book
   bookTitlesList: string[]; // List of book titles
   selectedBook: string; // The selected book
+  placeholder?: string; // Placeholder for the dropdown
+  refreshKey?: number; // Used for refreshing the dropdown, necessary for a workaround
 }
 
 export function BooksDropdownData(props: BookDropdownDataProps) {
   BOOKS_API.getBooksNoPagination().then((response) => {
-    const tempBookMap = new Map<string, number>();
+    const tempBookMap = new Map<string, Book>();
     for (const book of response) {
-      tempBookMap.set(book.title, book.id);
+      const convertedBook = APIToInternalBookConversion(book);
+      tempBookMap.set(book.title, convertedBook);
     }
     props.setBooksMap(tempBookMap);
     props.setBookTitlesList(response.map((book) => book.title));
@@ -32,12 +36,18 @@ export default function BooksDropdown(props: BookDropdownProps) {
       value={props.selectedBook}
       options={props.bookTitlesList}
       filter
-      appendTo={"self"}
-      placeholder="Select a Book"
-      onChange={(e) => props.setSelectedBook(e.value)}
+      appendTo={document.body}
+      placeholder={props.placeholder ?? "Select a book"}
+      onChange={(e) => {
+        props.setSelectedBook(e.value);
+      }}
+      key={props.refreshKey}
       showClear
       virtualScrollerOptions={{ itemSize: 35 }}
-      style={{ position: "absolute", zIndex: 9999 }}
+      style={{
+        minWidth: "30rem",
+        maxWidth: "30rem",
+      }}
     />
   );
 }

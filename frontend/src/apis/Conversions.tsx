@@ -13,6 +13,7 @@ import {
 } from "../pages/list/SalesReport";
 import { SalesReconciliation } from "../pages/list/SRList";
 import { Vendor } from "../pages/list/VendorList";
+import { externalToInternalDate } from "../util/DateOperations";
 import {
   ArrayToCommaSeparatedString,
   CommaSeparatedStringToArray,
@@ -31,6 +32,8 @@ import { APIVendor } from "./VendorsAPI";
 // Internal data type -> ordering required for book get API
 export const APIBookSortFieldMap = new Map<string, string>([
   ["isbn13", "isbn_13"],
+  ["isbn10", "isbn_10"],
+  ["genres", "genre"],
   ["retailPrice", "retail_price"],
   ["title", "title"],
   ["author", "author"],
@@ -172,7 +175,7 @@ export function APIToInternalPOConversion(po: APIPO): PurchaseOrder {
 
   return {
     id: po.id,
-    date: po.date,
+    date: externalToInternalDate(po.date),
     vendorName: po.vendor_name,
     vendorId: po.vendor_id,
     totalBooks: po.num_books,
@@ -216,14 +219,14 @@ function APIToInternalSRSaleConversion(sale: APISRSaleRow): SRSaleRow {
   };
 }
 
-export function APItoInternalSRConversion(sr: APISR): SalesReconciliation {
+export function APIToInternalSRConversion(sr: APISR): SalesReconciliation {
   const sales: SRSaleRow[] = sr.sales.map((sale) =>
     APIToInternalSRSaleConversion(sale)
   );
 
   return {
     id: sr.id,
-    date: sr.date,
+    date: externalToInternalDate(sr.date),
     totalBooks: sr.num_books,
     uniqueBooks: sr.num_unique_books,
     totalRevenue: sr.total_revenue,

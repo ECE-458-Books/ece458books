@@ -44,10 +44,14 @@ export interface GetBooksResp {
   count: number;
 }
 
-// getBooksNoPaging
-export interface APIBookSimplified {
+// getBookDetail
+export interface GetBookDetailReq {
   id: number;
-  title: string;
+}
+
+// getBookDetail
+export interface GetBookDetailReq {
+  id: number;
 }
 
 // modifyBook
@@ -88,13 +92,20 @@ export const BOOKS_API = {
     });
   },
 
-  getBooksNoPagination: async function (): Promise<APIBookSimplified[]> {
+  getBooksNoPagination: async function (): Promise<APIBook[]> {
     return await API.request({
       url: BOOKS_EXTENSION,
       method: METHOD_GET,
       params: {
         no_pagination: true,
       },
+    });
+  },
+
+  getBookDetail: async function (req: GetBookDetailReq): Promise<APIBook> {
+    return await API.request({
+      url: BOOKS_EXTENSION.concat("/".concat(req.id.toString())),
+      method: METHOD_GET,
     });
   },
 

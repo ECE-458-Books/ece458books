@@ -1,10 +1,10 @@
-import React, { ReactElement, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ToggleButton } from "primereact/togglebutton";
 import { Calendar, CalendarProps } from "primereact/calendar";
 import { DataTable } from "primereact/datatable";
-import { Column, ColumnEditorOptions, ColumnEvent } from "primereact/column";
+import { Column } from "primereact/column";
 import { createColumns, TableColumn } from "../../components/TableColumns";
-import ConfirmPopup from "../../components/ConfirmPopup";
+import ConfirmPopup from "../../components/popups/ConfirmPopup";
 import { v4 as uuid } from "uuid";
 import {
   numberEditor,
@@ -21,14 +21,17 @@ import {
   SALES_API,
 } from "../../apis/SalesAPI";
 import { Toast } from "primereact/toast";
-import { toYYYYMMDDWithDash } from "../../util/DateOperations";
+import { internalToExternalDate } from "../../util/DateOperations";
 import { InputNumber } from "primereact/inputnumber";
 import BooksDropdown, {
   BooksDropdownData,
 } from "../../components/dropdowns/BookDropdown";
-import CSVUploader from "../../components/CSVFileUploader";
+import CSVUploader from "../../components/uploaders/CSVFileUploader";
 import { FileUploadHandlerEvent } from "primereact/fileupload";
-import { APIToInternalSalesCSVConversion } from "../../apis/Conversions";
+import {
+  APIToInternalSalesCSVConversion,
+  APIToInternalSRConversion,
+} from "../../apis/Conversions";
 import {
   showFailure,
   showSuccess,
@@ -40,15 +43,12 @@ import {
   CSVImport400Errors,
   errorCellBody,
 } from "./errors/CSVImportErrors";
+import { Book } from "../list/BookList";
 
 export interface SRDetailState {
   id: number;
-  date: any;
-  totalRevenue: number;
-  sales: SRSaleRow[];
   isAddPage: boolean;
   isModifiable: boolean;
-  isConfirmationPopupVisible: boolean;
 }
 
 export interface SRSaleRow {
@@ -63,7 +63,7 @@ export interface SRSaleRow {
 }
 
 export default function SRDetail() {
-  const emptyProduct: SRSaleRow = {
+  const emptySale: SRSaleRow = {
     isNewRow: true,
     id: uuid(),
     subtotal: 0,
@@ -77,42 +77,44 @@ export default function SRDetail() {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const detailState = (location.state! as SRDetailState) ?? {
     id: -1,
-    date: new Date(),
-    totalRevenue: 0,
-    sales: [
-      {
-        isNewRow: true,
-        id: uuid(),
-        bookId: 0,
-        subtotal: 0,
-        bookTitle: "",
-        quantity: 1,
-        unitRetailPrice: 0,
-      },
-    ],
     isAddPage: true,
     isModifiable: true,
-    isConfirmationPopupVisible: false,
   };
 
-  for (const sale of detailState.sales) {
-    sale.isNewRow = false;
-  }
-
-  const [date, setDate] = useState(detailState.date);
-  const [sales, setSales] = useState<SRSaleRow[]>(detailState.sales);
+  // From detailState
   const salesReconciliationID = detailState.id;
-  const [lineData, setLineData] = useState<SRSaleRow>(emptyProduct);
-  const totalRevenue = detailState.totalRevenue;
-  const [booksMap, setBooksMap] = useState<Map<string, number>>(new Map());
-  const [booksDropdownTitles, setBooksDropdownTitles] = useState<string[]>([]);
   const isSRAddPage = detailState.isAddPage;
   const [isModifiable, setIsModifiable] = useState<boolean>(
     detailState.isModifiable
   );
+
+  // For dropdown menus
+  const [booksMap, setBooksMap] = useState<Map<string, Book>>(new Map());
+  const [booksDropdownTitles, setBooksDropdownTitles] = useState<string[]>([]);
+
+  // The rest of the data
+  const [date, setDate] = useState<Date>(new Date());
+  const [sales, setSales] = useState<SRSaleRow[]>([]);
+  const [lineData, setLineData] = useState<SRSaleRow>(emptySale);
+  const [totalRevenue, setTotalRevenue] = useState<number>(0);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
-    useState<boolean>(detailState.isConfirmationPopupVisible);
+    useState<boolean>(false);
   const [hasUploadedCSV, setHasUploadedCSV] = useState<boolean>(false);
+  const [key, setKey] = useState<number>(0);
+
+  // Load the SR data on page load
+  useEffect(() => {
+    if (!isSRAddPage) {
+      SALES_API.getSalesReconciliationDetail({ id: salesReconciliationID })
+        .then((response) => {
+          const salesReconciliation = APIToInternalSRConversion(response);
+          setDate(salesReconciliation.date);
+          setSales(salesReconciliation.sales);
+          setTotalRevenue(salesReconciliation.totalRevenue);
+        })
+        .catch(() => showFailure(toast, "Could not fetch purchase order data"));
+    }
+  }, []);
 
   const COLUMNS: TableColumn[] = [
     {
@@ -124,23 +126,31 @@ export default function SRDetail() {
     {
       field: "bookTitle",
       header: "Book",
-      cellEditor: (options: ColumnEditorOptions) =>
-        booksDropDownEditor(options),
+      customBody: (rowData: SRSaleRow) =>
+        booksDropDownEditor(rowData.bookTitle, (newValue) => {
+          rowData.bookTitle = newValue;
+          setKey(Math.random());
+          rowData.unitRetailPrice = booksMap.get(newValue)?.retailPrice ?? 0; // Default URP to that of book
+        }),
     },
 
     {
       field: "quantity",
       header: "Quantity",
-      cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
-      cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
+      customBody: (rowData: SRSaleRow) =>
+        numberEditor(
+          rowData.quantity,
+          (newValue) => (rowData.quantity = newValue)
+        ),
     },
     {
       field: "unitRetailPrice",
       header: "Unit Retail Price ($)",
-      cellEditor: (options: ColumnEditorOptions) => priceEditor(options),
-      cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
       customBody: (rowData: SRSaleRow) =>
-        priceBodyTemplate(rowData.unitRetailPrice),
+        priceEditor(
+          rowData.unitRetailPrice,
+          (newValue) => (rowData.unitRetailPrice = newValue)
+        ),
     },
     {
       field: "subtotal",
@@ -150,7 +160,7 @@ export default function SRDetail() {
   ];
 
   const addNewSale = () => {
-    setLineData(emptyProduct);
+    setLineData(emptySale);
     const _lineData = lineData;
     _lineData.id = uuid();
     setLineData(_lineData);
@@ -183,16 +193,19 @@ export default function SRDetail() {
   };
 
   // Validate submission before making API req
-  const validateSubmission = (sr: SRSaleRow[]) => {
-    for (const sale of sr) {
+  const validateSubmission = () => {
+    for (const sale of sales) {
       if (!sale.bookTitle || !(sale.unitRetailPrice >= 0) || !sale.quantity) {
-        showFailure(toast, "All fields are required");
+        showFailure(
+          toast,
+          "Book, retail price, and quantity are required for all line items"
+        );
         return false;
       }
     }
 
     if (!date) {
-      showFailure(toast, "All fields are required");
+      showFailure(toast, "Date is a required field");
       return false;
     }
 
@@ -200,53 +213,60 @@ export default function SRDetail() {
   };
 
   const onSubmit = (): void => {
-    if (!validateSubmission(sales)) {
+    if (!validateSubmission()) {
       return;
     }
 
     if (isSRAddPage) {
-      const apiSales = sales.map((sale) => {
-        return {
-          book: booksMap.get(sale.bookTitle),
-          quantity: sale.quantity,
-          unit_retail_price: sale.unitRetailPrice,
-        } as APISRSaleRow;
-      });
-
-      const salesReconciliation = {
-        date: toYYYYMMDDWithDash(date),
-        sales: apiSales,
-      } as AddSRReq;
-      SALES_API.addSalesReconciliation(salesReconciliation)
-        .then(() =>
-          showSuccess(toast, "Sales reconciliation added successfully")
-        )
-        .catch(() => showFailure(toast, "Could not add sales reconciliation"));
+      callAddSRAPI();
     } else {
       // Otherwise, it is a modify page
-      const apiSales = sales.map((sale) => {
-        return {
-          id: sale.isNewRow ? undefined : sale.id,
-          book: sale.isNewRow ? booksMap.get(sale.bookTitle) : sale.bookId,
-          quantity: sale.quantity,
-          unit_retail_price: sale.unitRetailPrice,
-        } as APISRSaleRow;
-      });
-
-      const salesReconciliation = {
-        id: salesReconciliationID,
-        date: toYYYYMMDDWithDash(date),
-        sales: apiSales,
-      } as ModifySRReq;
-
-      SALES_API.modifySalesReconciliation(salesReconciliation)
-        .then(() =>
-          showSuccess(toast, "Sales reconciliation modified successfully")
-        )
-        .catch(() =>
-          showFailure(toast, "Could not modify sales reconciliation")
-        );
+      callModifySRAPI();
     }
+  };
+
+  // Add the sales reconciliation
+  const callAddSRAPI = () => {
+    const apiSales = sales.map((sale) => {
+      return {
+        book: booksMap.get(sale.bookTitle)?.id,
+        quantity: sale.quantity,
+        unit_retail_price: sale.unitRetailPrice,
+      } as APISRSaleRow;
+    });
+
+    const salesReconciliation = {
+      date: internalToExternalDate(date),
+      sales: apiSales,
+    } as AddSRReq;
+    SALES_API.addSalesReconciliation(salesReconciliation)
+      .then(() => showSuccess(toast, "Sales reconciliation added successfully"))
+      .catch(() => showFailure(toast, "Could not add sales reconciliation"));
+  };
+
+  // Modify the sales reconciliation
+  const callModifySRAPI = () => {
+    const apiSales = sales.map((sale) => {
+      return {
+        id: sale.isNewRow ? undefined : sale.id,
+        // If the book has been deleted, will have to use the id in the row
+        book: booksMap.get(sale.bookTitle)?.id ?? sale.bookId,
+        quantity: sale.quantity,
+        unit_retail_price: sale.unitRetailPrice,
+      } as APISRSaleRow;
+    });
+
+    const salesReconciliation = {
+      id: salesReconciliationID,
+      date: internalToExternalDate(date),
+      sales: apiSales,
+    } as ModifySRReq;
+
+    SALES_API.modifySalesReconciliation(salesReconciliation)
+      .then(() =>
+        showSuccess(toast, "Sales reconciliation modified successfully")
+      )
+      .catch(() => showFailure(toast, "Could not modify sales reconciliation"));
   };
 
   // -------- TEMPLATES/VISUAL ELEMENTS --------
@@ -319,13 +339,18 @@ export default function SRDetail() {
     []
   );
 
-  const booksDropDownEditor = (options: ColumnEditorOptions) => (
+  const booksDropDownEditor = (
+    value: string,
+    onChange: (newValue: string) => void
+  ) => (
     <BooksDropdown
       // This will always be used in a table cell, so we can disable the warning
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      setSelectedBook={options.editorCallback!}
-      selectedBook={options.value}
+      setSelectedBook={onChange}
+      selectedBook={value}
       bookTitlesList={booksDropdownTitles}
+      refreshKey={key}
+      placeholder={value}
     />
   );
 
@@ -399,7 +424,7 @@ export default function SRDetail() {
                   value={date}
                   readOnlyInput
                   onChange={(event: CalendarProps): void => {
-                    setDate(event.value);
+                    setDate(event.value as Date);
                   }}
                 />
               </div>

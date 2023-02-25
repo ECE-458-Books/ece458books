@@ -10,9 +10,9 @@ import { Column } from "primereact/column";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import { useEffect, useRef, useState } from "react";
 import { DataTableFilterMetaData } from "primereact/datatable";
-import DeletePopup from "../../components/DeletePopup";
+import DeletePopup from "../../components/popups/DeletePopup";
 import { logger } from "../../util/Logger";
-import { BookDetailState } from "../detail/ModfiyBook";
+import { BookDetailState } from "../detail/BookDetail";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Toast } from "primereact/toast";
 import {
@@ -55,7 +55,7 @@ interface Filters {
 }
 
 // Used for initializing state
-const emptyBook: Book = {
+export const emptyBook: Book = {
   id: 0,
   title: "",
   author: "",
@@ -143,6 +143,7 @@ export default function BookList() {
       header: "Genre",
       filterPlaceholder: "Search by Genre",
       filterable: true,
+      sortable: true,
       customFilter: genreFilter,
     },
     {
@@ -156,7 +157,7 @@ export default function BookList() {
       field: "isbn10",
       header: "ISBN 10",
       filterPlaceholder: "Search by ISBN",
-      sortable: false,
+      sortable: true,
       filterable: false,
     },
     {
@@ -198,9 +199,8 @@ export default function BookList() {
   const toDetailsPage = (book: Book, isModifiable: boolean) => {
     logger.debug("Edit Book Clicked", book);
     const detailState: BookDetailState = {
-      book: book,
+      id: book.id,
       isModifiable: isModifiable,
-      isConfirmationPopupVisible: false,
     };
 
     navigate("/books/detail", { state: detailState });

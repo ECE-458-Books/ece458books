@@ -1,4 +1,3 @@
-import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import {
   DataTable,
@@ -11,7 +10,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { APIToInternalVendorConversion } from "../../apis/Conversions";
 import { GetVendorsResp, VENDORS_API } from "../../apis/VendorsAPI";
-import DeletePopup from "../../components/DeletePopup";
+import DeletePopup from "../../components/popups/DeletePopup";
 import { createColumns, TableColumn } from "../../components/TableColumns";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import { logger } from "../../util/Logger";
@@ -74,9 +73,7 @@ export default function VendorList() {
     logger.debug("Edit Vendor Clicked", vendor);
     const detailState: VendorDetailState = {
       id: vendor.id,
-      vendor: vendor.name,
       isModifiable: true,
-      isConfirmationPopupVisible: false,
     };
 
     navigate("/vendors/detail", { state: detailState });

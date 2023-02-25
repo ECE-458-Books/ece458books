@@ -16,8 +16,9 @@ interface AddRowButtonProps<T extends IDer> {
 export default function AddRowButton<T extends IDer>(
   props: AddRowButtonProps<T>
 ) {
+  const [lineData, setLineData] = useState<T>(props.emptyItem);
+
   const addNewRow = () => {
-    const [lineData, setLineData] = useState<T>(props.emptyItem);
     setLineData(props.emptyItem);
     const _lineData = lineData;
     _lineData.id = uuid();
@@ -34,7 +35,7 @@ export default function AddRowButton<T extends IDer>(
       icon="pi pi-plus"
       className="p-button-info mr-2"
       onClick={addNewRow}
-      disabled={!props.isModifiable ?? false}
+      disabled={!!props.isModifiable}
     />
   );
 }

@@ -18,7 +18,6 @@ export default function DisplayModeDropdown(props: DisplayModeDropdownProps) {
     <Dropdown
       value={props.selectedDisplayMode}
       options={displayModeList}
-      appendTo={"self"}
       onChange={(e) => props.setSelectedDisplayMode(e.value)}
       placeholder={"Select Display Mode"}
     />

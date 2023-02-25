@@ -17,9 +17,10 @@ import { DataTable } from "primereact/datatable";
 import { Toolbar } from "primereact/toolbar";
 import { Column } from "primereact/column";
 
-const DEFAULT_HEIGHT = 8;
 const DEFAULT_WIDTH = 5;
-const DEFAULT_THICKNESS = 0.8;
+const DEFAULT_HEIGHT = 8;
+const DEFAULT_THICKNESS = 0.5;
+const SHELF_DEPTH = 8;
 
 interface ShelfCalculatorRow {
   id: string;
@@ -27,16 +28,16 @@ interface ShelfCalculatorRow {
   stock: number;
   displayCount: number;
   displayMode: DisplayMode;
-  shelfSpace: number;
+  shelfSpace: number; // This measures the horizontal distance on store shelves
   hasUnknownDimensions: boolean;
 }
 
 const emptyRow: ShelfCalculatorRow = {
   id: "",
   bookTitle: "",
-  stock: 0,
-  displayCount: 0,
-  displayMode: DisplayMode.COVER_OUT,
+  stock: 1,
+  displayCount: 1,
+  displayMode: DisplayMode.SPINE_OUT,
   shelfSpace: 0,
   hasUnknownDimensions: false,
 };
@@ -54,13 +55,15 @@ export default function ShelfCalculator() {
       field: "bookTitle",
       header: "Book",
       customBody: (rowData: ShelfCalculatorRow) =>
-        booksDropDownEditor(rowData.bookTitle, (newValue) => {
+        booksDropdownEditor(rowData.bookTitle, (newValue) => {
           handleBookChange(rowData, newValue);
         }),
+      style: { width: "40%" },
     },
     {
       field: "stock",
       header: "Current Inventory",
+      style: { width: "10%" },
     },
     {
       field: "displayCount",
@@ -69,29 +72,48 @@ export default function ShelfCalculator() {
         numberEditor(rowData.displayCount, (newValue) => {
           handleDisplayCountChange(rowData, newValue);
         }),
+      style: { width: "10%" },
     },
     {
       field: "displayMode",
-      header: "Display Count",
+      header: "Display Mode",
       customBody: (rowData: ShelfCalculatorRow) =>
-        numberEditor(rowData.displayCount, (newValue) => {
-          handleDisplayCountChange(rowData, newValue);
+        displayModeDropdownEditor(rowData.displayMode, (newValue) => {
+          handleDisplayModeChange(rowData, newValue);
         }),
+      style: { width: "20%" },
     },
     {
       field: "shelfSpace",
       header: "Shelf Space",
+      style: { width: "10%" },
     },
   ];
 
-  // Handlers for when data is changed
+  const calculateShelfSpace = (row: ShelfCalculatorRow) => {
+    const book = booksMap.get(row.bookTitle)!;
+    const width = book.width ?? DEFAULT_WIDTH;
+    const thickness = book.thickness ?? DEFAULT_THICKNESS;
 
+    if (row.displayMode == DisplayMode.SPINE_OUT) {
+      return thickness * row.displayCount;
+    } else {
+      return width;
+    }
+  };
+
+  // Handlers for when data is changed
   const handleBookChange = (
     rowData: ShelfCalculatorRow,
     newBookTitle: string
   ) => {
     setRows((draft) => {
-      const row = findById(draft, rowData.id);
+      const row = findById(draft, rowData.id)!;
+      const book = booksMap.get(newBookTitle)!;
+
+      row.bookTitle = book.title;
+      row.stock = book.stock;
+      row.shelfSpace = calculateShelfSpace(row!);
     });
   };
 
@@ -100,7 +122,9 @@ export default function ShelfCalculator() {
     newDisplayCount: number
   ) => {
     setRows((draft) => {
-      const row = findById(draft, rowData.id);
+      const row = findById(draft, rowData.id)!;
+      row.displayCount = newDisplayCount;
+      row.shelfSpace = calculateShelfSpace(row!);
     });
   };
 
@@ -109,7 +133,9 @@ export default function ShelfCalculator() {
     newDisplayMode: DisplayMode
   ) => {
     setRows((draft) => {
-      const row = findById(draft, rowData.id);
+      const row = findById(draft, rowData.id)!;
+      row.displayMode = newDisplayMode;
+      row.shelfSpace = calculateShelfSpace(row!);
     });
   };
 
@@ -126,7 +152,7 @@ export default function ShelfCalculator() {
   );
 
   // The books dropdown
-  const booksDropDownEditor = (
+  const booksDropdownEditor = (
     value: string,
     onChange: (newValue: string) => void
   ) => (
@@ -188,8 +214,9 @@ export default function ShelfCalculator() {
             {columns}
             <Column
               body={rowDeleteButton}
+              header={"Delete"}
               exportable={false}
-              style={{ minWidth: "8rem" }}
+              style={{ width: "10%" }}
             ></Column>
           </DataTable>
         </div>

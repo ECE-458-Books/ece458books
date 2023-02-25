@@ -132,7 +132,7 @@ class ListCreateBookAPIView(ListCreateAPIView):
         else:
             # This is different from the above serializer because this is creating a new row in the table
             serializer = self.get_serializer(data=request.data)
-
+        
         serializer.is_valid(raise_exception=True)
         serializer.save()
 

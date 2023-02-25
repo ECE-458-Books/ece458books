@@ -91,8 +91,6 @@ class ISBNTools:
                     ret[key] = parser.parse(info[key]).year
                 else:
                     ret[key] = info[key]
-            else:
-                ret[key] = None
         
         # Set from DB to False
         ret["fromDB"] = False

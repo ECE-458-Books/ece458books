@@ -73,7 +73,6 @@ export function priceBodyTemplate(value: number | bigint) {
 }
 
 export function imageBodyTemplate(thumbnailURL: string[]) {
-  console.log(thumbnailURL);
   return (
     <img
       // Change the [0] when implementing for multiple images

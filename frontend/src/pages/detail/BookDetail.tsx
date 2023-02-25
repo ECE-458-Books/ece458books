@@ -60,7 +60,6 @@ export default function BookDetail() {
   useEffect(() => {
     BOOKS_API.getBookDetail({ id: id! })
       .then((response) => {
-        console.log(response);
         const book = APIToInternalBookConversion(response);
         setOriginalBookData(book);
         setTitle(book.title);
@@ -135,7 +134,7 @@ export default function BookDetail() {
         height: height,
         thickness: thickness,
         stock: 0,
-        urls: [""],
+        url: "",
       };
       logger.debug("Submitting Book Modify", book);
       BOOKS_API.modifyBook({ book: book })

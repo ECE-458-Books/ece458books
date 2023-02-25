@@ -82,7 +82,7 @@ export function APIToInternalBookConversion(book: APIBook): Book {
     thickness: book.thickness,
     retailPrice: book.retail_price,
     stock: book.stock,
-    thumbnailURL: book.urls,
+    thumbnailURL: [book.url],
   };
 }
 
@@ -102,7 +102,7 @@ export function InternalToAPIBookConversion(book: Book): APIBook {
     thickness: book.thickness,
     retail_price: book.retailPrice,
     stock: book.stock,
-    urls: book.thumbnailURL,
+    url: book.thumbnailURL[0],
   };
 }
 
@@ -124,7 +124,7 @@ export function APIToInternalBookConversionWithDB(
     thickness: book.thickness,
     retailPrice: book.retail_price ?? 0,
     stock: book.stock,
-    thumbnailURL: book.urls,
+    thumbnailURL: [book.url],
     fromDB: book.fromDB,
   };
 }

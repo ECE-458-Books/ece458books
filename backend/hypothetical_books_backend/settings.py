@@ -76,6 +76,7 @@ INSTALLED_APPS = [
 
     # Django Extensions (shell_plus)
     'django_extensions',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -169,6 +170,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # https://www.django-rest-framework.org/
 # THIS IS USED TO OVERRIDE SETTINGS IN THE DJANGO REST FRAMEWORK (DRF)
 REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
     'DEFAULT_AUTHENTICATION_CLASSES': ['rest_framework_simplejwt.authentication.JWTAuthentication',],
     'EXCEPTION_HANDLER': 'core.exceptions.core_exception_handler',
     'NON_FIELD_ERRORS_KEY': 'error',

@@ -13,11 +13,10 @@ Django==4.1.6
 django-cors-headers==3.13.0
 django-environ==0.9.0
 django-extensions==3.2.1
-django-filter==1.1.0
+django-filter==22.1
 django-rest-multiple-models==2.1.3
 django-shell-plus==1.1.7
 djangorestframework==3.14.0
-djangorestframework-filters==0.11.1
 djangorestframework-simplejwt==5.2.2
 docutils==0.19
 gunicorn==20.1.0

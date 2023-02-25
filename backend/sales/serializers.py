@@ -64,7 +64,7 @@ class SalesReconciliationSerializer(TransactionGroupBaseSerializer):
 
     def __book_has_previous_purchase(self, date, book_id):
         return PurchaseOrder.objects.filter(date__lte=date).annotate(prev_purchase=Subquery(Purchase.objects.filter(purchase_order=OuterRef('id')).filter(
-            book=book_id).values('book'))).values('prev_purchase').first()['prev_purchase'] != None
+            book=book_id).values('book'))).values('prev_purchase').exclude(prev_purchases=None).first()['prev_purchase'] != None
 
     def update_non_nested_fields(self, instance, validated_data):
         instance.date = validated_data.get('date', instance.date)

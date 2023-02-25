@@ -4,6 +4,7 @@ import React from "react";
 interface EditDeleteTemplateProps<T> {
   onEdit: (arg0: T) => void;
   onDelete: (arg0: T) => void;
+  deleteDisabled: (arg0: T) => boolean;
 }
 
 export default function EditDeleteTemplate<T>(
@@ -21,6 +22,7 @@ export default function EditDeleteTemplate<T>(
           icon="pi pi-trash"
           className="p-button-rounded p-button-danger"
           onClick={() => props.onDelete(rowData)}
+          disabled={props.deleteDisabled(rowData)}
         />
       </React.Fragment>
     );

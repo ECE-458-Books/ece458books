@@ -1,56 +1,47 @@
-import React, { FormEvent, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { ToggleButton } from "primereact/togglebutton";
-import ConfirmButton from "../../components/ConfirmButton";
+import ConfirmPopup from "../../components/popups/ConfirmPopup";
 import { useLocation } from "react-router-dom";
 import { ModifyVendorReq, VENDORS_API } from "../../apis/VendorsAPI";
-import { Vendor } from "../list/VendorList";
-import { InputNumber } from "primereact/inputnumber";
 import { logger } from "../../util/Logger";
 import { Toast } from "primereact/toast";
+import { showFailure, showSuccess } from "../../components/Toast";
 
 export interface VendorDetailState {
   id: number;
-  vendor: string;
   isModifiable: boolean;
-  isConfirmationPopupVisible: boolean;
 }
 
 export default function VendorDetail() {
   const location = useLocation();
+  // If we are on this page, we know that the state is not null
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const detailState = location.state! as VendorDetailState;
-  const [vendor, setVendor] = useState<string>(detailState.vendor);
-  const [id, setId] = useState<number>(detailState.id);
-  const [isModifiable, setIsModifiable] = useState(detailState.isModifiable);
-  const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] = useState(
-    detailState.isConfirmationPopupVisible
+  const id = detailState.id;
+  const [vendorName, setVendorName] = useState<string>("");
+  const [isModifiable, setIsModifiable] = useState<boolean>(
+    detailState.isModifiable
   );
+  const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
+    useState<boolean>(false);
 
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
 
-  const showSuccess = () => {
-    toast.current?.show({ severity: "success", summary: "Vendor modified" });
-  };
-
-  const showFailure = () => {
-    toast.current?.show({
-      severity: "error",
-      summary: "Vendor could not be modified",
-    });
-  };
+  // Load the Vendor data on page load
+  useEffect(() => {
+    VENDORS_API.getVendorDetail({ id: id })
+      .then((response) => setVendorName(response.name))
+      .catch(() => showFailure(toast, "Could not fetch vendor data"));
+  }, []);
 
   const onSubmit = (): void => {
-    const modifiedVendor: ModifyVendorReq = { id: id, name: vendor };
+    const modifiedVendor: ModifyVendorReq = { id: id, name: vendorName };
     logger.debug("Edit Vendor Submitted", modifiedVendor);
-    VENDORS_API.modifyVendor(modifiedVendor).then((response) => {
-      if (response.status == 200) {
-        showSuccess();
-      } else {
-        showFailure();
-      }
-    });
+    VENDORS_API.modifyVendor(modifiedVendor)
+      .then(() => showSuccess(toast, "Vendor modified"))
+      .catch(() => showFailure(toast, "Vendor could not be modified"));
     setIsModifiable(false);
   };
 
@@ -84,24 +75,27 @@ export default function VendorDetail() {
 
             <div className="flex flex-row justify-content-center card-container col-12">
               <div className="pt-2 pr-2">
-                <label className="text-xl" htmlFor="vendor">
-                  Genre
+                <label
+                  className="text-xl p-component text-teal-900 p-text-secondary"
+                  htmlFor="vendor"
+                >
+                  Vendor
                 </label>
               </div>
               <InputText
                 id="vendor"
-                className="p-inputtext-sm"
+                className="p-inputtext"
                 name="vendor"
-                value={vendor}
+                value={vendorName}
                 disabled={!isModifiable}
                 onChange={(event: FormEvent<HTMLInputElement>): void => {
-                  setVendor(event.currentTarget.value);
+                  setVendorName(event.currentTarget.value);
                 }}
               />
             </div>
 
             <div className="flex flex-row justify-content-center card-container col-12">
-              <ConfirmButton
+              <ConfirmPopup
                 isVisible={isConfirmationPopupVisible}
                 hideFunc={() => setIsConfirmationPopupVisible(false)}
                 acceptFunc={onSubmit}

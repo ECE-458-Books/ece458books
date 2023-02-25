@@ -14,6 +14,7 @@ from pathlib import Path
 from datetime import timedelta
 import environ
 import os
+from .version import API_PREFIX 
 
 # Initialize environment variables
 env = environ.Env()
@@ -35,7 +36,9 @@ DEBUG = env('DEBUG').lower() == 'true'
 
 # The reason why we don't let ALLOWED_HOSTS as a wildcard asterisk
 # https://www.djangoproject.com/weblog/2013/feb/19/security/#s-issue-host-header-poisoning
-ALLOWED_HOSTS = ['books.colab.duke.edu', 'books-dev.colab.duke.edu', 'books-front.colab.duke.edu']
+ALLOWED_HOSTS = [
+    'books.colab.duke.edu', 'books-dev.colab.duke.edu', 'books-front.colab.duke.edu', 'books-test.colab.duke.edu'
+]
 # ALLOWED_HOSTS = ['*']
 
 # Application definition
@@ -61,6 +64,7 @@ INSTALLED_APPS = [
     'vendors',
     'purchase_orders',
     'sales',
+    'buybacks',
 
     # Authentication App
     'authapp',
@@ -151,7 +155,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = f'{API_PREFIX}static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"), # your static/ files folder
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -178,7 +185,7 @@ AUTH_USER_MODEL = 'authapp.User'
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGIN_REGEXES = [
     '^https?://localhost(:8000)?$',
-    '^https?://books-front\.colab\.duke\.edu(:3000)?$' # Matches http,https request from port 3000 or none
+    '^https?://books-front\.colab\.duke\.edu(:3000)?$'  # Matches http,https request from port 3000 or none
 ]
 
 SIMPLE_JWT = {

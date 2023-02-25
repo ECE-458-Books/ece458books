@@ -14,15 +14,16 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import include, path
-
-api_version = 1
-api_prefix = f'api/v{api_version}/'
+from django.conf import settings
+from django.conf.urls.static import static
+from .version import API_PREFIX
 
 urlpatterns = [
-    path(f'{api_prefix}books', include('books.urls')),
-    path(f'{api_prefix}genres', include('genres.urls')),
-    path(f'{api_prefix}vendors', include('vendors.urls')),
-    path(f'{api_prefix}sales', include('sales.urls')),
-    path(f'{api_prefix}purchase_orders', include('purchase_orders.urls')),
-    path(f'{api_prefix}auth', include('authapp.urls', namespace='authentication')),
-]
+    path(f'{API_PREFIX}books', include('books.urls')),
+    path(f'{API_PREFIX}genres', include('genres.urls')),
+    path(f'{API_PREFIX}vendors', include('vendors.urls')),
+    path(f'{API_PREFIX}sales', include('sales.urls')),
+    path(f'{API_PREFIX}purchase_orders', include('purchase_orders.urls')),
+    path(f'{API_PREFIX}auth', include('authapp.urls', namespace='authentication')),
+    path(f'{API_PREFIX}buybacks', include('buybacks.urls')),
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

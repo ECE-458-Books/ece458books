@@ -1,8 +1,6 @@
 import { Column } from "primereact/column";
 import {
   DataTable,
-  DataTableFilterEvent,
-  DataTableFilterMetaData,
   DataTablePageEvent,
   DataTableRowClickEvent,
   DataTableSortEvent,
@@ -10,100 +8,83 @@ import {
 import { Toast } from "primereact/toast";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { GetPurchaseOrdersResp, PURCHASES_API } from "../../apis/PurchasesAPI";
-import DeletePopup from "../../components/DeletePopup";
-import { TableColumn } from "../../components/Table";
+import {
+  APIPOSortFieldMap,
+  APIToInternalPOConversion,
+} from "../../apis/Conversions";
+import { GetPOsResp, PURCHASES_API } from "../../apis/PurchasesAPI";
+import DeletePopup from "../../components/popups/DeletePopup";
+import { createColumns, TableColumn } from "../../components/TableColumns";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import { logger } from "../../util/Logger";
+import {
+  dateBodyTemplate,
+  priceBodyTemplate,
+} from "../../util/TableCellEditFuncs";
 import { PODetailState, POPurchaseRow } from "../detail/PODetail";
 import { NUM_ROWS } from "./BookList";
 
 export interface PurchaseOrder {
   id: number;
-  date: string;
-  vendor_name: string;
-  vendor: number;
-  num_unique_books: number;
-  num_books: number;
-  total_cost: number;
+  date: Date;
+  vendorName: string;
+  vendorId: number;
+  uniqueBooks: number;
+  totalBooks: number;
+  totalCost: number;
   purchases: POPurchaseRow[];
 }
 
 const COLUMNS: TableColumn[] = [
   {
-    field: "id",
-    header: "ID",
-    filterPlaceholder: "Search by ID",
-    hidden: true,
-    filterable: false,
-  },
-  {
     field: "date",
     header: "Date (YYYY-MM-DD)",
-    filterPlaceholder: "Search by Date",
-    filterable: false,
+    sortable: true,
+    customBody: (rowData: PurchaseOrder) => dateBodyTemplate(rowData.date),
   },
   {
-    field: "vendor_name",
+    field: "vendorName",
     header: "Vendor Name",
-    filterPlaceholder: "Search by Name",
-    filterable: false,
+    sortable: true,
   },
   {
-    field: "vendor",
-    header: "Vendor ID",
-    filterPlaceholder: "Search by Name",
-    hidden: true,
-    filterable: false,
-  },
-  {
-    field: "num_unique_books",
+    field: "uniqueBooks",
     header: "Unique Books",
-    filterPlaceholder: "Search by Unique Books",
-    filterable: false,
+    sortable: true,
   },
   {
-    field: "num_books",
+    field: "totalBooks",
     header: "Total Books",
-    filterPlaceholder: "Search by Total Books",
-    filterable: false,
+    sortable: true,
   },
   {
-    field: "total_cost",
+    field: "totalCost",
     header: "Total Cost ($)",
-    filterPlaceholder: "Search by Total Cost",
-    filterable: false,
+    sortable: true,
+    customBody: (rowData: PurchaseOrder) =>
+      priceBodyTemplate(rowData.totalCost),
   },
 ];
 
-// Define the column filters
-interface Filters {
-  [id: string]: DataTableFilterMetaData;
-  date: DataTableFilterMetaData;
-  vendor_name: DataTableFilterMetaData;
-  num_unique_books: DataTableFilterMetaData;
-  num_books: DataTableFilterMetaData;
-  total_cost: DataTableFilterMetaData;
-}
-
 // Empty purchase order, used to initialize state
-const emptyPurchaseOrder = {
+const emptyPurchaseOrder: PurchaseOrder = {
   id: 0,
-  date: "",
-  vendor_name: "",
-  vendor: 0,
-  num_unique_books: 0,
-  num_books: 0,
-  total_cost: 0,
+  date: new Date(),
+  vendorName: "",
+  vendorId: 0,
+  uniqueBooks: 0,
+  totalBooks: 0,
+  totalCost: 0,
   purchases: [],
 };
 
 export default function PurchaseOrderList() {
   // ----------------- STATE -----------------
-  const [loading, setLoading] = useState(false); // Whether we show that the table is loading or not
-  const [numberOfPurchaseOrders, setNumberOfPurchaseOrders] = useState(0); // The number of elements that match the query
+  const [loading, setLoading] = useState<boolean>(false); // Whether we show that the table is loading or not
+  const [numberOfPurchaseOrders, setNumberOfPurchaseOrders] =
+    useState<number>(0); // The number of elements that match the query
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]); // The data displayed in the table
-  const [deletePopupVisible, setDeletePopupVisible] = useState(false); // Whether the delete popup is shown
+  const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false); // Whether the delete popup is shown
   const [selectedDeletePurchaseOrder, setSelectedDeletePurchaseOrder] =
     useState<PurchaseOrder>(emptyPurchaseOrder); // The element that has been clicked on to delete
 
@@ -121,18 +102,6 @@ export default function PurchaseOrderList() {
     page: 0,
   });
 
-  // The current state of the filters
-  const [filterParams, setFilterParams] = useState<any>({
-    filters: {
-      id: { value: "", matchMode: "contains" },
-      date: { value: "", matchMode: "contains" },
-      vendor_name: { value: "", matchMode: "contains" },
-      num_unique_books: { value: "", matchMode: "contains" },
-      num_books: { value: "", matchMode: "contains" },
-      total_cost: { value: "", matchMode: "contains" },
-    } as Filters,
-  });
-
   // ----------------- METHODS -----------------
 
   // The navigator to switch pages
@@ -142,15 +111,9 @@ export default function PurchaseOrderList() {
   const toDetailPage = (po: PurchaseOrder, isModifiable: boolean) => {
     logger.debug("Edit Purchase Order Clicked", po);
     const detailState: PODetailState = {
-      date: new Date(po.date.replace("-", "/")),
-      purchases: po.purchases,
-      totalCost: po.total_cost,
       id: po.id,
-      vendorName: po.vendor_name,
-      vendorID: po.vendor,
       isAddPage: false,
       isModifiable: isModifiable,
-      isConfirmationPopupVisible: false,
     };
 
     navigate("/purchase-orders/detail", { state: detailState });
@@ -167,28 +130,16 @@ export default function PurchaseOrderList() {
   const deletePurchaseOrderFinal = () => {
     logger.debug("Edit Purchase Order Finalized", selectedDeletePurchaseOrder);
     setDeletePopupVisible(false);
-    PURCHASES_API.deletePurchaseOrder(
-      selectedDeletePurchaseOrder.id.toString()
-    ).then((response) => {
-      if (response.status == 204) {
-        showSuccess();
-      } else {
-        showFailure();
-        return;
-      }
-    });
+    PURCHASES_API.deletePurchaseOrder({
+      id: selectedDeletePurchaseOrder.id,
+    })
+      .then(() => showSuccess())
+      .catch(() => showFailure());
     const _purchaseOrders = purchaseOrders.filter(
       (selectPO) => selectedDeletePurchaseOrder.id != selectPO.id
     );
     setPurchaseOrders(_purchaseOrders);
     setSelectedDeletePurchaseOrder(emptyPurchaseOrder);
-  };
-
-  // Called when any of the filters (search boxes) are typed into
-  const onFilter = (event: DataTableFilterEvent) => {
-    logger.debug("Filter Applied", event);
-    setLoading(true);
-    setFilterParams(event);
   };
 
   // Called when any of the columns are selected to be sorted
@@ -215,18 +166,18 @@ export default function PurchaseOrderList() {
   };
 
   // When any of the list of params are changed, useEffect is called to hit the API endpoint
-  useEffect(() => callAPI(), [sortParams, pageParams, filterParams]);
+  useEffect(() => callAPI(), [sortParams, pageParams]);
 
   // Calls the Vendors API
   const callAPI = () => {
     // Invert sort order
-    let sortField = sortParams.sortField;
+    let sortField = APIPOSortFieldMap.get(sortParams.sortField) ?? "";
     if (sortParams.sortOrder == -1) {
       sortField = "-".concat(sortField);
     }
 
     PURCHASES_API.getPurchaseOrders({
-      page: pageParams.page ?? 0,
+      page: (pageParams.page ?? 0) + 1,
       page_size: pageParams.rows,
       ordering: sortField,
     }).then((response) => {
@@ -235,9 +186,11 @@ export default function PurchaseOrderList() {
   };
 
   // Set state when response to API call is received
-  const onAPIResponse = (response: GetPurchaseOrdersResp) => {
-    setPurchaseOrders(response.purchaseOrders);
-    setNumberOfPurchaseOrders(response.numberOfPurchaseOrders);
+  const onAPIResponse = (response: GetPOsResp) => {
+    setPurchaseOrders(
+      response.results.map((po) => APIToInternalPOConversion(po))
+    );
+    setNumberOfPurchaseOrders(response.count);
     setLoading(false);
   };
 
@@ -265,6 +218,7 @@ export default function PurchaseOrderList() {
   const editDeleteCellTemplate = EditDeleteTemplate<PurchaseOrder>({
     onEdit: (rowData) => toDetailPage(rowData, true),
     onDelete: (rowData) => deletePurchaseOrderPopup(rowData),
+    deleteDisabled: () => false,
   });
 
   // The delete popup
@@ -276,31 +230,7 @@ export default function PurchaseOrderList() {
     />
   );
 
-  // Map column objects to actual columns
-  const dynamicColumns = COLUMNS.map((col) => {
-    return (
-      <Column
-        // Indexing/header
-        key={col.field}
-        field={col.field}
-        header={col.header}
-        // Filtering
-        filter={col.filterable}
-        filterElement={col.customFilter}
-        //filterMatchMode={"contains"}
-        filterPlaceholder={col.filterPlaceholder}
-        // Sorting
-        sortable
-        //sortField={col.field}
-        // Hiding Fields
-        showFilterMenuOptions={false}
-        showClearButton={false}
-        // Other
-        style={{ minWidth: "16rem" }}
-        hidden={col.hidden}
-      />
-    );
-  });
+  const columns = createColumns(COLUMNS);
 
   return (
     <div className="card pt-5 px-2">
@@ -311,7 +241,6 @@ export default function PurchaseOrderList() {
         value={purchaseOrders}
         lazy
         responsiveLayout="scroll"
-        filterDisplay="row"
         loading={loading}
         // Row clicking
         rowHover
@@ -328,11 +257,8 @@ export default function PurchaseOrderList() {
         onSort={onSort}
         sortField={sortParams.sortField}
         sortOrder={sortParams.sortOrder}
-        // Filtering
-        onFilter={onFilter}
-        filters={filterParams.filters}
       >
-        {dynamicColumns}
+        {columns}
         <Column body={editDeleteCellTemplate} style={{ minWidth: "16rem" }} />
       </DataTable>
       {deletePopupVisible && deletePopup}

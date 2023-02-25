@@ -1,56 +1,69 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ToggleButton } from "primereact/togglebutton";
-import { Calendar, CalendarProps } from "primereact/calendar";
-import { Dropdown, DropdownProps } from "primereact/dropdown";
+import { Calendar, CalendarChangeEvent } from "primereact/calendar";
 import { DataTable } from "primereact/datatable";
-import { TableColumn } from "../../components/Table";
-import { Column, ColumnEditorOptions, ColumnEvent } from "primereact/column";
-import ConfirmButton from "../../components/ConfirmButton";
+import { createColumns, TableColumn } from "../../components/TableColumns";
+import { Column } from "primereact/column";
+import ConfirmPopup from "../../components/popups/ConfirmPopup";
 import { Button } from "primereact/button";
 import { Toolbar } from "primereact/toolbar";
 import { v4 as uuid } from "uuid";
 import {
-  isPositiveInteger,
   numberEditor,
-  priceBodyTemplateSubtotal,
-  priceBodyTemplateWholesale,
+  priceBodyTemplate,
   priceEditor,
-  textEditor,
 } from "../../util/TableCellEditFuncs";
 import { useLocation } from "react-router-dom";
 import {
+  AddPOReq,
   APIPOPurchaseRow,
+  ModifyPOReq,
   PURCHASES_API,
-  APIPOCreate,
-  APIPOModify,
 } from "../../apis/PurchasesAPI";
-import { VENDORS_API } from "../../apis/VendorsAPI";
-import { Vendor } from "../list/VendorList";
-import { BOOKS_API } from "../../apis/BooksAPI";
-import { toYYYYMMDDWithDash } from "../../util/DateOperations";
+import { internalToExternalDate } from "../../util/DateOperations";
 import { Toast } from "primereact/toast";
 import { InputNumber } from "primereact/inputnumber";
+import { FileUploadHandlerEvent } from "primereact/fileupload";
+import {
+  APIToInternalPOConversion,
+  APIToInternalPurchasesCSVConversion,
+} from "../../apis/Conversions";
+import CSVUploader from "../../components/uploaders/CSVFileUploader";
+import VendorDropdown from "../../components/dropdowns/VendorDropdown";
+import BooksDropdown, {
+  BooksDropdownData,
+} from "../../components/dropdowns/BookDropdown";
+import {
+  showFailure,
+  showFailuresMapper,
+  showSuccess,
+  showWarningsMapper,
+} from "../../components/Toast";
+import {
+  CSVImport200Errors,
+  CSVImport400Errors,
+  errorCellBody,
+} from "./errors/CSVImportErrors";
+import { Book } from "../list/BookList";
+import { useImmer } from "use-immer";
+import { findById } from "../../util/FindBy";
+import { calculateTotal } from "../../util/CalculateTotal";
 
 export interface PODetailState {
   id: number;
-  date: any;
-  purchases: POPurchaseRow[];
-  totalCost: number;
-  vendorName: string;
-  vendorID: number;
   isAddPage: boolean;
   isModifiable: boolean;
-  isConfirmationPopupVisible: boolean;
 }
 
 export interface POPurchaseRow {
   isNewRow: boolean; // true if the user added this row, false if it already existed
   id: string;
-  subtotal: number;
-  book: number;
-  book_title: string;
+  bookId: number;
+  bookISBN: string;
+  bookTitle: string;
   quantity: number;
-  unit_wholesale_price: number;
+  price: number;
+  errors?: { [key: string]: string }; // Only present on CSV import
 }
 
 // The books Interface lol no
@@ -59,106 +72,120 @@ export interface BooksList {
   title: string;
 }
 
-export default function PODetail() {
-  const emptyProduct = {
-    isNewRow: true,
-    id: uuid(),
-    book: 0,
-    subtotal: 0,
-    book_title: "",
-    quantity: 1,
-    unit_wholesale_price: 0,
-  };
+// Used for setting initial state
+const emptyPurchase: POPurchaseRow = {
+  isNewRow: true,
+  id: uuid(),
+  bookId: 0,
+  bookISBN: "",
+  bookTitle: "",
+  quantity: 1,
+  price: 0,
+};
 
+export default function PODetail() {
+  // -------- STATE --------
   const location = useLocation();
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const detailState = (location.state! as PODetailState) ?? {
     id: -1,
-    date: new Date(),
-    vendorName: "",
-    vendorID: 0,
-    totalCost: 0,
-    purchases: [
-      {
-        isNewRow: true,
-        id: uuid(),
-        book_title: "",
-        subtotal: 0,
-        book: 0,
-        quantity: 1,
-        unit_wholesale_price: 0,
-      },
-    ],
     isAddPage: true,
     isModifiable: true,
-    isConfirmationPopupVisible: false,
   };
 
-  for (const purchase of detailState.purchases) {
-    purchase.isNewRow = false;
-  }
-  const [bookMap, setBookMap] = useState<Map<string, number>>(new Map());
-  const [vendorMap, setVendorMap] = useState<Map<string, number>>(new Map());
-  const [date, setDate] = useState(detailState.date);
-  const [vendorName, setVendorName] = useState(detailState.vendorName);
-  const [vendorID, setVendorID] = useState(detailState.vendorID);
-  const [purchases, setPurchases] = useState<POPurchaseRow[]>(
-    detailState.purchases
-  );
-  const [totalCost, setTotalCost] = useState(detailState.totalCost);
-  const [purchaseOrderID, setPurchaseOrderID] = useState(detailState.id);
-  const [lineData, setLineData] = useState(emptyProduct);
-  const [vendorNamesList, setVendorNamesList] = useState<string[]>();
-  const [bookTitlesList, setBookTitlesList] = useState<string[]>();
-  const [isPOAddPage, setisAddPage] = useState(detailState.isAddPage); // If false, this is an edit page
-  const [isModifiable, setIsModifiable] = useState(detailState.isModifiable);
-  const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] = useState(
-    detailState.isConfirmationPopupVisible
+  // From detailState
+  const purchaseOrderID = detailState.id;
+  const isPOAddPage = detailState.isAddPage; // If false, this is an edit page
+  const [isModifiable, setIsModifiable] = useState<boolean>(
+    detailState.isModifiable
   );
 
-  const columns: TableColumn[] = [
+  // For Dropdown Menus
+  const [bookMap, setBooksMap] = useState<Map<string, Book>>(new Map());
+  const [vendorMap, setVendorMap] = useState<Map<string, number>>(new Map());
+  const [booksDropdownTitles, setBooksDropdownTitles] = useState<string[]>([]);
+
+  // The rest of the data
+  const [date, setDate] = useState<Date>(new Date());
+  const [selectedVendorName, setSelectedVendorName] = useState<string>("");
+  // useImmer is used to set state for nested data in a simplified format
+  const [purchases, setPurchases] = useImmer<POPurchaseRow[]>([]);
+  const [totalCost, setTotalCost] = useState<number>(0);
+  const [lineData, setLineData] = useState<POPurchaseRow>(emptyPurchase);
+  const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
+    useState<boolean>(false);
+  const [hasUploadedCSV, setHasUploadedCSV] = useState<boolean>(false);
+
+  // Load the PO data on page load
+  useEffect(() => {
+    if (!isPOAddPage) {
+      PURCHASES_API.getPurchaseOrderDetail({ id: purchaseOrderID })
+        .then((response) => {
+          const purchaseOrder = APIToInternalPOConversion(response);
+          setDate(purchaseOrder.date);
+          setSelectedVendorName(purchaseOrder.vendorName);
+          setPurchases(purchaseOrder.purchases);
+          setTotalCost(purchaseOrder.totalCost);
+        })
+        .catch(() => showFailure(toast, "Could not fetch purchase order data"));
+    }
+  }, []);
+
+  const COLUMNS: TableColumn[] = [
     {
-      field: "book_id",
-      header: "ID",
-      filterPlaceholder: "ID",
-      hidden: true,
+      field: "errors",
+      header: "Errors",
+      hidden: !hasUploadedCSV,
+      customBody: (rowData: POPurchaseRow) => errorCellBody(rowData.errors),
     },
     {
-      field: "book_title",
+      field: "bookTitle",
       header: "Book",
-      filterPlaceholder: "Books",
-      cellEditor: (options: ColumnEditorOptions) =>
-        booksDropDownEditor(options),
+      customBody: (rowData: POPurchaseRow) =>
+        booksDropDownEditor(rowData.bookTitle, (newValue) => {
+          setPurchases((draft) => {
+            const purchase = findById(draft, rowData.id);
+            purchase!.bookTitle = newValue;
+          });
+        }),
     },
     {
       field: "quantity",
       header: "Quantity",
-      filterPlaceholder: "Quantity",
-      cellEditValidator: (event: ColumnEvent) =>
-        isPositiveInteger(event.newValue),
-      cellEditor: (options: ColumnEditorOptions) => numberEditor(options),
+      customBody: (rowData: POPurchaseRow) =>
+        numberEditor(rowData.quantity, (newValue) => {
+          setPurchases((draft) => {
+            const purchase = findById(draft, rowData.id);
+            purchase!.quantity = newValue;
+            setTotalCost(calculateTotal(draft));
+          });
+        }),
     },
     {
-      field: "unit_wholesale_price",
+      field: "unitWholesalePrice",
       header: "Unit Wholesale Price ($)",
-      filterPlaceholder: "Price",
-      cellEditValidator: (event: ColumnEvent) => event.newValue > 0,
-      cellEditor: (options: ColumnEditorOptions) => priceEditor(options),
+      customBody: (rowData: POPurchaseRow) =>
+        priceEditor(rowData.price, (newValue) => {
+          setPurchases((draft) => {
+            const purchase = findById(draft, rowData.id);
+            purchase!.price = newValue;
+            setTotalCost(calculateTotal(draft));
+          });
+        }),
     },
     {
       field: "subtotal",
       header: "Subtotal ($)",
-      filterPlaceholder: "Subtotal",
+      customBody: (rowData: POPurchaseRow) =>
+        priceBodyTemplate(rowData.price * rowData.quantity),
     },
   ];
 
-  const onCellEditComplete = (event: ColumnEvent) => {
-    event.rowData[event.field] = event.newValue;
-  };
+  // -------- METHODS --------
 
   // Adds a row to the PO
   const addNewPurchase = () => {
-    setLineData(emptyProduct);
+    setLineData(emptyPurchase);
     const _lineData = lineData;
     _lineData.id = uuid();
     setLineData(_lineData);
@@ -173,42 +200,39 @@ export default function PODetail() {
     setPurchases(_data);
   };
 
-  // Populate the vendors/book list on page load
-  useEffect(() => {
-    VENDORS_API.getVendorsNOPaging().then((response) => {
-      const tempVendorMap = new Map<string, number>();
-      for (const vendor of response.vendors) {
-        tempVendorMap.set(vendor.name, vendor.id);
-      }
-      setVendorMap(tempVendorMap);
-      setVendorNamesList(response.vendors.map((vendor) => vendor.name));
-      //return setVendorsData(response.vendors);
-    });
+  // Handler for a CSV upload
+  const csvUploadHandler = (event: FileUploadHandlerEvent) => {
+    const csv = event.files[0];
+    PURCHASES_API.purchaseOrderCSVImport({ file: csv })
+      .then((response) => {
+        const purchases = APIToInternalPurchasesCSVConversion(
+          response.purchases
+        );
+        setPurchases(purchases);
+        setHasUploadedCSV(true);
 
-    BOOKS_API.getBooksNOPaging().then((response) => {
-      const tempBookMap = new Map<string, number>();
-      for (const book of response.books) {
-        tempBookMap.set(book.title, book.id);
-      }
-      setBookMap(tempBookMap);
-      setBookTitlesList(response.books.map((book) => book.title));
-    });
-  }, []);
+        // Show nonblocking errors (warnings)
+        const nonBlockingErrors = response.errors;
+        showWarningsMapper(toast, nonBlockingErrors, CSVImport200Errors);
+      })
+      .catch((error) => {
+        showFailuresMapper(toast, error.data.errors, CSVImport400Errors);
+      });
+  };
 
-  const validateSubmission = (po: POPurchaseRow[]) => {
-    for (const purchase of po) {
-      if (
-        !purchase.book_title ||
-        !(purchase.unit_wholesale_price >= 0) ||
-        !purchase.quantity
-      ) {
-        showFailure("All fields are required");
+  const validateSubmission = () => {
+    for (const purchase of purchases) {
+      if (!purchase.bookTitle || !(purchase.price >= 0) || !purchase.quantity) {
+        showFailure(
+          toast,
+          "Book, wholesale, and quantity are required for all line items"
+        );
         return false;
       }
     }
 
-    if (!date || !vendorName) {
-      showFailure("All fields are required");
+    if (!date || !selectedVendorName) {
+      showFailure(toast, "Date is a required field");
       return false;
     }
 
@@ -217,82 +241,68 @@ export default function PODetail() {
 
   // On submission of the PO, we either add/edit depending on the page type
   const onSubmit = (): void => {
-    if (!validateSubmission(purchases)) {
+    if (!validateSubmission()) {
       return;
     }
 
     if (isPOAddPage) {
-      // Create API Format
-      const apiPurchases = purchases.map((purchase) => {
-        return {
-          book: bookMap.get(purchase.book_title),
-          quantity: purchase.quantity,
-          unit_wholesale_price: purchase.unit_wholesale_price,
-        } as APIPOPurchaseRow;
-      });
-
-      const purchaseOrder = {
-        date: toYYYYMMDDWithDash(date),
-        vendor: vendorMap.get(vendorName),
-        purchases: apiPurchases,
-      } as APIPOCreate;
-
-      PURCHASES_API.addPurchaseOrder(purchaseOrder).then((response) => {
-        if (response.status == 201) {
-          showSuccess("Purchase order added successfully");
-        } else {
-          showFailure("Could not add purchase order");
-          return;
-        }
-      });
+      callAddPOAPI();
     } else {
-      // Otherwise, it is a modify page
-      const apiPurchases = purchases.map((purchase) => {
-        return {
-          id: purchase.isNewRow ? undefined : purchase.id,
-          book: purchase.isNewRow
-            ? bookMap.get(purchase.book_title)
-            : purchase.book,
-          quantity: purchase.quantity,
-          unit_wholesale_price: purchase.unit_wholesale_price,
-        } as APIPOPurchaseRow;
-      });
-
-      const purchaseOrder = {
-        id: purchaseOrderID,
-        date: toYYYYMMDDWithDash(date),
-        vendor: vendorMap.get(vendorName),
-        purchases: apiPurchases,
-      } as APIPOModify;
-
-      PURCHASES_API.modifyPurchaseOrder(purchaseOrder).then((response) => {
-        if (response.status == 200) {
-          showSuccess("Purchase order edited successfully");
-        } else {
-          showFailure("Could not edit purchase order");
-          return;
-        }
-      });
+      callModifyPOAPI();
     }
   };
+
+  // Add the purchase order
+  function callAddPOAPI() {
+    const apiPurchases = purchases.map((purchase) => {
+      return {
+        book: bookMap.get(purchase.bookTitle)?.id,
+        quantity: purchase.quantity,
+        unit_wholesale_price: purchase.price,
+      } as APIPOPurchaseRow;
+    });
+
+    const purchaseOrder = {
+      date: internalToExternalDate(date),
+      vendor: vendorMap.get(selectedVendorName),
+      purchases: apiPurchases,
+    } as AddPOReq;
+
+    PURCHASES_API.addPurchaseOrder(purchaseOrder)
+      .then(() => showSuccess(toast, "Purchase order added successfully"))
+      .catch(() => showFailure(toast, "Could not add purchase order"));
+  }
+
+  // Modify the purchase order
+  function callModifyPOAPI() {
+    const apiPurchases = purchases.map((purchase) => {
+      return {
+        id: purchase.isNewRow ? undefined : purchase.id,
+        quantity: purchase.quantity,
+        // If the book has been deleted, will have to use the id in the row
+        book: bookMap.get(purchase.bookTitle)?.id ?? purchase.bookId,
+        unit_wholesale_price: purchase.price,
+      } as APIPOPurchaseRow;
+    });
+
+    const purchaseOrder = {
+      id: purchaseOrderID,
+      date: internalToExternalDate(date),
+      vendor: vendorMap.get(selectedVendorName),
+      purchases: apiPurchases,
+    } as ModifyPOReq;
+
+    PURCHASES_API.modifyPurchaseOrder(purchaseOrder)
+      .then(() => showSuccess(toast, "Purchase order modified successfully"))
+      .catch(() => showFailure(toast, "Could not modify purchase order"));
+  }
 
   // -------- TEMPLATES/VISUAL ELEMENTS --------
 
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
 
-  const showSuccess = (message: string) => {
-    toast.current?.show({ severity: "success", summary: message });
-  };
-
-  const showFailure = (message: string) => {
-    toast.current?.show({
-      severity: "error",
-      summary: message,
-    });
-  };
-
-  const actionBodyTemplate = (rowData: any) => {
+  const actionBodyTemplate = (rowData: POPurchaseRow) => {
     return (
       <React.Fragment>
         <Button
@@ -308,23 +318,28 @@ export default function PODetail() {
 
   const leftToolbarTemplate = () => {
     return (
-      <React.Fragment>
-        <Button
-          type="button"
-          label="Add Book"
-          className="p-button-info mr-2"
-          icon="pi pi-plus"
-          onClick={addNewPurchase}
-          disabled={!isModifiable}
-        />
-      </React.Fragment>
+      <>
+        <React.Fragment>
+          <CSVUploader uploadHandler={csvUploadHandler} />
+        </React.Fragment>
+        <React.Fragment>
+          <Button
+            type="button"
+            label="Add Book"
+            className="p-button-info mr-2"
+            icon="pi pi-plus"
+            onClick={addNewPurchase}
+            disabled={!isModifiable}
+          />
+        </React.Fragment>
+      </>
     );
   };
 
   const rightToolbarTemplate = () => {
     return (
       <React.Fragment>
-        <ConfirmButton
+        <ConfirmPopup
           isVisible={isConfirmationPopupVisible}
           hideFunc={() => setIsConfirmationPopupVisible(false)}
           acceptFunc={onSubmit}
@@ -340,43 +355,40 @@ export default function PODetail() {
     );
   };
 
-  const booksDropDownEditor = (options: ColumnEditorOptions) => {
-    return (
-      <Dropdown
-        value={options.value}
-        options={bookTitlesList}
-        filter
-        appendTo={"self"}
-        placeholder="Select a Book"
-        onChange={(e) => {
-          options.editorCallback?.(e.target.value);
-        }}
-        showClear
-        virtualScrollerOptions={{ itemSize: 35 }}
-        style={{ position: "absolute", zIndex: 9999 }}
-      />
-    );
-  };
+  // Get the data for the books dropdown
+  useEffect(
+    () =>
+      BooksDropdownData({
+        setBooksMap: setBooksMap,
+        setBookTitlesList: setBooksDropdownTitles,
+      }),
+    []
+  );
 
-  const tableColumns = columns.map((col) => {
-    return (
-      <Column
-        key={col.field}
-        field={col.field}
-        header={col.header}
-        style={{ width: "25%" }}
-        body={
-          (col.field === "unit_wholesale_price" &&
-            priceBodyTemplateWholesale) ||
-          (col.field === "subtotal" && priceBodyTemplateSubtotal)
-        }
-        editor={col.cellEditor}
-        cellEditValidator={col.cellEditValidator}
-        onCellEditComplete={onCellEditComplete}
-        hidden={col.hidden}
-      />
-    );
-  });
+  const booksDropDownEditor = (
+    value: string,
+    onChange: (newValue: string) => void
+  ) => (
+    <BooksDropdown
+      // This will always be used in a table cell, so we can disable the warning
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      setSelectedBook={onChange}
+      selectedBook={value}
+      bookTitlesList={booksDropdownTitles}
+      placeholder={value}
+    />
+  );
+
+  const vendorDropdown = (
+    <VendorDropdown
+      setVendorMap={setVendorMap}
+      setSelectedVendor={setSelectedVendorName}
+      selectedVendor={selectedVendorName}
+      isModifiable={isModifiable}
+    />
+  );
+
+  const columns = createColumns(COLUMNS);
 
   return (
     <div>
@@ -445,8 +457,8 @@ export default function PODetail() {
                   disabled={!isModifiable}
                   value={date}
                   readOnlyInput
-                  onChange={(event: CalendarProps): void => {
-                    setDate(event.value);
+                  onChange={(event: CalendarChangeEvent): void => {
+                    setDate(event.value as Date);
                   }}
                 />
               </div>
@@ -458,18 +470,7 @@ export default function PODetail() {
                 >
                   Vendor
                 </label>
-                <Dropdown
-                  value={vendorName}
-                  options={vendorNamesList}
-                  placeholder="Select a Vendor"
-                  //optionLabel="name"
-                  filter
-                  disabled={!isModifiable}
-                  onChange={(event: DropdownProps): void => {
-                    setVendorName(event.value);
-                  }}
-                  virtualScrollerOptions={{ itemSize: 35 }}
-                />
+                <>{vendorDropdown}</>
               </div>
             </div>
 
@@ -486,7 +487,7 @@ export default function PODetail() {
               responsiveLayout="scroll"
               editMode="cell"
             >
-              {tableColumns}
+              {columns}
               <Column
                 body={actionBodyTemplate}
                 exportable={false}

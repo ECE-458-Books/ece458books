@@ -14,9 +14,9 @@ import {
 
 export default function PasswordChangePage() {
   const wrongPasswordRef = createRef<Messages>();
-  const [oldPassword, setOldPassword] = useState("");
-  const [newPassword1, setNewPassword1] = useState("");
-  const [newPassword2, setNewPassword2] = useState("");
+  const [oldPassword, setOldPassword] = useState<string>("");
+  const [newPassword1, setNewPassword1] = useState<string>("");
+  const [newPassword2, setNewPassword2] = useState<string>("");
 
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
@@ -57,11 +57,11 @@ export default function PasswordChangePage() {
           ) {
             if (containsNumber(newPassword1) && containsNumber(newPassword2)) {
               console.log("Password Changed");
-              AUTH_API.passwordChange(
-                oldPassword,
-                newPassword1,
-                newPassword2
-              ).then((response) => {
+              AUTH_API.passwordChange({
+                old_password: oldPassword,
+                password: newPassword1,
+                password2: newPassword2,
+              }).then((response) => {
                 // TODO: Refactor this
                 if (response.data?.status) {
                   showSuccess();

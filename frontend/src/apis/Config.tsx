@@ -4,6 +4,7 @@ import { logger } from "../util/Logger";
 import { AUTH_API } from "./AuthAPI";
 import createAuthRefreshInterceptor from "axios-auth-refresh";
 
+//const TEST_ENDPOINT = "https://books-test.colab.duke.edu/api/v1/";
 export const BACKEND_ENDPOINT = process.env.REACT_APP_BACKEND_ENDPOINT;
 export const JSON_HEADER = { "Content-Type": "application/json" };
 export const METHOD_POST = "POST";
@@ -37,12 +38,12 @@ API.interceptors.request.use((request) => {
 
 // Every incoming response is logged
 API.interceptors.response.use((response) => {
-  logger.debug("API Response", response);
-  return response;
+  logger.debug("API Response Data", response.status, response.data);
+  return Promise.resolve(response.data);
 });
 
 // Every incoming error is logged
 API.interceptors.response.use(undefined, (error) => {
-  logger.error(error);
-  return error;
+  logger.error("API Error", error.response.status, error.response.data);
+  return Promise.reject(error.response);
 });

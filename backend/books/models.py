@@ -36,3 +36,10 @@ class Book(models.Model):
 
     # Number of books left in stock
     stock = models.PositiveIntegerField(default=0)
+
+class BookImage(models.Model):
+    book = models.OneToOneField(Book, related_name='url', on_delete=models.CASCADE, primary_key=True)
+    url = models.URLField()
+
+    def __str__(self):
+        return self.url

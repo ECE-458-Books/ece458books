@@ -1,4 +1,3 @@
-import { Dropdown } from "primereact/dropdown";
 import { BOOKS_API, GetBooksResp } from "../../apis/BooksAPI";
 import {
   DataTable,
@@ -11,35 +10,31 @@ import { Column } from "primereact/column";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import { useEffect, useRef, useState } from "react";
 import { DataTableFilterMetaData } from "primereact/datatable";
-import { Genre } from "./GenreList";
-import DeletePopup from "../../components/DeletePopup";
-import EditDeleteTemplate from "../../util/EditDeleteTemplate";
+import DeletePopup from "../../components/popups/DeletePopup";
 import { logger } from "../../util/Logger";
-import { BookDetailState } from "../detail/ModfiyBook";
+import { BookDetailState } from "../detail/BookDetail";
 import { useLocation, useNavigate } from "react-router-dom";
-import { GENRES_API } from "../../apis/GenresAPI";
 import { Toast } from "primereact/toast";
-import React from "react";
-import { Button } from "primereact/button";
+import {
+  APIBookSortFieldMap,
+  APIToInternalBookConversion,
+} from "../../apis/Conversions";
+import { createColumns, TableColumn } from "../../components/TableColumns";
+import {
+  priceBodyTemplate,
+  imageBodyTemplate,
+} from "../../util/TableCellEditFuncs";
+import EditDeleteTemplate from "../../util/EditDeleteTemplate";
+import GenreDropdown from "../../components/dropdowns/GenreDropdown";
 
 export const NUM_ROWS = 10;
-
-interface TableColumn {
-  field: string;
-  header: string;
-  filterPlaceholder?: string;
-  customFilter?: () => JSX.Element;
-  hidden?: boolean;
-  sortable?: boolean;
-  filterable?: boolean;
-}
 
 export interface Book {
   id: number;
   title: string;
   author: string;
   genres: string;
-  isbn_13: number;
+  isbn13: number;
   isbn10: number;
   publisher: string;
   publishedYear: number;
@@ -47,227 +42,48 @@ export interface Book {
   width: number;
   height: number;
   thickness: number;
-  retail_price: number;
+  retailPrice: number;
   stock: number;
+  thumbnailURL: string[];
 }
 
 interface Filters {
-  [id: string]: DataTableFilterMetaData;
-  title: DataTableFilterMetaData;
+  [title: string]: DataTableFilterMetaData;
   author: DataTableFilterMetaData;
-  isbn_13: DataTableFilterMetaData;
-  isbn10: DataTableFilterMetaData;
+  isbn13: DataTableFilterMetaData;
   publisher: DataTableFilterMetaData;
-  publishedYear: DataTableFilterMetaData;
-  pageCount: DataTableFilterMetaData;
-  width: DataTableFilterMetaData;
-  height: DataTableFilterMetaData;
-  thickness: DataTableFilterMetaData;
-  retail_price: DataTableFilterMetaData;
 }
 
+// Used for initializing state
+export const emptyBook: Book = {
+  id: 0,
+  title: "",
+  author: "",
+  genres: "",
+  isbn13: 0,
+  isbn10: 0,
+  publisher: "",
+  publishedYear: 0,
+  pageCount: 0,
+  width: 0,
+  height: 0,
+  thickness: 0,
+  retailPrice: 0,
+  stock: 0,
+  thumbnailURL: [""],
+};
+
 export default function BookList() {
-  const emptyBook = {
-    id: 0,
-    title: "",
-    author: "",
-    genres: "",
-    isbn_13: 0,
-    isbn10: 0,
-    publisher: "",
-    publishedYear: 0,
-    pageCount: 0,
-    width: 0,
-    height: 0,
-    thickness: 0,
-    retail_price: 0,
-    stock: 0,
-  };
-
-  // Custom dropdown selector for Genre
-  const location = useLocation();
-  const passedGenre = location.state?.genre ?? "";
-  const [genreList, setGenreList] = useState<string[]>([]);
-  const [selectedGenre, setSelectedGenre] = useState<string>(passedGenre);
-
-  useEffect(() => {
-    GENRES_API.getGenres({
-      page: 0,
-      page_size: 30,
-      ordering: "name",
-    }).then((response) =>
-      setGenreList(response.genres.map((genre) => genre.name))
-    );
-  }, []);
-
-  const genreFilter = () => {
-    return (
-      <Dropdown
-        value={selectedGenre}
-        options={genreList}
-        appendTo={"self"}
-        onChange={(e) => setSelectedGenre(e.value)}
-        placeholder={"Select Genre"}
-        showClear
-      />
-    );
-  };
-
-  // Properties of each column that change, the rest are set below when creating the actual Columns to be rendered
-  const COLUMNS: TableColumn[] = [
-    {
-      field: "id",
-      header: "ID",
-      filterPlaceholder: "Search by ID",
-      hidden: true,
-    },
-    { field: "title", header: "Title", filterPlaceholder: "Search by Title" },
-    {
-      field: "author",
-      header: "Authors",
-      filterPlaceholder: "Search by Authors",
-    },
-    {
-      field: "genres",
-      header: "Genre",
-      filterPlaceholder: "Search by Genre",
-      customFilter: genreFilter,
-      sortable: false,
-    },
-    {
-      field: "isbn_13",
-      header: "ISBN 13",
-      filterPlaceholder: "Search by ISBN",
-    },
-    {
-      field: "isbn10",
-      header: "ISBN 10",
-      filterPlaceholder: "Search by ISBN",
-      sortable: false,
-      filterable: false,
-    },
-    {
-      field: "publisher",
-      header: "Publisher",
-      filterPlaceholder: "Search by Publisher",
-    },
-    {
-      field: "publishedYear",
-      header: "Publication Year",
-      filterPlaceholder: "Search by Publication Year",
-      hidden: true,
-    },
-    {
-      field: "pageCount",
-      header: "Page Count",
-      filterPlaceholder: "Search by Page Count",
-      hidden: true,
-    },
-    {
-      field: "width",
-      header: "Width",
-      filterPlaceholder: "Search by Width",
-      hidden: true,
-    },
-    {
-      field: "height",
-      header: "Height",
-      filterPlaceholder: "Search by Height",
-      hidden: true,
-    },
-    {
-      field: "thickness",
-      header: "Thickness",
-      filterPlaceholder: "Search by Thickness",
-      hidden: true,
-    },
-    {
-      field: "retail_price",
-      header: "Retail Price ($)",
-      filterPlaceholder: "Search by Price",
-      filterable: false,
-    },
-    {
-      field: "stock",
-      header: "Inventory Count",
-      filterPlaceholder: "Search by Inventory Count",
-      filterable: false,
-    },
-  ];
-
-  // The navigator to switch pages
-  const navigate = useNavigate();
-
-  // State to track the current book that has been selected to be deleted
-  const [selectedDeleteBook, setSelectedDeleteBook] = useState<Book>(emptyBook);
-
-  const editDeleteCellTemplate = (rowData: Book) => {
-    return (
-      <React.Fragment>
-        <Button
-          icon="pi pi-pencil"
-          className="p-button-rounded p-button-success mr-2"
-          onClick={() => toDetailsPage(rowData, true)}
-        />
-        <Button
-          icon="pi pi-trash"
-          className="p-button-rounded p-button-danger"
-          onClick={() => deleteBookPopup(rowData)}
-          disabled={rowData.stock > 0}
-        />
-      </React.Fragment>
-    );
-  };
-
-  // Callback functions for edit/delete buttons
-  const toDetailsPage = (book: Book, isModifiable: boolean) => {
-    logger.debug("Edit Book Clicked", book);
-    const detailState: BookDetailState = {
-      book: book,
-      isModifiable: isModifiable,
-      isConfirmationPopupVisible: false,
-    };
-
-    navigate("/books/detail", { state: detailState });
-  };
-
-  const deleteBookPopup = (book: Book) => {
-    logger.debug("Delete Book Clicked", book);
-    setSelectedDeleteBook(book);
-    setDeletePopupVisible(true);
-  };
-
-  const deleteBookFinal = () => {
-    logger.debug("Delete Book Finalized", selectedDeleteBook);
-    setDeletePopupVisible(false);
-    BOOKS_API.deleteBook(selectedDeleteBook.id).then((response) => {
-      if (response.status == 204) {
-        showSuccess();
-      } else {
-        showFailure();
-        return;
-      }
-    });
-    // TODO: Show error if book is not actually deleted
-    const _books = books.filter((book) => selectedDeleteBook.id != book.id);
-    setBooks(_books);
-    setSelectedDeleteBook(emptyBook);
-  };
-
-  // Buttons for the delete Dialogue Popup
-  const [deletePopupVisible, setDeletePopupVisible] = useState(false);
-
-  const deletePopup = (
-    <DeletePopup
-      deleteItemIdentifier={selectedDeleteBook.title}
-      onConfirm={() => deleteBookFinal()}
-      setIsVisible={setDeletePopupVisible}
-    />
-  );
-
-  const [loading, setLoading] = useState(false); // Whether we show that the table is loading or not
-  const [numberOfBooks, setNumberOfBooks] = useState(0); // The number of books that match the query
-  const [books, setBooks] = useState<Book[]>([]); // The book data itself
+  // ----- STATE -----
+  const location = useLocation(); // Utilized if coming from the genre list
+  const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false); // Whether the delete popup is visible
+  const [loading, setLoading] = useState<boolean>(false); // Whether we show that the table is loading or not
+  const [numberOfBooks, setNumberOfBooks] = useState<number>(0); // The number of books that match the query
+  const [books, setBooks] = useState<Book[]>([]); // The book data itself (rows of the table)
+  const [selectedGenre, setSelectedGenre] = useState<string>(
+    location.state?.genre ?? ""
+  ); // Initialize genre to the genre passed, if coming from genre list
+  const [selectedDeleteBook, setSelectedDeleteBook] = useState<Book>(emptyBook); // track the current book that has been selected to be deleted
 
   // The current state of sorting.
   const [sortParams, setSortParams] = useState<DataTableSortEvent>({
@@ -284,22 +100,142 @@ export default function BookList() {
   });
 
   // The current state of the filters
-  const [filterParams, setFilterParams] = useState<any>({
+  const [filterParams, setFilterParams] = useState<DataTableFilterEvent>({
     filters: {
-      id: { value: "", matchMode: "contains" },
       title: { value: "", matchMode: "contains" },
       author: { value: "", matchMode: "contains" },
-      isbn_13: { value: "", matchMode: "contains" },
-      isbn10: { value: "", matchMode: "contains" },
+      isbn13: { value: "", matchMode: "contains" },
       publisher: { value: "", matchMode: "contains" },
-      publishedYear: { value: "", matchMode: "contains" },
-      pageCount: { value: "", matchMode: "contains" },
-      width: { value: "", matchMode: "contains" },
-      height: { value: "", matchMode: "contains" },
-      thickness: { value: "", matchMode: "contains" },
-      retail_price: { value: "", matchMode: "contains" },
     } as Filters,
   });
+
+  // Custom dropdown selector for genre
+  const genreFilter = (
+    <GenreDropdown
+      selectedGenre={selectedGenre}
+      setSelectedGenre={setSelectedGenre}
+    />
+  );
+
+  const COLUMNS: TableColumn[] = [
+    {
+      field: "thumbnailURL",
+      header: "Cover Art",
+      customBody: (rowData: Book) => imageBodyTemplate(rowData.thumbnailURL),
+      style: { minWidth: "9rem" },
+    },
+    {
+      field: "title",
+      header: "Title",
+      filterPlaceholder: "Search by Title",
+      sortable: true,
+      filterable: true,
+    },
+    {
+      field: "author",
+      header: "Authors",
+      filterPlaceholder: "Search by Authors",
+      sortable: true,
+      filterable: true,
+    },
+    {
+      field: "genres",
+      header: "Genre",
+      filterPlaceholder: "Search by Genre",
+      filterable: true,
+      sortable: true,
+      customFilter: genreFilter,
+    },
+    {
+      field: "isbn13",
+      header: "ISBN 13",
+      filterPlaceholder: "Search by ISBN",
+      sortable: true,
+      filterable: true,
+    },
+    {
+      field: "isbn10",
+      header: "ISBN 10",
+      filterPlaceholder: "Search by ISBN",
+      sortable: true,
+      filterable: false,
+    },
+    {
+      field: "publisher",
+      header: "Publisher",
+      filterPlaceholder: "Search by Publisher",
+      sortable: true,
+      filterable: true,
+    },
+    {
+      field: "retailPrice",
+      header: "Retail Price ($)",
+      sortable: true,
+      customBody: (rowData: Book) => priceBodyTemplate(rowData.retailPrice),
+    },
+    {
+      field: "stock",
+      header: "Inventory Count",
+      sortable: true,
+    },
+  ];
+
+  // The navigator to switch pages
+  const navigate = useNavigate();
+
+  // Checks if the book can be deleted
+  const isDeleteDisabled = (book: Book) => {
+    return book.stock > 0;
+  };
+
+  // Edit/Delete Cell Template
+  const editDeleteCellTemplate = EditDeleteTemplate<Book>({
+    onEdit: (rowData) => toDetailsPage(rowData, true),
+    onDelete: (rowData) => deleteBookPopup(rowData),
+    deleteDisabled: (rowData) => isDeleteDisabled(rowData),
+  });
+
+  // Callback functions for edit/delete buttons
+  const toDetailsPage = (book: Book, isModifiable: boolean) => {
+    logger.debug("Edit Book Clicked", book);
+    const detailState: BookDetailState = {
+      id: book.id,
+      isModifiable: isModifiable,
+    };
+
+    navigate("/books/detail", { state: detailState });
+  };
+
+  const deleteBookPopup = (book: Book) => {
+    logger.debug("Delete Book Clicked", book);
+    setSelectedDeleteBook(book);
+    setDeletePopupVisible(true);
+  };
+
+  const deleteBookFinal = () => {
+    logger.debug("Delete Book Finalized", selectedDeleteBook);
+    setDeletePopupVisible(false);
+    BOOKS_API.deleteBook({ id: selectedDeleteBook.id })
+      .then(() => {
+        showSuccess();
+      })
+      .catch(() => {
+        showFailure();
+        return;
+      });
+    // TODO: Show error if book is not actually deleted
+    const _books = books.filter((book) => selectedDeleteBook.id != book.id);
+    setBooks(_books);
+    setSelectedDeleteBook(emptyBook);
+  };
+
+  const deletePopup = (
+    <DeletePopup
+      deleteItemIdentifier={selectedDeleteBook.title}
+      onConfirm={() => deleteBookFinal()}
+      setIsVisible={setDeletePopupVisible}
+    />
+  );
 
   // Calls the Books API
   const callAPI = () => {
@@ -309,28 +245,40 @@ export default function BookList() {
     let publisher_only = false;
     let author_only = false;
     let isbn_only = false;
-    if (filterParams.filters.title.value) {
+    if (
+      "value" in filterParams.filters.title &&
+      filterParams.filters.title.value
+    ) {
       search_string = filterParams.filters.title.value;
       title_only = true;
-    } else if (filterParams.filters.publisher.value) {
+    } else if (
+      "value" in filterParams.filters.publisher &&
+      filterParams.filters.publisher.value
+    ) {
       search_string = filterParams.filters.publisher.value;
       publisher_only = true;
-    } else if (filterParams.filters.author.value) {
+    } else if (
+      "value" in filterParams.filters.author &&
+      filterParams.filters.author.value
+    ) {
       search_string = filterParams.filters.author.value;
       author_only = true;
-    } else if (filterParams.filters.isbn_13.value) {
-      search_string = filterParams.filters.isbn_13.value ?? "";
+    } else if (
+      "value" in filterParams.filters.isbn13 &&
+      filterParams.filters.isbn13.value
+    ) {
+      search_string = filterParams.filters.isbn13.value ?? "";
       isbn_only = true;
     }
 
     // Invert sort order
-    let sortField = sortParams.sortField;
+    let sortField = APIBookSortFieldMap.get(sortParams.sortField) ?? "";
     if (sortParams.sortOrder == -1) {
       sortField = "-".concat(sortField);
     }
 
     BOOKS_API.getBooks({
-      page: pageParams.page ?? 0,
+      page: (pageParams.page ?? 0) + 1,
       page_size: pageParams.rows,
       ordering: sortField,
       genre: selectedGenre,
@@ -344,8 +292,8 @@ export default function BookList() {
 
   // Set state when response to API call is received
   const onAPIResponse = (response: GetBooksResp) => {
-    setBooks(response.books);
-    setNumberOfBooks(response.numberOfBooks);
+    setBooks(response.results.map((book) => APIToInternalBookConversion(book)));
+    setNumberOfBooks(response.count);
     setLoading(false);
   };
 
@@ -404,34 +352,7 @@ export default function BookList() {
     });
   };
 
-  // Map column objects to actual columns
-  const dynamicColumns = COLUMNS.map((col) => {
-    return (
-      <Column
-        // Indexing/header
-        key={col.field}
-        field={col.field}
-        header={col.header}
-        // Filtering
-        filter
-        filterElement={col.customFilter}
-        //filterMatchMode={"contains"}
-        filterPlaceholder={col.filterPlaceholder}
-        // Sorting
-        sortable={col.sortable ?? true}
-        //sortField={col.field}
-        // Hiding Fields
-        showFilterMenuOptions={false}
-        showClearButton={false}
-        showApplyButton={false}
-        showFilterMatchModes={false}
-        showFilterOperator={false}
-        // Other
-        style={{ minWidth: "11rem" }}
-        hidden={col.hidden}
-      />
-    );
-  });
+  const columns = createColumns(COLUMNS);
 
   return (
     <div className="card pt-5 px-2">
@@ -463,7 +384,7 @@ export default function BookList() {
         onFilter={onFilter}
         filters={filterParams.filters}
       >
-        {dynamicColumns}
+        {columns}
         <Column body={editDeleteCellTemplate} style={{ minWidth: "9rem" }} />
       </DataTable>
       {deletePopupVisible && deletePopup}

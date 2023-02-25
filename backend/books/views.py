@@ -1,18 +1,21 @@
-import re
+import re, os
 
+from django.conf import settings
 from django.db.models import OuterRef, Subquery
 
 from rest_framework import status, filters
 from rest_framework.views import APIView
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveUpdateAPIView, RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
-from .serializers import BookListAddSerializer, BookSerializer, ISBNSerializer
+from .serializers import BookListAddSerializer, BookSerializer, ISBNSerializer, BookImageSerializer
 from .isbn import ISBNTools
-from .models import Book, Author
+from .models import Book, Author, BookImage
 from .paginations import BookPagination
 from .search_filters import CustomSearchFilter
+from .scpconnect import SCPTools
+from .utils import delete_all_files_in_folder_location, ImageTools
 
 from genres.models import Genre
 
@@ -25,12 +28,23 @@ class ISBNSearchView(APIView):
     permission_classes = [IsAuthenticated]
     isbn_toolbox = ISBNTools()
 
+    def preprocess(self, uri):
+        # Clear the static image files in /static
+        delete_all_files_in_folder_location(settings.STATICFILES_DIRS[0])
+
+        # Get default image from image server
+        self.isbn_toolbox.download_default_book_image_to_local(uri)
+
     def post(self, request):
         serializer = ISBNSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        uri = request.build_absolute_uri()
+
+        self.preprocess(uri)
 
         # Split ISBN with spaces and/or commas
         raw_isbn_list = re.split("\s?[, ]\s?", serializer.data['isbns'].strip())
+
         # Convert all ISBN to ISBN-13
         parsed_isbn_list = self.isbn_toolbox.parse_raw_isbn_list(raw_isbn_list)
 
@@ -46,18 +60,18 @@ class ISBNSearchView(APIView):
             # If ISBN exist in DB get from DB
             if(len(query_set) == 0):
                 # Get book data from external source
-                external_data = self.isbn_toolbox.fetch_isbn_data(isbn)
+                external_data = self.isbn_toolbox.fetch_isbn_data(isbn, uri)
                 if "Invalid ISBN" in external_data:
                     data_populated_isbns['invalid_isbns'].append(isbn)
                 else:
                     data_populated_isbns['books'].append(external_data)
             else:
                 # get book data from DB
-                data_populated_isbns['books'].append(self.parseDBBookModel(query_set[0]))
+                data_populated_isbns['books'].append(self.parseDBBookModel(query_set[0], uri))
 
         return Response(data_populated_isbns)
     
-    def parseDBBookModel(self, book):
+    def parseDBBookModel(self, book, uri):
         # Returns a parsed Book json from Book Model
         ret = dict()
 
@@ -72,11 +86,14 @@ class ISBNSearchView(APIView):
         # Get Genres
         for genre in book.genres.all():
             ret.setdefault("genres", []).append(genre.name)
-
+        
+        images = BookImage.objects.filter(book=book)
+        
+        local_url = self.isbn_toolbox.download_existing_image_to_local(images[0].url, book.isbn_13, uri)
+        ret["image_url"] = local_url
         ret["fromDB"] = True
 
         return ret
-
 
 class ListCreateBookAPIView(ListCreateAPIView):
     serializer_class = BookListAddSerializer
@@ -86,6 +103,7 @@ class ListCreateBookAPIView(ListCreateAPIView):
     ordering_fields = '__all__'
     ordering = ['id']
     search_fields = ['authors__name', 'title', '=publisher', '=isbn_10', '=isbn_13']
+    isbn_toolbox = ISBNTools()
 
     def paginate_queryset(self, queryset):
         if 'no_pagination' in self.request.query_params:
@@ -117,10 +135,33 @@ class ListCreateBookAPIView(ListCreateAPIView):
 
         serializer.is_valid(raise_exception=True)
         serializer.save()
+
+        # Get and Create the Image
+        self.bookimage_get_and_create(request, serializer.data.get('isbn_13'))
+
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
     
+    def bookimage_get_and_create(self, request, isbn_13):
+        book = Book.objects.filter(isbn_13=isbn_13)
+
+        # This creates an image in static and sends a file
+        url = self.isbn_toolbox.commit_image_raw_bytes(request, book[0].id, isbn_13)
+
+        obj, created = BookImage.objects.get_or_create(
+            book_id=book[0].id,
+            defaults={'url': url},
+        )
+
+        # We need to patch the url if it is a get
+        if not created:
+            obj.url = url
+            obj.save()
+    
     def getOrCreateModel(self, item_list, model):
+        if isinstance(item_list, str):
+            item_list = item_list.split(',')
+
         for item in item_list:
             obj, created = model.objects.get_or_create(
                 name=item.strip(),
@@ -158,7 +199,7 @@ class ListCreateBookAPIView(ListCreateAPIView):
             # The requirements for Evolution 1 requires filtering by genre.
             # Thus if a query key 'genre' exists, we only consider the query_set having that specific genre
             return default_query_set.filter(genres__name=genre)
-
+        
         return default_query_set
 
 class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
@@ -166,6 +207,38 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Book.objects.all()
     permission_classes = [IsAuthenticated]
     lookup_url_kwarg = 'id'
+    isbn_toolbox = ISBNTools()
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+    
+        # Get and Create the Image
+        url = self.bookimage_get_and_create(request, serializer.data.get('isbn_13'))
+        serializer.data['url'] = url
+
+        return Response(serializer.data)
+
+    def bookimage_get_and_create(self, request, isbn_13):
+        book = Book.objects.filter(isbn_13=isbn_13)
+
+        # This creates an image in static and sends a file
+        url = self.isbn_toolbox.commit_image_raw_bytes(request, book[0].id, isbn_13)
+
+        obj, created = BookImage.objects.get_or_create(
+            book_id=book[0].id,
+            defaults={'url': url},
+        )
+
+        # We need to patch the url if it is a get
+        if not created:
+            obj.url = url
+            obj.save()
+        
+        return url
 
     def destroy(self, request, *args, **kwargs):
 
@@ -190,3 +263,9 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
 
         return Response({"status" : f"Book: {instance.title}(id:{instance.id}) is now a ghost"}, status=status.HTTP_204_NO_CONTENT)
 
+class RetrieveExternalBookImageAPIView(RetrieveAPIView):
+    serializer_class = BookImageSerializer
+    queryset = BookImage.objects.all()
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'book_id' # looks up using the book_id field
+    lookup_url_kwarg = 'book_id'

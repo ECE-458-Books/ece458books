@@ -1,8 +1,6 @@
 import { Column } from "primereact/column";
 import {
   DataTable,
-  DataTableFilterEvent,
-  DataTableFilterMetaData,
   DataTablePageEvent,
   DataTableRowClickEvent,
   DataTableSortEvent,
@@ -10,78 +8,77 @@ import {
 import { Toast } from "primereact/toast";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { GetSalesReconciliationsResp, SALES_API } from "../../apis/SalesAPI";
-import DeletePopup from "../../components/DeletePopup";
-import { TableColumn } from "../../components/Table";
+import {
+  APISRSortFieldMap,
+  APIToInternalSRConversion,
+} from "../../apis/Conversions";
+import { GetSRsResp, SALES_API } from "../../apis/SalesAPI";
+import DeletePopup from "../../components/popups/DeletePopup";
+import { createColumns, TableColumn } from "../../components/TableColumns";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import { logger } from "../../util/Logger";
+import {
+  dateBodyTemplate,
+  priceBodyTemplate,
+} from "../../util/TableCellEditFuncs";
 import { SRDetailState, SRSaleRow } from "../detail/SRDetail";
 import { NUM_ROWS } from "./BookList";
 
 export interface SalesReconciliation {
   id: number;
-  date: string;
+  date: Date;
   sales: SRSaleRow[];
-  num_unique_books: number;
-  num_books: number;
-  total_revenue: number;
+  uniqueBooks: number;
+  totalBooks: number;
+  totalRevenue: number;
 }
 
 const COLUMNS: TableColumn[] = [
   {
     field: "date",
     header: "Date (YYYY-MM-DD)",
-    filterPlaceholder: "Search by Total Date",
-    filterable: false,
+    sortable: true,
+    customBody: (rowData: SalesReconciliation) =>
+      dateBodyTemplate(rowData.date),
   },
   {
-    field: "num_unique_books",
+    field: "uniqueBooks",
     header: "Unique Books",
-    filterPlaceholder: "Search by Unique Books",
-    filterable: false,
+    sortable: true,
   },
   {
-    field: "num_books",
+    field: "totalBooks",
     header: "Total Books",
-    filterPlaceholder: "Search by Total Books",
-    filterable: false,
+    sortable: true,
   },
   {
-    field: "total_revenue",
+    field: "totalRevenue",
     header: "Total Revenue ($)",
-    filterPlaceholder: "Search by Total Revenue",
-    filterable: false,
+    sortable: true,
+    customBody: (rowData: SalesReconciliation) =>
+      priceBodyTemplate(rowData.totalRevenue),
   },
 ];
 
-// Define the column filters
-interface Filters {
-  [id: string]: DataTableFilterMetaData;
-  date: DataTableFilterMetaData;
-  num_unique_books: DataTableFilterMetaData;
-  num_books: DataTableFilterMetaData;
-  total_revenue: DataTableFilterMetaData;
-}
-
 // Empty sales reconciliation, used to initialize state
-const emptySalesReconciliation = {
+const emptySalesReconciliation: SalesReconciliation = {
   id: 0,
-  date: "",
+  date: new Date(),
   sales: [],
-  num_unique_books: 0,
-  num_books: 0,
-  total_revenue: 0,
+  uniqueBooks: 0,
+  totalBooks: 0,
+  totalRevenue: 0,
 };
 
 export default function SalesReconciliationList() {
   // ----------------- STATE -----------------
-  const [loading, setLoading] = useState(false); // Whether we show that the table is loading or not
+  const [loading, setLoading] = useState<boolean>(false); // Whether we show that the table is loading or not
   const [numberOfSalesReconciliations, setNumberOfSalesReconciliations] =
     useState(0); // The number of elements that match the query
   const [salesReconciliations, setSalesReconciliations] = useState<
     SalesReconciliation[]
   >([]); // The data displayed in the table
-  const [deletePopupVisible, setDeletePopupVisible] = useState(false); // Whether the delete popup is shown
+  const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false); // Whether the delete popup is shown
   const [
     selectedDeleteSalesReconciliation,
     setSelectedDeleteSalesReconciliation,
@@ -101,17 +98,6 @@ export default function SalesReconciliationList() {
     page: 0,
   });
 
-  // The current state of the filters
-  const [filterParams, setFilterParams] = useState<any>({
-    filters: {
-      id: { value: "", matchMode: "contains" },
-      date: { value: "", matchMode: "contains" },
-      num_unique_books: { value: "", matchMode: "contains" },
-      num_books: { value: "", matchMode: "contains" },
-      total_revenue: { value: "", matchMode: "contains" },
-    } as Filters,
-  });
-
   // ----------------- METHODS -----------------
 
   // The navigator to switch pages
@@ -121,13 +107,9 @@ export default function SalesReconciliationList() {
   const toDetailPage = (sr: SalesReconciliation, isModifiable: boolean) => {
     logger.debug("Edit Sales Reconciliation Clicked", sr);
     const detailState: SRDetailState = {
-      date: new Date(sr.date.replace("-", "/")),
-      sales: sr.sales,
-      totalRevenue: sr.total_revenue,
       id: sr.id,
       isAddPage: false,
       isModifiable: isModifiable,
-      isConfirmationPopupVisible: false,
     };
 
     navigate("/sales-reconciliations/detail", { state: detailState });
@@ -147,29 +129,17 @@ export default function SalesReconciliationList() {
       selectedDeleteSalesReconciliation
     );
     setDeletePopupVisible(false);
-    SALES_API.deleteSalesReconciliation(
-      selectedDeleteSalesReconciliation.id.toString()
-    ).then((response) => {
-      if (response.status == 204) {
-        showSuccess();
-      } else {
-        showFailure();
-        return;
-      }
-    });
+    SALES_API.deleteSalesReconciliation({
+      id: selectedDeleteSalesReconciliation.id,
+    })
+      .then(() => showSuccess())
+      .catch(() => showFailure());
     const _salesReconciliations = salesReconciliations.filter(
       (selectSR) => selectedDeleteSalesReconciliation.id != selectSR.id
     );
     setSalesReconciliations(_salesReconciliations);
 
     setSelectedDeleteSalesReconciliation(emptySalesReconciliation);
-  };
-
-  // Called when any of the filters (search boxes) are typed into
-  const onFilter = (event: DataTableFilterEvent) => {
-    logger.debug("Filter Applied", event);
-    setLoading(true);
-    setFilterParams(event);
   };
 
   // Called when any of the columns are selected to be sorted
@@ -196,26 +166,28 @@ export default function SalesReconciliationList() {
   };
 
   // When any of the list of params are changed, useEffect is called to hit the API endpoint
-  useEffect(() => callAPI(), [sortParams, pageParams, filterParams]);
+  useEffect(() => callAPI(), [sortParams, pageParams]);
 
   const callAPI = () => {
     // Invert sort order
-    let sortField = sortParams.sortField;
+    let sortField = APISRSortFieldMap.get(sortParams.sortField) ?? "";
     if (sortParams.sortOrder == -1) {
       sortField = "-".concat(sortField);
     }
 
     SALES_API.getSalesReconciliations({
-      page: pageParams.page ?? 0,
+      page: (pageParams.page ?? 0) + 1,
       page_size: pageParams.rows,
       ordering: sortField,
     }).then((response) => onAPIResponse(response));
   };
 
   // Set state when response to API call is received
-  const onAPIResponse = (response: GetSalesReconciliationsResp) => {
-    setSalesReconciliations(response.salesReconciliations);
-    setNumberOfSalesReconciliations(response.numberOfSalesReconciliations);
+  const onAPIResponse = (response: GetSRsResp) => {
+    setSalesReconciliations(
+      response.results.map((sr) => APIToInternalSRConversion(sr))
+    );
+    setNumberOfSalesReconciliations(response.count);
     setLoading(false);
   };
 
@@ -225,6 +197,7 @@ export default function SalesReconciliationList() {
   const editDeleteCellTemplate = EditDeleteTemplate<SalesReconciliation>({
     onEdit: (rowData) => toDetailPage(rowData, true),
     onDelete: (rowData) => deleteSalesReconciliationPopup(rowData),
+    deleteDisabled: () => false,
   });
 
   // The delete popup
@@ -253,31 +226,7 @@ export default function SalesReconciliationList() {
     });
   };
 
-  // Map column objects to actual columns
-  const dynamicColumns = COLUMNS.map((col) => {
-    return (
-      <Column
-        // Indexing/header
-        key={col.field}
-        field={col.field}
-        header={col.header}
-        // Filtering
-        filter={col.filterable}
-        filterElement={col.customFilter}
-        //filterMatchMode={"contains"}
-        filterPlaceholder={col.filterPlaceholder}
-        // Sorting
-        sortable
-        //sortField={col.field}
-        // Hiding Fields
-        showFilterMenuOptions={false}
-        showClearButton={false}
-        // Other
-        style={{ minWidth: "16rem" }}
-        hidden={col.hidden}
-      />
-    );
-  });
+  const columns = createColumns(COLUMNS);
 
   return (
     <div className="card pt-5 px-2">
@@ -288,7 +237,6 @@ export default function SalesReconciliationList() {
         value={salesReconciliations}
         lazy
         responsiveLayout="scroll"
-        filterDisplay="row"
         loading={loading}
         // Row clicking
         rowHover
@@ -305,11 +253,8 @@ export default function SalesReconciliationList() {
         onSort={onSort}
         sortField={sortParams.sortField}
         sortOrder={sortParams.sortOrder}
-        // Filtering
-        onFilter={onFilter}
-        filters={filterParams.filters}
       >
-        {dynamicColumns}
+        {columns}
         <Column body={editDeleteCellTemplate} style={{ minWidth: "16rem" }} />
       </DataTable>
       {deletePopupVisible && deletePopup}

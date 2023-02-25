@@ -1,101 +1,146 @@
 import { DataTable } from "primereact/datatable";
-import { Column } from "primereact/column";
-import { useRef, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { Calendar } from "primereact/calendar";
-import ConfirmButton from "../../components/ConfirmButton";
 import moment from "moment";
 import { GetSalesReportResp, SALES_REPORT_API } from "../../apis/SalesRepAPI";
 import { Toast } from "primereact/toast";
 import { logger } from "../../util/Logger";
+import { APIToInternalSalesReportConversion } from "../../apis/Conversions";
+import { createColumns, TableColumn } from "../../components/TableColumns";
+import { priceBodyTemplate } from "../../util/TableCellEditFuncs";
+import { Button } from "primereact/button";
 
-// The structure of the response for a SR from the API
-export interface salesReportTotalRow {
+export interface SalesReport {
+  totalRow: SalesReportTotalRow;
+  dailySummaryRows: SalesReportDailyRow[];
+  topBooksRows: SalesReportTopBooksRow[];
+}
+
+export interface SalesReportTotalRow {
   revenue: number;
   cost: number;
   profit: number;
 }
 
-export interface salesReportDailyRow {
+export interface SalesReportDailyRow {
   date: string;
   revenue: number;
   cost: number;
   profit: number;
 }
 
-export interface salesReportTopBooksRow {
-  book_id: number;
-  num_books_sold: number;
-  book_revenue: number;
-  total_cost_most_recent: number;
-  book_title: string;
-  book_profit: number;
+export interface SalesReportTopBooksRow {
+  bookId: number;
+  numBooksSold: number;
+  bookRevenue: number;
+  totalCostMostRecent: number;
+  bookTitle: string;
+  bookProfit: number;
 }
 
-export interface TableColumnSales {
-  field: string;
-  header: string;
-}
-
-const COLUMNS_TOTAL: TableColumnSales[] = [
-  { field: "revenue", header: "Revenue" },
-  { field: "cost", header: "Cost" },
-  { field: "profit", header: "Profit" },
+const COLUMNS_TOTAL: TableColumn[] = [
+  {
+    field: "revenue",
+    header: "Revenue",
+    style: { width: "25%" },
+    customBody: (rowData: SalesReportTotalRow) =>
+      priceBodyTemplate(rowData.revenue),
+  },
+  {
+    field: "cost",
+    header: "Cost",
+    style: { width: "25%" },
+    customBody: (rowData: SalesReportTotalRow) =>
+      priceBodyTemplate(rowData.cost),
+  },
+  {
+    field: "profit",
+    header: "Profit",
+    style: { width: "25%" },
+    customBody: (rowData: SalesReportTotalRow) =>
+      priceBodyTemplate(rowData.profit),
+  },
 ];
 
-const COLUMNS_DAILY: TableColumnSales[] = [
+const COLUMNS_DAILY: TableColumn[] = [
   { field: "date", header: "Date (YYYY-MM-DD)" },
-  { field: "revenue", header: "Revenue" },
-  { field: "cost", header: "Cost" },
-  { field: "profit", header: "Profit" },
+  {
+    field: "revenue",
+    header: "Revenue",
+    style: { width: "25%" },
+    customBody: (rowData: SalesReportDailyRow) =>
+      priceBodyTemplate(rowData.revenue),
+  },
+  {
+    field: "cost",
+    header: "Cost",
+    style: { width: "25%" },
+    customBody: (rowData: SalesReportDailyRow) =>
+      priceBodyTemplate(rowData.cost),
+  },
+  {
+    field: "profit",
+    header: "Profit",
+    style: { width: "25%" },
+    customBody: (rowData: SalesReportDailyRow) =>
+      priceBodyTemplate(rowData.profit),
+  },
 ];
 
-const COLUMNS_TOP_BOOKS: TableColumnSales[] = [
-  { field: "book_title", header: "Book" },
-  { field: "book_id", header: "id" },
-  { field: "num_books_sold", header: "Number of Books Sold" },
-  { field: "book_revenue", header: "Book Revenue" },
-  { field: "total_cost_most_recent", header: "Book Cost - Most Recent" },
-  { field: "book_profit", header: "Book Profit" },
+const COLUMNS_TOP_BOOKS: TableColumn[] = [
+  { field: "bookTitle", header: "Book", style: { width: "25%" } },
+  {
+    field: "numBooksSold",
+    header: "Number of Books Sold",
+    style: { width: "25%" },
+  },
+  {
+    field: "bookRevenue",
+    header: "Book Revenue",
+    style: { width: "25%" },
+    customBody: (rowData: SalesReportTopBooksRow) =>
+      priceBodyTemplate(rowData.bookRevenue),
+  },
+  {
+    field: "totalCostMostRecent",
+    header: "Book Cost - Most Recent",
+    style: { width: "25%" },
+    customBody: (rowData: SalesReportTopBooksRow) =>
+      priceBodyTemplate(rowData.totalCostMostRecent),
+  },
+  {
+    field: "bookProfit",
+    header: "Book Profit",
+    style: { width: "25%" },
+    customBody: (rowData: SalesReportTopBooksRow) =>
+      priceBodyTemplate(rowData.bookProfit),
+  },
 ];
+
+const columnsTotal = createColumns(COLUMNS_TOTAL);
+const columnsDaily = createColumns(COLUMNS_DAILY);
+const columnsTopBooks = createColumns(COLUMNS_TOP_BOOKS);
 
 export default function SalesReport() {
-  const [totalsData, setTotalsData] = useState<salesReportTotalRow[]>([]);
-  const [dailyData, setDailyData] = useState<salesReportDailyRow[]>([]);
-  const [topBooksData, setTopBooksData] = useState<salesReportTopBooksRow[]>(
+  const [totalsData, setTotalsData] = useState<SalesReportTotalRow[]>([]);
+  const [dailyData, setDailyData] = useState<SalesReportDailyRow[]>([]);
+  const [topBooksData, setTopBooksData] = useState<SalesReportTopBooksRow[]>(
     []
   );
   const [dates, setDates] = useState<any>(null);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
-    useState(false);
+    useState<boolean>(false);
 
   const onAPIResponse = (response: GetSalesReportResp) => {
-    if (
-      response.daily_summary[0].date === "Cannot Sell a Book not Purchased" &&
-      response.top_books[0].book_title === "Stop Selling Imaginary Books"
-    ) {
-      showFailure(
-        "Cannot sell a book that has not been purchased. I know we are Imaginary Software, but not that kind of imagination."
-      );
-    } else {
-      setTotalsData([
-        {
-          revenue: response.revenue,
-          cost: response.cost,
-          profit: response.profit,
-        },
-      ]);
-      setDailyData(response.daily_summary);
-      setTopBooksData(response.top_books);
-      showSuccess("Data Successfully Retrieved");
-    }
+    const salesReport = APIToInternalSalesReportConversion(response);
+    console.log(salesReport);
+    setTotalsData([salesReport.totalRow]);
+    setDailyData(salesReport.dailySummaryRows);
+    setTopBooksData(salesReport.topBooksRows);
   };
 
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
-
-  const showSuccess = (message: string) => {
-    toast.current?.show({ severity: "success", summary: message });
-  };
 
   const showFailure = (message: string) => {
     toast.current?.show({
@@ -104,34 +149,7 @@ export default function SalesReport() {
     });
   };
 
-  const formatCurrency = (value: any) => {
-    return value.toLocaleString("en-US", {
-      style: "currency",
-      currency: "USD",
-    });
-  };
-
-  const priceBodyTemplateRevenue = (rowData: any) => {
-    return formatCurrency(rowData.revenue);
-  };
-  const priceBodyTemplateCost = (rowData: any) => {
-    return formatCurrency(rowData.cost);
-  };
-  const priceBodyTemplateProfit = (rowData: any) => {
-    return formatCurrency(rowData.profit);
-  };
-
-  const priceBodyTemplateBookRevenue = (rowData: any) => {
-    return formatCurrency(rowData.book_revenue);
-  };
-  const priceBodyTemplateBookCost = (rowData: any) => {
-    return formatCurrency(rowData.total_cost_most_recent);
-  };
-  const priceBodyTemplateBookProfit = (rowData: any) => {
-    return formatCurrency(rowData.book_profit);
-  };
-
-  const onSubmit = (): void => {
+  const onSubmit = (event: FormEvent<HTMLFormElement>): void => {
     try {
       if (dates != null) {
         if (moment(dates[1]).format("YYYY-MM-DD") !== "Invalid date") {
@@ -142,7 +160,9 @@ export default function SalesReport() {
           SALES_REPORT_API.getSalesReport({
             start: moment(dates[0]).format("YYYY-MM-DD"),
             end: moment(dates[1]).format("YYYY-MM-DD"),
-          }).then((response) => onAPIResponse(response));
+          })
+            .then((response) => onAPIResponse(response))
+            .catch(() => showFailure("Error retrieving sales report"));
         } else {
           showFailure("Select end date");
         }
@@ -153,6 +173,7 @@ export default function SalesReport() {
       showFailure("Select end date");
       logger.debug(error);
     }
+    event.preventDefault();
   };
 
   return (
@@ -182,16 +203,9 @@ export default function SalesReport() {
                 />
               </div>
 
-              <ConfirmButton
-                isVisible={isConfirmationPopupVisible}
-                hideFunc={() => setIsConfirmationPopupVisible(false)}
-                acceptFunc={onSubmit}
-                rejectFunc={() => {
-                  console.log("reject");
-                }}
-                buttonClickFunc={() => setIsConfirmationPopupVisible(true)}
-                disabled={false}
-                label={"Generate"}
+              <Button
+                label="Generate"
+                type="submit"
                 className="p-button-success p-button-raised"
               />
             </div>
@@ -206,21 +220,7 @@ export default function SalesReport() {
       <div className="pt-3 col-12 justify-content-center">
         <div className="justify-content-center col-offset-3 col-6">
           <DataTable value={totalsData} className="">
-            {COLUMNS_TOTAL.map(({ field, header }) => {
-              return (
-                <Column
-                  key={field}
-                  field={field}
-                  header={header}
-                  style={{ width: "25%" }}
-                  body={
-                    (field === "revenue" && priceBodyTemplateRevenue) ||
-                    (field === "cost" && priceBodyTemplateCost) ||
-                    (field === "profit" && priceBodyTemplateProfit)
-                  }
-                />
-              );
-            })}
+            {columnsTotal}
           </DataTable>
         </div>
       </div>
@@ -232,21 +232,7 @@ export default function SalesReport() {
       <div className="pt-3 col-12 justify-content-center">
         <div className="col-offset-2 col-8">
           <DataTable value={dailyData} className="">
-            {COLUMNS_DAILY.map(({ field, header }) => {
-              return (
-                <Column
-                  key={field}
-                  field={field}
-                  header={header}
-                  style={{ width: "25%" }}
-                  body={
-                    (field === "revenue" && priceBodyTemplateRevenue) ||
-                    (field === "cost" && priceBodyTemplateCost) ||
-                    (field === "profit" && priceBodyTemplateProfit)
-                  }
-                />
-              );
-            })}
+            {columnsDaily}
           </DataTable>
         </div>
         <div className="pt-3 col-12 justify-content-center align-content-center">
@@ -256,24 +242,7 @@ export default function SalesReport() {
         </div>
         <div className="col-offset-2 col-8">
           <DataTable value={topBooksData} className="">
-            {COLUMNS_TOP_BOOKS.map(({ field, header }) => {
-              return (
-                <Column
-                  key={field}
-                  field={field}
-                  header={header}
-                  style={{ width: "25%" }}
-                  hidden={"book_id" === field}
-                  body={
-                    (field === "book_revenue" &&
-                      priceBodyTemplateBookRevenue) ||
-                    (field === "total_cost_most_recent" &&
-                      priceBodyTemplateBookCost) ||
-                    (field === "book_profit" && priceBodyTemplateBookProfit)
-                  }
-                />
-              );
-            })}
+            {columnsTopBooks}
           </DataTable>
         </div>
       </div>

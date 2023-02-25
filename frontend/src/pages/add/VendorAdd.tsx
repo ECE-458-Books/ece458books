@@ -6,7 +6,7 @@ import { logger } from "../../util/Logger";
 import { Toast } from "primereact/toast";
 
 export default function VendorAdd() {
-  const [textBox, setTextBox] = useState("");
+  const [textBox, setTextBox] = useState<string>("");
 
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
@@ -32,13 +32,9 @@ export default function VendorAdd() {
     str = str.filter((str) => /\S/.test(str));
     //loop through all elements and do an API submission to add the strings to database
     for (let i = 0; i < str.length; i++) {
-      VENDORS_API.addVendor(str[i]).then((response) => {
-        if (response.status == 201) {
-          showSuccess();
-        } else {
-          showFailure();
-        }
-      });
+      VENDORS_API.addVendor({ name: str[i] })
+        .then(() => showSuccess())
+        .catch(() => showFailure());
     }
     event.preventDefault();
   };

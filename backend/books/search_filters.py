@@ -15,4 +15,4 @@ class CustomSearchFilter(filters.SearchFilter):
     
     def str2bool(self, v):
         if v: return v.lower() in ("true", "1")
-        return False;
+        return False

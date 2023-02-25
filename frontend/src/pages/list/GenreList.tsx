@@ -1,22 +1,22 @@
-import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import {
   DataTable,
-  DataTableFilterEvent,
-  DataTableFilterMetaData,
   DataTablePageEvent,
   DataTableRowClickEvent,
-  DataTableSelection,
-  DataTableSelectionChangeEvent,
   DataTableSortEvent,
 } from "primereact/datatable";
 import { Toast } from "primereact/toast";
 import React, { useRef } from "react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  APIGenreSortFieldMap,
+  APIToInternalGenreConversion,
+} from "../../apis/Conversions";
 import { GENRES_API, GetGenresResp } from "../../apis/GenresAPI";
-import DeletePopup from "../../components/DeletePopup";
-import { TableColumn } from "../../components/Table";
+import DeletePopup from "../../components/popups/DeletePopup";
+import { createColumns, TableColumn } from "../../components/TableColumns";
+import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import { logger } from "../../util/Logger";
 import { GenreDetailState } from "../detail/GenreDetail";
 import { NUM_ROWS } from "./BookList";
@@ -25,11 +25,7 @@ import { NUM_ROWS } from "./BookList";
 export interface Genre {
   id: number;
   name: string;
-  book_cnt: number;
-}
-
-interface GenreRow extends Genre {
-  isDeletable: boolean;
+  bookCount: number;
 }
 
 // Properties of each column that change, the rest are set below when creating the actual Columns to be rendered
@@ -37,37 +33,28 @@ const COLUMNS: TableColumn[] = [
   {
     field: "name",
     header: "Genre",
-    filterPlaceholder: "Search by Genre",
-    filterable: false,
+    sortable: true,
   },
   {
-    field: "book_cnt",
+    field: "bookCount",
     header: "Number of Books",
-    filterPlaceholder: "Search by Number of Books",
-    filterable: false,
+    sortable: true,
   },
 ];
 
-// Define the column filters
-interface Filters {
-  [id: string]: DataTableFilterMetaData;
-  name: DataTableFilterMetaData;
-  book_cnt: DataTableFilterMetaData;
-}
-
 // Empty genre, used to initialize state
-const emptyGenre = {
+const emptyGenre: Genre = {
   name: "",
-  book_cnt: 0,
+  bookCount: 0,
   id: 0,
 };
 
 export default function GenreList() {
   // ----------------- STATE -----------------
-  const [loading, setLoading] = useState(false); // Whether we show that the table is loading or not
-  const [numberOfGenres, setNumberOfGenres] = useState(0); // The number of elements that match the query
+  const [loading, setLoading] = useState<boolean>(false); // Whether we show that the table is loading or not
+  const [numberOfGenres, setNumberOfGenres] = useState<number>(0); // The number of elements that match the query
   const [genres, setGenres] = useState<Genre[]>([]); // The data displayed in the table
-  const [deletePopupVisible, setDeletePopupVisible] = useState(false); // Whether the delete popup is shown
+  const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false); // Whether the delete popup is shown
   const [selectedDeleteGenre, setSelectedDeleteGenre] =
     useState<Genre>(emptyGenre); // The element that has been clicked on to delete
 
@@ -85,15 +72,6 @@ export default function GenreList() {
     page: 0,
   });
 
-  // The current state of the filters
-  const [filterParams, setFilterParams] = useState<any>({
-    filters: {
-      id: { value: "", matchMode: "contains" },
-      name: { value: "", matchMode: "contains" },
-      book_cnt: { value: "", matchMode: "contains" },
-    } as Filters,
-  });
-
   // ----------------- METHODS -----------------
   // Navigator used to go to a different page
   const navigate = useNavigate();
@@ -103,9 +81,7 @@ export default function GenreList() {
     logger.debug("Edit Genre Clicked", genre);
     const detailState: GenreDetailState = {
       id: genre.id,
-      genre: genre.name,
       isModifiable: true,
-      isConfirmationPopupVisible: false,
     };
 
     navigate("/genres/detail", { state: detailState });
@@ -122,26 +98,17 @@ export default function GenreList() {
   const deleteGenreFinal = () => {
     logger.debug("Delete Genre Finalized", selectedDeleteGenre);
     setDeletePopupVisible(false);
-    GENRES_API.deleteGenre(selectedDeleteGenre.id).then((response) => {
-      if (response.status == 204) {
-        showSuccess();
-      } else {
+    GENRES_API.deleteGenre({ id: selectedDeleteGenre.id })
+      .then(() => showSuccess())
+      .catch(() => {
         showFailure();
         return;
-      }
-    });
+      });
     const _genres = genres.filter(
       (selectGenre) => selectedDeleteGenre.id != selectGenre.id
     );
     setGenres(_genres);
     setSelectedDeleteGenre(emptyGenre);
-  };
-
-  // Called when any of the filters (search boxes) are typed into
-  const onFilter = (event: DataTableFilterEvent) => {
-    logger.debug("Filter Applied", event);
-    setLoading(true);
-    setFilterParams(event);
   };
 
   // Called when any of the columns are selected to be sorted
@@ -168,18 +135,18 @@ export default function GenreList() {
   };
 
   // API call on page load
-  useEffect(() => callAPI(), [sortParams, pageParams, filterParams]);
+  useEffect(() => callAPI(), [sortParams, pageParams]);
 
   // Calls the Genres API
   const callAPI = () => {
     // Invert sort order
-    let sortField = sortParams.sortField;
+    let sortField = APIGenreSortFieldMap.get(sortParams.sortField) ?? "";
     if (sortParams.sortOrder == -1) {
       sortField = "-".concat(sortField);
     }
 
     GENRES_API.getGenres({
-      page: pageParams.page ?? 0,
+      page: (pageParams.page ?? 0) + 1,
       page_size: pageParams.rows,
       ordering: sortField,
     }).then((response) => onAPIResponse(response));
@@ -187,31 +154,26 @@ export default function GenreList() {
 
   // Set state when response to API call is received
   const onAPIResponse = (response: GetGenresResp) => {
-    setGenres(response.genres);
-    setNumberOfGenres(response.numberOfGenres);
+    setGenres(
+      response.results.map((genre) => APIToInternalGenreConversion(genre))
+    );
+    setNumberOfGenres(response.count);
     setLoading(false);
   };
 
   // ----------------- TEMPLATES/VISIBLE COMPONENTS -----------------
 
-  // Edit/Delete Cell Template
-  const editDeleteCellTemplate = (rowData: Genre) => {
-    return (
-      <React.Fragment>
-        <Button
-          icon="pi pi-pencil"
-          className="p-button-rounded p-button-success mr-2"
-          onClick={() => editGenre(rowData)}
-        />
-        <Button
-          icon="pi pi-trash"
-          className="p-button-rounded p-button-danger"
-          onClick={() => deleteGenrePopup(rowData)}
-          disabled={rowData.book_cnt > 0}
-        />
-      </React.Fragment>
-    );
+  // Whether the delete button should be disabled
+  const isDeleteDisabled = (genre: Genre) => {
+    return genre.bookCount > 0;
   };
+
+  // Edit/Delete Cell Template
+  const editDeleteCellTemplate = EditDeleteTemplate<Genre>({
+    onEdit: (rowData) => editGenre(rowData),
+    onDelete: (rowData) => deleteGenrePopup(rowData),
+    deleteDisabled: (rowData) => isDeleteDisabled(rowData),
+  });
 
   // The delete popup
   const deletePopup = (
@@ -236,31 +198,7 @@ export default function GenreList() {
     });
   };
 
-  // Map column objects to actual columns
-  const dynamicColumns = COLUMNS.map((col) => {
-    return (
-      <Column
-        // Indexing/header
-        key={col.field}
-        field={col.field}
-        header={col.header}
-        // Filtering
-        filter={col.filterable}
-        filterElement={col.customFilter}
-        //filterMatchMode={"contains"}
-        filterPlaceholder={col.filterPlaceholder}
-        // Sorting
-        sortable
-        //sortField={col.field}
-        // Hiding Fields
-        showFilterMenuOptions={false}
-        showClearButton={false}
-        // Other
-        style={{ minWidth: "16rem" }}
-        hidden={col.hidden}
-      />
-    );
-  });
+  const columns = createColumns(COLUMNS);
 
   return (
     <div className="card pt-5 px-2">
@@ -271,7 +209,6 @@ export default function GenreList() {
         value={genres}
         lazy
         responsiveLayout="scroll"
-        filterDisplay="row"
         loading={loading}
         // Operations on rows
         rowHover
@@ -288,11 +225,8 @@ export default function GenreList() {
         onSort={onSort}
         sortField={sortParams.sortField}
         sortOrder={sortParams.sortOrder}
-        // Filtering
-        onFilter={onFilter}
-        filters={filterParams.filters}
       >
-        {dynamicColumns}
+        {columns}
         <Column
           body={(rowData) => editDeleteCellTemplate(rowData)}
           style={{ minWidth: "16rem" }}

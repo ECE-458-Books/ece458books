@@ -1,4 +1,4 @@
-import React, { FormEvent, useRef, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Button } from "primereact/button";
 import { GENRES_API } from "../../apis/GenresAPI";
@@ -6,7 +6,7 @@ import { logger } from "../../util/Logger";
 import { Toast } from "primereact/toast";
 
 export default function GenreAdd() {
-  const [textBox, setTextBox] = useState("");
+  const [textBox, setTextBox] = useState<string>("");
 
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
@@ -32,13 +32,9 @@ export default function GenreAdd() {
     str = str.filter((str) => /\S/.test(str));
     //loop through all elements and do an API submission to add the strings to database
     for (let i = 0; i < str.length; i++) {
-      GENRES_API.addGenres(str[i]).then((response) => {
-        if (response.status == 201) {
-          showSuccess();
-        } else {
-          showFailure();
-        }
-      });
+      GENRES_API.addGenre({ name: str[i] })
+        .then(() => showSuccess())
+        .catch(() => showFailure());
     }
     event.preventDefault();
   };

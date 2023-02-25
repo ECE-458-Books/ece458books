@@ -2,6 +2,7 @@ import { ColumnEditorOptions } from "primereact/column";
 import { InputNumber } from "primereact/inputnumber";
 import { InputText } from "primereact/inputtext";
 import { internalToExternalDate } from "./DateOperations";
+import { Image } from "primereact/image";
 
 export const MAX_IMAGE_HEIGHT = 80;
 export const MAX_IMAGE_WIDTH = 80;
@@ -72,18 +73,20 @@ export function priceBodyTemplate(value: number | bigint) {
   }).format(value);
 }
 
-export function imageBodyTemplate(thumbnailURL: string[]) {
+export function imageBodyTemplate(thumbnailURL: string) {
   return (
-    <img
-      // Change the [0] when implementing for multiple images
-      src={thumbnailURL[0]}
+    <Image
+      // Leaving this line in case of future image browser side caching workaround is needed
+      // src={`${image.imageSrc}?${image.imageHash}`}
+      src={thumbnailURL}
+      id="imageONpage"
       alt="Image"
-      className="product-image"
-      style={{
+      imageStyle={{
         objectFit: "contain",
         maxHeight: MAX_IMAGE_HEIGHT,
         maxWidth: MAX_IMAGE_WIDTH,
       }}
+      className="col-12 align-items-center flex justify-content-center"
     />
   );
 }

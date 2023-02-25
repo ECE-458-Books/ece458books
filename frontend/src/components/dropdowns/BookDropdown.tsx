@@ -15,7 +15,7 @@ export interface BookDropdownProps {
 }
 
 export function BooksDropdownData(props: BookDropdownDataProps) {
-  BOOKS_API.getBooksNoPagination().then((response) => {
+  BOOKS_API.getBooksNameListNoPagination().then((response) => {
     const tempBookMap = new Map<string, number>();
     for (const book of response) {
       tempBookMap.set(book.title, book.id);

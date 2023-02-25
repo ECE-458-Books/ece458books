@@ -1,6 +1,6 @@
 import { API, METHOD_GET, METHOD_PATCH } from "./Config";
 
-const IMAGE_EXTENSION = "books/image";
+const IMAGE_EXTENSION = "books";
 
 // get image requirement
 export interface GetImageReq {

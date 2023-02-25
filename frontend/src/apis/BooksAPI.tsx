@@ -36,7 +36,7 @@ export interface APIBook {
   thickness: number;
   retail_price: number;
   stock: number;
-  urls: string[];
+  url: string;
 }
 
 export interface GetBooksResp {
@@ -70,6 +70,8 @@ export interface GetBookDetailReq {
 // modifyBook
 export interface ModifyBookReq {
   book: APIBook;
+  image: File;
+  isImageUploaded: boolean;
 }
 
 // deleteBook
@@ -142,10 +144,24 @@ export const BOOKS_API = {
   },
 
   modifyBook: async function (req: ModifyBookReq) {
+    const formData = new FormData();
+    formData.append("genres", req.book.genres.join(", "));
+    formData.append("pageCount", req.book.pageCount.toString());
+    formData.append("thickness", req.book.thickness.toString());
+    formData.append("width", req.book.width.toString());
+    formData.append("height", req.book.height.toString());
+    formData.append("retail_price", req.book.retail_price.toString());
+    if (req.isImageUploaded) {
+      formData.append("image", req.image);
+    }
+
     return await API.request({
       url: BOOKS_EXTENSION.concat("/".concat(req.book.id.toString())),
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
       method: METHOD_PATCH,
-      data: req.book,
+      data: formData,
     });
   },
 

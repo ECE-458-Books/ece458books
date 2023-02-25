@@ -194,9 +194,9 @@ export default function BookAdd() {
           book: InternalToAPIBookConversion(book),
         }).catch(() => showFailure("Could not add ".concat(book.title)));
       } else {
-        BOOKS_API.modifyBook({ book: InternalToAPIBookConversion(book) }).catch(
-          () => showFailure("Could not modify ".concat(book.title))
-        );
+        // BOOKS_API.modifyBook({ book: InternalToAPIBookConversion(book) }).catch(
+        //   () => showFailure("Could not modify ".concat(book.title))
+        // );
       }
     }
 

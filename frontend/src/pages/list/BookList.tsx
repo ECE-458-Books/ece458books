@@ -26,7 +26,6 @@ import {
 } from "../../util/TableCellEditFuncs";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import GenreDropdown from "../../components/dropdowns/GenreDropdown";
-import PaginatorPageChangeEvent from "primereact/paginator";
 import { InputSwitch } from "primereact/inputswitch";
 
 export const NUM_ROWS = 10;
@@ -46,7 +45,7 @@ export interface Book {
   thickness: number;
   retailPrice: number;
   stock: number;
-  thumbnailURL: string[];
+  thumbnailURL: string;
 }
 
 interface Filters {
@@ -72,7 +71,7 @@ export const emptyBook: Book = {
   thickness: 0,
   retailPrice: 0,
   stock: 0,
-  thumbnailURL: [""],
+  thumbnailURL: "",
 };
 
 export default function BookList() {

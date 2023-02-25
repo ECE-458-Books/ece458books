@@ -17,7 +17,6 @@ import GenreDropdown from "../../components/dropdowns/GenreDropdown";
 import { IMAGES_API } from "../../apis/ImagesAPI";
 import ImageUploader from "../../components/uploaders/ImageFileUploader";
 import { showFailure, showSuccess } from "../../components/Toast";
-import { InputSwitch } from "primereact/inputswitch";
 import { APIToInternalBookConversion } from "../../apis/Conversions";
 import { Button } from "primereact/button";
 
@@ -30,9 +29,10 @@ interface ErrorDisplay {
   message: string;
 }
 
+// Leaving this line in case of future image browser side caching workaround is needed
 interface ImageUrlHashStruct {
   imageSrc: string;
-  imageHash: number;
+  imageHash: string;
 }
 
 export default function BookDetail() {
@@ -59,10 +59,15 @@ export default function BookDetail() {
   const [height, setHeight] = useState<number>(0);
   const [thickness, setThickness] = useState<number>(0);
   const [stock, setStock] = useState<number>(0);
+  // Leaving this line in case of future image browser side caching workaround is needed
   const [image, setImage] = useState<ImageUrlHashStruct>({
     imageSrc: "",
-    imageHash: Date.now(),
+    imageHash: Date.now().toString(),
   });
+  //const [image, setImage] = useState<string>("");
+  const [imageFile, setImageFile] = useState<File>(new File([""], "filename"));
+  const [isImageUploaded, setIsImageUploaded] = useState<boolean>(false);
+  const defaultImage = "../DefaultNoImage";
 
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
@@ -93,20 +98,31 @@ export default function BookDetail() {
         setStock(book.stock);
       })
       .catch(() => showFailure(toast, "Could not fetch book data"));
-  }, []);
 
-  // Load the book image on page load
-  useEffect(() => {
     IMAGES_API.getImage({ id: id })
-      .then((response) =>
+      .then((response) => {
+        // {
+        //   setImage(response.url);
+        //   setCurrentDBImage(response.url);
+        // }
+        // Leaving this line in case of future image browser side caching workaround is needed
         setImage({
           imageSrc: response.url,
-          imageHash: Date.now(),
-        })
-      )
+          imageHash: Date.now().toString(),
+        });
+      })
       .catch(() =>
         showFailure(toast, "Image Cannot be Retrieved to Update Display")
       );
+
+    // fetch(image.imageSrc)
+    // .then(async (response) => {
+    //   const contentType = response.headers.get("content-type") ?? "";
+    //   const blob = await response.blob();
+    //   const file = new File([blob], "originalImage", { type: contentType });
+    //   setImageFile(file);
+    //   console.log(file);
+    // });
   }, []);
 
   // Toast is used for showing success/error messages
@@ -134,6 +150,7 @@ export default function BookDetail() {
       return errors;
     },
     onSubmit: () => {
+      console.log(image);
       const book: APIBook = {
         id: id,
         title: title,
@@ -149,11 +166,28 @@ export default function BookDetail() {
         height: height,
         thickness: thickness,
         stock: 0,
-        urls: [""],
+        url: "",
       };
       logger.debug("Submitting Book Modify", book);
-      BOOKS_API.modifyBook({ book: book })
-        .then(() => showSuccess(toast, "Book Edited"))
+      BOOKS_API.modifyBook({
+        book: book,
+        image: imageFile,
+        isImageUploaded: isImageUploaded,
+      })
+        .then(() => {
+          showSuccess(toast, "Book Edited");
+          IMAGES_API.getImage({ id: id })
+            .then((response) => {
+              //setImage(response.url);
+              setImage({
+                imageSrc: response.url,
+                imageHash: Date.now().toString(),
+              });
+            })
+            .catch(() =>
+              showFailure(toast, "Image Cannot be Retrieved to Update Display")
+            );
+        })
         .catch(() => showFailure(toast, "Could not modify book"));
       formik.resetForm();
       setOriginalBookData({
@@ -171,9 +205,10 @@ export default function BookDetail() {
         pageCount: pageCount,
         stock: stock,
         retailPrice: price,
-        thumbnailURL: [image.imageSrc],
+        thumbnailURL: image.imageSrc,
       });
       setIsModifiable(false);
+      setIsImageUploaded(false);
     },
   });
 
@@ -186,6 +221,11 @@ export default function BookDetail() {
       setThickness(originalBookData.thickness);
       setPageCount(originalBookData.pageCount);
       setPrice(originalBookData.retailPrice);
+      setImage({
+        imageSrc: originalBookData.thumbnailURL,
+        imageHash: Date.now().toString(),
+      });
+      setIsImageUploaded(false);
     }
   }, [isModifiable]);
 
@@ -198,22 +238,26 @@ export default function BookDetail() {
 
   const uploadImageFileHandler = (event: FileUploadHandlerEvent) => {
     const file = event.files[0];
-    IMAGES_API.uploadImage({ id: id, image: file })
-      .then(() => {
-        IMAGES_API.getImage({ id: id })
-          .then((response) =>
-            setImage({
-              imageSrc: response.url,
-              imageHash: Date.now(),
-            })
-          )
-          .catch(() =>
-            showFailure(toast, "Image Cannot be Retrieved to Update Display")
-          );
+    setImageFile(file);
+    setImage({ imageSrc: URL.createObjectURL(file), imageHash: "" });
+    setIsImageUploaded(true);
+    //console.log(image);
 
-        showSuccess(toast, "Image Uploaded Successfully");
-      })
-      .catch(() => showFailure(toast, "Image Upload Failed"));
+    // IMAGES_API.uploadImage({ id: id, image: file })
+    //   .then(() => {
+    //     IMAGES_API.getImage({ id: id })
+    //       .then((response) =>
+    //         setImage({
+    //           imageSrc: response.url,
+    //           imageHash: Date.now(),
+    //         })
+    //       )
+    //       .catch(() =>
+    //         showFailure(toast, "Image Cannot be Retrieved to Update Display")
+    //       );
+    //     showSuccess(toast, "Image Uploaded Successfully");
+    //   })
+    //   .catch(() => showFailure(toast, "Image Upload Failed"));
     event.options.clear();
   };
 
@@ -243,7 +287,11 @@ export default function BookDetail() {
         </h1>
       </div>
       <Image
-        src={`${image.imageSrc}?${image.imageHash}`}
+        // Leaving this line in case of future image browser side caching workaround is needed
+        src={`${image.imageSrc}${image.imageHash == "" ? "" : "?"}${
+          image.imageHash
+        }`}
+        //src={image}
         id="imageONpage"
         alt="Image"
         height="350"
@@ -488,21 +536,6 @@ export default function BookDetail() {
               onClick={() => setIsModifiable(false)}
             />
           )}
-          {/* <div className="flex col-2 p-0">
-            <label
-              className="p-component p-text-secondary text-teal-900 my-auto mr-2"
-              htmlFor="retail_price"
-            >
-              {isModifiable ? "Reset?" : "Edit?"}
-            </label>
-            <InputSwitch
-              checked={isModifiable}
-              id="modifyBookToggle"
-              name="modifyBookToggle"
-              onChange={() => setIsModifiable(!isModifiable)}
-              className="my-auto "
-            />
-          </div> */}
           {!isModifiable && (
             <Button
               type="button"

@@ -168,7 +168,7 @@ class ISBNTools:
         
         image_raw_bytes = self.get_image_raw_bytes(end_url, isbn_13)
         filename = f'{isbn_13}.jpg'
-        absolute_location = self.create_local_image(filename, image_raw_bytes)
+        _, filename = self.create_local_image(filename, image_raw_bytes)
 
         return local_image_location + filename
 
@@ -194,14 +194,14 @@ class ISBNTools:
     
     def create_local_image(self, filename, image_bytes):
         if image_bytes is None:
-            return self._default_image_name
+            return '', self._default_image_name
 
         absolute_location = f'{settings.STATICFILES_DIRS[0]}/{filename}'
 
         image = Image.open(io.BytesIO(image_bytes))
         image.save(absolute_location)
 
-        return absolute_location
+        return absolute_location, filename
     
     def commit_image_raw_bytes(self, request, book_id, isbn_13):
         # Get the image raw_bytes
@@ -211,7 +211,7 @@ class ISBNTools:
         file_bytes = file_uploaded.read()
 
         filename = f'{book_id}.{extension}'
-        absolute_location = self.create_local_image(filename, file_bytes)
+        absolute_location, _ = self.create_local_image(filename, file_bytes)
 
         HOST = self._scp_toolbox.send_image_data(absolute_location)
 

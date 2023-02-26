@@ -18,12 +18,11 @@ import DeletePopup from "../../components/popups/DeletePopup";
 import { createColumns, TableColumn } from "../../components/TableColumns";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import { logger } from "../../util/Logger";
-import { GenreDetailState } from "../detail/GenreDetail";
 import { NUM_ROWS } from "./BookList";
 
 // The Genre interface
 export interface Genre {
-  id: number;
+  id: string;
   name: string;
   bookCount: number;
 }
@@ -46,7 +45,7 @@ const COLUMNS: TableColumn[] = [
 const emptyGenre: Genre = {
   name: "",
   bookCount: 0,
-  id: 0,
+  id: "0",
 };
 
 export default function GenreList() {
@@ -79,12 +78,7 @@ export default function GenreList() {
   // Callback functions for edit/delete buttons
   const editGenre = (genre: Genre) => {
     logger.debug("Edit Genre Clicked", genre);
-    const detailState: GenreDetailState = {
-      id: genre.id,
-      isModifiable: true,
-    };
-
-    navigate("/genres/detail", { state: detailState });
+    navigate(`/genres/detail/${genre.id}`);
   };
 
   // Called to make delete pop up show

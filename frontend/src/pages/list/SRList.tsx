@@ -21,11 +21,11 @@ import {
   dateBodyTemplate,
   priceBodyTemplate,
 } from "../../util/TableCellEditFuncs";
-import { SRDetailState, SRSaleRow } from "../detail/SRDetail";
+import { SRSaleRow } from "../detail/SRDetail";
 import { NUM_ROWS } from "./BookList";
 
 export interface SalesReconciliation {
-  id: number;
+  id: string;
   date: Date;
   sales: SRSaleRow[];
   uniqueBooks: number;
@@ -62,7 +62,7 @@ const COLUMNS: TableColumn[] = [
 
 // Empty sales reconciliation, used to initialize state
 const emptySalesReconciliation: SalesReconciliation = {
-  id: 0,
+  id: "0",
   date: new Date(),
   sales: [],
   uniqueBooks: 0,
@@ -104,15 +104,9 @@ export default function SalesReconciliationList() {
   const navigate = useNavigate();
 
   // Callback functions for edit/delete buttons
-  const toDetailPage = (sr: SalesReconciliation, isModifiable: boolean) => {
+  const toDetailPage = (sr: SalesReconciliation) => {
     logger.debug("Edit Sales Reconciliation Clicked", sr);
-    const detailState: SRDetailState = {
-      id: sr.id,
-      isAddPage: false,
-      isModifiable: isModifiable,
-    };
-
-    navigate("/sales-reconciliations/detail", { state: detailState });
+    navigate(`/sales-reconciliations/detail/${sr.id}`);
   };
 
   // Called to make delete pop up show
@@ -162,7 +156,7 @@ export default function SalesReconciliationList() {
     const index = event.index - NUM_ROWS * (pageParams.page ?? 0);
     const salesReconciliation = salesReconciliations[index];
     logger.debug("Sales Reconciliation Row Clicked", salesReconciliation);
-    toDetailPage(salesReconciliation, false);
+    toDetailPage(salesReconciliation);
   };
 
   // When any of the list of params are changed, useEffect is called to hit the API endpoint
@@ -195,7 +189,7 @@ export default function SalesReconciliationList() {
 
   // Edit/Delete Cell Template
   const editDeleteCellTemplate = EditDeleteTemplate<SalesReconciliation>({
-    onEdit: (rowData) => toDetailPage(rowData, true),
+    onEdit: (rowData) => toDetailPage(rowData),
     onDelete: (rowData) => deleteSalesReconciliationPopup(rowData),
     deleteDisabled: () => false,
   });

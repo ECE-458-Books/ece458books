@@ -28,17 +28,17 @@ export interface GetGenresResp {
 
 // getGenreDetail
 export interface GetGenreDetailReq {
-  id: number;
+  id: string;
 }
 
 // deleteGenre
 export interface DeleteGenreReq {
-  id: number;
+  id: string;
 }
 
 // modifyGenre
 export interface ModifyGenreReq {
-  id: number;
+  id: string;
   name: string;
 }
 

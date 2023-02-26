@@ -13,7 +13,7 @@ import {
   priceBodyTemplate,
   priceEditor,
 } from "../../util/TableCellEditFuncs";
-import { useLocation } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import {
   AddPOReq,
   APIPOPurchaseRow,
@@ -49,12 +49,6 @@ import { useImmer } from "use-immer";
 import { findById } from "../../util/FindBy";
 import { calculateTotal } from "../../util/CalculateTotal";
 
-export interface PODetailState {
-  id: number;
-  isAddPage: boolean;
-  isModifiable: boolean;
-}
-
 export interface POPurchaseRow {
   isNewRow: boolean; // true if the user added this row, false if it already existed
   id: string;
@@ -64,12 +58,6 @@ export interface POPurchaseRow {
   quantity: number;
   price: number;
   errors?: { [key: string]: string }; // Only present on CSV import
-}
-
-// The books Interface lol no
-export interface BooksList {
-  id: number;
-  title: string;
 }
 
 // Used for setting initial state
@@ -85,20 +73,11 @@ const emptyPurchase: POPurchaseRow = {
 
 export default function PODetail() {
   // -------- STATE --------
-  const location = useLocation();
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const detailState = (location.state! as PODetailState) ?? {
-    id: -1,
-    isAddPage: true,
-    isModifiable: true,
-  };
 
-  // From detailState
-  const purchaseOrderID = detailState.id;
-  const isPOAddPage = detailState.isAddPage; // If false, this is an edit page
-  const [isModifiable, setIsModifiable] = useState<boolean>(
-    detailState.isModifiable
-  );
+  // From URL
+  const { id } = useParams();
+  const isPOAddPage = id === undefined;
+  const [isModifiable, setIsModifiable] = useState<boolean>(id === undefined);
 
   // For Dropdown Menus
   const [bookMap, setBooksMap] = useState<Map<string, Book>>(new Map());
@@ -119,7 +98,7 @@ export default function PODetail() {
   // Load the PO data on page load
   useEffect(() => {
     if (!isPOAddPage) {
-      PURCHASES_API.getPurchaseOrderDetail({ id: purchaseOrderID })
+      PURCHASES_API.getPurchaseOrderDetail({ id: id! })
         .then((response) => {
           const purchaseOrder = APIToInternalPOConversion(response);
           setDate(purchaseOrder.date);
@@ -127,7 +106,7 @@ export default function PODetail() {
           setPurchases(purchaseOrder.purchases);
           setTotalCost(purchaseOrder.totalCost);
         })
-        .catch(() => showFailure(toast, "Could not fetch purchase order data"));
+        .catch(() => console.log(id));
     }
   }, []);
 
@@ -256,7 +235,7 @@ export default function PODetail() {
   function callAddPOAPI() {
     const apiPurchases = purchases.map((purchase) => {
       return {
-        book: bookMap.get(purchase.bookTitle)?.id,
+        book: Number(bookMap.get(purchase.bookTitle)?.id),
         quantity: purchase.quantity,
         unit_wholesale_price: purchase.price,
       } as APIPOPurchaseRow;
@@ -279,14 +258,14 @@ export default function PODetail() {
       return {
         id: purchase.isNewRow ? undefined : purchase.id,
         quantity: purchase.quantity,
-        // If the book has been deleted, will have to use the id in the row
+        // If the book has been deleted, will have to use the id that is already present in the row
         book: bookMap.get(purchase.bookTitle)?.id ?? purchase.bookId,
         unit_wholesale_price: purchase.price,
       } as APIPOPurchaseRow;
     });
 
     const purchaseOrder = {
-      id: purchaseOrderID,
+      id: id,
       date: internalToExternalDate(date),
       vendor: vendorMap.get(selectedVendorName),
       purchases: apiPurchases,

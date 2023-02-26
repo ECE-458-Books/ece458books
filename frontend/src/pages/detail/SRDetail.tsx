@@ -11,7 +11,7 @@ import {
   priceBodyTemplate,
   priceEditor,
 } from "../../util/TableCellEditFuncs";
-import { useLocation } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { Toolbar } from "primereact/toolbar";
 import { Button } from "primereact/button";
 import {
@@ -48,12 +48,6 @@ import { useImmer } from "use-immer";
 import { findById } from "../../util/FindBy";
 import { calculateTotal } from "../../util/CalculateTotal";
 
-export interface SRDetailState {
-  id: number;
-  isAddPage: boolean;
-  isModifiable: boolean;
-}
-
 export interface SRSaleRow {
   isNewRow: boolean;
   id: string;
@@ -74,20 +68,10 @@ export default function SRDetail() {
     price: 0,
   };
 
-  const location = useLocation();
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const detailState = (location.state! as SRDetailState) ?? {
-    id: -1,
-    isAddPage: true,
-    isModifiable: true,
-  };
-
-  // From detailState
-  const salesReconciliationID = detailState.id;
-  const isSRAddPage = detailState.isAddPage;
-  const [isModifiable, setIsModifiable] = useState<boolean>(
-    detailState.isModifiable
-  );
+  // From URL
+  const { id } = useParams();
+  const isSRAddPage = id === undefined;
+  const [isModifiable, setIsModifiable] = useState<boolean>(id === undefined);
 
   // For dropdown menus
   const [booksMap, setBooksMap] = useState<Map<string, Book>>(new Map());
@@ -106,7 +90,7 @@ export default function SRDetail() {
   // Load the SR data on page load
   useEffect(() => {
     if (!isSRAddPage) {
-      SALES_API.getSalesReconciliationDetail({ id: salesReconciliationID })
+      SALES_API.getSalesReconciliationDetail({ id: id! })
         .then((response) => {
           const salesReconciliation = APIToInternalSRConversion(response);
           setDate(salesReconciliation.date);
@@ -240,7 +224,7 @@ export default function SRDetail() {
   const callAddSRAPI = () => {
     const apiSales = sales.map((sale) => {
       return {
-        book: booksMap.get(sale.bookTitle)?.id,
+        book: Number(booksMap.get(sale.bookTitle)!.id),
         quantity: sale.quantity,
         unit_retail_price: sale.price,
       } as APISRSaleRow;
@@ -250,6 +234,7 @@ export default function SRDetail() {
       date: internalToExternalDate(date),
       sales: apiSales,
     } as AddSRReq;
+
     SALES_API.addSalesReconciliation(salesReconciliation)
       .then(() => showSuccess(toast, "Sales reconciliation added successfully"))
       .catch(() => showFailure(toast, "Could not add sales reconciliation"));
@@ -260,7 +245,7 @@ export default function SRDetail() {
     const apiSales = sales.map((sale) => {
       return {
         id: sale.isNewRow ? undefined : sale.id,
-        // If the book has been deleted, will have to use the id in the row
+        // If the book has been deleted, will have to use the id that is already present in the row
         book: booksMap.get(sale.bookTitle)?.id ?? sale.bookId,
         quantity: sale.quantity,
         unit_retail_price: sale.price,
@@ -268,7 +253,7 @@ export default function SRDetail() {
     });
 
     const salesReconciliation = {
-      id: salesReconciliationID,
+      id: id,
       date: internalToExternalDate(date),
       sales: apiSales,
     } as ModifySRReq;

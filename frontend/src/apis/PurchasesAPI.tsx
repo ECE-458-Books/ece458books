@@ -43,12 +43,12 @@ export interface GetPOsResp {
 
 // getPurchaseOrderDetail
 export interface GetPODetailReq {
-  id: number;
+  id: string;
 }
 
 // deletePurchaseOrders
 export interface DeletePOReq {
-  id: number;
+  id: string;
 }
 
 // addPurchaseOrders
@@ -60,7 +60,7 @@ export interface AddPOReq {
 
 // modifyPurchaseOrders
 export interface ModifyPOReq extends AddPOReq {
-  id: number;
+  id: string;
 }
 
 // puchaseOrdersCSVImport

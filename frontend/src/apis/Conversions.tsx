@@ -28,6 +28,9 @@ import {
 import { APISaleCSVImportRow, APISR, APISRSaleRow } from "./SalesAPI";
 import { GetSalesReportResp } from "./SalesRepAPI";
 import { APIVendor } from "./VendorsAPI";
+import { BuyBack } from "../pages/list/BuyBackList";
+import { APIBB, APIBBSaleRow } from "./BuyBackAPI";
+import { BBSaleRow } from "../pages/detail/BBDetail";
 
 // Internal data type -> ordering required for book get API
 export const APIBookSortFieldMap = new Map<string, string>([
@@ -58,6 +61,16 @@ export const APIPOSortFieldMap = new Map<string, string>([
 
 // Internal data type -> ordering required for book get API
 export const APISRSortFieldMap = new Map<string, string>([
+  ["uniqueBooks", "num_unique_books"],
+  ["totalBooks", "num_books"],
+  ["totalRevenue", "total_revenue"],
+  ["date", "date"],
+]);
+
+// Internal data type -> ordering required for book get API
+export const APIBBSortFieldMap = new Map<string, string>([
+  ["vendorName", "vendor_name"],
+  ["vendorId", "vendor"],
   ["uniqueBooks", "num_unique_books"],
   ["totalBooks", "num_books"],
   ["totalRevenue", "total_revenue"],
@@ -248,6 +261,38 @@ export function APIToInternalSalesCSVConversion(
       errors: sale.errors,
     } as SRSaleRow;
   });
+}
+
+// Buy Backs
+
+function APIToInternalBBSaleConversion(sale: APIBBSaleRow): BBSaleRow {
+  return {
+    isNewRow: false,
+    // (id is always defined from API)
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    id: sale.id!.toString(),
+    bookId: sale.book,
+    bookTitle: sale.book_title,
+    quantity: sale.quantity,
+    price: sale.unit_buyback_price,
+  };
+}
+
+export function APIToInternalBBConversion(bb: APIBB): BuyBack {
+  const sales: BBSaleRow[] = bb.buybacks.map((sale) =>
+    APIToInternalBBSaleConversion(sale)
+  );
+
+  return {
+    id: bb.id.toString(),
+    date: externalToInternalDate(bb.date),
+    totalBooks: bb.num_books,
+    uniqueBooks: bb.num_unique_books,
+    totalRevenue: bb.total_revenue,
+    vendorID: bb.vendor,
+    vendorName: bb.vendor_name,
+    sales: sales,
+  };
 }
 
 // Sales Report

@@ -20,6 +20,7 @@ export interface GetBooksReq {
   publisher_only?: boolean;
   author_only?: boolean;
   isbn_only?: boolean;
+  vendor?: number;
 }
 
 export interface APIBook {
@@ -31,10 +32,10 @@ export interface APIBook {
   isbn_10: number;
   publisher: string;
   publishedDate: number;
-  pageCount: number;
-  width: number;
-  height: number;
-  thickness: number;
+  pageCount?: number;
+  width?: number;
+  height?: number;
+  thickness?: number;
   retail_price: number;
   stock: number;
   url: string;
@@ -112,11 +113,19 @@ export const BOOKS_API = {
   modifyBook: async function (req: ModifyBookReq) {
     const formData = new FormData();
     formData.append("genres", req.book.genres.join(", "));
-    formData.append("pageCount", req.book.pageCount.toString());
-    formData.append("thickness", req.book.thickness.toString());
-    formData.append("width", req.book.width.toString());
-    formData.append("height", req.book.height.toString());
     formData.append("retail_price", req.book.retail_price.toString());
+    if (req.book.width) {
+      formData.append("width", req.book.width.toString());
+    }
+    if (req.book.height) {
+      formData.append("height", req.book.height.toString());
+    }
+    if (req.book.thickness) {
+      formData.append("thickness", req.book.thickness.toString());
+    }
+    if (req.book.pageCount) {
+      formData.append("pageCount", req.book.pageCount.toString());
+    }
     if (req.isImageUploaded) {
       formData.append("image", req.image);
     }
@@ -147,11 +156,19 @@ export const BOOKS_API = {
   addBookFinal: async function (req: AddBookFinalReq) {
     const formData = new FormData();
     formData.append("genres", req.book.genres.join(", "));
-    formData.append("pageCount", req.book.pageCount.toString());
-    formData.append("thickness", req.book.thickness.toString());
-    formData.append("width", req.book.width.toString());
-    formData.append("height", req.book.height.toString());
     formData.append("retail_price", req.book.retail_price.toString());
+    if (req.book.width) {
+      formData.append("width", req.book.width.toString());
+    }
+    if (req.book.height) {
+      formData.append("height", req.book.height.toString());
+    }
+    if (req.book.thickness) {
+      formData.append("thickness", req.book.thickness.toString());
+    }
+    if (req.book.pageCount) {
+      formData.append("pageCount", req.book.pageCount.toString());
+    }
     if (req.isImageUploaded) {
       formData.append("image", req.image);
     }

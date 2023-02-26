@@ -25,11 +25,12 @@ export function isPositiveInteger(val: number) {
   return n !== Infinity && String(n) === str && n >= 0;
 }
 
-export function textEditor(options: ColumnEditorOptions) {
+export function textEditor(options: ColumnEditorOptions, isDisabled?: boolean) {
   return (
     <InputText
       type="text"
       value={options.value}
+      disabled={isDisabled ?? false}
       onChange={(e) => options.editorCallback?.(e.target.value)}
     />
   );
@@ -37,12 +38,17 @@ export function textEditor(options: ColumnEditorOptions) {
 
 export function numberEditor(
   value: number,
-  onChange: (newValue: number) => void
+  onChange: (newValue: number) => void,
+  isDisabled?: boolean,
+  min?: number,
+  max?: number
 ) {
   return (
     <InputNumber
-      min={1}
+      min={min ?? 1}
+      max={max}
       value={value}
+      disabled={isDisabled ?? false}
       onValueChange={(e) => onChange(e.target.value ?? 1)}
       mode="decimal"
       maxFractionDigits={2}
@@ -52,12 +58,14 @@ export function numberEditor(
 
 export function priceEditor(
   value: number,
-  onChange: (newValue: number) => void
+  onChange: (newValue: number) => void,
+  isDisabled?: boolean
 ) {
   return (
     <InputNumber
       value={value}
       onValueChange={(e) => onChange(e.target.value ?? 0)}
+      disabled={isDisabled ?? false}
       mode="currency"
       currency="USD"
       locale="en-US"

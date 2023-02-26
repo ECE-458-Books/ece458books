@@ -1,4 +1,4 @@
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { Outlet } from "react-router";
 import NavigationBar from "./Navbar";
 import BookList from "../pages/list/BookList";
@@ -9,6 +9,7 @@ import SalesReconciliationList from "../pages/list/SRList";
 import ModifyBook from "../pages/detail/BookDetail";
 import ModifySR from "../pages/detail/SRDetail";
 import ModifyPO from "../pages/detail/PODetail";
+import ModifyBB from "../pages/detail/BBDetail";
 import BookAdd from "../pages/add/BookAdd";
 import GenreAdd from "../pages/add/GenreAdd";
 import VendorAdd from "../pages/add/VendorAdd";
@@ -17,6 +18,9 @@ import VendorDetail from "../pages/detail/VendorDetail";
 import PurchaseOrderList from "../pages/list/POList";
 import PasswordChangePage from "../pages/auth/PasswordChange";
 import SalesReportPage from "../pages/list/SalesReport";
+import BuyBackList from "../pages/list/BuyBackList";
+import GoToLoginPageIfNotLoggedIn from "../util/AuthCheck";
+import ShelfCalculator from "../pages/ShelfCalculator";
 
 const WithNavBar = () => {
   return (
@@ -36,14 +40,7 @@ const WithoutNavBar = () => {
 };
 
 export default function Router() {
-  // Checks if the access token exists
-  const isLoggedIn = !!sessionStorage.getItem("accessToken");
-  const navigate = useNavigate();
-
-  if (!isLoggedIn) {
-    navigate("/");
-    return <LoginPage />;
-  }
+  GoToLoginPageIfNotLoggedIn();
 
   return (
     <Routes>
@@ -60,8 +57,10 @@ export default function Router() {
           element={<SalesReconciliationList />}
         />
         <Route path="vendors" element={<VendorList />} />
+        <Route path="buy-backs" element={<BuyBackList />} />
         <Route path="books/add" element={<BookAdd />} />
         <Route path="books/detail/:id" element={<ModifyBook />} />
+        <Route path="books/shelf-calculator" element={<ShelfCalculator />} />
         <Route path="genres/add" element={<GenreAdd />} />
         <Route path="genres/detail/:id" element={<GenreDetail />} />
         <Route path="purchase-orders/add" element={<ModifyPO />} />
@@ -69,6 +68,8 @@ export default function Router() {
         <Route path="sales-reconciliations/add" element={<ModifySR />} />
         <Route path="sales-reconciliations/detail/:id" element={<ModifySR />} />
         <Route path="vendors/add" element={<VendorAdd />} />
+        <Route path="buy-backs/add" element={<ModifyBB />} />
+        <Route path="buy-backs/detail/:id" element={<ModifyBB />} />
         <Route path="vendors/detail/:id" element={<VendorDetail />} />
         <Route path="change-password" element={<PasswordChangePage />} />
         <Route path="sales-report" element={<SalesReportPage />} />

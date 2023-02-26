@@ -111,34 +111,48 @@ export default function BookAdd() {
       header: "Page Count",
       style: { width: "5%" },
       customBody: (rowData: BookWithDBTag) =>
-        numberEditor(
-          rowData.pageCount,
-          (newValue) => (rowData.pageCount = newValue)
-        ),
+        rowData.pageCount
+          ? numberEditor(
+              rowData.pageCount,
+              (newValue) => (rowData.pageCount = newValue)
+            )
+          : undefined,
     },
     {
       field: "width",
       header: "Width",
       style: { width: "5%" },
       customBody: (rowData: BookWithDBTag) =>
-        numberEditor(rowData.width, (newValue) => (rowData.width = newValue)),
+        rowData.width
+          ? numberEditor(
+              rowData.width,
+              (newValue) => (rowData.width = newValue)
+            )
+          : undefined,
     },
     {
       field: "height",
       header: "Height",
       style: { width: "5%" },
       customBody: (rowData: BookWithDBTag) =>
-        numberEditor(rowData.height, (newValue) => (rowData.height = newValue)),
+        rowData.height
+          ? numberEditor(
+              rowData.height,
+              (newValue) => (rowData.height = newValue)
+            )
+          : undefined,
     },
     {
       field: "thickness",
       header: "Thickness",
       style: { width: "5%" },
       customBody: (rowData: BookWithDBTag) =>
-        numberEditor(
-          rowData.thickness,
-          (newValue) => (rowData.thickness = newValue)
-        ),
+        rowData.thickness
+          ? numberEditor(
+              rowData.thickness,
+              (newValue) => (rowData.thickness = newValue)
+            )
+          : undefined,
     },
     {
       field: "retailPrice",
@@ -215,20 +229,21 @@ export default function BookAdd() {
 
   const onISBNInitialSubmit = (event: FormEvent<HTMLFormElement>): void => {
     logger.debug("Submitting Initial Book Lookup", textBox);
-    BOOKS_API.addBookInitialLookup({ isbns: textBox }).then((response) => {
-      setBooks(
-        response.books.map((book) => APIToInternalBookConversionWithDB(book))
-      );
-      if (response.invalid_isbns.length > 0) {
-        showFailure(
-          toast,
-          "The following ISBNs were not successfully added: ".concat(
-            response.invalid_isbns.toString()
-          )
+    BOOKS_API.addBookInitialLookup({ isbns: textBox })
+      .then((response) => {
+        setBooks(
+          response.books.map((book) => APIToInternalBookConversionWithDB(book))
         );
-      }
-    });
-    // .catch(() => showFailure(toast, "Could not add books"));
+        if (response.invalid_isbns.length > 0) {
+          showFailure(
+            toast,
+            "The following ISBNs were not successfully added: ".concat(
+              response.invalid_isbns.toString()
+            )
+          );
+        }
+      })
+      .catch(() => showFailure(toast, "Could not add books"));
 
     event.preventDefault();
   };

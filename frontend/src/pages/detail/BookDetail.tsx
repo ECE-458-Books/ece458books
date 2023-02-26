@@ -43,11 +43,11 @@ export default function BookDetail() {
   const [isbn10, setISBN10] = useState<number>(0);
   const [publisher, setPublisher] = useState<string>("");
   const [pubYear, setPubYear] = useState<number>(0);
-  const [pageCount, setPageCount] = useState<number>(0);
+  const [pageCount, setPageCount] = useState<number>();
   const [price, setPrice] = useState<number>(0);
-  const [width, setWidth] = useState<number>(0);
-  const [height, setHeight] = useState<number>(0);
-  const [thickness, setThickness] = useState<number>(0);
+  const [width, setWidth] = useState<number>();
+  const [height, setHeight] = useState<number>();
+  const [thickness, setThickness] = useState<number>();
   const [stock, setStock] = useState<number>(0);
   // Leaving this line in case of future image browser side caching workaround is needed
   const [image, setImage] = useState<ImageUrlHashStruct>({
@@ -396,7 +396,7 @@ export default function BookDetail() {
               maxFractionDigits={15}
               disabled={!isModifiable}
               onValueChange={(e: InputNumberValueChangeEvent) =>
-                setHeight(e.value ?? 0)
+                setHeight(e.value ?? undefined)
               }
             />
           </div>
@@ -415,7 +415,7 @@ export default function BookDetail() {
               disabled={!isModifiable}
               maxFractionDigits={15}
               onValueChange={(e: InputNumberValueChangeEvent) =>
-                setWidth(e.value ?? 0)
+                setWidth(e.value ?? undefined)
               }
             />
           </div>
@@ -434,7 +434,7 @@ export default function BookDetail() {
               maxFractionDigits={15}
               disabled={!isModifiable}
               onValueChange={(e: InputNumberValueChangeEvent) =>
-                setThickness(e.value ?? 0)
+                setThickness(e.value ?? undefined)
               }
             />
           </div>
@@ -454,7 +454,7 @@ export default function BookDetail() {
               value={pageCount}
               disabled={!isModifiable}
               onValueChange={(e: InputNumberValueChangeEvent) =>
-                setPageCount(e.value ?? 0)
+                setPageCount(e.value ?? undefined)
               }
             />
           </div>

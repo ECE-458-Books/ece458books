@@ -48,7 +48,8 @@ class SalesReconciliationSerializer(TransactionGroupBaseSerializer):
     def update_transaction(self, instance, transaction_data, transaction_id) -> None:
         self.__update_sale(instance, transaction_data, transaction_id)
 
-    def validate_before_creation(self, transaction_quantities, date):
+    def validate_before_creation(self, transaction_quantities, data):
+        date = data['date']
         # Currently just says first sale with issue, but can tell all sales with issues after Casey defines errors
         for book_id, sell_quantity in transaction_quantities.items():
             book_to_sell = Book.objects.get(id=book_id)
@@ -63,8 +64,11 @@ class SalesReconciliationSerializer(TransactionGroupBaseSerializer):
                 raise serializers.ValidationError(f"Not enough books in stock to sell {book_to_sell.title}")
 
     def __book_has_previous_purchase(self, date, book_id):
-        return PurchaseOrder.objects.filter(date__lte=date).annotate(prev_purchase=Subquery(Purchase.objects.filter(purchase_order=OuterRef('id')).filter(
-            book=book_id).values('book'))).values('prev_purchase').exclude(prev_purchases=None).first()['prev_purchase'] != None
+        try:
+            return PurchaseOrder.objects.filter(date__lte=date).annotate(prev_purchase=Subquery(Purchase.objects.filter(purchase_order=OuterRef('id')).filter(
+                book=book_id).values('book'))).values('prev_purchase').exclude(prev_purchase=None).first()['prev_purchase'] != None
+        except TypeError:
+            return None
 
     def update_non_nested_fields(self, instance, validated_data):
         instance.date = validated_data.get('date', instance.date)

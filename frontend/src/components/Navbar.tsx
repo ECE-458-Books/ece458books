@@ -20,6 +20,11 @@ function NavigationBar() {
           icon: "pi pi-fw pi-plus",
           command: () => navigate("/books/add"),
         },
+        {
+          label: "Shelf Calculator",
+          icon: "pi pi-fw pi-calculator",
+          command: () => navigate("/books/shelf-calculator"),
+        },
       ],
     },
     {
@@ -83,6 +88,22 @@ function NavigationBar() {
           label: "Add",
           icon: "pi pi-fw pi-plus",
           command: () => navigate("/sales-reconciliations/add"),
+        },
+      ],
+    },
+    {
+      label: "Buy Backs",
+      icon: "pi pi-fw pi-chart-bar",
+      items: [
+        {
+          label: "List",
+          icon: "pi pi-fw pi-list",
+          command: () => navigate("/buy-backs"),
+        },
+        {
+          label: "Add",
+          icon: "pi pi-fw pi-plus",
+          command: () => navigate("/buy-backs/add"),
         },
       ],
     },

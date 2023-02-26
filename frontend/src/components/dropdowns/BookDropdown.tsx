@@ -6,6 +6,7 @@ import { Book } from "../../pages/list/BookList";
 export interface BookDropdownDataProps {
   setBooksMap: (arg0: Map<string, Book>) => void; // Setter for book map
   setBookTitlesList: (arg0: string[]) => void; // Setter for book title list
+  vendorName?: number; // set vendor who books were bought from
 }
 
 export interface BookDropdownProps {
@@ -13,17 +14,18 @@ export interface BookDropdownProps {
   bookTitlesList: string[]; // List of book titles
   selectedBook: string; // The selected book
   placeholder?: string; // Placeholder for the dropdown
+  isDisabled?: boolean; //Disable the editor or not
 }
 
 export function BooksDropdownData(props: BookDropdownDataProps) {
-  BOOKS_API.getBooksNameListNoPagination().then((response) => {
-    const tempBookMap = new Map<string, number>();
-    for (const book of response) {
+  BOOKS_API.getBooks({ vendor: props.vendorName }).then((response) => {
+    const tempBookMap = new Map<string, Book>();
+    for (const book of response.results) {
       const convertedBook = APIToInternalBookConversion(book);
       tempBookMap.set(book.title, convertedBook);
     }
     props.setBooksMap(tempBookMap);
-    props.setBookTitlesList(response.map((book) => book.title));
+    props.setBookTitlesList(response.results.map((book) => book.title));
   });
 }
 
@@ -34,6 +36,7 @@ export default function BooksDropdown(props: BookDropdownProps) {
       value={props.selectedBook}
       options={props.bookTitlesList}
       filter
+      disabled={props.isDisabled}
       placeholder={props.placeholder ?? "Select a book"}
       onChange={(e) => {
         props.setSelectedBook(e.value);

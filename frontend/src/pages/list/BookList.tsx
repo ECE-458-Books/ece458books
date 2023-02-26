@@ -44,10 +44,10 @@ export interface Book {
   isbn10: number;
   publisher: string;
   publishedYear: number;
-  pageCount: number;
-  width: number;
-  height: number;
-  thickness: number;
+  pageCount?: number;
+  width?: number;
+  height?: number;
+  thickness?: number;
   retailPrice: number;
   stock: number;
   thumbnailURL: string;

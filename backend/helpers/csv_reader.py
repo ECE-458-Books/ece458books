@@ -18,6 +18,8 @@ class CSVReader:
         csv = request.FILES["file"]
         try:
             csv_df = pd.read_csv(csv, dtype=str, keep_default_na=False)
+            csv_df = csv_df.apply(lambda x: x.str.strip()).rename(columns=lambda x: x.strip())
+            print(csv_df)
         except pd.errors.EmptyDataError:
             return Response({"errors": "empty_csv"}, status=status.HTTP_400_BAD_REQUEST)
         try:

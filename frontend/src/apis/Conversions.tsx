@@ -81,7 +81,7 @@ export const APIBBSortFieldMap = new Map<string, string>([
 
 export function APIToInternalBookConversion(book: APIBook): Book {
   return {
-    id: book.id.toString(),
+    id: book.id!.toString(),
     author: ArrayToCommaSeparatedString(book.authors),
     genres: ArrayToCommaSeparatedString(book.genres),
     title: book.title,
@@ -123,7 +123,7 @@ export function APIToInternalBookConversionWithDB(
   book: APIBookWithDBTag
 ): BookWithDBTag {
   return {
-    id: book.id.toString(),
+    id: book.id?.toString() ?? uuid(),
     author: ArrayToCommaSeparatedString(book.authors),
     genres: ArrayToCommaSeparatedString(book.genres ?? []),
     title: book.title,

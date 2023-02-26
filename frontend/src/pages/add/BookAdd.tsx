@@ -231,6 +231,7 @@ export default function BookAdd() {
     logger.debug("Submitting Initial Book Lookup", textBox);
     BOOKS_API.addBookInitialLookup({ isbns: textBox })
       .then((response) => {
+        console.log(response);
         setBooks(
           response.books.map((book) => APIToInternalBookConversionWithDB(book))
         );

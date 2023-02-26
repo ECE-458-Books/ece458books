@@ -24,7 +24,7 @@ export interface GetBooksReq {
 }
 
 export interface APIBook {
-  id: number;
+  id?: number;
   authors: string[];
   genres: string[];
   title: string;
@@ -134,7 +134,7 @@ export const BOOKS_API = {
     }
 
     return await API.request({
-      url: BOOKS_EXTENSION.concat("/".concat(req.book.id.toString())),
+      url: BOOKS_EXTENSION.concat("/".concat(req.book.id!.toString())),
       headers: {
         "Content-Type": "multipart/form-data",
       },

@@ -160,6 +160,8 @@ export const BOOKS_API = {
     if (req.isImageRemoved) {
       formData.append("setDefaultImage", "true");
     }
+    console.log(req.isImageRemoved);
+    console.log(req.isImageUploaded);
 
     return await API.request({
       url: BOOKS_EXTENSION.concat("/".concat(req.book.id.toString())),

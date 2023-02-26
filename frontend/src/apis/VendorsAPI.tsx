@@ -74,6 +74,17 @@ export const VENDORS_API = {
     });
   },
 
+  getVendorsNoPaginationBuyBackPolicy: async function (): Promise<APIVendor[]> {
+    return await API.request({
+      url: VENDORS_EXTENSION,
+      method: METHOD_GET,
+      params: {
+        no_pagination: true,
+        has_buyback_policy: true,
+      },
+    });
+  },
+
   deleteVendor: async function (req: DeleteVendorReq) {
     return await API.request({
       url: VENDORS_EXTENSION.concat("/".concat(req.id.toString())),

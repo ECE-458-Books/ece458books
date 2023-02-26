@@ -6,7 +6,7 @@ import { Toast } from "primereact/toast";
 import { ToggleButton } from "primereact/togglebutton";
 import { Toolbar } from "primereact/toolbar";
 import { useEffect, useRef, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { v4 as uuid } from "uuid";
 import { TableColumn, createColumns } from "../../components/TableColumns";
 import {
@@ -18,7 +18,6 @@ import { errorCellBody } from "./errors/CSVImportErrors";
 import BooksDropdown, {
   BooksDropdownData,
 } from "../../components/dropdowns/BookDropdown";
-import VendorDropdown from "../../components/dropdowns/VendorDropdown";
 import React from "react";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
 import { Button } from "primereact/button";
@@ -33,7 +32,11 @@ import { internalToExternalDate } from "../../util/DateOperations";
 import { findById } from "../../util/FindBy";
 import { calculateTotal } from "../../util/CalculateTotal";
 import { Book } from "../list/BookList";
+
+import { useImmer } from "use-immer";
 import { APIToInternalBBConversion } from "../../apis/Conversions";
+import { Dropdown } from "primereact/dropdown";
+import { VENDORS_API } from "../../apis/VendorsAPI";
 
 export interface BBDetailState {
   id: number;
@@ -83,6 +86,7 @@ export default function BBDetail() {
   const [totalRevenue, setTotalRevenue] = useState<number>(0);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
+  const [isBooksSelected, setIsBooksSelected] = useState<boolean>(false);
   const [hasUploadedCSV, setHasUploadedCSV] = useState<boolean>(false);
 
   // Load the SR data on page load
@@ -94,6 +98,7 @@ export default function BBDetail() {
           setDate(buyBack.date);
           setSales(buyBack.sales);
           setTotalRevenue(buyBack.totalRevenue);
+          setSelectedVendorName(buyBack.vendorName);
         })
         .catch(() => showFailure(toast, "Could not fetch buy back sales data"));
     }
@@ -322,14 +327,18 @@ export default function BBDetail() {
     />
   );
 
-  const vendorDropdown = (
-    <VendorDropdown
-      setVendorMap={setVendorMap}
-      setSelectedVendor={setSelectedVendorName}
-      selectedVendor={selectedVendorName}
-      isModifiable={isModifiable}
-    />
-  );
+  const [vendorNamesList, setVendorNamesList] = useState<string[]>([]);
+
+  useEffect(() => {
+    VENDORS_API.getVendorsNoPaginationBuyBackPolicy().then((response) => {
+      const tempVendorMap = new Map<string, number>();
+      for (const vendor of response) {
+        tempVendorMap.set(vendor.name, vendor.id);
+      }
+      setVendorMap(tempVendorMap);
+      setVendorNamesList(response.map((vendor) => vendor.name));
+    });
+  }, []);
 
   return (
     <div>
@@ -411,7 +420,15 @@ export default function BBDetail() {
                 >
                   Vendor
                 </label>
-                <>{vendorDropdown}</>
+                <Dropdown
+                  value={selectedVendorName}
+                  options={vendorNamesList}
+                  placeholder="Select a Vendor"
+                  filter
+                  disabled={!isModifiable}
+                  onChange={(e) => setSelectedVendorName(e.value)}
+                  virtualScrollerOptions={{ itemSize: 35 }}
+                />
               </div>
             </div>
 

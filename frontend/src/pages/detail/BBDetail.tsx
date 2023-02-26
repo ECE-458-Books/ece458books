@@ -26,7 +26,7 @@ import {
   ModifyBBReq,
 } from "../../apis/BuyBackAPI";
 import { internalToExternalDate } from "../../util/DateOperations";
-import { findById } from "../../util/FindBy";
+import { findById } from "../../util/IDOperations";
 import { calculateTotal } from "../../util/CalculateTotal";
 import { Book } from "../list/BookList";
 
@@ -122,25 +122,29 @@ export default function BBDetail() {
       header: "Book",
       customBody: (rowData: BBSaleRow) =>
         booksDropDownEditor(rowData.bookTitle, (newValue) => {
-          setSales((draft) => {
-            const purchase = findById(draft, rowData.id);
-            purchase!.bookTitle = newValue;
-            purchase!.price = booksMap.get(newValue)!.retailPrice;
-            setTotalRevenue(calculateTotal(draft));
-          });
-        }),
+            setSales((draft) => {
+              const sale = findById(draft, rowData.id);
+              sale!.bookTitle = newValue;
+              sale!.price = booksMap.get(newValue)!.retailPrice;
+              setTotalRevenue(calculateTotal(draft));
+            });
+          },
+          !isModifiable
+        ),
     },
     {
       field: "quantity",
       header: "Quantity",
       customBody: (rowData: BBSaleRow) =>
         numberEditor(rowData.quantity, (newValue) => {
-          setSales((draft) => {
-            const purchase = findById(draft, rowData.id);
-            purchase!.quantity = newValue;
-            setTotalRevenue(calculateTotal(draft));
-          });
-        }),
+            setSales((draft) => {
+              const sale = findById(draft, rowData.id);
+              sale!.quantity = newValue;
+              setTotalRevenue(calculateTotal(draft));
+            });
+          },
+          !isModifiable
+        ),
       style: { width: "15%" },
     },
     {
@@ -148,12 +152,14 @@ export default function BBDetail() {
       header: "Unit Buy Back Price ($)",
       customBody: (rowData: BBSaleRow) =>
         priceEditor(rowData.price, (newValue) => {
-          setSales((draft) => {
-            const purchase = findById(draft, rowData.id);
-            purchase!.price = newValue;
-            setTotalRevenue(calculateTotal(draft));
-          });
-        }),
+            setSales((draft) => {
+              const sale = findById(draft, rowData.id);
+              sale!.price = newValue;
+              setTotalRevenue(calculateTotal(draft));
+            });
+          },
+          !isModifiable
+        ),
     },
     {
       field: "subtotal",
@@ -278,14 +284,16 @@ export default function BBDetail() {
     return (
       <>
         <React.Fragment>
-          <Button
-            type="button"
-            label="Add Book"
-            className="p-button-info mr-2"
-            icon="pi pi-plus"
-            onClick={addNewSale}
-            disabled={!isModifiable || selectedVendorName == ""}
-          />
+          {isModifiable && (
+            <Button
+              type="button"
+              label="Add Book"
+              className="p-button-info mr-2"
+              icon="pi pi-plus"
+              onClick={addNewSale}
+              disabled={!isModifiable || selectedVendorName == ""}
+            />
+          )}
         </React.Fragment>
       </>
     );
@@ -301,7 +309,14 @@ export default function BBDetail() {
             label="Edit"
             icon="pi pi-pencil"
             disabled={isBBAddPage}
-            onClick={() => setIsModifiable(!isModifiable)}
+            onClick={() => {
+              setIsModifiable(!isModifiable);
+              BooksDropdownData({
+                setBooksMap: setBooksMap,
+                setBookTitlesList: setBooksDropdownTitles,
+                vendorName: vendorMap.get(selectedVendorName)!,
+              });
+            }}
           />
         )}
         {!isBBAddPage && isModifiable && (
@@ -312,7 +327,10 @@ export default function BBDetail() {
             icon="pi pi-times"
             className="p-button-warning"
             disabled={isBBAddPage}
-            onClick={() => setIsModifiable(!isModifiable)}
+            onClick={() => {
+              setIsModifiable(!isModifiable);
+              window.location.reload();
+            }}
           />
         )}
       </React.Fragment>
@@ -322,18 +340,20 @@ export default function BBDetail() {
   const rightToolbarTemplate = () => {
     return (
       <React.Fragment>
-        <ConfirmPopup
-          isVisible={isConfirmationPopupVisible}
-          hideFunc={() => setIsConfirmationPopupVisible(false)}
-          acceptFunc={onSubmit}
-          rejectFunc={() => {
-            console.log("reject");
-          }}
-          buttonClickFunc={() => setIsConfirmationPopupVisible(true)}
-          disabled={!isModifiable}
-          label={"Submit"}
-          className="p-button-success p-button-raised"
-        />
+        {isModifiable && (
+          <ConfirmPopup
+            isVisible={isConfirmationPopupVisible}
+            hideFunc={() => setIsConfirmationPopupVisible(false)}
+            acceptFunc={onSubmit}
+            rejectFunc={() => {
+              console.log("reject");
+            }}
+            buttonClickFunc={() => setIsConfirmationPopupVisible(true)}
+            disabled={!isModifiable}
+            label={"Submit"}
+            className="p-button-success p-button-raised"
+          />
+        )}
       </React.Fragment>
     );
   };
@@ -353,7 +373,8 @@ export default function BBDetail() {
 
   const booksDropDownEditor = (
     value: string,
-    onChange: (newValue: string) => void
+    onChange: (newValue: string) => void,
+    isDisabled?: boolean
   ) => (
     <BooksDropdown
       // This will always be used in a table cell, so we can disable the warning
@@ -361,6 +382,7 @@ export default function BBDetail() {
       setSelectedBook={onChange}
       selectedBook={value}
       bookTitlesList={booksDropdownTitles}
+      isDisabled={isDisabled}
       placeholder={value}
     />
   );

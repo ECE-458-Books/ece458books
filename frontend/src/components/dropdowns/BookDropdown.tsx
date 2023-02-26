@@ -14,6 +14,7 @@ export interface BookDropdownProps {
   bookTitlesList: string[]; // List of book titles
   selectedBook: string; // The selected book
   placeholder?: string; // Placeholder for the dropdown
+  isDisabled?: boolean; //Disable the editor or not
 }
 
 export function BooksDropdownData(props: BookDropdownDataProps) {
@@ -35,6 +36,7 @@ export default function BooksDropdown(props: BookDropdownProps) {
       value={props.selectedBook}
       options={props.bookTitlesList}
       filter
+      disabled={props.isDisabled}
       placeholder={props.placeholder ?? "Select a book"}
       onChange={(e) => {
         props.setSelectedBook(e.value);

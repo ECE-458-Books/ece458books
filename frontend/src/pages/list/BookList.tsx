@@ -278,7 +278,7 @@ export default function BookList() {
     }
 
     if (isNoPagination) {
-      BOOKS_API.getBooksNoPagination({
+      BOOKS_API.getBooksNoPaginationFiltered({
         no_pagination: true,
         ordering: sortField,
         genre: selectedGenre,

@@ -112,7 +112,7 @@ export const BOOKS_API = {
     });
   },
 
-  getBooksNoPagination: async function (
+  getBooksNoPaginationFiltered: async function (
     req: GetBooksNoPageReq
   ): Promise<APIBook[]> {
     return await API.request({
@@ -122,9 +122,7 @@ export const BOOKS_API = {
     });
   },
 
-  getBooksNameListNoPagination: async function (): Promise<
-    APIBookSimplified[]
-  > {
+  getBooksNoPagination: async function (): Promise<APIBook[]> {
     return await API.request({
       url: BOOKS_EXTENSION,
       method: METHOD_GET,

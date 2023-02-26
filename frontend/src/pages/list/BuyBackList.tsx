@@ -106,7 +106,7 @@ export default function BuyBackList() {
   // Callback functions for edit/delete buttons
   const toDetailPage = (bb: BuyBack) => {
     logger.debug("Edit Buy Back Clicked", bb);
-    navigate(`/buy-back/detail/${bb.id}`);
+    navigate(`/buy-backs/detail/${bb.id}`);
   };
 
   // Called when any of the columns are selected to be sorted

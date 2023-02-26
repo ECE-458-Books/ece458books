@@ -53,6 +53,11 @@ class ListCreateBuybackAPIView(ListCreateAPIView):
 
         default_query_set = default_query_set.annotate(num_unique_books=Count('buybacks__book', distinct=True))
 
+        # Filter by vendor
+        vendor = self.request.GET.get('vendor')
+        if vendor is not None:
+            default_query_set = default_query_set.filter(vendor=vendor)
+
         # Filter by date
         start_date = self.request.GET.get('start')
         end_date = self.request.GET.get('end')

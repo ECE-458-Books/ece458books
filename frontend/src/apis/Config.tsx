@@ -1,8 +1,6 @@
 import axios from "axios";
 import { stringify } from "qs";
 import { logger } from "../util/Logger";
-import { AUTH_API } from "./AuthAPI";
-import createAuthRefreshInterceptor from "axios-auth-refresh";
 
 const TEST_ENDPOINT = "https://books-test.colab.duke.edu/api/v1/";
 //export const BACKEND_ENDPOINT = process.env.REACT_APP_BACKEND_ENDPOINT;
@@ -23,13 +21,10 @@ export const API = axios.create({
   },
 });
 
-// Runs Auth api token refresh whenever 401 error is received
-createAuthRefreshInterceptor(API, AUTH_API.tokenRefresh);
-
 // Every outgoing request is logged, as well as setting the token to the most
 // up to date version
 API.interceptors.request.use((request) => {
-  request.headers["Authorization"] = `Bearer ${sessionStorage.getItem(
+  request.headers["Authorization"] = `Bearer ${localStorage.getItem(
     "accessToken"
   )}`;
   logger.debug("Making API Request", request);

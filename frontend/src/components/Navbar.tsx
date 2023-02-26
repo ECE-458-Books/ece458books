@@ -20,6 +20,11 @@ function NavigationBar() {
           icon: "pi pi-fw pi-plus",
           command: () => navigate("/books/add"),
         },
+        {
+          label: "Shelf Calculator",
+          icon: "pi pi-fw pi-calculator",
+          command: () => navigate("/books/shelf-calculator"),
+        },
       ],
     },
     {

@@ -45,7 +45,7 @@ import {
 } from "./errors/CSVImportErrors";
 import { Book } from "../list/BookList";
 import { useImmer } from "use-immer";
-import { findById } from "../../util/FindBy";
+import { findById } from "../../util/IDOperations";
 import { calculateTotal } from "../../util/CalculateTotal";
 
 export interface SRSaleRow {
@@ -97,7 +97,9 @@ export default function SRDetail() {
           setSales(salesReconciliation.sales);
           setTotalRevenue(salesReconciliation.totalRevenue);
         })
-        .catch(() => showFailure(toast, "Could not fetch purchase order data"));
+        .catch(() =>
+          showFailure(toast, "Could not fetch sales reconciliation data")
+        );
     }
   }, []);
 
@@ -114,9 +116,9 @@ export default function SRDetail() {
       customBody: (rowData: SRSaleRow) =>
         booksDropDownEditor(rowData.bookTitle, (newValue) => {
           setSales((draft) => {
-            const purchase = findById(draft, rowData.id);
-            purchase!.bookTitle = newValue;
-            purchase!.price = booksMap.get(newValue)!.retailPrice;
+            const sale = findById(draft, rowData.id);
+            sale!.bookTitle = newValue;
+            sale!.price = booksMap.get(newValue)!.retailPrice;
             setTotalRevenue(calculateTotal(draft));
           });
         }),
@@ -128,8 +130,8 @@ export default function SRDetail() {
       customBody: (rowData: SRSaleRow) =>
         numberEditor(rowData.quantity, (newValue) => {
           setSales((draft) => {
-            const purchase = findById(draft, rowData.id);
-            purchase!.quantity = newValue;
+            const sale = findById(draft, rowData.id);
+            sale!.quantity = newValue;
             setTotalRevenue(calculateTotal(draft));
           });
         }),
@@ -140,8 +142,8 @@ export default function SRDetail() {
       customBody: (rowData: SRSaleRow) =>
         priceEditor(rowData.price, (newValue) => {
           setSales((draft) => {
-            const purchase = findById(draft, rowData.id);
-            purchase!.price = newValue;
+            const sale = findById(draft, rowData.id);
+            sale!.price = newValue;
             setTotalRevenue(calculateTotal(draft));
           });
         }),
@@ -270,7 +272,7 @@ export default function SRDetail() {
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
 
-  const actionBodyTemplate = (rowData: SRSaleRow) => {
+  const rowDeleteButton = (rowData: SRSaleRow) => {
     return (
       <React.Fragment>
         <Button
@@ -439,7 +441,7 @@ export default function SRDetail() {
             >
               {columns}
               <Column
-                body={actionBodyTemplate}
+                body={rowDeleteButton}
                 exportable={false}
                 style={{ minWidth: "8rem" }}
               ></Column>

@@ -82,6 +82,9 @@ export function priceBodyTemplate(value: number | bigint) {
 }
 
 export function imageBodyTemplate(thumbnailURL: string) {
+  if (!thumbnailURL) {
+    thumbnailURL = "http://books-db.colab.duke.edu/media/books/default.jpg";
+  }
   return (
     <Image
       // Leaving this line in case of future image browser side caching workaround is needed

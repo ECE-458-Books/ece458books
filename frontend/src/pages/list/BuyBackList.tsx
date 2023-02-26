@@ -1,54 +1,37 @@
-import { Toast } from "primereact/toast";
-import { TableColumn, createColumns } from "../../components/TableColumns";
-import {
-  DataTable,
-  DataTablePageEvent,
-  DataTableSortEvent,
-} from "primereact/datatable";
-import { Column } from "primereact/column";
 import { useEffect, useRef, useState } from "react";
-import { NUM_ROWS } from "./BookList";
-import { logger } from "../../util/Logger";
-import { useNavigate } from "react-router-dom";
-import { BUYBACK_API, GetBBsResp } from "../../apis/BuyBackAPI";
 import {
-  APIBBSortFieldMap,
-  APIToInternalBBConversion,
-} from "../../apis/Conversions";
+  dateBodyTemplate,
+  priceBodyTemplate,
+} from "../../util/TableCellEditFuncs";
 import { BBSaleRow } from "../detail/BBDetail";
+import { TableColumn, createColumns } from "../../components/TableColumns";
+import { Toast } from "primereact/toast";
+import { DataTable } from "primereact/datatable";
+import { Column } from "primereact/column";
+import { BUYBACK_API, GetBBsResp } from "../../apis/BuyBackAPI";
+import { APIToInternalBBConversion } from "../../apis/Conversions";
 
 export interface BuyBack {
-  id: number;
+  id: string;
   date: Date;
-  buyBacks: BBSaleRow[];
-  vendorId: number;
+  vendorID: number;
   vendorName: string;
+  sales: BBSaleRow[];
   uniqueBooks: number;
   totalBooks: number;
   totalRevenue: number;
 }
-
-// Empty sales reconciliation, used to initialize state
-const emptyBuyBack: BuyBack = {
-  id: 0,
-  date: new Date(),
-  buyBacks: [],
-  uniqueBooks: 0,
-  totalBooks: 0,
-  totalRevenue: 0,
-  vendorId: 0,
-  vendorName: "",
-};
 
 const COLUMNS: TableColumn[] = [
   {
     field: "date",
     header: "Date (YYYY-MM-DD)",
     sortable: true,
+    customBody: (rowData: BuyBack) => dateBodyTemplate(rowData.date),
   },
   {
     field: "vendorName",
-    header: "Vendor Name",
+    header: "Vendor",
     sortable: true,
   },
   {
@@ -65,8 +48,21 @@ const COLUMNS: TableColumn[] = [
     field: "totalRevenue",
     header: "Total Revenue ($)",
     sortable: true,
+    customBody: (rowData: BuyBack) => priceBodyTemplate(rowData.totalRevenue),
   },
 ];
+
+// Empty sales reconciliation, used to initialize state
+const emptyBuyBack: BuyBack = {
+  id: "0",
+  date: new Date(),
+  vendorID: 0,
+  vendorName: "",
+  sales: [],
+  uniqueBooks: 0,
+  totalBooks: 0,
+  totalRevenue: 0,
+};
 
 export default function BuyBackList() {
   // ----------------- STATE -----------------
@@ -77,66 +73,23 @@ export default function BuyBackList() {
   const [selectedDeleteBuyBack, setSelectedDeleteBuyBack] =
     useState<BuyBack>(emptyBuyBack); // The element that has been clicked on to delete
 
-  // The current state of sorting.
-  const [sortParams, setSortParams] = useState<DataTableSortEvent>({
-    sortField: "",
-    sortOrder: null,
-    multiSortMeta: null, // Not used
-  });
-
-  // The current state of the paginator
-  const [pageParams, setPageParams] = useState<DataTablePageEvent>({
-    first: 0,
-    rows: NUM_ROWS,
-    page: 0,
-  });
-
-  // ----------------- METHODS -----------------
-
-  // The navigator to switch pages
-  const navigate = useNavigate();
-
-  // Callback functions for edit/delete buttons
-  // const toDetailPage = (sr: SalesReconciliation, isModifiable: boolean) => {
-  //   logger.debug("Edit Sales Reconciliation Clicked", sr);
-  //   const detailState: SRDetailState = {
-  //     id: sr.id,
-  //     isAddPage: false,
-  //     isModifiable: isModifiable,
-  //   };
-
-  //   navigate("/sales-reconciliations/detail", { state: detailState });
-  // };
-
-  // Called when any of the columns are selected to be sorted
-  const onSort = (event: DataTableSortEvent) => {
-    logger.debug("Sort Applied", event);
-    setLoading(true);
-    setSortParams(event);
-  };
-
-  // Called when the paginator page is switched
-  const onPage = (event: DataTablePageEvent) => {
-    logger.debug("Page Applied", event);
-    setLoading(true);
-    setPageParams(event);
-  };
-
   // When any of the list of params are changed, useEffect is called to hit the API endpoint
-  useEffect(() => callAPI(), [sortParams, pageParams]);
+  useEffect(() => callAPI(), []);
 
   const callAPI = () => {
     // Invert sort order
-    let sortField = APIBBSortFieldMap.get(sortParams.sortField) ?? "";
-    if (sortParams.sortOrder == -1) {
-      sortField = "-".concat(sortField);
-    }
+    // let sortField = APISRSortFieldMap.get(sortParams.sortField) ?? "";
+    // if (sortParams.sortOrder == -1) {
+    //   sortField = "-".concat(sortField);
+    // }
 
-    BUYBACK_API.getBuyBacks({
-      page: (pageParams.page ?? 0) + 1,
-      page_size: pageParams.rows,
-      ordering: sortField,
-    }).then((response) => onAPIResponse(response));
+    BUYBACK_API.getBuyBacksTEST().then((response) => onAPIResponse(response));
+
+    // SALES_API.getBuyBacks({
+    //   page: (pageParams.page ?? 0) + 1,
+    //   page_size: pageParams.rows,
+    //   ordering: sortField,
+    // }).then((response) => onAPIResponse(response));
   };
 
   // Set state when response to API call is received
@@ -155,27 +108,27 @@ export default function BuyBackList() {
     <div className="card pt-5 px-2">
       <Toast ref={toast} />
       <DataTable
-        showGridlines
         // General Settings
+        showGridlines
         value={buyBacks}
         lazy
         responsiveLayout="scroll"
         loading={loading}
         // Row clicking
-        rowHover
-        selectionMode={"single"}
-        //onRowClick={(event) => onRowClick(event)}
+        // rowHover
+        // selectionMode={"single"}
+        // onRowClick={(event) => onRowClick(event)}
         // Paginator
         paginator
-        first={pageParams.first}
-        rows={NUM_ROWS}
-        totalRecords={numberOfBuyBacks}
-        paginatorTemplate="PrevPageLink NextPageLink"
-        onPage={onPage}
+        // first={pageParams.first}
+        // rows={NUM_ROWS}
+        // totalRecords={numberOfBuyBacks}
+        // paginatorTemplate="PrevPageLink NextPageLink"
+        // onPage={onPage}
         // Sorting
-        onSort={onSort}
-        sortField={sortParams.sortField}
-        sortOrder={sortParams.sortOrder}
+        // onSort={onSort}
+        // sortField={sortParams.sortField}
+        // sortOrder={sortParams.sortOrder}
       >
         {columns}
         {/* <Column body={editDeleteCellTemplate} style={{ minWidth: "16rem" }} /> */}

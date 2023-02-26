@@ -19,7 +19,6 @@ export interface APIBBSaleRow {
   id?: number; // ID only for new rows, not already existing ones
   book: number;
   book_title: string;
-  subtotal: number;
   quantity: number;
   unit_buyback_price: number;
 }
@@ -67,6 +66,13 @@ export const BUYBACK_API = {
       url: BUYBACK_EXTENSION,
       method: METHOD_GET,
       params: req,
+    });
+  },
+
+  getBuyBacksTEST: async function (): Promise<GetBBsResp> {
+    return await API.request({
+      url: BUYBACK_EXTENSION,
+      method: METHOD_GET,
     });
   },
 

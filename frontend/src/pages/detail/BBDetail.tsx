@@ -40,7 +40,6 @@ export interface BBDetailState {
 export interface BBSaleRow {
   isNewRow: boolean;
   id: string;
-  subtotal: number;
   bookId: number;
   bookTitle: string;
   quantity: number;
@@ -53,7 +52,6 @@ const emptySale: BBSaleRow = {
   isNewRow: true,
   id: uuid(),
   bookId: 0,
-  subtotal: 0,
   bookTitle: "",
   quantity: 1,
   unitBuyBackPrice: 0,

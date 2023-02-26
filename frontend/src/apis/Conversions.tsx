@@ -273,7 +273,6 @@ function APIToInternalBBSaleConversion(sale: APIBBSaleRow): BBSaleRow {
     id: sale.id!.toString(),
     bookId: sale.book,
     bookTitle: sale.book_title,
-    subtotal: sale.subtotal,
     quantity: sale.quantity,
     unitBuyBackPrice: sale.unit_buyback_price,
   };
@@ -285,14 +284,14 @@ export function APIToInternalBBConversion(bb: APIBB): BuyBack {
   );
 
   return {
-    id: bb.id,
+    id: bb.id.toString(),
     date: externalToInternalDate(bb.date),
     totalBooks: bb.num_books,
     uniqueBooks: bb.num_unique_books,
     totalRevenue: bb.total_revenue,
-    vendorId: bb.vendor,
+    vendorID: bb.vendor,
     vendorName: bb.vendor_name,
-    buyBacks: sales,
+    sales: sales,
   };
 }
 

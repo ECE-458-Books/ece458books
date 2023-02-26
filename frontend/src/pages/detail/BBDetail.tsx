@@ -15,9 +15,6 @@ import {
   priceEditor,
 } from "../../util/TableCellEditFuncs";
 import { errorCellBody } from "./errors/CSVImportErrors";
-import BooksDropdown, {
-  BooksDropdownData,
-} from "../../components/dropdowns/BookDropdown";
 import React from "react";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
 import { Button } from "primereact/button";
@@ -37,6 +34,9 @@ import { useImmer } from "use-immer";
 import { APIToInternalBBConversion } from "../../apis/Conversions";
 import { Dropdown } from "primereact/dropdown";
 import { VENDORS_API } from "../../apis/VendorsAPI";
+import BooksDropdownBBRestricted, {
+  BooksDropdownBBRestrictedData,
+} from "../../components/dropdowns/BookDropdownBBRestricted";
 
 export interface BBDetailState {
   id: number;
@@ -86,7 +86,7 @@ export default function BBDetail() {
   const [totalRevenue, setTotalRevenue] = useState<number>(0);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
-  const [isBooksSelected, setIsBooksSelected] = useState<boolean>(false);
+  const [isBooksBuyBackSold, setIsBooksBuyBackSold] = useState<boolean>(false);
   const [hasUploadedCSV, setHasUploadedCSV] = useState<boolean>(false);
 
   // Load the SR data on page load
@@ -102,7 +102,13 @@ export default function BBDetail() {
         })
         .catch(() => showFailure(toast, "Could not fetch buy back sales data"));
     }
+
+    setIsBooksBuyBackSold(sales.length > 0);
   }, []);
+
+  useEffect(() => {
+    setIsBooksBuyBackSold(sales.length > 0);
+  }, [sales]);
 
   const COLUMNS: TableColumn[] = [
     {
@@ -216,7 +222,8 @@ export default function BBDetail() {
 
     const buyBack = {
       date: internalToExternalDate(date),
-      sales: apiSales,
+      vendor: vendorMap.get(selectedVendorName),
+      buybacks: apiSales,
     } as AddBBReq;
     BUYBACK_API.addBuyBack(buyBack)
       .then(() => showSuccess(toast, "Buy back added successfully"))
@@ -238,7 +245,8 @@ export default function BBDetail() {
     const buyBack = {
       id: id,
       date: internalToExternalDate(date),
-      sales: apiSales,
+      vendor: vendorMap.get(selectedVendorName),
+      buybacks: apiSales,
     } as ModifyBBReq;
 
     BUYBACK_API.modifyBuyBack(buyBack)
@@ -304,9 +312,10 @@ export default function BBDetail() {
   // Get the data for the books dropdown
   useEffect(
     () =>
-      BooksDropdownData({
+      BooksDropdownBBRestrictedData({
         setBooksMap: setBooksMap,
         setBookTitlesList: setBooksDropdownTitles,
+        vendorName: vendorMap.get(selectedVendorName)!,
       }),
     []
   );
@@ -317,7 +326,7 @@ export default function BBDetail() {
     value: string,
     onChange: (newValue: string) => void
   ) => (
-    <BooksDropdown
+    <BooksDropdownBBRestricted
       // This will always be used in a table cell, so we can disable the warning
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       setSelectedBook={onChange}
@@ -425,7 +434,7 @@ export default function BBDetail() {
                   options={vendorNamesList}
                   placeholder="Select a Vendor"
                   filter
-                  disabled={!isModifiable}
+                  disabled={!isModifiable || isBooksBuyBackSold}
                   onChange={(e) => setSelectedVendorName(e.value)}
                   virtualScrollerOptions={{ itemSize: 35 }}
                 />

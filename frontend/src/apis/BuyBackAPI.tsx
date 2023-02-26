@@ -44,18 +44,19 @@ export interface GetBBDetailReq {
   id: string;
 }
 
-// deleteSalesReconciliation
+// deleteBuyBack
 export interface DeleteBBReq {
-  id: number;
+  id: string;
 }
 
-// addSalesReconciliation
+// addBuyBack
 export interface AddBBReq {
   date: string;
-  sales: APIBBSaleRow[];
+  vendor: number;
+  buybacks: APIBBSaleRow[];
 }
 
-// modifySalesReconciliation
+// modifyBuyBack
 export interface ModifyBBReq extends AddBBReq {
   id: string;
 }

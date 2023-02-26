@@ -21,6 +21,9 @@ import {
 import { NUM_ROWS } from "./BookList";
 import { logger } from "../../util/Logger";
 import { useNavigate } from "react-router-dom";
+import DeletePopup from "../../components/popups/DeletePopup";
+import EditDeleteTemplate from "../../util/EditDeleteTemplate";
+import { showFailure, showSuccess } from "../../components/Toast";
 
 export interface BuyBack {
   id: string;
@@ -109,6 +112,30 @@ export default function BuyBackList() {
     navigate(`/buy-backs/detail/${bb.id}`);
   };
 
+  // Called to make delete pop up show
+  const deleteBuyBackPopup = (bb: BuyBack) => {
+    logger.debug("Delete Sales Reconciliation Clicked", bb);
+    setSelectedDeleteBuyBack(bb);
+    setDeletePopupVisible(true);
+  };
+
+  // Call to actually delete the element
+  const deleteBuyBackFinal = () => {
+    logger.debug("Delete Buy Back Finalized", selectedDeleteBuyBack);
+    setDeletePopupVisible(false);
+    BUYBACK_API.deleteBuyBack({
+      id: selectedDeleteBuyBack.id,
+    })
+      .then(() => showSuccess(toast, "Buy Back Sale Deleted"))
+      .catch(() => showFailure(toast, "Buy Back Sale Failed to Delete"));
+    const _buyBacks = buyBacks.filter(
+      (selectBB) => selectedDeleteBuyBack.id != selectBB.id
+    );
+    setBuyBacks(_buyBacks);
+
+    setSelectedDeleteBuyBack(emptyBuyBack);
+  };
+
   // Called when any of the columns are selected to be sorted
   const onSort = (event: DataTableSortEvent) => {
     logger.debug("Sort Applied", event);
@@ -156,6 +183,24 @@ export default function BuyBackList() {
     setLoading(false);
   };
 
+  // ----------------- TEMPLATES/VISIBLE COMPONENTS -----------------
+
+  // Edit/Delete Cell Template
+  const editDeleteCellTemplate = EditDeleteTemplate<BuyBack>({
+    onEdit: (rowData) => toDetailPage(rowData),
+    onDelete: (rowData) => deleteBuyBackPopup(rowData),
+    deleteDisabled: () => false,
+  });
+
+  // The delete popup
+  const deletePopup = (
+    <DeletePopup
+      deleteItemIdentifier={" this sales reconciliation"}
+      onConfirm={() => deleteBuyBackFinal()}
+      setIsVisible={setDeletePopupVisible}
+    />
+  );
+
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
 
@@ -188,9 +233,9 @@ export default function BuyBackList() {
         sortOrder={sortParams.sortOrder}
       >
         {columns}
-        {/* <Column body={editDeleteCellTemplate} style={{ minWidth: "16rem" }} /> */}
+        <Column body={editDeleteCellTemplate} style={{ minWidth: "16rem" }} />
       </DataTable>
-      {/* {deletePopupVisible && deletePopup} */}
+      {deletePopupVisible && deletePopup}
     </div>
   );
 }

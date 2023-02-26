@@ -141,6 +141,7 @@ export default function BBDetail() {
             setTotalRevenue(calculateTotal(draft));
           });
         }),
+      style: { width: "15%" },
     },
     {
       field: "price",
@@ -283,10 +284,38 @@ export default function BBDetail() {
             className="p-button-info mr-2"
             icon="pi pi-plus"
             onClick={addNewSale}
-            disabled={!isModifiable}
+            disabled={!isModifiable || selectedVendorName == ""}
           />
         </React.Fragment>
       </>
+    );
+  };
+
+  const centerToolbarTemplate = () => {
+    return (
+      <React.Fragment>
+        {!isBBAddPage && !isModifiable && (
+          <Button
+            id="modifyBBToggle"
+            name="modifyBBToggle"
+            label="Edit"
+            icon="pi pi-pencil"
+            disabled={isBBAddPage}
+            onClick={() => setIsModifiable(!isModifiable)}
+          />
+        )}
+        {!isBBAddPage && isModifiable && (
+          <Button
+            id="modifyBBToggle2"
+            name="modifyBBToggle2"
+            label="Cancel"
+            icon="pi pi-times"
+            className="p-button-warning"
+            disabled={isBBAddPage}
+            onClick={() => setIsModifiable(!isModifiable)}
+          />
+        )}
+      </React.Fragment>
     );
   };
 
@@ -317,7 +346,7 @@ export default function BBDetail() {
         setBookTitlesList: setBooksDropdownTitles,
         vendorName: vendorMap.get(selectedVendorName)!,
       }),
-    []
+    [selectedVendorName]
   );
 
   const columns = createColumns(COLUMNS);
@@ -370,44 +399,29 @@ export default function BBDetail() {
             )}
           </div>
           <form onSubmit={onSubmit}>
-            <div className="flex flex-row justify-content-center card-container col-12">
-              {!isBBAddPage && (
-                <ToggleButton
-                  id="modifyBBToggle"
-                  name="modifyBBToggle"
-                  onLabel="Editable"
-                  offLabel="Edit"
-                  onIcon="pi pi-check"
-                  offIcon="pi pi-times"
-                  disabled={isBBAddPage}
-                  checked={isModifiable}
-                  onChange={() => setIsModifiable(!isModifiable)}
-                />
-              )}
-            </div>
+            <Toolbar
+              className="mb-4"
+              left={leftToolbarTemplate}
+              center={centerToolbarTemplate}
+              right={rightToolbarTemplate}
+            />
 
-            <div className="flex pb-2 flex-row justify-content-evenly card-container col-12">
-              <div>
+            <div className="flex col-12 justify-content-evenly mb-3">
+              <div className="flex">
                 <label
-                  className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
+                  className="p-component p-text-secondary my-auto text-teal-900 pr-2"
                   htmlFor="totalcost"
                 >
-                  Total Cost ($):
+                  Total Revenue ($):
                 </label>
-                <InputNumber
-                  id="totalcost2"
-                  className="w-6"
-                  minFractionDigits={2}
-                  useGrouping={false}
-                  name="totalcost2"
-                  value={totalRevenue ?? 0}
-                  disabled={true}
-                />
+                <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
+                  {totalRevenue ?? 0}
+                </p>
               </div>
               <div>
                 <label
                   htmlFor="date"
-                  className="pt-2 pr-2 p-component text-teal-900 p-text-secondary"
+                  className="p-component text-teal-900 p-text-secondary my-auto pr-2"
                 >
                   Date
                 </label>
@@ -425,7 +439,7 @@ export default function BBDetail() {
               <div>
                 <label
                   htmlFor="vendor"
-                  className="pt-2 pr-2 p-component text-teal-900 p-text-secondary"
+                  className="p-component text-teal-900 p-text-secondary my-auto pr-2"
                 >
                   Vendor
                 </label>
@@ -441,12 +455,6 @@ export default function BBDetail() {
               </div>
             </div>
 
-            <Toolbar
-              className="mb-4"
-              left={leftToolbarTemplate}
-              right={rightToolbarTemplate}
-            />
-
             <DataTable
               showGridlines
               value={sales}
@@ -457,6 +465,7 @@ export default function BBDetail() {
               {columns}
               <Column
                 body={actionBodyTemplate}
+                header="Delete Line Item"
                 exportable={false}
                 style={{ minWidth: "8rem" }}
               ></Column>

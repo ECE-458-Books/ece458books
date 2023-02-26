@@ -5,7 +5,7 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from .paginations import BuybackPagination
 from .models import Buyback, BuybackOrder
 from .serializers import BuybackOrderSerializer, BuybackSerializer
-from django.db.models import Sum, OuterRef, Subquery, Func, Count
+from django.db.models import Sum, OuterRef, Subquery, Func, Count, F
 from books.models import Book
 import datetime, pytz
 from datetime import datetime, timedelta
@@ -52,6 +52,13 @@ class ListCreateBuybackAPIView(ListCreateAPIView):
         default_query_set = default_query_set.annotate(num_books=Subquery(num_books_subquery))
 
         default_query_set = default_query_set.annotate(num_unique_books=Count('buybacks__book', distinct=True))
+
+        default_query_set = default_query_set.annotate(vendor_name=F('vendor__name'))
+
+        # Filter by vendor
+        vendor = self.request.GET.get('vendor')
+        if vendor is not None:
+            default_query_set = default_query_set.filter(vendor=vendor)
 
         # Filter by date
         start_date = self.request.GET.get('start')

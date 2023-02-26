@@ -65,7 +65,7 @@ export const BUYBACK_API = {
   getBuyBacks: async function (req: GetBBsReq): Promise<GetBBsResp> {
     return await API.request({
       url: BUYBACK_EXTENSION,
-      method: METHOD_POST, //FIX MAYBE SHOULD BE A GET REQUEST
+      method: METHOD_GET,
       params: req,
     });
   },

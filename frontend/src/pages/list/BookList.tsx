@@ -46,6 +46,9 @@ export interface Book {
   retailPrice: number;
   stock: number;
   thumbnailURL: string;
+  imageFile?: File;
+  isImageUpload?: boolean;
+  isImageDelete?: boolean;
 }
 
 interface Filters {

@@ -1,9 +1,15 @@
-import { FileUpload, FileUploadHandlerEvent } from "primereact/fileupload";
+import {
+  FileUpload,
+  FileUploadHandlerEvent,
+  FileUploadOptions,
+} from "primereact/fileupload";
 
 interface ImageUploaderProps {
   uploadHandler: (e: FileUploadHandlerEvent) => void;
   disabled: boolean;
-  //onUpload: any;
+  chooseOptions?: FileUploadOptions;
+  uploadOptions?: FileUploadOptions;
+  cancelOptions?: FileUploadOptions;
 }
 
 export default function ImageUploader(props: ImageUploaderProps) {
@@ -15,9 +21,11 @@ export default function ImageUploader(props: ImageUploaderProps) {
         disabled={props.disabled}
         accept="image/gif, image/jpeg, image/png, image/webp"
         customUpload
-        //onUpload={props.onUpload}
         uploadHandler={props.uploadHandler}
         chooseLabel={"Upload Cover Image"}
+        chooseOptions={props.chooseOptions}
+        uploadOptions={props.uploadOptions}
+        cancelOptions={props.cancelOptions}
       />
     </div>
   );

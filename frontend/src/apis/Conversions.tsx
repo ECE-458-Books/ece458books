@@ -124,8 +124,11 @@ export function APIToInternalBookConversionWithDB(
     thickness: book.thickness,
     retailPrice: book.retail_price ?? 0,
     stock: book.stock,
-    thumbnailURL: book.url,
+    thumbnailURL: book.image_url,
     fromDB: book.fromDB,
+    isImageDelete: false,
+    isImageUpload: false,
+    imageFile: new File([""], "imageFile" + book.id),
   };
 }
 

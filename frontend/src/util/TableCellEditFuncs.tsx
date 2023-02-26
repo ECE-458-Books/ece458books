@@ -77,8 +77,10 @@ export function imageBodyTemplate(thumbnailURL: string) {
   return (
     <Image
       // Leaving this line in case of future image browser side caching workaround is needed
-      // src={`${image.imageSrc}?${image.imageHash}`}
-      src={thumbnailURL}
+      src={`${thumbnailURL}${
+        thumbnailURL.startsWith("https://books") ? "?" + Date.now() : ""
+      }`}
+      // src={thumbnailURL}
       id="imageONpage"
       alt="Image"
       imageStyle={{

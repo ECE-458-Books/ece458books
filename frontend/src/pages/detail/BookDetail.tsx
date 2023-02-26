@@ -67,10 +67,7 @@ export default function BookDetail() {
   //const [image, setImage] = useState<string>("");
   const [imageFile, setImageFile] = useState<File>(new File([""], "filename"));
   const [isImageUploaded, setIsImageUploaded] = useState<boolean>(false);
-  const defaultImage = "../DefaultNoImageAvailable.jpeg";
-  const [defaultImageFile, setDefaultImageFile] = useState<File>(
-    new File([""], "filename")
-  );
+  const [isImageRemoved, setIsImageRemoved] = useState<boolean>(false);
 
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
@@ -101,7 +98,9 @@ export default function BookDetail() {
         setStock(book.stock);
       })
       .catch(() => showFailure(toast, "Could not fetch book data"));
+  }, []);
 
+  useEffect(() => {
     IMAGES_API.getImage({ id: id })
       .then((response) => {
         // {
@@ -117,22 +116,6 @@ export default function BookDetail() {
       .catch(() =>
         showFailure(toast, "Image Cannot be Retrieved to Update Display")
       );
-
-    fetch(defaultImage).then(async (response) => {
-      const blob = await response.blob();
-      const file = new File([blob], "defaultImage", { type: "image/jpeg" });
-      setDefaultImageFile(file);
-      console.log(file);
-    });
-
-    // fetch(image.imageSrc)
-    // .then(async (response) => {
-    //   const contentType = response.headers.get("content-type") ?? "";
-    //   const blob = await response.blob();
-    //   const file = new File([blob], "originalImage", { type: contentType });
-    //   setImageFile(file);
-    //   console.log(file);
-    // });
   }, []);
 
   // Toast is used for showing success/error messages
@@ -183,6 +166,7 @@ export default function BookDetail() {
         book: book,
         image: imageFile,
         isImageUploaded: isImageUploaded,
+        isImageRemoved: isImageRemoved,
       })
         .then(() => {
           showSuccess(toast, "Book Edited");
@@ -219,6 +203,7 @@ export default function BookDetail() {
       });
       setIsModifiable(false);
       setIsImageUploaded(false);
+      setIsImageRemoved(false);
     },
   });
 
@@ -236,6 +221,7 @@ export default function BookDetail() {
         imageHash: Date.now().toString(),
       });
       setIsImageUploaded(false);
+      setIsImageRemoved(false);
     }
   }, [isModifiable]);
 
@@ -247,8 +233,13 @@ export default function BookDetail() {
   });
 
   const onImageDelete = () => {
-    setImage({ imageSrc: defaultImage, imageHash: "" });
-    setImageFile(defaultImageFile);
+    setImage({
+      imageSrc: "http://books-db.colab.duke.edu/media/books/default.jpg",
+      imageHash: Date.now().toString(),
+    });
+    setImageFile(new File([""], "filename"));
+    setIsImageUploaded(false);
+    setIsImageRemoved(true);
   };
 
   const uploadImageFileHandler = (event: FileUploadHandlerEvent) => {
@@ -256,23 +247,6 @@ export default function BookDetail() {
     setImageFile(file);
     setImage({ imageSrc: URL.createObjectURL(file), imageHash: "" });
     setIsImageUploaded(true);
-    //console.log(image);
-
-    // IMAGES_API.uploadImage({ id: id, image: file })
-    //   .then(() => {
-    //     IMAGES_API.getImage({ id: id })
-    //       .then((response) =>
-    //         setImage({
-    //           imageSrc: response.url,
-    //           imageHash: Date.now(),
-    //         })
-    //       )
-    //       .catch(() =>
-    //         showFailure(toast, "Image Cannot be Retrieved to Update Display")
-    //       );
-    //     showSuccess(toast, "Image Uploaded Successfully");
-    //   })
-    //   .catch(() => showFailure(toast, "Image Upload Failed"));
     event.options.clear();
   };
 

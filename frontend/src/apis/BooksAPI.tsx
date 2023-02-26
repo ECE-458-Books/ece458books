@@ -72,6 +72,7 @@ export interface ModifyBookReq {
   book: APIBook;
   image: File;
   isImageUploaded: boolean;
+  isImageRemoved: boolean;
 }
 
 // deleteBook
@@ -86,6 +87,7 @@ export interface AddBookInitialLookupReq {
 
 export interface APIBookWithDBTag extends APIBook {
   fromDB: boolean;
+  image_url: string;
 }
 
 export interface AddBooksInitialLookupResp {
@@ -96,6 +98,9 @@ export interface AddBooksInitialLookupResp {
 // addBookFinal
 export interface AddBookFinalReq {
   book: APIBook;
+  image: File;
+  isImageUploaded: boolean;
+  isImageRemoved: boolean;
 }
 
 export const BOOKS_API = {
@@ -154,6 +159,9 @@ export const BOOKS_API = {
     if (req.isImageUploaded) {
       formData.append("image", req.image);
     }
+    if (req.isImageRemoved) {
+      formData.append("setDefaultImage", "true");
+    }
 
     return await API.request({
       url: BOOKS_EXTENSION.concat("/".concat(req.book.id.toString())),
@@ -176,9 +184,26 @@ export const BOOKS_API = {
   },
 
   addBookFinal: async function (req: AddBookFinalReq) {
+    const formData = new FormData();
+    formData.append("genres", req.book.genres.join(", "));
+    formData.append("pageCount", req.book.pageCount.toString());
+    formData.append("thickness", req.book.thickness.toString());
+    formData.append("width", req.book.width.toString());
+    formData.append("height", req.book.height.toString());
+    formData.append("retail_price", req.book.retail_price.toString());
+    if (req.isImageUploaded) {
+      formData.append("image", req.image);
+    }
+    if (req.isImageRemoved) {
+      formData.append("setDefaultImage", "true");
+    }
+
     return await API.request({
       url: BOOKS_EXTENSION,
       method: METHOD_POST,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
       data: req.book,
     });
   },

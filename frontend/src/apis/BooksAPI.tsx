@@ -189,8 +189,6 @@ export const BOOKS_API = {
       formData.append("setDefaultImage", "true");
     }
 
-    console.log(formData);
-
     return await API.request({
       url: BOOKS_EXTENSION,
       method: METHOD_POST,

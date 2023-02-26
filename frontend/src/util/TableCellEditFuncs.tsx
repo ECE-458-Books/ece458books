@@ -81,6 +81,7 @@ export function percentEditor(
       mode="decimal"
       maxFractionDigits={2}
       minFractionDigits={2}
+      max={100}
       disabled={disabled ?? false}
     />
   );

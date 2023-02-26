@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Book, emptyBook } from "../list/BookList";
 import {
   InputNumber,
@@ -154,7 +154,7 @@ export default function BookDetail() {
       })
         .then(() => {
           showSuccess(toast, "Book Edited");
-          IMAGES_API.getImage({ id: id })
+          IMAGES_API.getImage({ id: id! })
             .then((response) => {
               //setImage(response.url);
               setImage({
@@ -169,7 +169,7 @@ export default function BookDetail() {
         .catch(() => showFailure(toast, "Could not modify book"));
       formik.resetForm();
       setOriginalBookData({
-        id: id,
+        id: id!,
         title: title,
         author: authors,
         isbn10: isbn10,

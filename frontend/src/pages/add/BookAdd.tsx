@@ -203,21 +203,20 @@ export default function BookAdd() {
 
   const onISBNInitialSubmit = (event: FormEvent<HTMLFormElement>): void => {
     logger.debug("Submitting Initial Book Lookup", textBox);
-    BOOKS_API.addBookInitialLookup({ isbns: textBox })
-      .then((response) => {
-        setBooks(
-          response.books.map((book) => APIToInternalBookConversionWithDB(book))
+    BOOKS_API.addBookInitialLookup({ isbns: textBox }).then((response) => {
+      setBooks(
+        response.books.map((book) => APIToInternalBookConversionWithDB(book))
+      );
+      if (response.invalid_isbns.length > 0) {
+        showFailure(
+          toast,
+          "The following ISBNs were not successfully added: ".concat(
+            response.invalid_isbns.toString()
+          )
         );
-        if (response.invalid_isbns.length > 0) {
-          showFailure(
-            toast,
-            "The following ISBNs were not successfully added: ".concat(
-              response.invalid_isbns.toString()
-            )
-          );
-        }
-      })
-      .catch(() => showFailure(toast, "Could not add books"));
+      }
+    });
+    // .catch(() => showFailure(toast, "Could not add books"));
 
     event.preventDefault();
   };
@@ -254,16 +253,18 @@ export default function BookAdd() {
           image: book.imageFile!,
           isImageUploaded: book.isImageUpload!,
           isImageRemoved: book.isImageDelete!,
-        }).catch(() => showFailure(toast, "Could not add ".concat(book.title)));
+        });
+        // }).catch(() => showFailure(toast, "Could not add ".concat(book.title)));
       } else {
         BOOKS_API.modifyBook({
           book: InternalToAPIBookConversion(book),
           image: book.imageFile!,
           isImageUploaded: book.isImageUpload!,
           isImageRemoved: book.isImageDelete!,
-        }).catch(() => {
-          showFailure(toast, "Could not modify ".concat(book.title));
         });
+        // }).catch(() => {
+        //   showFailure(toast, "Could not modify ".concat(book.title));
+        // });
       }
     }
 

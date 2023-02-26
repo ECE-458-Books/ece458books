@@ -34,9 +34,9 @@ import { useImmer } from "use-immer";
 import { APIToInternalBBConversion } from "../../apis/Conversions";
 import { Dropdown } from "primereact/dropdown";
 import { VENDORS_API } from "../../apis/VendorsAPI";
-import BooksDropdownBBRestricted, {
-  BooksDropdownBBRestrictedData,
-} from "../../components/dropdowns/BookDropdownBBRestricted";
+import BooksDropdown, {
+  BooksDropdownData,
+} from "../../components/dropdowns/BookDropdown";
 
 export interface BBDetailState {
   id: number;
@@ -341,7 +341,7 @@ export default function BBDetail() {
   // Get the data for the books dropdown
   useEffect(
     () =>
-      BooksDropdownBBRestrictedData({
+      BooksDropdownData({
         setBooksMap: setBooksMap,
         setBookTitlesList: setBooksDropdownTitles,
         vendorName: vendorMap.get(selectedVendorName)!,
@@ -355,7 +355,7 @@ export default function BBDetail() {
     value: string,
     onChange: (newValue: string) => void
   ) => (
-    <BooksDropdownBBRestricted
+    <BooksDropdown
       // This will always be used in a table cell, so we can disable the warning
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       setSelectedBook={onChange}

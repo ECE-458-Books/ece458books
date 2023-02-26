@@ -14,7 +14,6 @@ from books.models import Book
 from helpers.csv_format_checker import CSVFormatChecker
 from rest_framework.request import Request
 from helpers.csv_exceptions import ExtraHeadersException, MissingHeadersException
-import pandas as pd
 
 
 class ListCreatePurchaseOrderAPIView(ListCreateAPIView):
@@ -44,17 +43,15 @@ class ListCreatePurchaseOrderAPIView(ListCreateAPIView):
         default_query_set = PurchaseOrder.objects.all()
 
         # Create a subquery to aggregate the 'cost' value for each purchase in PurchaseOrder
-        cost_subquery = Purchase.objects.filter(purchase_order=OuterRef('id')).values_list(
-            Func(
-                'cost',
-                function='SUM',
-            ),)
+        cost_subquery = Purchase.objects.filter(purchase_order=OuterRef('id')).values_list(Func(
+            'cost',
+            function='SUM',
+        ),)
 
         default_query_set = default_query_set.annotate(total_cost=Subquery(cost_subquery))
 
         # Filter by quantity of books in PurchaseOrder
-        num_books_subquery = Purchase.objects.filter(purchase_order=OuterRef('id')).values_list(
-            Func('quantity', function='SUM'),)
+        num_books_subquery = Purchase.objects.filter(purchase_order=OuterRef('id')).values_list(Func('quantity', function='SUM'),)
 
         default_query_set = default_query_set.annotate(num_books=Subquery(num_books_subquery))
 
@@ -68,8 +65,7 @@ class ListCreatePurchaseOrderAPIView(ListCreateAPIView):
         if start_date is not None and end_date is not None:
             default_query_set = default_query_set.filter(date__range=(start_date, end_date))
         elif start_date is not None:
-            default_query_set = default_query_set.filter(
-                date__range=(start_date, datetime.datetime.now(pytz.timezone('US/Eastern'))))
+            default_query_set = default_query_set.filter(date__range=(start_date, datetime.datetime.now(pytz.timezone('US/Eastern'))))
 
         # Filter by book
         book = self.request.GET.get('book')
@@ -109,20 +105,17 @@ class ListCreatePurchaseOrderAPIView(ListCreateAPIView):
         # Filter by >= unit_retail_price
         purchase_unit_wholesale_price__gte = self.request.GET.get('purchase_unit_wholesale_price__gte')
         if purchase_unit_wholesale_price__gte is not None:
-            default_query_set = default_query_set.filter(
-                purchases__unit_wholesale_price__gte=purchase_unit_wholesale_price__gte).distinct()
+            default_query_set = default_query_set.filter(purchases__unit_wholesale_price__gte=purchase_unit_wholesale_price__gte).distinct()
 
         # Filter by <= unit_retail_price
         purchase_unit_wholesale_price__lte = self.request.GET.get('purchase_unit_wholesale_price__lte')
         if purchase_unit_wholesale_price__lte is not None:
-            default_query_set = default_query_set.filter(
-                purchases__unit_wholesale_price__lte=purchase_unit_wholesale_price__lte).distinct()
+            default_query_set = default_query_set.filter(purchases__unit_wholesale_price__lte=purchase_unit_wholesale_price__lte).distinct()
 
         # Filter by == unit_retail_price
         purchase_unit_wholesale_price = self.request.GET.get('purchase_unit_wholesale_price')
         if purchase_unit_wholesale_price is not None:
-            default_query_set = default_query_set.filter(
-                purchases__unit_wholesale_price=purchase_unit_wholesale_price).distinct()
+            default_query_set = default_query_set.filter(purchases__unit_wholesale_price=purchase_unit_wholesale_price).distinct()
 
         return default_query_set
 
@@ -156,16 +149,14 @@ class RetrieveUpdateDestroyPurchaseOrderAPIView(RetrieveUpdateDestroyAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def destroy(self, request, *args, **kwargs):
-        purchase_book_quantities = Purchase.objects.filter(purchase_order=self.get_object().id).values('book').annotate(
-            num_books=Sum('quantity')).values('book', 'num_books')
+        purchase_book_quantities = Purchase.objects.filter(purchase_order=self.get_object().id).values('book').annotate(num_books=Sum('quantity')).values('book', 'num_books')
         for purchase_book_quantity in purchase_book_quantities:
             book_to_remove_purchase = Book.objects.filter(id=purchase_book_quantity['book']).get()
             if (book_to_remove_purchase.stock < purchase_book_quantity['num_books']):
                 return Response(
                     {
                         "error": {
-                            "msg":
-                                "Cannot delete purchase order, as doing so would cause book stock to become negative.",
+                            "msg": "Cannot delete purchase order, as doing so would cause book stock to become negative.",
                             "details": {
                                 "book_id": purchase_book_quantity['book'],
                                 "book_stock": book_to_remove_purchase.stock,

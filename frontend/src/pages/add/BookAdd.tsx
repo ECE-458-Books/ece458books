@@ -191,6 +191,7 @@ export default function BookAdd() {
           disabled={false}
           uploadHandler={(event: FileUploadHandlerEvent) => {
             const file = event.files[0];
+            console.log("upload");
 
             const newImage: NewImageUploadData = {
               imageFile: file,
@@ -199,7 +200,6 @@ export default function BookAdd() {
             };
 
             rowData.newImageData = newImage;
-
             rowData.thumbnailURL = URL.createObjectURL(file);
             event.options.clear();
           }}

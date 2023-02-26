@@ -112,6 +112,12 @@ export const BOOKS_API = {
 
   modifyBook: async function (req: ModifyBookReq) {
     const formData = new FormData();
+    formData.append("title", req.book.title);
+    formData.append("isbn_13", req.book.isbn_13.toString());
+    formData.append("isbn_10", req.book.isbn_10.toString());
+    formData.append("publisher", req.book.publisher);
+    formData.append("publishedDate", req.book.publishedDate.toString());
+    formData.append("authors", req.book.authors.join(", "));
     formData.append("genres", req.book.genres.join(", "));
     formData.append("retail_price", req.book.retail_price.toString());
     if (req.book.width) {
@@ -154,7 +160,14 @@ export const BOOKS_API = {
   },
 
   addBookFinal: async function (req: AddBookFinalReq) {
+    console.log(req);
     const formData = new FormData();
+    formData.append("title", req.book.title);
+    formData.append("isbn_13", req.book.isbn_13.toString());
+    formData.append("isbn_10", req.book.isbn_10.toString());
+    formData.append("publisher", req.book.publisher);
+    formData.append("publishedDate", req.book.publishedDate.toString());
+    formData.append("authors", req.book.authors.join(", "));
     formData.append("genres", req.book.genres.join(", "));
     formData.append("retail_price", req.book.retail_price.toString());
     if (req.book.width) {
@@ -176,13 +189,15 @@ export const BOOKS_API = {
       formData.append("setDefaultImage", "true");
     }
 
+    console.log(formData);
+
     return await API.request({
       url: BOOKS_EXTENSION,
       method: METHOD_POST,
       headers: {
         "Content-Type": "multipart/form-data",
       },
-      data: req.book,
+      data: formData,
     });
   },
 };

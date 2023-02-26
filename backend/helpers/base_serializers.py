@@ -51,7 +51,7 @@ class TransactionGroupBaseSerializer(serializers.ModelSerializer):
         pass
 
     @abstractmethod
-    def validate_before_creation(self, transaction_quantities, date):
+    def validate_before_creation(self, transaction_quantities, data):
         pass
 
     def get_num_books(self, instance):
@@ -164,7 +164,7 @@ class TransactionGroupBaseSerializer(serializers.ModelSerializer):
             transaction_quantities[transaction_data['book'].id] = transaction_quantities.get(transaction_data['book'].id, 0) + (
                 transaction_data['quantity'] * (-1 if self.get_measure_name() == "revenue" else 1))  # negative if sale, positive if purchase
 
-        self.validate_before_creation(transaction_quantities, data['date'])
+        self.validate_before_creation(transaction_quantities, data)
 
         #Check that books aren't ghosted
         for transaction_data in transactions_data:

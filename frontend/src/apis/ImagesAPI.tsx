@@ -4,7 +4,7 @@ const IMAGE_EXTENSION = "books";
 
 // get image requirement
 export interface GetImageReq {
-  id: number;
+  id: string;
 }
 
 // get image response
@@ -15,14 +15,14 @@ export interface GetImageResp {
 
 // upload image requirement
 export interface UploadImageReq {
-  id: number;
+  id: string;
   image: File;
 }
 
 export const IMAGES_API = {
   getImage: async function (req: GetImageReq): Promise<GetImageResp> {
     return await API.request({
-      url: IMAGE_EXTENSION.concat("/").concat(req.id.toString()),
+      url: IMAGE_EXTENSION.concat("/").concat(req.id),
       method: METHOD_GET,
     });
   },
@@ -32,7 +32,7 @@ export const IMAGES_API = {
     formData.append("image", req.image);
     console.log(formData);
     return await API.request({
-      url: IMAGE_EXTENSION.concat("/").concat(req.id.toString()),
+      url: IMAGE_EXTENSION.concat("/").concat(req.id),
       method: METHOD_PATCH,
       headers: {
         "Content-Type": "multipart/form-data",

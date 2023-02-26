@@ -18,7 +18,6 @@ export interface GetPOsReq {
 
 export interface APIPOPurchaseRow {
   id?: number; // ID only for new rows, not already existing ones
-  subtotal: number; // Soon to be deprecated
   book: number;
   book_title: string;
   book_isbn: string;
@@ -44,12 +43,12 @@ export interface GetPOsResp {
 
 // getPurchaseOrderDetail
 export interface GetPODetailReq {
-  id: number;
+  id: string;
 }
 
 // deletePurchaseOrders
 export interface DeletePOReq {
-  id: number;
+  id: string;
 }
 
 // addPurchaseOrders
@@ -61,7 +60,7 @@ export interface AddPOReq {
 
 // modifyPurchaseOrders
 export interface ModifyPOReq extends AddPOReq {
-  id: number;
+  id: string;
 }
 
 // puchaseOrdersCSVImport

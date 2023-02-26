@@ -64,7 +64,7 @@ export interface APIBookSimplified {
 
 // getBookDetail
 export interface GetBookDetailReq {
-  id: number;
+  id: string;
 }
 
 // modifyBook
@@ -77,7 +77,7 @@ export interface ModifyBookReq {
 
 // deleteBook
 export interface DeleteBookReq {
-  id: number;
+  id: string;
 }
 
 // addBookInitialLookup

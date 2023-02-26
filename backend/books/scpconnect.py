@@ -1,7 +1,8 @@
 from paramiko import SSHClient, AutoAddPolicy
 from scp import SCPClient
 import environ, os, io
-import PIL.Image as Image
+
+from .utils import delete_all_files_in_file_location
 
 class SCPTools:
     def __init__(
@@ -21,6 +22,8 @@ class SCPTools:
         self.SCP_HOST = env('SCP_HOST')
         self.SCP_USER= env('SCP_USER')
         self.SCP_PASSWORD = env('SCP_PASSWORD')
+        self.INTERNAL_BOOK_IMAGE_ABSOLUTE_PATH=env('INTERNAL_BOOK_IMAGE_ABSOLUTE_PATH')
+        self.INTERNAL_BOOK_IMAGE_REMOTE_PATH=env('INTERNAL_BOOK_IMAGE_REMOTE_PATH')
     
     def get_host(self):
         return self.SCP_HOST
@@ -47,30 +50,15 @@ class SCPTools:
     
     def send_image_data(
         self,
-        file_bytes,
         file_location: str,
     ):
         self.connect_ssh()
         self.connect_scp()
-        image = Image.open(io.BytesIO(file_bytes))
-        image.save(file_location)
-        self.scp.put(file_location, remote_path='/srv/media/books')
+        self.scp.put(file_location, remote_path=self.INTERNAL_BOOK_IMAGE_ABSOLUTE_PATH)
         self.close_scp_ssh()
 
         # Delete images
-        self.delete_all_files_in_file_location(file_location)
+        delete_all_files_in_file_location(file_location)
 
-        return self.SCP_HOST+'/media/books'
+        return self.SCP_HOST + self.INTERNAL_BOOK_IMAGE_REMOTE_PATH
     
-    def delete_all_files_in_file_location(self, file_location):
-        folder = '/'.join(file_location.split('/')[:-1])
-        for filename in os.listdir(folder):
-            file_path = os.path.join(folder, filename)
-            try:
-                if os.path.isfile(file_path) or os.path.islink(file_path):
-                    os.unlink(file_path)
-                elif os.path.isdir(file_path):
-                    shutil.rmtree(file_path)
-            except Exception as e:
-                raise e
-                # print('Failed to delete %s. Reason: %s' % (file_path, e))

@@ -20,7 +20,6 @@ export interface APISRSaleRow {
   book: number;
   book_title: string;
   book_isbn: string;
-  subtotal: number;
   quantity: number;
   unit_retail_price: number;
 }
@@ -41,12 +40,12 @@ export interface GetSRsResp {
 
 // getSalesReconciliationDetail
 export interface GetSRDetailReq {
-  id: number;
+  id: string;
 }
 
 // deleteSalesReconciliation
 export interface DeleteSRReq {
-  id: number;
+  id: string;
 }
 
 // addSalesReconciliation
@@ -57,7 +56,7 @@ export interface AddSRReq {
 
 // modifySalesReconciliation
 export interface ModifySRReq extends AddSRReq {
-  id: number;
+  id: string;
 }
 
 // puchaseOrdersCSVImport

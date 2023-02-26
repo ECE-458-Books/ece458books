@@ -2,8 +2,8 @@ import { createRef, FormEvent, useState } from "react";
 import { Button } from "primereact/button";
 import { Messages } from "primereact/messages";
 import { useNavigate } from "react-router-dom";
-import { API } from "../apis/Config";
-import { AUTH_API, LoginReq } from "../apis/AuthAPI";
+import { API } from "../../apis/Config";
+import { AUTH_API, LoginReq } from "../../apis/AuthAPI";
 import { Password } from "primereact/password";
 
 export default function LoginPage() {
@@ -65,7 +65,7 @@ export default function LoginPage() {
         <div className="col-6 col-offset-5">
           <img
             alt="logo"
-            src={require("../ImaginarySoftwareLogo.jpeg")}
+            src={require("../../ImaginarySoftwareLogo.jpeg")}
             height="200"
             className="mr-2"
           ></img>

@@ -1,4 +1,4 @@
-import { API, METHOD_GET, METHOD_PATCH } from "./Config";
+import { API, METHOD_GET } from "./Config";
 
 const IMAGE_EXTENSION = "books";
 
@@ -24,20 +24,6 @@ export const IMAGES_API = {
     return await API.request({
       url: IMAGE_EXTENSION.concat("/").concat(req.id),
       method: METHOD_GET,
-    });
-  },
-
-  uploadImage: async function (req: UploadImageReq) {
-    const formData = new FormData();
-    formData.append("image", req.image);
-    console.log(formData);
-    return await API.request({
-      url: IMAGE_EXTENSION.concat("/").concat(req.id),
-      method: METHOD_PATCH,
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-      data: formData,
     });
   },
 };

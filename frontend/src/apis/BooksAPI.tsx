@@ -10,15 +10,16 @@ const BOOKS_EXTENSION = "books";
 
 // getBooks
 export interface GetBooksReq {
-  page: number;
-  page_size: number;
-  ordering: string;
-  genre: string;
-  search: string;
-  title_only: boolean;
-  publisher_only: boolean;
-  author_only: boolean;
-  isbn_only: boolean;
+  no_pagination?: boolean;
+  page?: number;
+  page_size?: number;
+  ordering?: string;
+  genre?: string;
+  search?: string;
+  title_only?: boolean;
+  publisher_only?: boolean;
+  author_only?: boolean;
+  isbn_only?: boolean;
 }
 
 export interface APIBook {
@@ -42,24 +43,6 @@ export interface APIBook {
 export interface GetBooksResp {
   results: APIBook[];
   count: number;
-}
-
-// getBooksNoPagination
-export interface GetBooksNoPageReq {
-  no_pagination: boolean;
-  ordering: string;
-  genre: string;
-  search: string;
-  title_only: boolean;
-  publisher_only: boolean;
-  author_only: boolean;
-  isbn_only: boolean;
-}
-
-// getBooksNamesListNoPagination
-export interface APIBookSimplified {
-  id: number;
-  title: string;
 }
 
 // getBookDetail
@@ -109,28 +92,6 @@ export const BOOKS_API = {
       url: BOOKS_EXTENSION,
       method: METHOD_GET,
       params: req,
-    });
-  },
-
-  getBooksNoPagination: async function (
-    req: GetBooksNoPageReq
-  ): Promise<APIBook[]> {
-    return await API.request({
-      url: BOOKS_EXTENSION,
-      method: METHOD_GET,
-      params: req,
-    });
-  },
-
-  getBooksNameListNoPagination: async function (): Promise<
-    APIBookSimplified[]
-  > {
-    return await API.request({
-      url: BOOKS_EXTENSION,
-      method: METHOD_GET,
-      params: {
-        no_pagination: true,
-      },
     });
   },
 

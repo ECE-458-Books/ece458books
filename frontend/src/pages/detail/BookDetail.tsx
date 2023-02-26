@@ -87,9 +87,7 @@ export default function BookDetail() {
         setStock(book.stock);
       })
       .catch(() => showFailure(toast, "Could not fetch book data"));
-  }, []);
 
-  useEffect(() => {
     IMAGES_API.getImage({ id: id! })
       .then((response) => {
         setImage({

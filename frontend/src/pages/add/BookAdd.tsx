@@ -8,7 +8,7 @@ import {
   priceEditor,
 } from "../../util/TableCellEditFuncs";
 import { BOOKS_API } from "../../apis/BooksAPI";
-import { Book } from "../list/BookList";
+import { Book, NewImageUploadData } from "../list/BookList";
 import { Badge } from "primereact/badge";
 import { logger } from "../../util/Logger";
 import { Toast } from "primereact/toast";
@@ -177,9 +177,16 @@ export default function BookAdd() {
           disabled={false}
           uploadHandler={(event: FileUploadHandlerEvent) => {
             const file = event.files[0];
-            rowData.imageFile = file;
+
+            const newImage: NewImageUploadData = {
+              imageFile: file,
+              isImageUpload: true,
+              isImageDelete: false,
+            };
+
+            rowData.newImageData = newImage;
+
             rowData.thumbnailURL = URL.createObjectURL(file);
-            rowData.isImageUpload = true;
             event.options.clear();
           }}
           chooseOptions={chooseOptions}
@@ -192,9 +199,14 @@ export default function BookAdd() {
           onClick={() => {
             rowData.thumbnailURL =
               "http://books-db.colab.duke.edu/media/books/default.jpg";
-            rowData.imageFile = new File([""], "filename");
-            rowData.isImageUpload = false;
-            rowData.isImageDelete = true;
+
+            const newImage: NewImageUploadData = {
+              imageFile: new File([""], "filename"),
+              isImageUpload: false,
+              isImageDelete: true,
+            };
+
+            rowData.newImageData = newImage;
           }}
         />
       </div>
@@ -250,26 +262,22 @@ export default function BookAdd() {
       if (!book.fromDB) {
         BOOKS_API.addBookFinal({
           book: InternalToAPIBookConversion(book),
-          image: book.imageFile!,
-          isImageUploaded: book.isImageUpload!,
-          isImageRemoved: book.isImageDelete!,
-        });
-        // }).catch(() => showFailure(toast, "Could not add ".concat(book.title)));
+          image: book.newImageData!.imageFile,
+          isImageUploaded: book.newImageData!.isImageUpload!,
+          isImageRemoved: book.newImageData!.isImageDelete!,
+        }).catch(() => showFailure(toast, "Could not add ".concat(book.title)));
       } else {
         BOOKS_API.modifyBook({
           book: InternalToAPIBookConversion(book),
-          image: book.imageFile!,
-          isImageUploaded: book.isImageUpload!,
-          isImageRemoved: book.isImageDelete!,
+          image: book.newImageData!.imageFile!,
+          isImageUploaded: book.newImageData!.isImageUpload!,
+          isImageRemoved: book.newImageData!.isImageDelete!,
+        }).catch(() => {
+          showFailure(toast, "Could not modify ".concat(book.title));
         });
-        // }).catch(() => {
-        //   showFailure(toast, "Could not modify ".concat(book.title));
-        // });
       }
     }
-
     event.preventDefault();
-    showSuccess(toast, "Books Added");
   };
 
   const columns = createColumns(COLUMNS);

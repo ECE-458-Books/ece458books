@@ -126,9 +126,11 @@ export function APIToInternalBookConversionWithDB(
     stock: book.stock,
     thumbnailURL: book.image_url,
     fromDB: book.fromDB,
-    isImageDelete: false,
-    isImageUpload: false,
-    imageFile: new File([""], "imageFile" + book.id),
+    newImageData: {
+      isImageDelete: false,
+      isImageUpload: false,
+      imageFile: new File([""], "imageFile" + book.id),
+    },
   };
 }
 

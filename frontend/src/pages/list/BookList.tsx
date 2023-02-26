@@ -1,4 +1,4 @@
-import { APIBook, BOOKS_API, GetBooksResp } from "../../apis/BooksAPI";
+import { BOOKS_API, GetBooksResp } from "../../apis/BooksAPI";
 import {
   DataTable,
   DataTableFilterEvent,
@@ -29,6 +29,12 @@ import { InputSwitch } from "primereact/inputswitch";
 
 export const NUM_ROWS = 10;
 
+export interface NewImageUploadData {
+  imageFile: File;
+  isImageUpload: boolean;
+  isImageDelete: boolean;
+}
+
 export interface Book {
   id: string;
   title: string;
@@ -45,9 +51,7 @@ export interface Book {
   retailPrice: number;
   stock: number;
   thumbnailURL: string;
-  imageFile?: File;
-  isImageUpload?: boolean;
-  isImageDelete?: boolean;
+  newImageData?: NewImageUploadData;
 }
 
 interface Filters {
@@ -277,42 +281,24 @@ export default function BookList() {
       sortField = "-".concat(sortField);
     }
 
-    if (isNoPagination) {
-      BOOKS_API.getBooksNoPagination({
-        no_pagination: true,
-        ordering: sortField,
-        genre: selectedGenre,
-        search: search_string,
-        title_only: title_only,
-        publisher_only: publisher_only,
-        author_only: author_only,
-        isbn_only: isbn_only,
-      }).then((response) => onAPIResponseNoPage(response));
-    } else {
-      BOOKS_API.getBooks({
-        page: (pageParams.page ?? 0) + 1,
-        page_size: pageParams.rows,
-        ordering: sortField,
-        genre: selectedGenre,
-        search: search_string,
-        title_only: title_only,
-        publisher_only: publisher_only,
-        author_only: author_only,
-        isbn_only: isbn_only,
-      }).then((response) => onAPIResponse(response));
-    }
+    BOOKS_API.getBooks({
+      no_pagination: isNoPagination ? true : undefined,
+      page: isNoPagination ? undefined : (pageParams.page ?? 0) + 1,
+      page_size: isNoPagination ? undefined : pageParams.rows,
+      ordering: isNoPagination ? undefined : sortField,
+      genre: selectedGenre,
+      search: search_string,
+      title_only: title_only,
+      publisher_only: publisher_only,
+      author_only: author_only,
+      isbn_only: isbn_only,
+    }).then((response) => onAPIResponse(response));
   };
 
   // Set state when response to API call is received
   const onAPIResponse = (response: GetBooksResp) => {
     setBooks(response.results.map((book) => APIToInternalBookConversion(book)));
     setNumberOfBooks(response.count);
-    setLoading(false);
-  };
-
-  // Set state when response to API call is received
-  const onAPIResponseNoPage = (response: APIBook[]) => {
-    setBooks(response.map((book) => APIToInternalBookConversion(book)));
     setLoading(false);
   };
 

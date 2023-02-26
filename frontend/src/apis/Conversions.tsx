@@ -81,7 +81,7 @@ export const APIBBSortFieldMap = new Map<string, string>([
 
 export function APIToInternalBookConversion(book: APIBook): Book {
   return {
-    id: book.id,
+    id: book.id.toString(),
     author: ArrayToCommaSeparatedString(book.authors),
     genres: ArrayToCommaSeparatedString(book.genres),
     title: book.title,
@@ -95,13 +95,13 @@ export function APIToInternalBookConversion(book: APIBook): Book {
     thickness: book.thickness,
     retailPrice: book.retail_price,
     stock: book.stock,
-    thumbnailURL: book.urls,
+    thumbnailURL: [book.url],
   };
 }
 
 export function InternalToAPIBookConversion(book: Book): APIBook {
   return {
-    id: book.id,
+    id: Number(book.id),
     authors: CommaSeparatedStringToArray(book.author),
     genres: CommaSeparatedStringToArray(book.genres),
     title: book.title,
@@ -115,7 +115,7 @@ export function InternalToAPIBookConversion(book: Book): APIBook {
     thickness: book.thickness,
     retail_price: book.retailPrice,
     stock: book.stock,
-    urls: book.thumbnailURL,
+    url: book.thumbnailURL[0],
   };
 }
 
@@ -123,7 +123,7 @@ export function APIToInternalBookConversionWithDB(
   book: APIBookWithDBTag
 ): BookWithDBTag {
   return {
-    id: book.id,
+    id: book.id.toString(),
     author: ArrayToCommaSeparatedString(book.authors),
     genres: ArrayToCommaSeparatedString(book.genres ?? []),
     title: book.title,
@@ -137,7 +137,7 @@ export function APIToInternalBookConversionWithDB(
     thickness: book.thickness,
     retailPrice: book.retail_price ?? 0,
     stock: book.stock,
-    thumbnailURL: book.urls,
+    thumbnailURL: [book.url],
     fromDB: book.fromDB,
   };
 }
@@ -146,7 +146,7 @@ export function APIToInternalBookConversionWithDB(
 
 export function APIToInternalVendorConversion(vendor: APIVendor): Vendor {
   return {
-    id: vendor.id,
+    id: vendor.id.toString(),
     name: vendor.name,
     numPO: vendor.num_purchase_orders,
   };
@@ -156,7 +156,7 @@ export function APIToInternalVendorConversion(vendor: APIVendor): Vendor {
 
 export function APIToInternalGenreConversion(genre: APIGenre): Genre {
   return {
-    id: genre.id,
+    id: genre.id.toString(),
     name: genre.name,
     bookCount: genre.book_cnt,
   };
@@ -172,12 +172,11 @@ export function APIToInternalPOPurchaseConversion(
     // (id is always defined from API)
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     id: purchase.id!.toString(),
-    subtotal: purchase.subtotal,
     bookId: purchase.book,
     bookTitle: purchase.book_title,
     bookISBN: purchase.book_isbn,
     quantity: purchase.quantity,
-    unitWholesalePrice: purchase.unit_wholesale_price,
+    price: purchase.unit_wholesale_price,
   };
 }
 
@@ -187,7 +186,7 @@ export function APIToInternalPOConversion(po: APIPO): PurchaseOrder {
   );
 
   return {
-    id: po.id,
+    id: po.id.toString(),
     date: externalToInternalDate(po.date),
     vendorName: po.vendor_name,
     vendorId: po.vendor_id,
@@ -210,9 +209,9 @@ export function APIToInternalPurchasesCSVConversion(
       bookTitle: purchase.book_title,
       bookISBN: purchase.book_isbn,
       quantity: purchase.quantity,
-      unitWholesalePrice: purchase.unit_wholesale_price,
+      price: purchase.unit_wholesale_price,
       errors: purchase.errors,
-    };
+    } as POPurchaseRow;
   });
 }
 
@@ -226,9 +225,8 @@ function APIToInternalSRSaleConversion(sale: APISRSaleRow): SRSaleRow {
     id: sale.id!.toString(),
     bookId: sale.book,
     bookTitle: sale.book_title,
-    subtotal: sale.subtotal,
     quantity: sale.quantity,
-    unitRetailPrice: sale.unit_retail_price,
+    price: sale.unit_retail_price,
   };
 }
 
@@ -238,7 +236,7 @@ export function APIToInternalSRConversion(sr: APISR): SalesReconciliation {
   );
 
   return {
-    id: sr.id,
+    id: sr.id.toString(),
     date: externalToInternalDate(sr.date),
     totalBooks: sr.num_books,
     uniqueBooks: sr.num_unique_books,
@@ -259,9 +257,9 @@ export function APIToInternalSalesCSVConversion(
       bookTitle: sale.book_title,
       bookISBN: sale.book_isbn,
       quantity: sale.quantity,
-      unitRetailPrice: sale.unit_retail_price,
+      price: sale.unit_retail_price,
       errors: sale.errors,
-    };
+    } as SRSaleRow;
   });
 }
 

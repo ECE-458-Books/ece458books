@@ -13,7 +13,7 @@ import {
   priceBodyTemplate,
   priceEditor,
 } from "../../util/TableCellEditFuncs";
-import { useLocation } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import {
   AddPOReq,
   APIPOPurchaseRow,
@@ -44,29 +44,20 @@ import {
   CSVImport400Errors,
   errorCellBody,
 } from "./errors/CSVImportErrors";
-
-export interface PODetailState {
-  id: number;
-  isAddPage: boolean;
-  isModifiable: boolean;
-}
+import { Book } from "../list/BookList";
+import { useImmer } from "use-immer";
+import { findById } from "../../util/FindBy";
+import { calculateTotal } from "../../util/CalculateTotal";
 
 export interface POPurchaseRow {
   isNewRow: boolean; // true if the user added this row, false if it already existed
   id: string;
-  subtotal: number;
   bookId: number;
   bookISBN: string;
   bookTitle: string;
   quantity: number;
-  unitWholesalePrice: number;
+  price: number;
   errors?: { [key: string]: string }; // Only present on CSV import
-}
-
-// The books Interface lol no
-export interface BooksList {
-  id: number;
-  title: string;
 }
 
 // Used for setting initial state
@@ -75,50 +66,39 @@ const emptyPurchase: POPurchaseRow = {
   id: uuid(),
   bookId: 0,
   bookISBN: "",
-  subtotal: 0,
   bookTitle: "",
   quantity: 1,
-  unitWholesalePrice: 0,
+  price: 0,
 };
 
 export default function PODetail() {
   // -------- STATE --------
-  const location = useLocation();
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const detailState = (location.state! as PODetailState) ?? {
-    id: -1,
-    isAddPage: true,
-    isModifiable: true,
-  };
 
-  // From detailState
-  const purchaseOrderID = detailState.id;
-  const isPOAddPage = detailState.isAddPage; // If false, this is an edit page
-  const [isModifiable, setIsModifiable] = useState<boolean>(
-    detailState.isModifiable
-  );
+  // From URL
+  const { id } = useParams();
+  const isPOAddPage = id === undefined;
+  const [isModifiable, setIsModifiable] = useState<boolean>(id === undefined);
 
   // For Dropdown Menus
-  const [bookMap, setBooksMap] = useState<Map<string, number>>(new Map());
+  const [bookMap, setBooksMap] = useState<Map<string, Book>>(new Map());
   const [vendorMap, setVendorMap] = useState<Map<string, number>>(new Map());
   const [booksDropdownTitles, setBooksDropdownTitles] = useState<string[]>([]);
 
   // The rest of the data
   const [date, setDate] = useState<Date>(new Date());
   const [selectedVendorName, setSelectedVendorName] = useState<string>("");
-  const [purchases, setPurchases] = useState<POPurchaseRow[]>([]);
+  // useImmer is used to set state for nested data in a simplified format
+  const [purchases, setPurchases] = useImmer<POPurchaseRow[]>([]);
   const [totalCost, setTotalCost] = useState<number>(0);
   const [lineData, setLineData] = useState<POPurchaseRow>(emptyPurchase);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
   const [hasUploadedCSV, setHasUploadedCSV] = useState<boolean>(false);
-  const [bookDropdownRefreshKey, setBookDropdownRefreshKey] =
-    useState<number>(0);
 
   // Load the PO data on page load
   useEffect(() => {
     if (!isPOAddPage) {
-      PURCHASES_API.getPurchaseOrderDetail({ id: purchaseOrderID })
+      PURCHASES_API.getPurchaseOrderDetail({ id: id! })
         .then((response) => {
           const purchaseOrder = APIToInternalPOConversion(response);
           setDate(purchaseOrder.date);
@@ -126,7 +106,7 @@ export default function PODetail() {
           setPurchases(purchaseOrder.purchases);
           setTotalCost(purchaseOrder.totalCost);
         })
-        .catch(() => showFailure(toast, "Could not fetch purchase order data"));
+        .catch(() => console.log(id));
     }
   }, []);
 
@@ -142,33 +122,41 @@ export default function PODetail() {
       header: "Book",
       customBody: (rowData: POPurchaseRow) =>
         booksDropDownEditor(rowData.bookTitle, (newValue) => {
-          rowData.bookTitle = newValue;
-          setBookDropdownRefreshKey(Math.random());
+          setPurchases((draft) => {
+            const purchase = findById(draft, rowData.id);
+            purchase!.bookTitle = newValue;
+          });
         }),
     },
     {
       field: "quantity",
       header: "Quantity",
       customBody: (rowData: POPurchaseRow) =>
-        numberEditor(
-          rowData.quantity,
-          (newValue) => (rowData.quantity = newValue)
-        ),
+        numberEditor(rowData.quantity, (newValue) => {
+          setPurchases((draft) => {
+            const purchase = findById(draft, rowData.id);
+            purchase!.quantity = newValue;
+            setTotalCost(calculateTotal(draft));
+          });
+        }),
     },
     {
       field: "unitWholesalePrice",
       header: "Unit Wholesale Price ($)",
       customBody: (rowData: POPurchaseRow) =>
-        priceEditor(
-          rowData.unitWholesalePrice,
-          (newValue) => (rowData.unitWholesalePrice = newValue)
-        ),
+        priceEditor(rowData.price, (newValue) => {
+          setPurchases((draft) => {
+            const purchase = findById(draft, rowData.id);
+            purchase!.price = newValue;
+            setTotalCost(calculateTotal(draft));
+          });
+        }),
     },
     {
       field: "subtotal",
       header: "Subtotal ($)",
       customBody: (rowData: POPurchaseRow) =>
-        priceBodyTemplate(rowData.subtotal),
+        priceBodyTemplate(rowData.price * rowData.quantity),
     },
   ];
 
@@ -213,11 +201,7 @@ export default function PODetail() {
 
   const validateSubmission = () => {
     for (const purchase of purchases) {
-      if (
-        !purchase.bookTitle ||
-        !(purchase.unitWholesalePrice >= 0) ||
-        !purchase.quantity
-      ) {
+      if (!purchase.bookTitle || !(purchase.price >= 0) || !purchase.quantity) {
         showFailure(
           toast,
           "Book, wholesale, and quantity are required for all line items"
@@ -241,49 +225,56 @@ export default function PODetail() {
     }
 
     if (isPOAddPage) {
-      // Create API Format
-      const apiPurchases = purchases.map((purchase) => {
-        return {
-          book: bookMap.get(purchase.bookTitle),
-          quantity: purchase.quantity,
-          unit_wholesale_price: purchase.unitWholesalePrice,
-        } as APIPOPurchaseRow;
-      });
-
-      const purchaseOrder = {
-        date: internalToExternalDate(date),
-        vendor: vendorMap.get(selectedVendorName),
-        purchases: apiPurchases,
-      } as AddPOReq;
-
-      PURCHASES_API.addPurchaseOrder(purchaseOrder)
-        .then(() => showSuccess(toast, "Purchase order added successfully"))
-        .catch(() => showFailure(toast, "Could not add purchase order"));
+      callAddPOAPI();
     } else {
-      // Otherwise, it is a modify page
-      const apiPurchases = purchases.map((purchase) => {
-        return {
-          id: purchase.isNewRow ? undefined : purchase.id,
-          book: purchase.isNewRow
-            ? bookMap.get(purchase.bookTitle)
-            : purchase.bookId,
-          quantity: purchase.quantity,
-          unit_wholesale_price: purchase.unitWholesalePrice,
-        } as APIPOPurchaseRow;
-      });
-
-      const purchaseOrder = {
-        id: purchaseOrderID,
-        date: internalToExternalDate(date),
-        vendor: vendorMap.get(selectedVendorName),
-        purchases: apiPurchases,
-      } as ModifyPOReq;
-
-      PURCHASES_API.modifyPurchaseOrder(purchaseOrder)
-        .then(() => showSuccess(toast, "Purchase order modified successfully"))
-        .catch(() => showFailure(toast, "Could not modify purchase order"));
+      callModifyPOAPI();
     }
   };
+
+  // Add the purchase order
+  function callAddPOAPI() {
+    const apiPurchases = purchases.map((purchase) => {
+      return {
+        book: Number(bookMap.get(purchase.bookTitle)?.id),
+        quantity: purchase.quantity,
+        unit_wholesale_price: purchase.price,
+      } as APIPOPurchaseRow;
+    });
+
+    const purchaseOrder = {
+      date: internalToExternalDate(date),
+      vendor: vendorMap.get(selectedVendorName),
+      purchases: apiPurchases,
+    } as AddPOReq;
+
+    PURCHASES_API.addPurchaseOrder(purchaseOrder)
+      .then(() => showSuccess(toast, "Purchase order added successfully"))
+      .catch(() => showFailure(toast, "Could not add purchase order"));
+  }
+
+  // Modify the purchase order
+  function callModifyPOAPI() {
+    const apiPurchases = purchases.map((purchase) => {
+      return {
+        id: purchase.isNewRow ? undefined : purchase.id,
+        quantity: purchase.quantity,
+        // If the book has been deleted, will have to use the id that is already present in the row
+        book: bookMap.get(purchase.bookTitle)?.id ?? purchase.bookId,
+        unit_wholesale_price: purchase.price,
+      } as APIPOPurchaseRow;
+    });
+
+    const purchaseOrder = {
+      id: id,
+      date: internalToExternalDate(date),
+      vendor: vendorMap.get(selectedVendorName),
+      purchases: apiPurchases,
+    } as ModifyPOReq;
+
+    PURCHASES_API.modifyPurchaseOrder(purchaseOrder)
+      .then(() => showSuccess(toast, "Purchase order modified successfully"))
+      .catch(() => showFailure(toast, "Could not modify purchase order"));
+  }
 
   // -------- TEMPLATES/VISUAL ELEMENTS --------
 
@@ -363,7 +354,6 @@ export default function PODetail() {
       setSelectedBook={onChange}
       selectedBook={value}
       bookTitlesList={booksDropdownTitles}
-      refreshKey={bookDropdownRefreshKey}
       placeholder={value}
     />
   );

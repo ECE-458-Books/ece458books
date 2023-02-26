@@ -36,7 +36,7 @@ export interface APIBook {
   thickness: number;
   retail_price: number;
   stock: number;
-  urls: string[];
+  url: string;
 }
 
 export interface GetBooksResp {
@@ -44,15 +44,9 @@ export interface GetBooksResp {
   count: number;
 }
 
-// getBooksNoPagination
-export interface APIBookSimplified {
-  id: number;
-  title: string;
-}
-
 // getBookDetail
 export interface GetBookDetailReq {
-  id: number;
+  id: string;
 }
 
 // modifyBook
@@ -62,7 +56,7 @@ export interface ModifyBookReq {
 
 // deleteBook
 export interface DeleteBookReq {
-  id: number;
+  id: string;
 }
 
 // addBookInitialLookup
@@ -93,7 +87,7 @@ export const BOOKS_API = {
     });
   },
 
-  getBooksNoPagination: async function (): Promise<APIBookSimplified[]> {
+  getBooksNoPagination: async function (): Promise<APIBook[]> {
     return await API.request({
       url: BOOKS_EXTENSION,
       method: METHOD_GET,

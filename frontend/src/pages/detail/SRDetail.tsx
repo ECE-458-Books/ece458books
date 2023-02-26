@@ -11,7 +11,7 @@ import {
   priceBodyTemplate,
   priceEditor,
 } from "../../util/TableCellEditFuncs";
-import { useLocation } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { Toolbar } from "primereact/toolbar";
 import { Button } from "primereact/button";
 import {
@@ -43,21 +43,18 @@ import {
   CSVImport400Errors,
   errorCellBody,
 } from "./errors/CSVImportErrors";
-
-export interface SRDetailState {
-  id: number;
-  isAddPage: boolean;
-  isModifiable: boolean;
-}
+import { Book } from "../list/BookList";
+import { useImmer } from "use-immer";
+import { findById } from "../../util/FindBy";
+import { calculateTotal } from "../../util/CalculateTotal";
 
 export interface SRSaleRow {
   isNewRow: boolean;
   id: string;
-  subtotal: number;
   bookId: number;
   bookTitle: string;
   quantity: number;
-  unitRetailPrice: number;
+  price: number;
   errors?: { [key: string]: string };
 }
 
@@ -65,46 +62,35 @@ export default function SRDetail() {
   const emptySale: SRSaleRow = {
     isNewRow: true,
     id: uuid(),
-    subtotal: 0,
     bookId: 0,
     bookTitle: "",
     quantity: 1,
-    unitRetailPrice: 0,
+    price: 0,
   };
 
-  const location = useLocation();
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const detailState = (location.state! as SRDetailState) ?? {
-    id: -1,
-    isAddPage: true,
-    isModifiable: true,
-  };
-
-  // From detailState
-  const salesReconciliationID = detailState.id;
-  const isSRAddPage = detailState.isAddPage;
-  const [isModifiable, setIsModifiable] = useState<boolean>(
-    detailState.isModifiable
-  );
+  // From URL
+  const { id } = useParams();
+  const isSRAddPage = id === undefined;
+  const [isModifiable, setIsModifiable] = useState<boolean>(id === undefined);
 
   // For dropdown menus
-  const [booksMap, setBooksMap] = useState<Map<string, number>>(new Map());
+  const [booksMap, setBooksMap] = useState<Map<string, Book>>(new Map());
   const [booksDropdownTitles, setBooksDropdownTitles] = useState<string[]>([]);
 
   // The rest of the data
   const [date, setDate] = useState<Date>(new Date());
-  const [sales, setSales] = useState<SRSaleRow[]>([]);
+  // useImmer is used to set state for nested data in a simplified format
+  const [sales, setSales] = useImmer<SRSaleRow[]>([]);
   const [lineData, setLineData] = useState<SRSaleRow>(emptySale);
   const [totalRevenue, setTotalRevenue] = useState<number>(0);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
   const [hasUploadedCSV, setHasUploadedCSV] = useState<boolean>(false);
-  const [key, setKey] = useState<number>(0);
 
   // Load the SR data on page load
   useEffect(() => {
     if (!isSRAddPage) {
-      SALES_API.getSalesReconciliationDetail({ id: salesReconciliationID })
+      SALES_API.getSalesReconciliationDetail({ id: id! })
         .then((response) => {
           const salesReconciliation = APIToInternalSRConversion(response);
           setDate(salesReconciliation.date);
@@ -127,8 +113,12 @@ export default function SRDetail() {
       header: "Book",
       customBody: (rowData: SRSaleRow) =>
         booksDropDownEditor(rowData.bookTitle, (newValue) => {
-          rowData.bookTitle = newValue;
-          setKey(Math.random());
+          setSales((draft) => {
+            const purchase = findById(draft, rowData.id);
+            purchase!.bookTitle = newValue;
+            purchase!.price = booksMap.get(newValue)!.retailPrice;
+            setTotalRevenue(calculateTotal(draft));
+          });
         }),
     },
 
@@ -136,24 +126,31 @@ export default function SRDetail() {
       field: "quantity",
       header: "Quantity",
       customBody: (rowData: SRSaleRow) =>
-        numberEditor(
-          rowData.quantity,
-          (newValue) => (rowData.quantity = newValue)
-        ),
+        numberEditor(rowData.quantity, (newValue) => {
+          setSales((draft) => {
+            const purchase = findById(draft, rowData.id);
+            purchase!.quantity = newValue;
+            setTotalRevenue(calculateTotal(draft));
+          });
+        }),
     },
     {
-      field: "unitRetailPrice",
+      field: "price",
       header: "Unit Retail Price ($)",
       customBody: (rowData: SRSaleRow) =>
-        priceEditor(
-          rowData.unitRetailPrice,
-          (newValue) => (rowData.unitRetailPrice = newValue)
-        ),
+        priceEditor(rowData.price, (newValue) => {
+          setSales((draft) => {
+            const purchase = findById(draft, rowData.id);
+            purchase!.price = newValue;
+            setTotalRevenue(calculateTotal(draft));
+          });
+        }),
     },
     {
       field: "subtotal",
       header: "Subtotal ($)",
-      customBody: (rowData: SRSaleRow) => priceBodyTemplate(rowData.subtotal),
+      customBody: (rowData: SRSaleRow) =>
+        priceBodyTemplate(rowData.price * rowData.quantity),
     },
   ];
 
@@ -193,7 +190,7 @@ export default function SRDetail() {
   // Validate submission before making API req
   const validateSubmission = () => {
     for (const sale of sales) {
-      if (!sale.bookTitle || !(sale.unitRetailPrice >= 0) || !sale.quantity) {
+      if (!sale.bookTitle || !(sale.price >= 0) || !sale.quantity) {
         showFailure(
           toast,
           "Book, retail price, and quantity are required for all line items"
@@ -216,48 +213,56 @@ export default function SRDetail() {
     }
 
     if (isSRAddPage) {
-      const apiSales = sales.map((sale) => {
-        return {
-          book: booksMap.get(sale.bookTitle),
-          quantity: sale.quantity,
-          unit_retail_price: sale.unitRetailPrice,
-        } as APISRSaleRow;
-      });
-
-      const salesReconciliation = {
-        date: internalToExternalDate(date),
-        sales: apiSales,
-      } as AddSRReq;
-      SALES_API.addSalesReconciliation(salesReconciliation)
-        .then(() =>
-          showSuccess(toast, "Sales reconciliation added successfully")
-        )
-        .catch(() => showFailure(toast, "Could not add sales reconciliation"));
+      callAddSRAPI();
     } else {
       // Otherwise, it is a modify page
-      const apiSales = sales.map((sale) => {
-        return {
-          id: sale.isNewRow ? undefined : sale.id,
-          book: sale.isNewRow ? booksMap.get(sale.bookTitle) : sale.bookId,
-          quantity: sale.quantity,
-          unit_retail_price: sale.unitRetailPrice,
-        } as APISRSaleRow;
-      });
-
-      const salesReconciliation = {
-        id: salesReconciliationID,
-        date: internalToExternalDate(date),
-        sales: apiSales,
-      } as ModifySRReq;
-
-      SALES_API.modifySalesReconciliation(salesReconciliation)
-        .then(() =>
-          showSuccess(toast, "Sales reconciliation modified successfully")
-        )
-        .catch(() =>
-          showFailure(toast, "Could not modify sales reconciliation")
-        );
+      callModifySRAPI();
     }
+  };
+
+  // Add the sales reconciliation
+  const callAddSRAPI = () => {
+    const apiSales = sales.map((sale) => {
+      return {
+        book: Number(booksMap.get(sale.bookTitle)!.id),
+        quantity: sale.quantity,
+        unit_retail_price: sale.price,
+      } as APISRSaleRow;
+    });
+
+    const salesReconciliation = {
+      date: internalToExternalDate(date),
+      sales: apiSales,
+    } as AddSRReq;
+
+    SALES_API.addSalesReconciliation(salesReconciliation)
+      .then(() => showSuccess(toast, "Sales reconciliation added successfully"))
+      .catch(() => showFailure(toast, "Could not add sales reconciliation"));
+  };
+
+  // Modify the sales reconciliation
+  const callModifySRAPI = () => {
+    const apiSales = sales.map((sale) => {
+      return {
+        id: sale.isNewRow ? undefined : sale.id,
+        // If the book has been deleted, will have to use the id that is already present in the row
+        book: booksMap.get(sale.bookTitle)?.id ?? sale.bookId,
+        quantity: sale.quantity,
+        unit_retail_price: sale.price,
+      } as APISRSaleRow;
+    });
+
+    const salesReconciliation = {
+      id: id,
+      date: internalToExternalDate(date),
+      sales: apiSales,
+    } as ModifySRReq;
+
+    SALES_API.modifySalesReconciliation(salesReconciliation)
+      .then(() =>
+        showSuccess(toast, "Sales reconciliation modified successfully")
+      )
+      .catch(() => showFailure(toast, "Could not modify sales reconciliation"));
   };
 
   // -------- TEMPLATES/VISUAL ELEMENTS --------
@@ -340,7 +345,6 @@ export default function SRDetail() {
       setSelectedBook={onChange}
       selectedBook={value}
       bookTitlesList={booksDropdownTitles}
-      refreshKey={key}
       placeholder={value}
     />
   );

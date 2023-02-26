@@ -4,7 +4,7 @@ const IMAGE_EXTENSION = "books/image";
 
 // get image requirement
 export interface GetImageReq {
-  id: number;
+  id: string;
 }
 
 // get image response
@@ -15,7 +15,7 @@ export interface GetImageResp {
 
 // upload image requirement
 export interface UploadImageReq {
-  id: number;
+  id: string;
   image: File;
 }
 

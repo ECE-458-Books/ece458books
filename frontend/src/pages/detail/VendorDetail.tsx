@@ -2,27 +2,18 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { ToggleButton } from "primereact/togglebutton";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
-import { useLocation } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { ModifyVendorReq, VENDORS_API } from "../../apis/VendorsAPI";
 import { logger } from "../../util/Logger";
 import { Toast } from "primereact/toast";
 import { showFailure, showSuccess } from "../../components/Toast";
 
-export interface VendorDetailState {
-  id: number;
-  isModifiable: boolean;
-}
-
 export default function VendorDetail() {
-  const location = useLocation();
-  // If we are on this page, we know that the state is not null
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const detailState = location.state! as VendorDetailState;
-  const id = detailState.id;
+  // From URL
+  const { id } = useParams();
+  const [isModifiable, setIsModifiable] = useState<boolean>(false);
   const [vendorName, setVendorName] = useState<string>("");
-  const [isModifiable, setIsModifiable] = useState<boolean>(
-    detailState.isModifiable
-  );
+
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
 
@@ -31,13 +22,13 @@ export default function VendorDetail() {
 
   // Load the Vendor data on page load
   useEffect(() => {
-    VENDORS_API.getVendorDetail({ id: id })
+    VENDORS_API.getVendorDetail({ id: id! })
       .then((response) => setVendorName(response.name))
       .catch(() => showFailure(toast, "Could not fetch vendor data"));
   }, []);
 
   const onSubmit = (): void => {
-    const modifiedVendor: ModifyVendorReq = { id: id, name: vendorName };
+    const modifiedVendor: ModifyVendorReq = { id: id!, name: vendorName };
     logger.debug("Edit Vendor Submitted", modifiedVendor);
     VENDORS_API.modifyVendor(modifiedVendor)
       .then(() => showSuccess(toast, "Vendor modified"))

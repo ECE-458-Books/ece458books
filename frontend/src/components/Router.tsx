@@ -3,7 +3,7 @@ import { Outlet } from "react-router";
 import NavigationBar from "./Navbar";
 import BookList from "../pages/list/BookList";
 import GenreList from "../pages/list/GenreList";
-import LoginPage from "../pages/LoginPage";
+import LoginPage from "../pages/auth/LoginPage";
 import VendorList from "../pages/list/VendorList";
 import SalesReconciliationList from "../pages/list/SRList";
 import ModifyBook from "../pages/detail/BookDetail";
@@ -64,17 +64,21 @@ export default function Router() {
         <Route path="vendors" element={<VendorList />} />
         <Route path="buy-backs" element={<BuyBackList />} />
         <Route path="books/add" element={<BookAdd />} />
-        <Route path="books/detail" element={<ModifyBook />} />
+        <Route path="books/detail/:id" element={<ModifyBook />} />
         <Route path="genres/add" element={<GenreAdd />} />
-        <Route path="genres/detail" element={<GenreDetail />} />
+        <Route path="genres/detail/:id" element={<GenreDetail />} />
         <Route path="purchase-orders/add" element={<ModifyPO />} />
-        <Route path="purchase-orders/detail" element={<ModifyPO />} />
+        <Route path="purchase-orders/detail/:id" element={<ModifyPO />} />
         <Route path="sales-reconciliations/add" element={<ModifySR />} />
-        <Route path="sales-reconciliations/detail" element={<ModifySR />} />
+        <Route path="sales-reconciliations/detail/:id" element={<ModifySR />} />
         <Route path="vendors/add" element={<VendorAdd />} />
+<<<<<<< HEAD
         <Route path="vendors/detail" element={<VendorDetail />} />
         <Route path="buy-backs/add" element={<ModifyBB />} />
         <Route path="buy-backs/detail" element={<ModifyBB />} />
+=======
+        <Route path="vendors/detail/:id" element={<VendorDetail />} />
+>>>>>>> origin/main
         <Route path="change-password" element={<PasswordChangePage />} />
         <Route path="sales-report" element={<SalesReportPage />} />
       </Route>

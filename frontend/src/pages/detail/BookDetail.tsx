@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
-import { useLocation } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { Book, emptyBook } from "../list/BookList";
 import {
   InputNumber,
@@ -20,11 +20,6 @@ import { showFailure, showSuccess } from "../../components/Toast";
 import { InputSwitch } from "primereact/inputswitch";
 import { APIToInternalBookConversion } from "../../apis/Conversions";
 
-export interface BookDetailState {
-  id: number;
-  isModifiable: boolean;
-}
-
 interface ErrorDisplay {
   message: string;
 }
@@ -35,14 +30,9 @@ interface ImageUrlHashStruct {
 }
 
 export default function BookDetail() {
-  const location = useLocation();
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const detailState = location.state! as BookDetailState;
-  // From detailState
-  const id = detailState.id;
-  const [isModifiable, setIsModifiable] = useState<boolean>(
-    detailState.isModifiable
-  );
+  // From URL
+  const { id } = useParams();
+  const [isModifiable, setIsModifiable] = useState<boolean>(id === undefined);
 
   const [originalBookData, setOriginalBookData] = useState<Book>(emptyBook);
   const [title, setTitle] = useState<string>("");
@@ -68,9 +58,8 @@ export default function BookDetail() {
 
   // Load the book data on page load
   useEffect(() => {
-    BOOKS_API.getBookDetail({ id: id })
+    BOOKS_API.getBookDetail({ id: id! })
       .then((response) => {
-        console.log(response);
         const book = APIToInternalBookConversion(response);
         setOriginalBookData(book);
         setTitle(book.title);
@@ -92,7 +81,7 @@ export default function BookDetail() {
 
   // Load the book image on page load
   useEffect(() => {
-    IMAGES_API.getImage({ id: id })
+    IMAGES_API.getImage({ id: id! })
       .then((response) =>
         setImage({
           imageSrc: response.url,
@@ -129,8 +118,9 @@ export default function BookDetail() {
       return errors;
     },
     onSubmit: () => {
+      // TOOD: Change this to use InternalToAPIBookConversion
       const book: APIBook = {
-        id: id,
+        id: Number(id!),
         title: title,
         authors: CommaSeparatedStringToArray(authors),
         genres: [genre],
@@ -144,7 +134,7 @@ export default function BookDetail() {
         height: height,
         thickness: thickness,
         stock: 0,
-        urls: [""],
+        url: "",
       };
       logger.debug("Submitting Book Modify", book);
       BOOKS_API.modifyBook({ book: book })
@@ -175,9 +165,9 @@ export default function BookDetail() {
 
   const uploadImageFileHandler = (event: FileUploadHandlerEvent) => {
     const file = event.files[0];
-    IMAGES_API.uploadImage({ id: id, image: file })
+    IMAGES_API.uploadImage({ id: id!, image: file })
       .then(() => {
-        IMAGES_API.getImage({ id: id })
+        IMAGES_API.getImage({ id: id! })
           .then((response) =>
             setImage({
               imageSrc: response.url,

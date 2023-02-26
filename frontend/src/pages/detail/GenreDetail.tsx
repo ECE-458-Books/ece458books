@@ -2,28 +2,19 @@ import React, { FormEvent, useEffect, useRef, useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { ToggleButton } from "primereact/togglebutton";
 import ConfirmButton from "../../components/popups/ConfirmPopup";
-import { useLocation } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { GENRES_API } from "../../apis/GenresAPI";
 import { Genre } from "../list/GenreList";
 import { logger } from "../../util/Logger";
 import { Toast } from "primereact/toast";
 import { showFailure, showSuccess } from "../../components/Toast";
 
-export interface GenreDetailState {
-  id: number;
-  isModifiable: boolean;
-}
-
 export default function GenreDetail() {
-  const location = useLocation();
-  // Only end up on this page when we are passing genre data
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const detailState = location.state! as GenreDetailState;
-  const id = detailState.id;
+  // From URL
+  const { id } = useParams();
+  const [isModifiable, setIsModifiable] = useState<boolean>(false);
+
   const [genreName, setGenreName] = useState<string>("");
-  const [isModifiable, setIsModifiable] = useState<boolean>(
-    detailState.isModifiable
-  );
   const [isConfirmationPopVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
 
@@ -32,13 +23,13 @@ export default function GenreDetail() {
 
   // Load the Genre data on page load
   useEffect(() => {
-    GENRES_API.getGenreDetail({ id: id })
+    GENRES_API.getGenreDetail({ id: id! })
       .then((response) => setGenreName(response.name))
       .catch(() => showFailure(toast, "Could not fetch genre data"));
   }, []);
 
   const onSubmit = (): void => {
-    const modifiedGenre: Genre = { id: id, name: genreName, bookCount: 0 };
+    const modifiedGenre: Genre = { id: id!, name: genreName, bookCount: 0 };
     logger.debug("Edit Genre Submitted", modifiedGenre);
     GENRES_API.modifyGenre(modifiedGenre)
       .then(() => showSuccess(toast, "Genre modified"))

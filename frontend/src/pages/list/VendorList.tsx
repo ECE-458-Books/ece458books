@@ -14,12 +14,11 @@ import DeletePopup from "../../components/popups/DeletePopup";
 import { createColumns, TableColumn } from "../../components/TableColumns";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import { logger } from "../../util/Logger";
-import { VendorDetailState } from "../detail/VendorDetail";
 import { NUM_ROWS } from "./BookList";
 
 // The Vendor Interface
 export interface Vendor {
-  id: number;
+  id: string;
   name: string;
   numPO: number;
 }
@@ -35,7 +34,7 @@ const COLUMNS: TableColumn[] = [
 
 // Empty vendor, used to initialize state
 const emptyVendor: Vendor = {
-  id: 0,
+  id: "0",
   name: "",
   numPO: 0,
 };
@@ -71,12 +70,7 @@ export default function VendorList() {
   // Callback functions for edit/delete buttons
   const editVendor = (vendor: Vendor) => {
     logger.debug("Edit Vendor Clicked", vendor);
-    const detailState: VendorDetailState = {
-      id: vendor.id,
-      isModifiable: true,
-    };
-
-    navigate("/vendors/detail", { state: detailState });
+    navigate(`/vendors/detail/${vendor.id}`);
   };
 
   // Called to make delete pop up show

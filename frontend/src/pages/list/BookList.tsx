@@ -12,7 +12,6 @@ import { useEffect, useRef, useState } from "react";
 import { DataTableFilterMetaData } from "primereact/datatable";
 import DeletePopup from "../../components/popups/DeletePopup";
 import { logger } from "../../util/Logger";
-import { BookDetailState } from "../detail/BookDetail";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Toast } from "primereact/toast";
 import {
@@ -30,7 +29,7 @@ import GenreDropdown from "../../components/dropdowns/GenreDropdown";
 export const NUM_ROWS = 10;
 
 export interface Book {
-  id: number;
+  id: string;
   title: string;
   author: string;
   genres: string;
@@ -56,7 +55,7 @@ interface Filters {
 
 // Used for initializing state
 export const emptyBook: Book = {
-  id: 0,
+  id: "0",
   title: "",
   author: "",
   genres: "",
@@ -190,20 +189,15 @@ export default function BookList() {
 
   // Edit/Delete Cell Template
   const editDeleteCellTemplate = EditDeleteTemplate<Book>({
-    onEdit: (rowData) => toDetailsPage(rowData, true),
+    onEdit: (rowData) => toDetailsPage(rowData),
     onDelete: (rowData) => deleteBookPopup(rowData),
     deleteDisabled: (rowData) => isDeleteDisabled(rowData),
   });
 
   // Callback functions for edit/delete buttons
-  const toDetailsPage = (book: Book, isModifiable: boolean) => {
+  const toDetailsPage = (book: Book) => {
     logger.debug("Edit Book Clicked", book);
-    const detailState: BookDetailState = {
-      id: book.id,
-      isModifiable: isModifiable,
-    };
-
-    navigate("/books/detail", { state: detailState });
+    navigate(`/books/detail/${book.id}`);
   };
 
   const deleteBookPopup = (book: Book) => {
@@ -330,7 +324,7 @@ export default function BookList() {
     const index = event.index - NUM_ROWS * (pageParams.page ?? 0);
     const book = books[index];
     logger.debug("Book Row Clicked", book);
-    toDetailsPage(book, false);
+    toDetailsPage(book);
   };
 
   // Call endpoint on page load whenever any of these variables change

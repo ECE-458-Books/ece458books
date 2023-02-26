@@ -139,7 +139,8 @@ class ListCreateBookAPIView(ListCreateAPIView):
         serializer.save()
 
         # Get and Create the Image
-        self.bookimage_get_and_create(request, serializer.data.get('isbn_13'))
+        if (request.FILES.get('image') is not None):
+            self.bookimage_get_and_create(request, serializer.data.get('isbn_13'))
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
@@ -216,8 +217,9 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
         self.perform_update(serializer)
 
         # Get and Create the Image
-        url = self.bookimage_get_and_create(request, serializer.data.get('isbn_13'))
-        serializer.data['url'] = url
+        if (request.FILES.get('image') is not None):
+            url = self.bookimage_get_and_create(request, serializer.data.get('isbn_13'))
+            serializer.data['url'] = url
 
         return Response(serializer.data)
 

@@ -98,19 +98,6 @@ export const BOOKS_API = {
     });
   },
 
-  getBooksNoPaginationBuyBackRestricted: async function (
-    vendor: number
-  ): Promise<APIBook[]> {
-    return await API.request({
-      url: BOOKS_EXTENSION,
-      method: METHOD_GET,
-      params: {
-        no_pagination: true,
-        vendor: vendor,
-      },
-    });
-  },
-
   getBookDetail: async function (req: GetBookDetailReq): Promise<APIBook> {
     return await API.request({
       url: BOOKS_EXTENSION.concat("/".concat(req.id.toString())),

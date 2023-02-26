@@ -190,7 +190,7 @@ export default function BBDetail() {
       if (!sale.bookTitle || !(sale.price >= 0) || !sale.quantity) {
         showFailure(
           toast,
-          "Book, retail price, and quantity are required for all line items"
+          "Book, buy back price, and quantity are required for all line items"
         );
         return false;
       }
@@ -390,7 +390,7 @@ export default function BBDetail() {
   const [vendorNamesList, setVendorNamesList] = useState<string[]>([]);
 
   useEffect(() => {
-    VENDORS_API.getVendorsNoPaginationBuyBackPolicy().then((response) => {
+    VENDORS_API.getVendorsNoPagination(true).then((response) => {
       const tempVendorMap = new Map<string, number>();
       for (const vendor of response) {
         tempVendorMap.set(vendor.name, vendor.id);

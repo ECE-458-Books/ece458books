@@ -64,23 +64,15 @@ export const VENDORS_API = {
     });
   },
 
-  getVendorsNoPagination: async function (): Promise<APIVendor[]> {
+  getVendorsNoPagination: async function (
+    has_buyback_policy?: boolean
+  ): Promise<APIVendor[]> {
     return await API.request({
       url: VENDORS_EXTENSION,
       method: METHOD_GET,
       params: {
         no_pagination: true,
-      },
-    });
-  },
-
-  getVendorsNoPaginationBuyBackPolicy: async function (): Promise<APIVendor[]> {
-    return await API.request({
-      url: VENDORS_EXTENSION,
-      method: METHOD_GET,
-      params: {
-        no_pagination: true,
-        has_buyback_policy: true,
+        has_buyback_policy: has_buyback_policy,
       },
     });
   },

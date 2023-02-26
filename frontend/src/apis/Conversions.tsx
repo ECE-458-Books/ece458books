@@ -136,6 +136,7 @@ export function APIToInternalVendorConversion(vendor: APIVendor): Vendor {
     id: vendor.id.toString(),
     name: vendor.name,
     numPO: vendor.num_purchase_orders,
+    buybackRate: vendor.buyback_rate,
   };
 }
 

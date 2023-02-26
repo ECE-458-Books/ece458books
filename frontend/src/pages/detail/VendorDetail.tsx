@@ -3,16 +3,24 @@ import { InputText } from "primereact/inputtext";
 import { ToggleButton } from "primereact/togglebutton";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
 import { useParams } from "react-router-dom";
-import { ModifyVendorReq, VENDORS_API } from "../../apis/VendorsAPI";
+import {
+  AddVendorReq,
+  ModifyVendorReq,
+  VENDORS_API,
+} from "../../apis/VendorsAPI";
 import { logger } from "../../util/Logger";
 import { Toast } from "primereact/toast";
 import { showFailure, showSuccess } from "../../components/Toast";
+import { percentEditor } from "../../util/TableCellEditFuncs";
 
 export default function VendorDetail() {
   // From URL
   const { id } = useParams();
+  const isVendorAddPage = id === undefined;
+
   const [isModifiable, setIsModifiable] = useState<boolean>(false);
   const [vendorName, setVendorName] = useState<string>("");
+  const [buybackRate, setBuybackRate] = useState<number>();
 
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
@@ -20,21 +28,62 @@ export default function VendorDetail() {
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
 
-  // Load the Vendor data on page load
+  // Load the Vendor data on page load if it is a modify page
   useEffect(() => {
+    if (isVendorAddPage) return;
     VENDORS_API.getVendorDetail({ id: id! })
-      .then((response) => setVendorName(response.name))
+      .then((response) => {
+        setVendorName(response.name);
+        setBuybackRate(response.buyback_rate);
+      })
       .catch(() => showFailure(toast, "Could not fetch vendor data"));
   }, []);
 
+  // When the user submits
   const onSubmit = (): void => {
     const modifiedVendor: ModifyVendorReq = { id: id!, name: vendorName };
     logger.debug("Edit Vendor Submitted", modifiedVendor);
+
+    if (isVendorAddPage) {
+      callAddVendorAPI();
+    } else {
+      callModifyVendorAPI();
+    }
+  };
+
+  // For add page
+  const callAddVendorAPI = (): void => {
+    const newVendor: AddVendorReq = {
+      name: vendorName,
+      buyback_rate: buybackRate,
+    };
+
+    VENDORS_API.addVendor(newVendor)
+      .then(() => showSuccess(toast, "Vendor added"))
+      .catch(() => showFailure(toast, "Vendor could not be added"));
+    setIsModifiable(false);
+  };
+
+  // For modify page
+  const callModifyVendorAPI = (): void => {
+    const modifiedVendor: ModifyVendorReq = {
+      name: vendorName,
+      id: id!,
+      buyback_rate: buybackRate,
+    };
+
     VENDORS_API.modifyVendor(modifiedVendor)
       .then(() => showSuccess(toast, "Vendor modified"))
       .catch(() => showFailure(toast, "Vendor could not be modified"));
     setIsModifiable(false);
   };
+
+  // The fields
+  const buybackRateEditor = percentEditor(
+    buybackRate,
+    (newValue) => setBuybackRate(newValue),
+    !isModifiable
+  );
 
   return (
     <div>
@@ -46,7 +95,7 @@ export default function VendorDetail() {
         <div className="col-5">
           <div className="py-5">
             <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
-              Modify Vendor
+              {isVendorAddPage ? "Add Vendor" : "Modify Vendor"}
             </h1>
           </div>
           <form onSubmit={onSubmit}>
@@ -70,12 +119,12 @@ export default function VendorDetail() {
                   className="text-xl p-component text-teal-900 p-text-secondary"
                   htmlFor="vendor"
                 >
-                  Vendor
+                  Name
                 </label>
               </div>
               <InputText
                 id="vendor"
-                className="p-inputtext"
+                className="w-4"
                 name="vendor"
                 value={vendorName}
                 disabled={!isModifiable}
@@ -83,6 +132,18 @@ export default function VendorDetail() {
                   setVendorName(event.currentTarget.value);
                 }}
               />
+            </div>
+
+            <div className="flex flex-row justify-content-center card-container col-12">
+              <div className="pt-2 pr-2">
+                <label
+                  className="text-xl p-component text-teal-900 p-text-secondary"
+                  htmlFor="vendor"
+                >
+                  Buyback Rate
+                </label>
+              </div>
+              {buybackRateEditor}
             </div>
 
             <div className="flex flex-row justify-content-center card-container col-12">

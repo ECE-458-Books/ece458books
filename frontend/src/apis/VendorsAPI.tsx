@@ -18,6 +18,7 @@ export interface APIVendor {
   id: number;
   name: string;
   num_purchase_orders: number;
+  buyback_rate?: number;
 }
 
 export interface GetVendorsResp {
@@ -39,11 +40,13 @@ export interface DeleteVendorReq {
 export interface ModifyVendorReq {
   id: string;
   name: string;
+  buyback_rate?: number;
 }
 
 // addVendor
 export interface AddVendorReq {
   name: string;
+  buyback_rate?: number;
 }
 
 export const VENDORS_API = {

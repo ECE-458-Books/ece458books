@@ -11,7 +11,6 @@ import ModifySR from "../pages/detail/SRDetail";
 import ModifyPO from "../pages/detail/PODetail";
 import BookAdd from "../pages/add/BookAdd";
 import GenreAdd from "../pages/add/GenreAdd";
-import VendorAdd from "../pages/add/VendorAdd";
 import GenreDetail from "../pages/detail/GenreDetail";
 import VendorDetail from "../pages/detail/VendorDetail";
 import PurchaseOrderList from "../pages/list/POList";
@@ -64,7 +63,7 @@ export default function Router() {
         <Route path="purchase-orders/detail/:id" element={<ModifyPO />} />
         <Route path="sales-reconciliations/add" element={<ModifySR />} />
         <Route path="sales-reconciliations/detail/:id" element={<ModifySR />} />
-        <Route path="vendors/add" element={<VendorAdd />} />
+        <Route path="vendors/add" element={<VendorDetail />} />
         <Route path="vendors/detail/:id" element={<VendorDetail />} />
         <Route path="change-password" element={<PasswordChangePage />} />
         <Route path="sales-report" element={<SalesReportPage />} />

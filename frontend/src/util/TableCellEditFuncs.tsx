@@ -37,11 +37,14 @@ export function textEditor(options: ColumnEditorOptions) {
 
 export function numberEditor(
   value: number,
-  onChange: (newValue: number) => void
+  onChange: (newValue: number) => void,
+  min?: number,
+  max?: number
 ) {
   return (
     <InputNumber
-      min={1}
+      min={min ?? 1}
+      max={max}
       value={value}
       onValueChange={(e) => onChange(e.target.value ?? 1)}
       mode="decimal"

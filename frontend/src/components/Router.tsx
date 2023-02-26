@@ -1,4 +1,4 @@
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { Outlet } from "react-router";
 import NavigationBar from "./Navbar";
 import BookList from "../pages/list/BookList";
@@ -17,6 +17,8 @@ import VendorDetail from "../pages/detail/VendorDetail";
 import PurchaseOrderList from "../pages/list/POList";
 import PasswordChangePage from "../pages/auth/PasswordChange";
 import SalesReportPage from "../pages/list/SalesReport";
+import GoToLoginPageIfNotLoggedIn from "../util/AuthCheck";
+import ShelfCalculator from "../pages/ShelfCalculator";
 
 const WithNavBar = () => {
   return (
@@ -36,14 +38,7 @@ const WithoutNavBar = () => {
 };
 
 export default function Router() {
-  // Checks if the access token exists
-  const isLoggedIn = !!sessionStorage.getItem("accessToken");
-  const navigate = useNavigate();
-
-  if (!isLoggedIn) {
-    navigate("/");
-    return <LoginPage />;
-  }
+  GoToLoginPageIfNotLoggedIn();
 
   return (
     <Routes>
@@ -62,6 +57,7 @@ export default function Router() {
         <Route path="vendors" element={<VendorList />} />
         <Route path="books/add" element={<BookAdd />} />
         <Route path="books/detail/:id" element={<ModifyBook />} />
+        <Route path="books/shelf-calculator" element={<ShelfCalculator />} />
         <Route path="genres/add" element={<GenreAdd />} />
         <Route path="genres/detail/:id" element={<GenreDetail />} />
         <Route path="purchase-orders/add" element={<ModifyPO />} />

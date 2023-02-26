@@ -78,18 +78,19 @@ class ISBNTools:
         relevant_keys = ['title', 'authors', 'publisher', 'pageCount', 'publishedDate', 'industryIdentifiers', 'dimensions']
 
         for key in relevant_keys:
-            if(key == 'dimensions'):
-                # convert dimensions
-                for dimension in info['dimensions'].keys():
-                    ret[dimension] = self.centiToInches(info['dimensions'][dimension])
-            elif (key == 'industryIdentifiers'):
-                # convert to isbn
-                ret['isbn_10'] = info[key][0]['identifier']
-                ret['isbn_13'] = isbn
-            elif (key == 'publishedDate'):
-                ret[key] = parser.parse(info[key]).year
-            else:
-                ret[key] = info[key]
+            if key in info.keys():
+                if(key == 'dimensions'):
+                    # convert dimensions
+                    for dimension in info['dimensions'].keys():
+                        ret[dimension] = self.centiToInches(info['dimensions'][dimension])
+                elif (key == 'industryIdentifiers'):
+                    # convert to isbn
+                    ret['isbn_10'] = info[key][0]['identifier']
+                    ret['isbn_13'] = isbn
+                elif (key == 'publishedDate'):
+                    ret[key] = parser.parse(info[key]).year
+                else:
+                    ret[key] = info[key]
         
         # Set from DB to False
         ret["fromDB"] = False

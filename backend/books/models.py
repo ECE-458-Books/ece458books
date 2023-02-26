@@ -20,10 +20,10 @@ class Book(models.Model):
 
     # Intrinsic and acquired from external database if available.
     # May be overriden or provided if absent from external database, or left unspecified
-    pageCount = models.PositiveIntegerField(default=0, null=True, blank=True) 
-    width = models.FloatField(default=0, null=True, blank=True) 
-    height = models.FloatField(default=0, null=True, blank=True) 
-    thickness = models.FloatField(default=0, null=True, blank=True)
+    pageCount = models.PositiveIntegerField(default=None, null=True, blank=True) 
+    width = models.FloatField(default=None, null=True, blank=True) 
+    height = models.FloatField(default=None, null=True, blank=True) 
+    thickness = models.FloatField(default=None, null=True, blank=True)
 
     # Extrinsic, Must be positive, required.
     retail_price = models.FloatField() 

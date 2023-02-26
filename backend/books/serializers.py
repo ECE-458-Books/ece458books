@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from collections import OrderedDict
 
 from .models import Book, Author, BookImage
 from genres.models import Genre
@@ -20,6 +21,10 @@ class BookListAddSerializer(serializers.ModelSerializer):
         model = Book
         fields = ['id', 'title', 'authors', 'genres', 'isbn_13', 'isbn_10', 'publisher', 'publishedDate', 'pageCount', 'width', 'height', 'thickness', 'retail_price', 'isGhost', 'stock', 'url']
 
+    def to_representation(self, instance):
+        result = super(BookListAddSerializer, self).to_representation(instance)
+        return OrderedDict([(key, result[key]) for key in result if result[key] is not None])
+
 class BookSerializer(serializers.ModelSerializer):
     authors = serializers.SlugRelatedField(queryset=Author.objects.all(), many=True, slug_field='name')
     genres = serializers.SlugRelatedField(queryset=Genre.objects.all(), many=True, slug_field='name')
@@ -29,6 +34,10 @@ class BookSerializer(serializers.ModelSerializer):
         model = Book
         fields = '__all__'
         read_only_fields = ['title', 'authors', 'isbn_13', 'isbn_10', 'publisher', 'publishedDate', 'url']
+
+    def to_representation(self, instance):
+        result = super(BookListAddSerializer, self).to_representation(instance)
+        return OrderedDict([(key, result[key]) for key in result if result[key] is not None])
 
 class AuthorSerializer(serializers.ModelSerializer):
     book_list = BookSerializer(many=True, read_only=True)

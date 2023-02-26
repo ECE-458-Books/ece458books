@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from collections import OrderedDict
 
 from .models import Vendor
 
@@ -9,4 +10,8 @@ class VendorSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Vendor
-        fields = ['id', 'name', 'num_purchase_orders']
+        fields = ['id', 'name', 'num_purchase_orders', 'buyback_rate']
+    
+    def to_representation(self, instance):
+        result = super(VendorSerializer, self).to_representation(instance)
+        return OrderedDict([(key, result[key]) for key in result if result[key] is not None])

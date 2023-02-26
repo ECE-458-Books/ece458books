@@ -74,7 +74,7 @@ export default function Router() {
         <Route path="vendors/add" element={<VendorAdd />} />
         <Route path="vendors/detail" element={<VendorDetail />} />
         <Route path="buy-backs/add" element={<ModifyBB />} />
-        <Route path="buy-backs/detail" element={<ModifyBB />} />
+        <Route path="buy-backs/detail:id" element={<ModifyBB />} />
         <Route path="vendors/detail/:id" element={<VendorDetail />} />
         <Route path="change-password" element={<PasswordChangePage />} />
         <Route path="sales-report" element={<SalesReportPage />} />

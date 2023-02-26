@@ -6,7 +6,7 @@ import { Toast } from "primereact/toast";
 import { ToggleButton } from "primereact/togglebutton";
 import { Toolbar } from "primereact/toolbar";
 import { useEffect, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { v4 as uuid } from "uuid";
 import { TableColumn, createColumns } from "../../components/TableColumns";
 import {
@@ -30,6 +30,10 @@ import {
   ModifyBBReq,
 } from "../../apis/BuyBackAPI";
 import { internalToExternalDate } from "../../util/DateOperations";
+import { findById } from "../../util/FindBy";
+import { calculateTotal } from "../../util/CalculateTotal";
+import { Book } from "../list/BookList";
+import { APIToInternalBBConversion } from "../../apis/Conversions";
 
 export interface BBDetailState {
   id: number;
@@ -43,57 +47,63 @@ export interface BBSaleRow {
   bookId: number;
   bookTitle: string;
   quantity: number;
-  unitBuyBackPrice: number;
+  price: number;
   errors?: { [key: string]: string };
 }
 
-// Used for setting initial state
-const emptySale: BBSaleRow = {
-  isNewRow: true,
-  id: uuid(),
-  bookId: 0,
-  bookTitle: "",
-  quantity: 1,
-  unitBuyBackPrice: 0,
-};
-
 export default function BBDetail() {
-  // -------- STATE --------
-  const location = useLocation();
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const detailState = (location.state! as BBDetailState) ?? {
-    id: -1,
-    isAddPage: true,
-    isModifiable: true,
+  // Used for setting initial state
+  const emptySale: BBSaleRow = {
+    isNewRow: true,
+    id: uuid(),
+    bookId: 0,
+    bookTitle: "",
+    quantity: 1,
+    price: 0,
   };
 
-  // From detailState
-  const buyBackID = detailState.id;
-  const isBBAddPage = detailState.isAddPage; // If false, this is an edit page
-  const [isModifiable, setIsModifiable] = useState<boolean>(
-    detailState.isModifiable
-  );
+  // -------- STATE --------
+  // From URL
+  const { id } = useParams();
+  const isBBAddPage = id === undefined;
+  const [isModifiable, setIsModifiable] = useState<boolean>(id === undefined);
 
-  // For Dropdown Menus
-  const [booksMap, setBooksMap] = useState<Map<string, number>>(new Map());
+  // For dropdown menus
+  const [booksMap, setBooksMap] = useState<Map<string, Book>>(new Map());
   const [vendorMap, setVendorMap] = useState<Map<string, number>>(new Map());
   const [booksDropdownTitles, setBooksDropdownTitles] = useState<string[]>([]);
 
   // The rest of the data
   const [date, setDate] = useState<Date>(new Date());
   const [selectedVendorName, setSelectedVendorName] = useState<string>("");
-  const [sales, setSales] = useState<BBSaleRow[]>([]);
-  const [totalRevenue, setTotalRevenue] = useState<number>(0);
+
+  // useImmer is used to set state for nested data in a simplified format
+  const [sales, setSales] = useImmer<BBSaleRow[]>([]);
   const [lineData, setLineData] = useState<BBSaleRow>(emptySale);
+  const [totalRevenue, setTotalRevenue] = useState<number>(0);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
-  const [bookDropdownRefreshKey, setBookDropdownRefreshKey] =
-    useState<number>(0);
+  const [hasUploadedCSV, setHasUploadedCSV] = useState<boolean>(false);
+
+  // Load the SR data on page load
+  useEffect(() => {
+    if (!isBBAddPage) {
+      BUYBACK_API.getBuyBackDetail({ id: id! })
+        .then((response) => {
+          const buyBack = APIToInternalBBConversion(response);
+          setDate(buyBack.date);
+          setSales(buyBack.sales);
+          setTotalRevenue(buyBack.totalRevenue);
+        })
+        .catch(() => showFailure(toast, "Could not fetch buy back sales data"));
+    }
+  }, []);
 
   const COLUMNS: TableColumn[] = [
     {
       field: "errors",
       header: "Errors",
+      hidden: !hasUploadedCSV,
       customBody: (rowData: BBSaleRow) => errorCellBody(rowData.errors),
     },
     {
@@ -101,32 +111,43 @@ export default function BBDetail() {
       header: "Book",
       customBody: (rowData: BBSaleRow) =>
         booksDropDownEditor(rowData.bookTitle, (newValue) => {
-          rowData.bookTitle = newValue;
-          setBookDropdownRefreshKey(Math.random());
+          setSales((draft) => {
+            const purchase = findById(draft, rowData.id);
+            purchase!.bookTitle = newValue;
+            purchase!.price = booksMap.get(newValue)!.retailPrice;
+            setTotalRevenue(calculateTotal(draft));
+          });
         }),
     },
     {
       field: "quantity",
       header: "Quantity",
       customBody: (rowData: BBSaleRow) =>
-        numberEditor(
-          rowData.quantity,
-          (newValue) => (rowData.quantity = newValue)
-        ),
+        numberEditor(rowData.quantity, (newValue) => {
+          setSales((draft) => {
+            const purchase = findById(draft, rowData.id);
+            purchase!.quantity = newValue;
+            setTotalRevenue(calculateTotal(draft));
+          });
+        }),
     },
     {
-      field: "unitBuyBackPrice",
+      field: "price",
       header: "Unit Buy Back Price ($)",
       customBody: (rowData: BBSaleRow) =>
-        priceEditor(
-          rowData.unitBuyBackPrice,
-          (newValue) => (rowData.unitBuyBackPrice = newValue)
-        ),
+        priceEditor(rowData.price, (newValue) => {
+          setSales((draft) => {
+            const purchase = findById(draft, rowData.id);
+            purchase!.price = newValue;
+            setTotalRevenue(calculateTotal(draft));
+          });
+        }),
     },
     {
       field: "subtotal",
       header: "Subtotal ($)",
-      customBody: (rowData: BBSaleRow) => priceBodyTemplate(rowData.subtotal),
+      customBody: (rowData: BBSaleRow) =>
+        priceBodyTemplate(rowData.price * rowData.quantity),
     },
   ];
 
@@ -148,7 +169,7 @@ export default function BBDetail() {
   // Validate submission before making API req
   const validateSubmission = () => {
     for (const sale of sales) {
-      if (!sale.bookTitle || !(sale.unitBuyBackPrice >= 0) || !sale.quantity) {
+      if (!sale.bookTitle || !(sale.price >= 0) || !sale.quantity) {
         showFailure(
           toast,
           "Book, retail price, and quantity are required for all line items"
@@ -171,42 +192,53 @@ export default function BBDetail() {
     }
 
     if (isBBAddPage) {
-      const apiSales = sales.map((sale) => {
-        return {
-          book: booksMap.get(sale.bookTitle),
-          quantity: sale.quantity,
-          unit_buyback_price: sale.unitBuyBackPrice,
-        } as APIBBSaleRow;
-      });
-
-      const buyBack = {
-        date: internalToExternalDate(date),
-        sales: apiSales,
-      } as AddBBReq;
-      BUYBACK_API.addBuyBack(buyBack)
-        .then(() => showSuccess(toast, "Buy back added successfully"))
-        .catch(() => showFailure(toast, "Could not add buy back"));
+      callAddBBAPI();
     } else {
       // Otherwise, it is a modify page
-      const apiSales = sales.map((sale) => {
-        return {
-          id: sale.isNewRow ? undefined : sale.id,
-          book: sale.isNewRow ? booksMap.get(sale.bookTitle) : sale.bookId,
-          quantity: sale.quantity,
-          unit_buyback_price: sale.unitBuyBackPrice,
-        } as APIBBSaleRow;
-      });
-
-      const buyBack = {
-        id: buyBackID,
-        date: internalToExternalDate(date),
-        sales: apiSales,
-      } as ModifyBBReq;
-
-      BUYBACK_API.modifyBuyBack(buyBack)
-        .then(() => showSuccess(toast, "Buy back modified successfully"))
-        .catch(() => showFailure(toast, "Could not modify buy back"));
+      callModifyBBAPI();
     }
+  };
+
+  // Add the buy back
+  const callAddBBAPI = () => {
+    const apiSales = sales.map((sale) => {
+      return {
+        book: Number(booksMap.get(sale.bookTitle)!.id),
+        quantity: sale.quantity,
+        unit_buyback_price: sale.price,
+      } as APIBBSaleRow;
+    });
+
+    const buyBack = {
+      date: internalToExternalDate(date),
+      sales: apiSales,
+    } as AddBBReq;
+    BUYBACK_API.addBuyBack(buyBack)
+      .then(() => showSuccess(toast, "Buy back added successfully"))
+      .catch(() => showFailure(toast, "Could not add buy back"));
+  };
+
+  // Modify the sales reconciliation
+  const callModifyBBAPI = () => {
+    // Otherwise, it is a modify page
+    const apiSales = sales.map((sale) => {
+      return {
+        id: sale.isNewRow ? undefined : sale.id,
+        book: booksMap.get(sale.bookTitle)?.id ?? sale.bookId,
+        quantity: sale.quantity,
+        unit_buyback_price: sale.price,
+      } as APIBBSaleRow;
+    });
+
+    const buyBack = {
+      id: id,
+      date: internalToExternalDate(date),
+      sales: apiSales,
+    } as ModifyBBReq;
+
+    BUYBACK_API.modifyBuyBack(buyBack)
+      .then(() => showSuccess(toast, "Buy back modified successfully"))
+      .catch(() => showFailure(toast, "Could not modify buy back"));
   };
 
   // -------- TEMPLATES/VISUAL ELEMENTS --------
@@ -286,7 +318,6 @@ export default function BBDetail() {
       setSelectedBook={onChange}
       selectedBook={value}
       bookTitlesList={booksDropdownTitles}
-      refreshKey={bookDropdownRefreshKey}
       placeholder={value}
     />
   );
@@ -312,11 +343,11 @@ export default function BBDetail() {
           <div className="pt-2">
             {isBBAddPage ? (
               <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
-                Add Buy Back Sale
+                Add Buy Back Sales
               </h1>
             ) : (
               <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
-                Modify Buy Back Sale
+                Modify Buy Back Sales
               </h1>
             )}
           </div>

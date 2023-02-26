@@ -274,7 +274,7 @@ function APIToInternalBBSaleConversion(sale: APIBBSaleRow): BBSaleRow {
     bookId: sale.book,
     bookTitle: sale.book_title,
     quantity: sale.quantity,
-    unitBuyBackPrice: sale.unit_buyback_price,
+    price: sale.unit_buyback_price,
   };
 }
 

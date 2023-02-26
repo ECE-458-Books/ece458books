@@ -41,7 +41,7 @@ export interface GetBBsResp {
 
 // getBuyBack
 export interface GetBBDetailReq {
-  id: number;
+  id: string;
 }
 
 // deleteSalesReconciliation
@@ -57,7 +57,7 @@ export interface AddBBReq {
 
 // modifySalesReconciliation
 export interface ModifyBBReq extends AddBBReq {
-  id: number;
+  id: string;
 }
 
 export const BUYBACK_API = {
@@ -69,14 +69,7 @@ export const BUYBACK_API = {
     });
   },
 
-  getBuyBacksTEST: async function (): Promise<GetBBsResp> {
-    return await API.request({
-      url: BUYBACK_EXTENSION,
-      method: METHOD_GET,
-    });
-  },
-
-  getBuyBack: async function (req: GetBBDetailReq): Promise<APIBB> {
+  getBuyBackDetail: async function (req: GetBBDetailReq): Promise<APIBB> {
     return await API.request({
       url: BUYBACK_EXTENSION.concat("/".concat(req.id.toString())),
       method: METHOD_GET,

@@ -16,7 +16,7 @@ export const API = axios.create({
   paramsSerializer: {
     serialize: (params) => stringify(params, { arrayFormat: "brackets" }),
   },
-  baseURL: DEV_ENDPOINT,
+  baseURL: TEST_ENDPOINT,
   headers: {
     "Content-Type": "application/json",
   },

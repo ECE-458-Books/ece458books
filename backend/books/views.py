@@ -250,7 +250,7 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
         # convert QueryDict to dict
         data = request_data.dict()
 
-        possible_zero_fields = ['width', 'height', 'thickness']
+        possible_zero_fields = ['pageCount', 'width', 'height', 'thickness']
         for possible_zero_field in possible_zero_fields:
             v = data.get(possible_zero_field, None)
             if v == '0':

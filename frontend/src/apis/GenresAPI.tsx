@@ -10,9 +10,9 @@ const GENRES_EXTENSION = "genres";
 
 // getGenres
 export interface GetGenresReq {
-  page: number;
-  page_size: number;
-  ordering: string;
+  page?: number;
+  page_size?: number;
+  ordering?: string;
 }
 
 export interface APIGenre {
@@ -53,6 +53,16 @@ export const GENRES_API = {
       url: GENRES_EXTENSION,
       method: METHOD_GET,
       params: req,
+    });
+  },
+
+  getGenresNoPagination: async function (): Promise<APIGenre[]> {
+    return await API.request({
+      url: GENRES_EXTENSION,
+      method: METHOD_GET,
+      params: {
+        no_pagination: true,
+      },
     });
   },
 

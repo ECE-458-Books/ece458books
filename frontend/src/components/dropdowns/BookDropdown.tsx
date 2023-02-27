@@ -6,7 +6,7 @@ import { Book } from "../../pages/list/BookList";
 export interface BookDropdownDataProps {
   setBooksMap: (arg0: Map<string, Book>) => void; // Setter for book map
   setBookTitlesList: (arg0: string[]) => void; // Setter for book title list
-  vendorName?: number; // set vendor who books were bought from
+  vendor?: number; // set vendor who books were bought from
 }
 
 export interface BookDropdownProps {
@@ -18,14 +18,14 @@ export interface BookDropdownProps {
 }
 
 export function BooksDropdownData(props: BookDropdownDataProps) {
-  BOOKS_API.getBooks({ vendor: props.vendorName }).then((response) => {
+  BOOKS_API.getBooksNoPagination(props.vendor).then((response) => {
     const tempBookMap = new Map<string, Book>();
-    for (const book of response.results) {
+    for (const book of response) {
       const convertedBook = APIToInternalBookConversion(book);
       tempBookMap.set(book.title, convertedBook);
     }
     props.setBooksMap(tempBookMap);
-    props.setBookTitlesList(response.results.map((book) => book.title));
+    props.setBookTitlesList(response.map((book) => book.title));
   });
 }
 

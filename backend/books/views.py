@@ -129,7 +129,6 @@ class ListCreateBookAPIView(ListCreateAPIView):
 
         return data
 
-
     # Override default create method
     def create(self, request, *args, **kwargs):
         data = request.data
@@ -243,12 +242,28 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
     lookup_url_kwarg = 'id'
     isbn_toolbox = ISBNTools()
 
+    def preprocess_multipart_form_data(self, request):
+        data = request.data.dict()
+
+        # handle authors, genres
+        data['authors'] = data['authors'].split(',')
+        data['genres'] = data['genres'].split(',')
+
+        return data
+
     def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
+        data = request.data
+        content_type = request.content_type.split(';')[0]
+
+        if content_type == 'multipart/form-data':
+            # Preprocess Request when the content-type is not application/json but multipart/form-data
+            data = self.preprocess_multipart_form_data(request)
 
         # if the dimension of a book is zero convert it to None
-        data = self.convert_zero_to_null(request.data)
+        data = self.convert_zero_to_null(data)
+
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
 
         serializer = self.get_serializer(instance, data=data, partial=partial)
         serializer.is_valid(raise_exception=True)
@@ -269,19 +284,11 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
 
         return Response(res)
     
-    def convert_zero_to_null(self, request_data):
-        content_type = request_data.content_type.split(';')[0]
-
-        # convert QueryDict to dict
-        data = request_data
-
-        if content_type == 'multipart/form-data':
-            data = request_data.dict()
-
+    def convert_zero_to_null(self, data):
         possible_zero_fields = ['pageCount', 'width', 'height', 'thickness']
         for possible_zero_field in possible_zero_fields:
             v = data.get(possible_zero_field, None)
-            if v == '0':
+            if v == '0' or v == 0:
                 data[possible_zero_field] = None
         
         return data

@@ -39,6 +39,23 @@ export interface APIBook {
   retail_price: number;
   stock: number;
   url: string;
+  line_items?: APIBookLineItem[];
+}
+
+export enum APILineItemType {
+  PURCHASE_ORDER = "purchase order",
+  SALES_RECONCILIATION = "sales reconciliation",
+  BOOK_BUYBACK = "buyback order",
+}
+
+export interface APIBookLineItem {
+  id: number;
+  date: string;
+  type: APILineItemType;
+  vendor?: number;
+  vendor_name?: string;
+  unit_price: number;
+  quantity: number;
 }
 
 export interface GetBooksResp {

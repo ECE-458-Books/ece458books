@@ -5,12 +5,13 @@ export interface ConfirmButtonProps {
   className: string | undefined;
   id?: string;
   name?: string;
-  isVisible: boolean;
+  isPopupVisible: boolean;
+  isButtonVisible?: boolean;
   hideFunc: () => void;
-  acceptFunc: () => void;
-  rejectFunc: () => void;
-  buttonClickFunc: () => void;
-  disabled?: boolean;
+  onFinalSubmission: () => void;
+  onRejectFinalSubmission?: () => void;
+  onShowPopup: () => void;
+  disabled: boolean;
   label: string;
   icons?: string;
 }
@@ -20,19 +21,20 @@ export default function ConfirmButton(props: ConfirmButtonProps) {
     <div>
       <ConfirmDialog
         id={"confirmButtonPopup" + props.id}
-        visible={props.isVisible}
+        visible={props.isPopupVisible}
         onHide={props.hideFunc}
         message="Are you sure you want to proceed?"
         header="Confirmation"
         icon="pi pi-exclamation-triangle"
-        accept={props.acceptFunc}
-        reject={props.rejectFunc}
+        accept={props.onFinalSubmission}
+        reject={props.onRejectFinalSubmission}
       />
       <Button
         id={"enterfinalsubmission" + props.id}
         name={"confirmButtonPopup" + props.name}
         type="button"
-        onClick={props.buttonClickFunc}
+        onClick={props.onShowPopup}
+        visible={props.isButtonVisible ?? true}
         disabled={props.disabled}
         label={props.label}
         className={props.className}

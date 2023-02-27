@@ -73,7 +73,6 @@ class RetrieveUpdateDestroyGenreAPIView(RetrieveUpdateDestroyAPIView):
     lookup_url_kwarg = 'id'
 
     def destroy(self, request, *args, **kwargs):
-        
         # Check if the request url is valid
         try:
             instance = self.get_object()

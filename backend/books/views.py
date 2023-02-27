@@ -78,7 +78,8 @@ class ISBNSearchView(APIView):
         ret = dict()
 
         for field in book._meta.fields:
-            ret[field.name] = getattr(book, field.name)
+            if (v := getattr(book, field.name)) is not None:
+                ret[field.name] = v 
 
         # Deal with many-to-many fields
         # Get Authors

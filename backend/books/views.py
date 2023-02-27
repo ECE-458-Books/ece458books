@@ -89,9 +89,15 @@ class ISBNSearchView(APIView):
         for genre in book.genres.all():
             ret.setdefault("genres", []).append(genre.name)
 
+        # At this point there should be a BookImage associated with the book
         images = BookImage.objects.filter(book=book)
+        
+        if len(images) == 0:
+            # This is the case where there is no default image associated with the book.
+            local_url = self.isbn_toolbox.download_external_book_image_to_local(book.isbn_13, uri)
+        else:
+            local_url = self.isbn_toolbox.download_existing_image_to_local(images[0].url, book.isbn_13, uri)
 
-        local_url = self.isbn_toolbox.download_existing_image_to_local(images[0].url, book.isbn_13, uri)
         ret["image_url"] = local_url
         ret["fromDB"] = True
 

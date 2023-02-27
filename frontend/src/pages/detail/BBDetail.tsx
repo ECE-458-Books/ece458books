@@ -1,6 +1,6 @@
 import { Calendar, CalendarChangeEvent } from "primereact/calendar";
 import { Column } from "primereact/column";
-import { DataTable } from "primereact/datatable";
+import { DataTable, DataTableRowClickEvent } from "primereact/datatable";
 import { Toast } from "primereact/toast";
 import { Toolbar } from "primereact/toolbar";
 import { useEffect, useRef, useState } from "react";
@@ -221,6 +221,24 @@ export default function BBDetail() {
       setIsVisible={setDeletePopupVisible}
     />
   );
+
+  // The navigator to switch pages
+  const navigate = useNavigate();
+
+  const onRowClick = (event: DataTableRowClickEvent) => {
+    // I couldn't figure out a better way to do this...
+    // It takes the current index as the table knows it and calculates the actual index in the books array
+    const index = event.index;
+    const sale = sales[index];
+    logger.debug("Purchase Order Row Clicked", sale);
+    toBookDetailsPage(sale);
+  };
+
+  // Callback functions for edit/delete buttons
+  const toBookDetailsPage = (sale: BBSaleRow) => {
+    logger.debug("Edit Book Clicked", sale);
+    navigate(`/books/detail/${sale.bookId}`);
+  };
 
   // Validate submission before making API req
   const validateSubmission = () => {
@@ -460,9 +478,6 @@ export default function BBDetail() {
     });
   }, []);
 
-  // The navigator to switch pages
-  const navigate = useNavigate();
-
   return (
     <div>
       <Toast ref={toast} />
@@ -568,6 +583,13 @@ export default function BBDetail() {
               className="editable-cells-table"
               responsiveLayout="scroll"
               editMode="cell"
+              rowHover={!isBBAddPage}
+              selectionMode={"single"}
+              onRowClick={(event) => {
+                if (!isBBAddPage && !isModifiable) {
+                  onRowClick(event);
+                }
+              }}
             >
               {columns}
               <Column

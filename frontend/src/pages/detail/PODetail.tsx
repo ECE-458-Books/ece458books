@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Calendar, CalendarChangeEvent } from "primereact/calendar";
-import { DataTable } from "primereact/datatable";
+import { DataTable, DataTableRowClickEvent } from "primereact/datatable";
 import { createColumns, TableColumn } from "../../components/TableColumns";
 import { Column } from "primereact/column";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
@@ -235,6 +235,24 @@ export default function PODetail() {
       .catch((error) => {
         showFailuresMapper(toast, error.data.errors, CSVImport400Errors);
       });
+  };
+
+  // The navigator to switch pages
+  const navigate = useNavigate();
+
+  const onRowClick = (event: DataTableRowClickEvent) => {
+    // I couldn't figure out a better way to do this...
+    // It takes the current index as the table knows it and calculates the actual index in the books array
+    const index = event.index;
+    const purchase = purchases[index];
+    logger.debug("Purchase Order Row Clicked", purchase);
+    toBookDetailsPage(purchase);
+  };
+
+  // Callback functions for edit/delete buttons
+  const toBookDetailsPage = (purcahse: POPurchaseRow) => {
+    logger.debug("Edit Book Clicked", purcahse);
+    navigate(`/books/detail/${purcahse.bookId}`);
   };
 
   const validateSubmission = () => {
@@ -472,9 +490,6 @@ export default function PODetail() {
 
   const columns = createColumns(COLUMNS);
 
-  // The navigator to switch pages
-  const navigate = useNavigate();
-
   return (
     <div>
       <Toast ref={toast} />
@@ -572,6 +587,13 @@ export default function PODetail() {
               className="editable-cells-table"
               responsiveLayout="scroll"
               editMode="cell"
+              rowHover={!isPOAddPage}
+              selectionMode={"single"}
+              onRowClick={(event) => {
+                if (!isPOAddPage && !isModifiable) {
+                  onRowClick(event);
+                }
+              }}
             >
               {columns}
               <Column

@@ -3,9 +3,10 @@ from collections import OrderedDict
 
 from .models import Book, Author, BookImage
 from genres.models import Genre
-from vendors.models import Vendor
-from purchase_orders.models import Purchase, PurchaseOrder
-from django.db.models import F, Max
+from purchase_orders.models import Purchase
+from sales.models import Sale
+from buybacks.models import Buyback
+from django.db.models import F, Value, CharField
 
 
 class BookListAddSerializer(serializers.ModelSerializer):
@@ -55,6 +56,7 @@ class BookSerializer(serializers.ModelSerializer):
     genres = serializers.SlugRelatedField(queryset=Genre.objects.all(), many=True, slug_field='name')
     url = serializers.StringRelatedField()
     best_buyback_price = serializers.SerializerMethodField()
+    line_items = serializers.SerializerMethodField()
 
     class Meta:
         model = Book
@@ -80,6 +82,34 @@ class BookSerializer(serializers.ModelSerializer):
             return max(buyback_prices)
         except:
             return None
+
+    def get_line_items(self, instance):
+        purchases = Purchase.objects.filter(book=instance.id).annotate(date=F('purchase_order__date')).annotate(vendor=F('purchase_order__vendor')).annotate(
+            vendor_name=F('purchase_order__vendor__name')).annotate(unit_price=F('unit_wholesale_price')).annotate(type=Value("purchase order", CharField())).values(
+                'purchase_order', 'date', 'vendor', 'vendor_name', 'unit_price', 'quantity', 'type')
+        purchases = list(purchases)
+        for purchase in purchases:
+            purchase['id'] = purchase.pop('purchase_order')
+
+        sales = Sale.objects.filter(book=instance.id).annotate(date=F('sales_reconciliation__date')).annotate(unit_price=F('unit_retail_price')).annotate(
+            type=Value("sales reconciliation", CharField())).values('sales_reconciliation', 'date', 'unit_price', 'quantity', 'type')
+
+        sales = list(sales)
+        for sale in sales:
+            sale['id'] = sale.pop('sales_reconciliation')
+
+        buybacks = Buyback.objects.filter(book=instance.id).annotate(date=F('buyback_order__date')).annotate(vendor=F('buyback_order__vendor')).annotate(
+            vendor_name=F('buyback_order__vendor__name')).annotate(unit_price=F('unit_buyback_price')).annotate(type=Value("buyback order", CharField())).values(
+                'buyback_order', 'date', 'vendor', 'vendor_name', 'unit_price', 'quantity', 'type')
+
+        buybacks = list(buybacks)
+        for buyback in buybacks:
+            buyback['id'] = buyback.pop('buyback_order')
+
+        items = purchases + sales + buybacks
+        for item in items:
+            item['date'] = item['date'].strftime('%Y-%m-%d')
+        return items
 
 
 class AuthorSerializer(serializers.ModelSerializer):

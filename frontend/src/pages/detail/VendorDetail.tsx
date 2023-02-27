@@ -14,6 +14,9 @@ import { showFailure, showSuccess } from "../../components/Toast";
 import { percentEditor } from "../../util/TableCellEditFuncs";
 import { Button } from "primereact/button";
 import ConfirmButton from "../../components/popups/ConfirmPopup";
+import BackButton from "../../components/buttons/BackButton";
+import DeleteButton from "../../components/buttons/DeleteButton";
+import DeletePopup from "../../components/popups/DeletePopup";
 
 export default function VendorDetail() {
   // From URL
@@ -25,9 +28,38 @@ export default function VendorDetail() {
 
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
+  const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false); // Whether the delete popup is shown
+
 
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
+
+  // Called to make delete pop up show
+  const deleteVendorPopup = () => {
+    logger.debug("Delete Vendor Clicked");
+    setDeletePopupVisible(true);
+  };
+
+  // Call to actually delete the element
+  const deleteVendorFinal = () => {
+    logger.debug("Delete Vendor Finalized");
+    setDeletePopupVisible(false);
+    VENDORS_API.deleteVendor({ id: id! })
+      .then(() => showSuccess(toast, "Vendor Deleted"))
+      .catch(() => {
+        showFailure(toast, "Vendor Failed to Delete");
+        return;
+      });
+  };
+
+  // The delete popup
+  const deletePopup = (
+    <DeletePopup
+      deleteItemIdentifier={"this vendor"}
+      onConfirm={() => deleteVendorFinal()}
+      setIsVisible={setDeletePopupVisible}
+    />
+  );
 
   // Load the Vendor data on page load if it is a modify page
   useEffect(() => {
@@ -71,20 +103,24 @@ export default function VendorDetail() {
   // The navigator to switch pages
   const navigate = useNavigate();
 
+  const backButton = (
+    <div className="flex col-1">
+      <BackButton onClick={() => navigate("/vendors")} className="ml-1" />
+    </div>
+  );
+
+  const deleteButton = (
+    <div className="flex col-1">
+      <DeleteButton onClick={deleteVendorFinal} className={"ml-1 "} />
+    </div>
+  );
+
   return (
     <div>
       <div className="grid flex justify-content-center">
         <Toast ref={toast} />
         <div className="flex col-12 p-0">
-          <div className="flex col-1">
-            <Button
-              type="button"
-              label="Back"
-              icon="pi pi-arrow-left"
-              onClick={() => navigate("/vendors")}
-              className="p-button-sm my-auto ml-1"
-            />
-          </div>
+          {backButton}
           <div className="pt-2 col-10">
             {isModifiable ? (
               <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
@@ -96,16 +132,7 @@ export default function VendorDetail() {
               </h1>
             )}
           </div>
-          <div className="flex col-1">
-            <Button
-              type="button"
-              label="Delete"
-              icon="pi pi-trash"
-              disabled
-              //onClick={() => ()}
-              className="p-button-sm my-auto ml-1 p-button-danger"
-            />
-          </div>
+          {deleteButton}
         </div>
         <div className="col-7">
           <form onSubmit={onSubmit}>
@@ -166,13 +193,13 @@ export default function VendorDetail() {
               )}
               {isModifiable && (
                 <ConfirmButton
-                  isVisible={isConfirmationPopupVisible}
+                  isPopupVisible={isConfirmationPopupVisible}
                   hideFunc={() => setIsConfirmationPopupVisible(false)}
-                  acceptFunc={onSubmit}
-                  rejectFunc={() => {
+                  onFinalSubmission={onSubmit}
+                  onRejectFinalSubmission={() => {
                     // do nothing
                   }}
-                  buttonClickFunc={() => setIsConfirmationPopupVisible(true)}
+                  onShowPopup={() => setIsConfirmationPopupVisible(true)}
                   disabled={!isModifiable}
                   label={"Submit"}
                   className="p-button-success p-button-raised"
@@ -183,6 +210,7 @@ export default function VendorDetail() {
             {/* <Button disabled={!this.state.isModifiable} label="submit" type="submit" /> */}
           </form>
         </div>
+        {deletePopupVisible && deletePopup}
       </div>
     </div>
   );

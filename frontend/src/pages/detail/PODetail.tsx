@@ -354,7 +354,10 @@ export default function PODetail() {
 
   const backButton = (
     <div className="flex col-1">
-      <BackButton onClick={() => navigate("/purchase-orders")} />
+      <BackButton
+        onClick={() => navigate("/purchase-orders")}
+        className="ml-1"
+      />
     </div>
   );
 

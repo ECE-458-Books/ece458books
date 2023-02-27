@@ -16,6 +16,7 @@ import ConfirmPopup from "../../components/popups/ConfirmPopup";
 import { Toolbar } from "primereact/toolbar";
 import { VENDORS_API, AddVendorReq } from "../../apis/VendorsAPI";
 import axios from "axios";
+import AddRowButton from "../../components/buttons/AddRowButton";
 
 export interface VendorRow {
   id: string;
@@ -118,53 +119,52 @@ export default function GenreAdd() {
     );
   };
 
-  const leftToolbarTemplate = () => {
-    return (
-      <>
-        <React.Fragment>
-          <Button
-            type="button"
-            label="Add Vendor"
-            className="p-button-info mr-2"
-            icon="pi pi-plus"
-            onClick={addNewVendor}
-          />
-        </React.Fragment>
-      </>
-    );
-  };
+  const addRowButton = (
+    <AddRowButton
+      emptyItem={emptyVendor}
+      rows={vendors}
+      setRows={setVendors}
+      label={"Add Vendor"}
+    />
+  );
 
-  const rightToolbarTemplate = () => {
-    return (
-      <React.Fragment>
-        <ConfirmPopup
-          isVisible={isConfirmationPopupVisible}
-          hideFunc={() => setIsConfirmationPopupVisible(false)}
-          acceptFunc={onSubmit}
-          rejectFunc={() => {
-            // do nothing
-          }}
-          buttonClickFunc={() => setIsConfirmationPopupVisible(true)}
-          label={"Submit"}
-          className="p-button-success p-button-raised"
-        />
-        <ConfirmPopup
-          isVisible={isConfirmationPopupVisible}
-          hideFunc={() => setIsConfirmationPopupVisible(false)}
-          acceptFunc={onSubmit}
-          rejectFunc={() => {
-            setIsGoBackActive(false);
-          }}
-          buttonClickFunc={() => {
-            setIsConfirmationPopupVisible(true);
-            setIsGoBackActive(true);
-          }}
-          label={"Submit and Go Back"}
-          className="p-button-success p-button-raised ml-2"
-        />
-      </React.Fragment>
-    );
-  };
+  const leftToolbar = <>{addRowButton}</>;
+
+  // Right
+  const submitButton = (
+    <ConfirmPopup
+      isPopupVisible={isConfirmationPopupVisible}
+      hideFunc={() => setIsConfirmationPopupVisible(false)}
+      onFinalSubmission={onSubmit}
+      onShowPopup={() => setIsConfirmationPopupVisible(true)}
+      label={"Submit"}
+      className="p-button-success ml-2"
+    />
+  );
+
+  const submitAndGoBackButton = (
+    <ConfirmPopup
+      isPopupVisible={isConfirmationPopupVisible}
+      hideFunc={() => setIsConfirmationPopupVisible(false)}
+      onFinalSubmission={onSubmit}
+      onRejectFinalSubmission={() => {
+        setIsGoBackActive(false);
+      }}
+      onShowPopup={() => {
+        setIsConfirmationPopupVisible(true);
+        setIsGoBackActive(true);
+      }}
+      label={"Submit and Go Back"}
+      className="p-button-success ml-2"
+    />
+  );
+
+  const rightToolbar = (
+    <>
+      {submitAndGoBackButton}
+      {submitButton}
+    </>
+  );
 
   const columns = createColumns(COLUMNS);
 
@@ -189,11 +189,7 @@ export default function GenreAdd() {
       </div>
       <div className="col-11">
         <form onSubmit={onSubmit}>
-          <Toolbar
-            className="mb-4"
-            left={leftToolbarTemplate}
-            right={rightToolbarTemplate}
-          />
+          <Toolbar className="mb-4" left={leftToolbar} right={rightToolbar} />
 
           <DataTable
             showGridlines

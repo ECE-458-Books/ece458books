@@ -1,10 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Calendar, CalendarChangeEvent } from "primereact/calendar";
 import { DataTable, DataTableRowClickEvent } from "primereact/datatable";
 import { createColumns, TableColumn } from "../../components/TableColumns";
-import { Column } from "primereact/column";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
-import { Button } from "primereact/button";
 import { Toolbar } from "primereact/toolbar";
 import { v4 as uuid } from "uuid";
 import {
@@ -98,7 +95,6 @@ export default function PODetail() {
   // useImmer is used to set state for nested data in a simplified format
   const [purchases, setPurchases] = useImmer<POPurchaseRow[]>([]);
   const [totalCost, setTotalCost] = useState<number>(0);
-  const [lineData, setLineData] = useState<POPurchaseRow>(emptyPurchase);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
   const [hasUploadedCSV, setHasUploadedCSV] = useState<boolean>(false);
@@ -343,6 +339,7 @@ export default function PODetail() {
   const toast = useRef<Toast>(null);
 
   // Top Line
+
   const titleText = (
     <AddDetailModifyTitle
       isModifyPage={isModifiable}
@@ -449,7 +446,7 @@ export default function PODetail() {
 
   // Items below toolbar
   const totalDollars = (
-    <TotalDollars label={"Total Revenue:"} totalDollars={totalCost} />
+    <TotalDollars label={"Total Cost:"} totalDollars={totalCost} />
   );
 
   const calendar = (

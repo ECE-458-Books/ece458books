@@ -223,7 +223,11 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+
+        # if the dimension of a book is zero convert it to None
+        data = self.convert_zero_to_null(request.data)
+
+        serializer = self.get_serializer(instance, data=data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
 
@@ -241,6 +245,23 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
             res['url'] = url
 
         return Response(res)
+    
+    def convert_zero_to_null(self, request_data):
+        content_type = request_data.content_type.split(';')[0]
+
+        # convert QueryDict to dict
+        data = request_data
+
+        if content_type == 'multipart/form-data':
+            data = request_data.dict()
+
+        possible_zero_fields = ['pageCount', 'width', 'height', 'thickness']
+        for possible_zero_field in possible_zero_fields:
+            v = data.get(possible_zero_field, None)
+            if v == '0':
+                data[possible_zero_field] = None
+        
+        return data
 
     def bookimage_get_and_create(self, request, isbn_13, setDefaultImage):
         book = Book.objects.filter(isbn_13=isbn_13)

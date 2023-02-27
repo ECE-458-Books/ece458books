@@ -119,35 +119,52 @@ class ListCreateBookAPIView(ListCreateAPIView):
             return None
         else:
             return super().paginate_queryset(queryset)
+    
+    def preprocess_multipart_form_data(self, request):
+        data = request.data.dict()
+
+        # handle authors, genres
+        data['authors'] = data['authors'].split(',')
+        data['genres'] = data['genres'].split(',')
+
+        return data
+
 
     # Override default create method
     def create(self, request, *args, **kwargs):
+        data = request.data
+        content_type = request.content_type.split(';')[0]
+        
+        if content_type == 'multipart/form-data':
+            # Preprocess Request when the content-type is not application/json but multipart/form-data
+            data = self.preprocess_multipart_form_data(request)
+
         # Need to handle creating authors and genres if not present in DB
-        self.getOrCreateModel(request.data['authors'], Author)
-        self.getOrCreateModel(request.data['genres'], Genre)
+        self.getOrCreateModel(data['authors'], Author)
+        self.getOrCreateModel(data['genres'], Genre)
 
         # Handle the isbn that is already in DB
         try:
-            obj = Book.objects.get(isbn_13=request.data['isbn_13'])
+            obj = Book.objects.get(isbn_13=data['isbn_13'])
         except Exception as e:
             obj = None
-
+        
         # If the object with the specific isbn_13 is found we do the following:
         # 1. add the isGhost field to the request data
         # 2. update the already existing row in DB
         if obj is not None:
-            request.data['isGhost'] = False
-            serializer = self.get_serializer(obj, data=request.data, partial=False)
+            data['isGhost'] = False
+            serializer = self.get_serializer(obj, data=data, partial=False)
         else:
             # This is different from the above serializer because this is creating a new row in the table
-            serializer = self.get_serializer(data=request.data)
+            serializer = self.get_serializer(data=data)
 
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
         res = serializer.data
 
-        setDefaultImage = str2bool(request.data.get('setDefaultImage'))
+        setDefaultImage = str2bool(data.get('setDefaultImage'))
 
         # Get and Create the Image
         if ((request.FILES.get('image') is not None) or setDefaultImage):
@@ -181,7 +198,7 @@ class ListCreateBookAPIView(ListCreateAPIView):
     def getOrCreateModel(self, item_list, model):
         if isinstance(item_list, str):
             item_list = item_list.split(',')
-
+        
         for item in item_list:
             obj, created = model.objects.get_or_create(name=item.strip(),)
 

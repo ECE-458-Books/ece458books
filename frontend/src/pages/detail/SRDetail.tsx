@@ -414,13 +414,13 @@ export default function SRDetail() {
       <React.Fragment>
         {isModifiable && (
           <ConfirmPopup
-            isVisible={isConfirmationPopupVisible}
+            isPopupVisible={isConfirmationPopupVisible}
             hideFunc={() => setIsConfirmationPopupVisible(false)}
-            acceptFunc={onSubmit}
-            rejectFunc={() => {
+            onFinalSubmission={onSubmit}
+            onRejectFinalSubmission={() => {
               // do nothing
             }}
-            buttonClickFunc={() => {
+            onShowPopup={() => {
               setIsConfirmationPopupVisible(true);
             }}
             disabled={!isModifiable}
@@ -430,13 +430,13 @@ export default function SRDetail() {
         )}
         {isModifiable && isSRAddPage && (
           <ConfirmPopup
-            isVisible={isConfirmationPopupVisible}
+            isPopupVisible={isConfirmationPopupVisible}
             hideFunc={() => setIsConfirmationPopupVisible(false)}
-            acceptFunc={onSubmit}
-            rejectFunc={() => {
+            onFinalSubmission={onSubmit}
+            onRejectFinalSubmission={() => {
               setIsGoBackActive(false);
             }}
-            buttonClickFunc={() => {
+            onShowPopup={() => {
               setIsConfirmationPopupVisible(true);
               setIsGoBackActive(true);
             }}

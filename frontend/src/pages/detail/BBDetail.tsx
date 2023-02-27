@@ -24,7 +24,7 @@ import {
   ModifyBBReq,
 } from "../../apis/BuyBackAPI";
 import { internalToExternalDate } from "../../util/DateOperations";
-import { findById } from "../../util/IDOperations";
+import { filterById, findById } from "../../util/IDOperations";
 import { calculateTotal } from "../../util/CalculateTotal";
 import { Book } from "../list/BookList";
 
@@ -37,6 +37,15 @@ import BooksDropdown, {
 } from "../../components/dropdowns/BookDropdown";
 import { logger } from "../../util/Logger";
 import DeletePopup from "../../components/popups/DeletePopup";
+import AddDetailModifyTitle from "../../components/text/AddDetailModifyTitle";
+import OneDayCalendar from "../../components/OneDayCalendar";
+import TotalDollars from "../../components/text/TotalDollars";
+import BackButton from "../../components/buttons/BackButton";
+import DeleteButton from "../../components/buttons/DeleteButton";
+import VendorDropdown from "../../components/dropdowns/VendorDropdown";
+import DeleteColumn from "../../components/datatable/DeleteColumn";
+import AddRowButton from "../../components/buttons/AddRowButton";
+import EditCancelButton from "../../components/buttons/EditCancelButton";
 
 export interface BBDetailState {
   id: number;
@@ -71,6 +80,9 @@ export default function BBDetail() {
   const isBBAddPage = id === undefined;
   const [isModifiable, setIsModifiable] = useState<boolean>(id === undefined);
 
+  // The navigator to switch pages
+  const navigate = useNavigate();
+
   // For dropdown menus
   const [booksMap, setBooksMap] = useState<Map<string, Book>>(new Map());
   const [vendorMap, setVendorMap] = useState<Map<string, number>>(new Map());
@@ -82,7 +94,6 @@ export default function BBDetail() {
 
   // useImmer is used to set state for nested data in a simplified format
   const [sales, setSales] = useImmer<BBSaleRow[]>([]);
-  const [lineData, setLineData] = useState<BBSaleRow>(emptySale);
   const [totalRevenue, setTotalRevenue] = useState<number>(0);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
@@ -109,6 +120,17 @@ export default function BBDetail() {
 
     setIsBooksBuyBackSold(sales.length > 0);
   }, []);
+
+  // Get the data for the books dropdown
+  useEffect(
+    () =>
+      BooksDropdownData({
+        setBooksMap: setBooksMap,
+        setBookTitlesList: setBooksDropdownTitles,
+        vendorName: vendorMap.get(selectedVendorName)!,
+      }),
+    [selectedVendorName]
+  );
 
   useEffect(() => {
     setIsBooksBuyBackSold(sales.length > 0);
@@ -179,22 +201,6 @@ export default function BBDetail() {
     },
   ];
 
-  const addNewSale = () => {
-    setLineData(emptySale);
-    const _lineData = lineData;
-    _lineData.id = uuid();
-    setLineData(_lineData);
-    const _data = [...sales];
-    _data.push({ ...lineData });
-    setSales(_data);
-  };
-
-  const deleteSale = (rowData: BBSaleRow) => {
-    const _data = sales.filter((val) => val.id !== rowData.id);
-    setSales(_data);
-    setTotalRevenue(calculateTotal(_data));
-  };
-
   // Called to make delete pop up show
   const deleteBuyBackPopup = () => {
     logger.debug("Delete Sales Reconciliation Clicked");
@@ -214,18 +220,6 @@ export default function BBDetail() {
       })
       .catch(() => showFailure(toast, "Book BuyBack Sale Failed to Delete"));
   };
-
-  // The delete popup
-  const deletePopup = (
-    <DeletePopup
-      deleteItemIdentifier={"this book buyback"}
-      onConfirm={() => deleteBuyBackFinal()}
-      setIsVisible={setDeletePopupVisible}
-    />
-  );
-
-  // The navigator to switch pages
-  const navigate = useNavigate();
 
   const onRowClick = (event: DataTableRowClickEvent) => {
     // I couldn't figure out a better way to do this...
@@ -326,127 +320,126 @@ export default function BBDetail() {
   };
 
   // -------- TEMPLATES/VISUAL ELEMENTS --------
-
-  // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
 
-  const actionBodyTemplate = (rowData: BBSaleRow) => {
-    return (
-      <React.Fragment>
-        <Button
-          type="button"
-          icon="pi pi-trash"
-          className="p-button-rounded p-button-danger"
-          onClick={() => deleteSale(rowData)}
-          disabled={!isModifiable}
-        />
-      </React.Fragment>
-    );
-  };
-
-  const leftToolbarTemplate = () => {
-    return (
-      <>
-        <React.Fragment>
-          {isModifiable && (
-            <Button
-              type="button"
-              label="Add Book"
-              className="p-button-info mr-2"
-              icon="pi pi-plus"
-              onClick={addNewSale}
-              disabled={!isModifiable || selectedVendorName == ""}
-            />
-          )}
-        </React.Fragment>
-      </>
-    );
-  };
-
-  const centerToolbarTemplate = () => {
-    return (
-      <React.Fragment>
-        {!isBBAddPage && !isModifiable && (
-          <Button
-            id="modifyBBToggle"
-            name="modifyBBToggle"
-            label="Edit"
-            icon="pi pi-pencil"
-            disabled={isBBAddPage}
-            onClick={() => {
-              setIsModifiable(!isModifiable);
-              BooksDropdownData({
-                setBooksMap: setBooksMap,
-                setBookTitlesList: setBooksDropdownTitles,
-                vendorName: vendorMap.get(selectedVendorName)!,
-              });
-            }}
-          />
-        )}
-        {!isBBAddPage && isModifiable && (
-          <Button
-            id="modifyBBToggle2"
-            name="modifyBBToggle2"
-            label="Cancel"
-            icon="pi pi-times"
-            className="p-button-warningp"
-            disabled={isBBAddPage}
-            onClick={() => {
-              setIsModifiable(!isModifiable);
-              window.location.reload();
-            }}
-          />
-        )}
-      </React.Fragment>
-    );
-  };
-
-  const rightToolbarTemplate = () => {
-    return (
-      <React.Fragment>
-        {isModifiable && (
-          <ConfirmPopup
-            isVisible={isConfirmationPopupVisible}
-            hideFunc={() => setIsConfirmationPopupVisible(false)}
-            acceptFunc={onSubmit}
-            rejectFunc={() => {}}
-            buttonClickFunc={() => setIsConfirmationPopupVisible(true)}
-            disabled={!isModifiable}
-            label={"Submit"}
-            className="p-button-success p-button-raised"
-          />
-        )}
-        {isModifiable && isBBAddPage && (
-          <ConfirmPopup
-            isVisible={isConfirmationPopupVisible}
-            hideFunc={() => setIsConfirmationPopupVisible(false)}
-            acceptFunc={onSubmit}
-            rejectFunc={() => {
-              setIsGoBackActive(false);
-            }}
-            buttonClickFunc={() => {
-              setIsConfirmationPopupVisible(true);
-              setIsGoBackActive(true);
-            }}
-            disabled={!isModifiable}
-            label={"Submit and Go Back"}
-            className="p-button-success p-button-raised ml-2"
-          />
-        )}
-      </React.Fragment>
-    );
-  };
-
-  // Get the data for the books dropdown
-  useEffect(
-    () =>
-      BooksDropdownData({
-        setBooksMap: setBooksMap,
-        setBookTitlesList: setBooksDropdownTitles,
-        vendorName: vendorMap.get(selectedVendorName)!,
-      }),
-    [selectedVendorName]
+  // Top Line
+  const titleText = (
+    <AddDetailModifyTitle
+      isModifyPage={isModifiable}
+      isAddPage={isBBAddPage}
+      detailTitle={"Book Buyback Details"}
+      addTitle={"Add Book Buyback"}
+      modifyTitle={"Modify Book Buyback"}
+    />
   );
+
+  const backButton = <BackButton onClick={() => navigate("/book-buybacks")} />;
+
+  const deleteButton = (
+    <DeleteButton isEnabled={!isBBAddPage} onClick={() => deleteBuyBackPopup} />
+  );
+
+  const deletePopup = (
+    <DeletePopup
+      deleteItemIdentifier={"this book buyback"}
+      onConfirm={() => deleteBuyBackFinal()}
+      setIsVisible={setDeletePopupVisible}
+    />
+  );
+
+  // Toolbar
+
+  // Left
+  const addRowButton = (
+    <AddRowButton
+      emptyItem={emptySale}
+      rows={sales}
+      setRows={setSales}
+      isDisabled={!isModifiable || selectedVendorName == ""}
+      label={"Add Book"}
+      isVisible={isModifiable}
+    />
+  );
+
+  // Center
+  const editCancelButton = (
+    <EditCancelButton
+      onClickEdit={() => {
+        setIsModifiable(!isModifiable);
+        BooksDropdownData({
+          setBooksMap: setBooksMap,
+          setBookTitlesList: setBooksDropdownTitles,
+          vendorName: vendorMap.get(selectedVendorName)!,
+        });
+      }}
+      onClickCancel={() => {
+        setIsModifiable(!isModifiable);
+        window.location.reload();
+      }}
+      isAddPage={isBBAddPage}
+      isModifiable={isModifiable}
+    />
+  );
+
+  // Right
+  const submitButton = (
+    <ConfirmPopup
+      isButtonVisible={isModifiable}
+      isPopupVisible={isConfirmationPopupVisible}
+      hideFunc={() => setIsConfirmationPopupVisible(false)}
+      onFinalSubmission={onSubmit}
+      onShowPopup={() => setIsConfirmationPopupVisible(true)}
+      disabled={!isModifiable}
+      label={"Submit"}
+      className="p-button-success ml-2"
+    />
+  );
+
+  const submitAndGoBackButton = (
+    <ConfirmPopup
+      isButtonVisible={isModifiable && isBBAddPage}
+      isPopupVisible={isConfirmationPopupVisible && isModifiable && isBBAddPage}
+      hideFunc={() => setIsConfirmationPopupVisible(false)}
+      onFinalSubmission={onSubmit}
+      onRejectFinalSubmission={() => {
+        setIsGoBackActive(false);
+      }}
+      onShowPopup={() => {
+        setIsConfirmationPopupVisible(true);
+        setIsGoBackActive(true);
+      }}
+      disabled={!isModifiable}
+      label={"Submit and Go Back"}
+      className="p-button-success ml-2"
+    />
+  );
+
+  const rightToolbar = (
+    <>
+      {submitAndGoBackButton}
+      {submitButton}
+    </>
+  );
+
+  // Items below toolbar
+  const totalDollars = (
+    <TotalDollars label={"Total Revenue:"} totalDollars={totalRevenue} />
+  );
+
+  const calendar = (
+    <OneDayCalendar isModifiable={isModifiable} date={date} setDate={setDate} />
+  );
+
+  const vendorDropdown = (
+    <VendorDropdown
+      setVendorMap={setVendorMap}
+      setSelectedVendor={setSelectedVendorName}
+      selectedVendor={selectedVendorName}
+      isModifiable={isModifiable && !isBooksBuyBackSold}
+    />
+  );
+
+  // Datatable Items
 
   const columns = createColumns(COLUMNS);
 
@@ -456,8 +449,6 @@ export default function BBDetail() {
     isDisabled?: boolean
   ) => (
     <BooksDropdown
-      // This will always be used in a table cell, so we can disable the warning
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       setSelectedBook={onChange}
       selectedBook={value}
       bookTitlesList={booksDropdownTitles}
@@ -466,99 +457,36 @@ export default function BBDetail() {
     />
   );
 
-  const [vendorNamesList, setVendorNamesList] = useState<string[]>([]);
-
-  useEffect(() => {
-    VENDORS_API.getVendorsNoPagination(true).then((response) => {
-      const tempVendorMap = new Map<string, number>();
-      for (const vendor of response) {
-        tempVendorMap.set(vendor.name, vendor.id);
-      }
-      setVendorMap(tempVendorMap);
-      setVendorNamesList(response.map((vendor) => vendor.name));
-    });
-  }, []);
+  // Delete icon for each row
+  const deleteColumn = DeleteColumn<BBSaleRow>({
+    onDelete: (rowData) => {
+      const newSales = filterById(sales, rowData.id, setSales);
+      setTotalRevenue(calculateTotal(newSales));
+    },
+    hidden: !isModifiable,
+  });
 
   return (
     <div>
       <Toast ref={toast} />
       <div className="grid flex justify-content-center">
         <div className="flex col-12 p-0">
-          <div className="flex col-1">
-            <Button
-              type="button"
-              label="Back"
-              icon="pi pi-arrow-left"
-              onClick={() => navigate("/book-buybacks")}
-              className="p-button-sm my-auto ml-1"
-            />
-          </div>
-          <div className="pt-2 col-10">
-            {isBBAddPage ? (
-              <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
-                Add Book Buyback
-              </h1>
-            ) : isModifiable ? (
-              <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
-                Modify Book Buyback
-              </h1>
-            ) : (
-              <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
-                Book Buyback Details
-              </h1>
-            )}
-          </div>
-          <div className="flex col-1">
-            {!isBBAddPage && (
-              <Button
-                type="button"
-                label="Delete"
-                icon="pi pi-trash"
-                onClick={() => deleteBuyBackPopup()}
-                className="p-button-sm my-auto ml-1 p-button-danger"
-              />
-            )}
-          </div>
+          {backButton}
+          {titleText}
+          {deleteButton}
         </div>
         <div className="col-11">
           <form onSubmit={onSubmit}>
             <Toolbar
               className="mb-4"
-              left={leftToolbarTemplate}
-              center={centerToolbarTemplate}
-              right={rightToolbarTemplate}
+              left={addRowButton}
+              center={editCancelButton}
+              right={rightToolbar}
             />
 
             <div className="flex col-12 justify-content-evenly mb-3">
-              <div className="flex">
-                <label
-                  className="p-component p-text-secondary my-auto text-teal-900 pr-2"
-                  htmlFor="totalcost"
-                >
-                  Total Revenue:
-                </label>
-                <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
-                  {priceBodyTemplate(totalRevenue ?? 0)}
-                </p>
-              </div>
-              <div>
-                <label
-                  htmlFor="date"
-                  className="p-component text-teal-900 p-text-secondary my-auto pr-2"
-                >
-                  Date
-                </label>
-                <Calendar
-                  id="date"
-                  disabled={!isModifiable}
-                  value={date}
-                  readOnlyInput
-                  onChange={(event: CalendarChangeEvent): void => {
-                    setDate(event.value as Date);
-                  }}
-                />
-              </div>
-
+              {totalDollars}
+              {calendar}
               <div>
                 <label
                   htmlFor="vendor"
@@ -566,15 +494,7 @@ export default function BBDetail() {
                 >
                   Vendor
                 </label>
-                <Dropdown
-                  value={selectedVendorName}
-                  options={vendorNamesList}
-                  placeholder="Select a Vendor"
-                  filter
-                  disabled={!isModifiable || isBooksBuyBackSold}
-                  onChange={(e) => setSelectedVendorName(e.value)}
-                  virtualScrollerOptions={{ itemSize: 35 }}
-                />
+                {vendorDropdown}
               </div>
             </div>
 
@@ -593,17 +513,8 @@ export default function BBDetail() {
               }}
             >
               {columns}
-              <Column
-                body={actionBodyTemplate}
-                header="Delete Line Item"
-                exportable={false}
-                hidden={!isModifiable}
-                style={{ minWidth: "8rem" }}
-              ></Column>
+              {deleteColumn}
             </DataTable>
-
-            {/* Maybe be needed in case the confrim button using the popup breaks */}
-            {/* <Button disabled={!this.state.isModifiable} label="submit" type="submit" /> */}
           </form>
         </div>
         {deletePopupVisible && deletePopup}

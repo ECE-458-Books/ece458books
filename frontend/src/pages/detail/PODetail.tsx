@@ -123,7 +123,9 @@ export default function PODetail() {
       field: "bookTitle",
       header: "Book",
       customBody: (rowData: POPurchaseRow) =>
-        booksDropDownEditor(rowData.bookTitle, (newValue) => {
+        booksDropDownEditor(
+          rowData.bookTitle,
+          (newValue) => {
             setPurchases((draft) => {
               const purchase = findById(draft, rowData.id);
               purchase!.bookTitle = newValue;
@@ -136,7 +138,9 @@ export default function PODetail() {
       field: "quantity",
       header: "Quantity",
       customBody: (rowData: POPurchaseRow) =>
-        numberEditor(rowData.quantity, (newValue) => {
+        numberEditor(
+          rowData.quantity,
+          (newValue) => {
             setPurchases((draft) => {
               const purchase = findById(draft, rowData.id);
               purchase!.quantity = newValue;
@@ -150,7 +154,9 @@ export default function PODetail() {
       field: "unitWholesalePrice",
       header: "Unit Wholesale Price ($)",
       customBody: (rowData: POPurchaseRow) =>
-        priceEditor(rowData.price, (newValue) => {
+        priceEditor(
+          rowData.price,
+          (newValue) => {
             setPurchases((draft) => {
               const purchase = findById(draft, rowData.id);
               purchase!.price = newValue;
@@ -420,13 +426,13 @@ export default function PODetail() {
       <React.Fragment>
         {isModifiable && (
           <ConfirmPopup
-            isVisible={isConfirmationPopupVisible}
+            isPopupVisible={isConfirmationPopupVisible}
             hideFunc={() => setIsConfirmationPopupVisible(false)}
-            acceptFunc={onSubmit}
-            rejectFunc={() => {
+            onFinalSubmission={onSubmit}
+            onRejectFinalSubmission={() => {
               // do nothing
             }}
-            buttonClickFunc={() => setIsConfirmationPopupVisible(true)}
+            onShowPopup={() => setIsConfirmationPopupVisible(true)}
             disabled={!isModifiable}
             label={"Submit"}
             className="p-button-success p-button-raised"
@@ -434,13 +440,13 @@ export default function PODetail() {
         )}
         {isModifiable && isPOAddPage && (
           <ConfirmPopup
-            isVisible={isConfirmationPopupVisible}
+            isPopupVisible={isConfirmationPopupVisible}
             hideFunc={() => setIsConfirmationPopupVisible(false)}
-            acceptFunc={onSubmit}
-            rejectFunc={() => {
+            onFinalSubmission={onSubmit}
+            onRejectFinalSubmission={() => {
               setIsGoBackActive(false);
             }}
-            buttonClickFunc={() => {
+            onShowPopup={() => {
               setIsConfirmationPopupVisible(true);
               setIsGoBackActive(true);
             }}

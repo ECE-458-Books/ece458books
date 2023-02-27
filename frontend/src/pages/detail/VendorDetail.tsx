@@ -148,13 +148,13 @@ export default function VendorDetail() {
 
             <div className="flex flex-row justify-content-center card-container col-12">
               <ConfirmPopup
-                isVisible={isConfirmationPopupVisible}
+                isPopupVisible={isConfirmationPopupVisible}
                 hideFunc={() => setIsConfirmationPopupVisible(false)}
-                acceptFunc={onSubmit}
-                rejectFunc={() => {
+                onFinalSubmission={onSubmit}
+                onRejectFinalSubmission={() => {
                   console.log("reject");
                 }}
-                buttonClickFunc={() => {
+                onShowPopup={() => {
                   setIsConfirmationPopupVisible(true);
                 }}
                 disabled={!isModifiable}

@@ -6,7 +6,8 @@ from genres.models import Genre
 from purchase_orders.models import Purchase
 from sales.models import Sale
 from buybacks.models import Buyback
-from django.db.models import F, Value, CharField
+from django.db.models import F, Sum, Value, CharField
+import datetime
 
 
 class BookListAddSerializer(serializers.ModelSerializer):
@@ -22,17 +23,25 @@ class BookListAddSerializer(serializers.ModelSerializer):
     genres = serializers.SlugRelatedField(queryset=Genre.objects.all(), many=True, slug_field='name')
     url = serializers.StringRelatedField()
     best_buyback_price = serializers.SerializerMethodField()
+    last_month_sales = serializers.SerializerMethodField()
 
     class Meta:
         model = Book
         fields = [
             'id', 'title', 'authors', 'genres', 'isbn_13', 'isbn_10', 'publisher', 'publishedDate', 'pageCount', 'width', 'height', 'thickness', 'retail_price', 'isGhost', 'stock', 'url',
-            'best_buyback_price'
+            'best_buyback_price', 'last_month_sales'
         ]
 
     def to_representation(self, instance):
         result = super(BookListAddSerializer, self).to_representation(instance)
         return OrderedDict([(key, result[key]) for key in result if result[key] is not None])
+
+    def get_last_month_sales(self, instance):
+        end_date = datetime.datetime.now().strftime('%Y-%m-%d')
+        start_date = (datetime.datetime.now() - datetime.timedelta(days=30)).strftime('%Y-%m-%d')
+        last_month_sales = Sale.objects.filter(sales_reconciliation__date__range=(start_date, end_date)).filter(book=instance.id)
+        last_month_sales = last_month_sales.aggregate(Sum('quantity'))['quantity__sum']
+        return last_month_sales if last_month_sales else 0
 
     def get_best_buyback_price(self, instance):
         purchases_of_book = Purchase.objects.filter(book=instance.id)

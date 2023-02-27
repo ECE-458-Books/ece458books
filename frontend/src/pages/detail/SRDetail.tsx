@@ -48,10 +48,7 @@ import { useImmer } from "use-immer";
 import { findById } from "../../util/IDOperations";
 import { calculateTotal } from "../../util/CalculateTotal";
 import { logger } from "../../util/Logger";
-<<<<<<< HEAD
 import DeletePopup from "../../components/popups/DeletePopup";
-=======
->>>>>>> origin/main
 
 export interface SRSaleRow {
   isNewRow: boolean;
@@ -121,7 +118,9 @@ export default function SRDetail() {
       field: "bookTitle",
       header: "Book",
       customBody: (rowData: SRSaleRow) =>
-        booksDropDownEditor(rowData.bookTitle, (newValue) => {
+        booksDropDownEditor(
+          rowData.bookTitle,
+          (newValue) => {
             setSales((draft) => {
               const sale = findById(draft, rowData.id);
               sale!.bookTitle = newValue;
@@ -137,7 +136,9 @@ export default function SRDetail() {
       field: "quantity",
       header: "Quantity",
       customBody: (rowData: SRSaleRow) =>
-        numberEditor(rowData.quantity, (newValue) => {
+        numberEditor(
+          rowData.quantity,
+          (newValue) => {
             setSales((draft) => {
               const sale = findById(draft, rowData.id);
               sale!.quantity = newValue;
@@ -151,7 +152,9 @@ export default function SRDetail() {
       field: "price",
       header: "Unit Retail Price ($)",
       customBody: (rowData: SRSaleRow) =>
-        priceEditor(rowData.price, (newValue) => {
+        priceEditor(
+          rowData.price,
+          (newValue) => {
             setSales((draft) => {
               const sale = findById(draft, rowData.id);
               sale!.price = newValue;
@@ -332,7 +335,6 @@ export default function SRDetail() {
         setIsModifiable(!isModifiable);
       })
       .catch(() => showFailure(toast, "Could not modify sales reconciliation"));
-
   };
 
   // -------- TEMPLATES/VISUAL ELEMENTS --------

@@ -102,7 +102,9 @@ export default function BBDetail() {
           setTotalRevenue(buyBack.totalRevenue);
           setSelectedVendorName(buyBack.vendorName);
         })
-        .catch(() => showFailure(toast, "Could not fetch book buyback sales data"));
+        .catch(() =>
+          showFailure(toast, "Could not fetch book buyback sales data")
+        );
     }
 
     setIsBooksBuyBackSold(sales.length > 0);
@@ -271,7 +273,6 @@ export default function BBDetail() {
       // Otherwise, it is a modify page
       callModifyBBAPI();
     }
-    
   };
 
   // Add the book buyback
@@ -320,7 +321,7 @@ export default function BBDetail() {
       .then(() => {
         showSuccess(toast, "Book Buyback modified successfully");
         setIsModifiable(!isModifiable);
-    })
+      })
       .catch(() => showFailure(toast, "Could not modify book buyback"));
   };
 

@@ -76,7 +76,7 @@ export default function LoginPage() {
             />
           </div>
           <div className="flex flex-row justify-content-center card-container col-12">
-            <Button type="submit" label="Submit" aria-label="Submit" />
+            <Button type="submit" label="Log In" aria-label="Submit" />
           </div>
           <Messages ref={wrongPasswordRef} />
         </form>

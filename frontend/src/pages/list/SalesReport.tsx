@@ -153,9 +153,6 @@ export default function SalesReport() {
     try {
       if (dates != null) {
         if (moment(dates[1]).format("YYYY-MM-DD") !== "Invalid date") {
-          //console.log(moment(new Date()).format("YYYY-MM-DD"));
-          // console.log(moment(dates[0]).format("YYYY-MM-DD"));
-          // console.log(moment(dates[1]).format("YYYY-MM-DD"));
           logger.debug("Sales Report Requested");
           SALES_REPORT_API.getSalesReport({
             start: moment(dates[0]).format("YYYY-MM-DD"),
@@ -199,6 +196,8 @@ export default function SalesReport() {
                   selectionMode="range"
                   required
                   readOnlyInput
+                  showButtonBar
+                  placeholder="Start - End"
                   className="p-datepicker-current-day"
                 />
               </div>

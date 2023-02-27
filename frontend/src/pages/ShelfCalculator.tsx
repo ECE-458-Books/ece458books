@@ -15,7 +15,6 @@ import AddRowButton from "../components/buttons/AddRowButton";
 import { DataTable } from "primereact/datatable";
 import { Toolbar } from "primereact/toolbar";
 import { Column } from "primereact/column";
-import { calculateTotalForField } from "../util/CalculateTotal";
 
 const DEFAULT_WIDTH = 5;
 const DEFAULT_HEIGHT = 8;
@@ -76,6 +75,7 @@ export default function ShelfCalculator() {
           (newValue) => {
             handleDisplayCountChange(rowData, newValue);
           },
+          false,
           0, // min
           rowData.maxDisplayCount // max
         ),

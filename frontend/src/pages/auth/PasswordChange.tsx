@@ -89,24 +89,23 @@ export default function PasswordChangePage() {
 
   return (
     <div className="grid flex justify-content-center">
-      <div className="col-5">
-        <div className="py-5">
-          <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
-            Password Change
-          </h1>
-        </div>
-        <form onSubmit={onSubmit}>
-          <Toast ref={toast} />
-
-          <div className="flex flex-row justify-content-center card-container col-12">
-            <div className="pt-2 pr-2">
-              <label
-                className="text-xl p-component text-teal-900 p-text-secondary"
-                htmlFor="genre"
-              >
-                Old Password:
-              </label>
-            </div>
+      <Toast ref={toast} />
+      <div className="col-12 py-5">
+        <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
+          Password Change
+        </h1>
+      </div>
+      <form onSubmit={onSubmit}>
+        <div className="flex col-12 justify-content-center">
+          <div className="flex pr-2 col-5 justify-content-end my-auto">
+            <label
+              className="text-xl p-component text-teal-900 p-text-secondary"
+              htmlFor="genre"
+            >
+              Old Password:
+            </label>
+          </div>
+          <div className="col-7">
             <Password
               value={oldPassword}
               onChange={(event: FormEvent<HTMLInputElement>) =>
@@ -116,16 +115,18 @@ export default function PasswordChangePage() {
               feedback={false}
             />
           </div>
+        </div>
 
-          <div className="flex flex-row justify-content-center card-container col-12">
-            <div className="pt-2 pr-2">
-              <label
-                className="text-xl p-component text-teal-900 p-text-secondary"
-                htmlFor="genre"
-              >
-                New Password:
-              </label>
-            </div>
+        <div className="flex col-12 justify-content-center">
+          <div className="flex pr-2 col-5 justify-content-end my-auto">
+            <label
+              className="text-xl p-component text-teal-900 p-text-secondary"
+              htmlFor="genre"
+            >
+              New Password:
+            </label>
+          </div>
+          <div className="col-7">
             <Password
               value={newPassword1}
               onChange={(event: FormEvent<HTMLInputElement>) =>
@@ -140,16 +141,18 @@ export default function PasswordChangePage() {
               strongLabel="Complex password"
             />
           </div>
+        </div>
 
-          <div className="flex flex-row justify-content-center card-container col-13">
-            <div className="pt-2 pr-2">
-              <label
-                className="text-xl p-component text-teal-900 p-text-secondary"
-                htmlFor="genre"
-              >
-                New Password Confirm:
-              </label>
-            </div>
+        <div className="flex col-12 justify-content-center">
+          <div className="flex pr-2 col-5 justify-content-end text-right my-auto">
+            <label
+              className="text-xl p-component text-teal-900 p-text-secondary"
+              htmlFor="genre"
+            >
+              New Password Confirm:
+            </label>
+          </div>
+          <div className="col-7">
             <Password
               value={newPassword2}
               onChange={(event: FormEvent<HTMLInputElement>) =>
@@ -159,18 +162,18 @@ export default function PasswordChangePage() {
               feedback={false}
             />
           </div>
-          <div className="flex flex-row justify-content-center card-container col-12">
-            <Button
-              type="submit"
-              label="Submit"
-              aria-label="Submit"
-              className="p-button-raised"
-            />
-          </div>
+        </div>
+        <div className="flex flex-row justify-content-center card-container col-12">
+          <Button
+            type="submit"
+            label="Submit"
+            aria-label="Submit"
+            className="p-button-raised"
+          />
+        </div>
 
-          <Messages ref={wrongPasswordRef} />
-        </form>
-      </div>
+        <Messages ref={wrongPasswordRef} />
+      </form>
     </div>
   );
 }

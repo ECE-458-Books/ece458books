@@ -81,7 +81,7 @@ export const APIBBSortFieldMap = new Map<string, string>([
 
 export function APIToInternalBookConversion(book: APIBook): Book {
   return {
-    id: book.id.toString(),
+    id: book.id!.toString(),
     author: ArrayToCommaSeparatedString(book.authors),
     genres: ArrayToCommaSeparatedString(book.genres),
     title: book.title,
@@ -95,7 +95,7 @@ export function APIToInternalBookConversion(book: APIBook): Book {
     thickness: book.thickness,
     retailPrice: book.retail_price,
     stock: book.stock,
-    thumbnailURL: [book.url],
+    thumbnailURL: book.url,
   };
 }
 
@@ -115,7 +115,7 @@ export function InternalToAPIBookConversion(book: Book): APIBook {
     thickness: book.thickness,
     retail_price: book.retailPrice,
     stock: book.stock,
-    url: book.thumbnailURL[0],
+    url: book.thumbnailURL,
   };
 }
 
@@ -123,7 +123,7 @@ export function APIToInternalBookConversionWithDB(
   book: APIBookWithDBTag
 ): BookWithDBTag {
   return {
-    id: book.id.toString(),
+    id: book.id?.toString() ?? uuid(),
     author: ArrayToCommaSeparatedString(book.authors),
     genres: ArrayToCommaSeparatedString(book.genres ?? []),
     title: book.title,
@@ -137,8 +137,13 @@ export function APIToInternalBookConversionWithDB(
     thickness: book.thickness,
     retailPrice: book.retail_price ?? 0,
     stock: book.stock,
-    thumbnailURL: [book.url],
+    thumbnailURL: book.image_url,
     fromDB: book.fromDB,
+    newImageData: {
+      isImageDelete: false,
+      isImageUpload: false,
+      imageFile: new File([""], "imageFile" + book.id),
+    },
   };
 }
 

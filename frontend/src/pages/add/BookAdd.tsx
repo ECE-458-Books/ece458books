@@ -2,9 +2,13 @@ import { FormEvent, useRef, useState } from "react";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Button } from "primereact/button";
 import { DataTable } from "primereact/datatable";
-import { numberEditor, priceEditor } from "../../util/TableCellEditFuncs";
+import {
+  imageBodyTemplate,
+  numberEditor,
+  priceEditor,
+} from "../../util/TableCellEditFuncs";
 import { BOOKS_API } from "../../apis/BooksAPI";
-import { Book } from "../list/BookList";
+import { Book, NewImageUploadData } from "../list/BookList";
 import { Badge } from "primereact/badge";
 import { logger } from "../../util/Logger";
 import { Toast } from "primereact/toast";
@@ -15,6 +19,9 @@ import {
 import { createColumns, TableColumn } from "../../components/TableColumns";
 import GenreDropdown from "../../components/dropdowns/GenreDropdown";
 import { ColumnEditorOptions } from "primereact/column";
+import { showFailure, showSuccess } from "../../components/Toast";
+import ImageUploader from "../../components/uploaders/ImageFileUploader";
+import { FileUploadHandlerEvent } from "primereact/fileupload";
 
 export interface BookWithDBTag extends Book {
   fromDB: boolean;
@@ -49,6 +56,19 @@ export default function BookAdd() {
       header: "Book Status",
       customBody: statusTemplate,
       style: { width: "5%" },
+    },
+    {
+      field: "thumbnailURL",
+      header: "Cover Art",
+      customBody: (rowData: BookWithDBTag) =>
+        imageBodyTemplate(rowData.thumbnailURL),
+      style: { width: "15%" },
+    },
+    {
+      field: "imageUpload",
+      header: "Image Editor",
+      customBody: (rowData: BookWithDBTag) => imageUploadTemplate(rowData),
+      style: { width: "15%" },
     },
     {
       field: "title",
@@ -91,34 +111,48 @@ export default function BookAdd() {
       header: "Page Count",
       style: { width: "5%" },
       customBody: (rowData: BookWithDBTag) =>
-        numberEditor(
-          rowData.pageCount,
-          (newValue) => (rowData.pageCount = newValue)
-        ),
+        rowData.pageCount
+          ? numberEditor(
+              rowData.pageCount,
+              (newValue) => (rowData.pageCount = newValue)
+            )
+          : undefined,
     },
     {
       field: "width",
       header: "Width",
       style: { width: "5%" },
       customBody: (rowData: BookWithDBTag) =>
-        numberEditor(rowData.width, (newValue) => (rowData.width = newValue)),
+        rowData.width
+          ? numberEditor(
+              rowData.width,
+              (newValue) => (rowData.width = newValue)
+            )
+          : undefined,
     },
     {
       field: "height",
       header: "Height",
       style: { width: "5%" },
       customBody: (rowData: BookWithDBTag) =>
-        numberEditor(rowData.height, (newValue) => (rowData.height = newValue)),
+        rowData.height
+          ? numberEditor(
+              rowData.height,
+              (newValue) => (rowData.height = newValue)
+            )
+          : undefined,
     },
     {
       field: "thickness",
       header: "Thickness",
       style: { width: "5%" },
       customBody: (rowData: BookWithDBTag) =>
-        numberEditor(
-          rowData.thickness,
-          (newValue) => (rowData.thickness = newValue)
-        ),
+        rowData.thickness
+          ? numberEditor(
+              rowData.thickness,
+              (newValue) => (rowData.thickness = newValue)
+            )
+          : undefined,
     },
     {
       field: "retailPrice",
@@ -132,40 +166,91 @@ export default function BookAdd() {
     },
   ];
 
+  const imageUploadTemplate = (rowData: BookWithDBTag) => {
+    const chooseOptions = {
+      icon: "pi pi-fw pi-images",
+      iconOnly: true,
+      className: "custom-choose-btn p-button-rounded p-button-outlined",
+    };
+    const uploadOptions = {
+      icon: "pi pi-fw pi-cloud-upload",
+      iconOnly: true,
+      className:
+        "custom-upload-btn p-button-success p-button-rounded p-button-outlined",
+    };
+    const cancelOptions = {
+      icon: "pi pi-fw pi-times",
+      iconOnly: true,
+      className:
+        "custom-cancel-btn p-button-danger p-button-rounded p-button-outlined",
+    };
+
+    return (
+      <div>
+        <ImageUploader
+          disabled={false}
+          uploadHandler={(event: FileUploadHandlerEvent) => {
+            const file = event.files[0];
+            console.log("upload");
+
+            const newImage: NewImageUploadData = {
+              imageFile: file,
+              isImageUpload: true,
+              isImageDelete: false,
+            };
+
+            rowData.newImageData = newImage;
+            rowData.thumbnailURL = URL.createObjectURL(file);
+            event.options.clear();
+          }}
+          chooseOptions={chooseOptions}
+          uploadOptions={uploadOptions}
+          cancelOptions={cancelOptions}
+        />
+        <Button
+          type="button"
+          icon="pi pi-trash"
+          onClick={() => {
+            rowData.thumbnailURL =
+              "http://books-db.colab.duke.edu/media/books/default.jpg";
+
+            const newImage: NewImageUploadData = {
+              imageFile: new File([""], "filename"),
+              isImageUpload: false,
+              isImageDelete: true,
+            };
+
+            rowData.newImageData = newImage;
+          }}
+        />
+      </div>
+    );
+  };
+
   const onISBNInitialSubmit = (event: FormEvent<HTMLFormElement>): void => {
     logger.debug("Submitting Initial Book Lookup", textBox);
     BOOKS_API.addBookInitialLookup({ isbns: textBox })
       .then((response) => {
+        console.log(response);
         setBooks(
           response.books.map((book) => APIToInternalBookConversionWithDB(book))
         );
         if (response.invalid_isbns.length > 0) {
           showFailure(
+            toast,
             "The following ISBNs were not successfully added: ".concat(
               response.invalid_isbns.toString()
             )
           );
         }
       })
-      .catch(() => showFailure("Could not add books"));
+      .catch(() => showFailure(toast, "Could not add books"));
 
     event.preventDefault();
   };
 
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
-
-  const showSuccess = () => {
-    toast.current?.show({ severity: "success", summary: "Books Added" });
-  };
-
-  const showFailure = (message: string) => {
-    toast.current?.show({
-      severity: "error",
-      summary: message,
-      sticky: true,
-    });
-  };
 
   const validateRow = (book: BookWithDBTag) => {
     return book.retailPrice > 0 && book.genres;
@@ -177,6 +262,7 @@ export default function BookAdd() {
       console.log(!validateRow(book));
       if (!validateRow(book)) {
         showFailure(
+          toast,
           "The following book does not have all required fields set: ".concat(
             book.title
           )
@@ -192,16 +278,22 @@ export default function BookAdd() {
       if (!book.fromDB) {
         BOOKS_API.addBookFinal({
           book: InternalToAPIBookConversion(book),
-        }).catch(() => showFailure("Could not add ".concat(book.title)));
+          image: book.newImageData!.imageFile,
+          isImageUploaded: book.newImageData!.isImageUpload!,
+          isImageRemoved: book.newImageData!.isImageDelete!,
+        }).catch(() => showFailure(toast, "Could not add ".concat(book.title)));
       } else {
-        BOOKS_API.modifyBook({ book: InternalToAPIBookConversion(book) }).catch(
-          () => showFailure("Could not modify ".concat(book.title))
-        );
+        BOOKS_API.modifyBook({
+          book: InternalToAPIBookConversion(book),
+          image: book.newImageData!.imageFile!,
+          isImageUploaded: book.newImageData!.isImageUpload!,
+          isImageRemoved: book.newImageData!.isImageDelete!,
+        }).catch(() => {
+          showFailure(toast, "Could not modify ".concat(book.title));
+        });
       }
     }
-
     event.preventDefault();
-    showSuccess();
   };
 
   const columns = createColumns(COLUMNS);

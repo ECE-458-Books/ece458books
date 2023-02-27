@@ -44,10 +44,18 @@ import {
 } from "./errors/CSVImportErrors";
 import { Book } from "../list/BookList";
 import { useImmer } from "use-immer";
-import { findById } from "../../util/IDOperations";
+import { filterById, findById } from "../../util/IDOperations";
 import { calculateTotal } from "../../util/CalculateTotal";
 import { logger } from "../../util/Logger";
 import DeletePopup from "../../components/popups/DeletePopup";
+import AddDetailModifyTitle from "../../components/text/AddDetailModifyTitle";
+import BackButton from "../../components/buttons/BackButton";
+import DeleteButton from "../../components/buttons/DeleteButton";
+import AddRowButton from "../../components/buttons/AddRowButton";
+import EditCancelButton from "../../components/buttons/EditCancelButton";
+import TotalDollars from "../../components/text/TotalDollars";
+import OneDayCalendar from "../../components/OneDayCalendar";
+import DeleteColumn from "../../components/datatable/DeleteColumn";
 
 export interface POPurchaseRow {
   isNewRow: boolean; // true if the user added this row, false if it already existed
@@ -111,6 +119,16 @@ export default function PODetail() {
         .catch(() => console.log(id));
     }
   }, []);
+
+  // Get the data for the books dropdown
+  useEffect(
+    () =>
+      BooksDropdownData({
+        setBooksMap: setBooksMap,
+        setBookTitlesList: setBooksDropdownTitles,
+      }),
+    []
+  );
 
   const COLUMNS: TableColumn[] = [
     {
@@ -176,24 +194,6 @@ export default function PODetail() {
 
   // -------- METHODS --------
 
-  // Adds a row to the PO
-  const addNewPurchase = () => {
-    setLineData(emptyPurchase);
-    const _lineData = lineData;
-    _lineData.id = uuid();
-    setLineData(_lineData);
-    const _data = [...purchases];
-    _data.push({ ...lineData });
-    setPurchases(_data);
-  };
-
-  // Deletes a row from the PO
-  const deletePurchase = (rowData: POPurchaseRow) => {
-    const _data = purchases.filter((val) => val.id !== rowData.id);
-    setPurchases(_data);
-    setTotalCost(calculateTotal(_data));
-  };
-
   // Called to make delete pop up show
   const deletePurchaseOrderPopup = () => {
     logger.debug("Delete Purchase Order Clicked");
@@ -213,15 +213,6 @@ export default function PODetail() {
       })
       .catch(() => showFailure(toast, "Purchase Order Failed to Delete"));
   };
-
-  // The delete popup
-  const deletePopup = (
-    <DeletePopup
-      deleteItemIdentifier={"this purchase order"}
-      onConfirm={() => deletePurchaseOrderFinal()}
-      setIsVisible={setDeletePopupVisible}
-    />
-  );
 
   // Handler for a CSV upload
   const csvUploadHandler = (event: FileUploadHandlerEvent) => {
@@ -351,123 +342,130 @@ export default function PODetail() {
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
 
-  const actionBodyTemplate = (rowData: POPurchaseRow) => {
-    return (
-      <React.Fragment>
-        <Button
-          type="button"
-          icon="pi pi-trash"
-          className="p-button-rounded p-button-danger"
-          onClick={() => deletePurchase(rowData)}
-          disabled={!isModifiable}
-        />
-      </React.Fragment>
-    );
-  };
-
-  const leftToolbarTemplate = () => {
-    return (
-      <>
-        {isModifiable && (
-          <React.Fragment>
-            <Button
-              type="button"
-              label="Add Book"
-              className="p-button-info mr-2"
-              icon="pi pi-plus"
-              onClick={addNewPurchase}
-              disabled={!isModifiable}
-            />
-            <CSVUploader
-              disabled={!isModifiable}
-              uploadHandler={csvUploadHandler}
-            />
-          </React.Fragment>
-        )}
-      </>
-    );
-  };
-
-  const centerToolbarTemplate = () => {
-    return (
-      <React.Fragment>
-        {!isPOAddPage && !isModifiable && (
-          <Button
-            id="modifyBBToggle"
-            name="modifyBBToggle"
-            label="Edit"
-            icon="pi pi-pencil"
-            disabled={isPOAddPage}
-            onClick={() => {
-              setIsModifiable(!isModifiable);
-            }}
-          />
-        )}
-        {!isPOAddPage && isModifiable && (
-          <Button
-            id="modifyBBToggle2"
-            name="modifyBBToggle2"
-            label="Cancel"
-            icon="pi pi-times"
-            className="p-button-warning"
-            disabled={isPOAddPage}
-            onClick={() => {
-              setIsModifiable(!isModifiable);
-              window.location.reload();
-            }}
-          />
-        )}
-      </React.Fragment>
-    );
-  };
-
-  const rightToolbarTemplate = () => {
-    return (
-      <React.Fragment>
-        {isModifiable && (
-          <ConfirmPopup
-            isPopupVisible={isConfirmationPopupVisible}
-            hideFunc={() => setIsConfirmationPopupVisible(false)}
-            onFinalSubmission={onSubmit}
-            onRejectFinalSubmission={() => {
-              // do nothing
-            }}
-            onShowPopup={() => setIsConfirmationPopupVisible(true)}
-            disabled={!isModifiable}
-            label={"Submit"}
-            className="p-button-success p-button-raised"
-          />
-        )}
-        {isModifiable && isPOAddPage && (
-          <ConfirmPopup
-            isPopupVisible={isConfirmationPopupVisible}
-            hideFunc={() => setIsConfirmationPopupVisible(false)}
-            onFinalSubmission={onSubmit}
-            onRejectFinalSubmission={() => {
-              setIsGoBackActive(false);
-            }}
-            onShowPopup={() => {
-              setIsConfirmationPopupVisible(true);
-              setIsGoBackActive(true);
-            }}
-            disabled={!isModifiable}
-            label={"Submit and Go Back"}
-            className="p-button-success p-button-raised ml-2"
-          />
-        )}
-      </React.Fragment>
-    );
-  };
-
-  // Get the data for the books dropdown
-  useEffect(
-    () =>
-      BooksDropdownData({
-        setBooksMap: setBooksMap,
-        setBookTitlesList: setBooksDropdownTitles,
-      }),
-    []
+  // Top Line
+  const titleText = (
+    <AddDetailModifyTitle
+      isModifyPage={isModifiable}
+      isAddPage={isPOAddPage}
+      detailTitle={"Purchase Order Details"}
+      addTitle={"Add Purchase Order"}
+      modifyTitle={"Modify Purchase Order"}
+    />
   );
+
+  const backButton = (
+    <BackButton onClick={() => navigate("/purchase-orders")} />
+  );
+
+  const deleteButton = (
+    <DeleteButton isEnabled={!isPOAddPage} onClick={deletePurchaseOrderPopup} />
+  );
+
+  const deletePopup = (
+    <DeletePopup
+      deleteItemIdentifier={"this purchase order"}
+      onConfirm={deletePurchaseOrderFinal}
+      setIsVisible={setDeletePopupVisible}
+    />
+  );
+
+  // Toolbar
+
+  // Left
+  const addRowButton = (
+    <AddRowButton
+      emptyItem={emptyPurchase}
+      rows={purchases}
+      setRows={setPurchases}
+      isDisabled={!isModifiable}
+      label={"Add Book"}
+      isVisible={isModifiable}
+    />
+  );
+
+  const csvImportButton = (
+    <CSVUploader visible={isModifiable} uploadHandler={csvUploadHandler} />
+  );
+
+  const leftToolbar = (
+    <>
+      {addRowButton}
+      {csvImportButton}
+    </>
+  );
+
+  // Center
+  const editCancelButton = (
+    <EditCancelButton
+      onClickEdit={() => setIsModifiable(!isModifiable)}
+      onClickCancel={() => {
+        setIsModifiable(!isModifiable);
+        window.location.reload();
+      }}
+      isAddPage={isPOAddPage}
+      isModifiable={isModifiable}
+    />
+  );
+
+  // Right
+  const submitButton = (
+    <ConfirmPopup
+      isButtonVisible={isModifiable}
+      isPopupVisible={isConfirmationPopupVisible}
+      hideFunc={() => setIsConfirmationPopupVisible(false)}
+      onFinalSubmission={onSubmit}
+      onShowPopup={() => setIsConfirmationPopupVisible(true)}
+      disabled={!isModifiable}
+      label={"Submit"}
+      className="p-button-success ml-2"
+    />
+  );
+
+  const submitAndGoBackButton = (
+    <ConfirmPopup
+      isButtonVisible={isModifiable && isPOAddPage}
+      isPopupVisible={isConfirmationPopupVisible && isModifiable && isPOAddPage}
+      hideFunc={() => setIsConfirmationPopupVisible(false)}
+      onFinalSubmission={onSubmit}
+      onRejectFinalSubmission={() => {
+        setIsGoBackActive(false);
+      }}
+      onShowPopup={() => {
+        setIsConfirmationPopupVisible(true);
+        setIsGoBackActive(true);
+      }}
+      disabled={!isModifiable}
+      label={"Submit and Go Back"}
+      className="p-button-success ml-2"
+    />
+  );
+
+  const rightToolbar = (
+    <>
+      {submitAndGoBackButton}
+      {submitButton}
+    </>
+  );
+
+  // Items below toolbar
+  const totalDollars = (
+    <TotalDollars label={"Total Revenue:"} totalDollars={totalCost} />
+  );
+
+  const calendar = (
+    <OneDayCalendar isModifiable={isModifiable} date={date} setDate={setDate} />
+  );
+
+  const vendorDropdown = (
+    <VendorDropdown
+      setVendorMap={setVendorMap}
+      setSelectedVendor={setSelectedVendorName}
+      selectedVendor={selectedVendorName}
+      isModifiable={isModifiable}
+    />
+  );
+
+  // Datatable Items
 
   const booksDropDownEditor = (
     value: string,
@@ -485,14 +483,14 @@ export default function PODetail() {
     />
   );
 
-  const vendorDropdown = (
-    <VendorDropdown
-      setVendorMap={setVendorMap}
-      setSelectedVendor={setSelectedVendorName}
-      selectedVendor={selectedVendorName}
-      isModifiable={isModifiable}
-    />
-  );
+  // Delete icon for each row
+  const deleteColumn = DeleteColumn<POPurchaseRow>({
+    onDelete: (rowData) => {
+      const newPurchases = filterById(purchases, rowData.id, setPurchases);
+      setTotalCost(calculateTotal(newPurchases));
+    },
+    hidden: !isModifiable,
+  });
 
   const columns = createColumns(COLUMNS);
 
@@ -501,89 +499,30 @@ export default function PODetail() {
       <Toast ref={toast} />
       <div className="grid flex justify-content-center">
         <div className="flex col-12 p-0">
-          <div className="flex col-1">
-            <Button
-              type="button"
-              label="Back"
-              icon="pi pi-arrow-left"
-              onClick={() => navigate("/purchase-orders")}
-              className="p-button-sm my-auto ml-1"
-            />
-          </div>
-          <div className="pt-2 col-10">
-            {isPOAddPage ? (
-              <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
-                Add Purchase Order
-              </h1>
-            ) : isModifiable ? (
-              <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
-                Modify Purchase Order
-              </h1>
-            ) : (
-              <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
-                Purchase Order Details
-              </h1>
-            )}
-          </div>
-          <div className="flex col-1">
-            {!isPOAddPage && (
-              <Button
-                type="button"
-                label="Delete"
-                icon="pi pi-trash"
-                onClick={() => deletePurchaseOrderPopup()}
-                className="p-button-sm my-auto ml-1 p-button-danger"
-              />
-            )}
-          </div>
+          {backButton}
+          {titleText}
+          {deleteButton}
         </div>
         <div className="col-11">
           <form onSubmit={onSubmit}>
             <Toolbar
               className="mb-4"
-              left={leftToolbarTemplate}
-              center={centerToolbarTemplate}
-              right={rightToolbarTemplate}
+              left={leftToolbar}
+              center={editCancelButton}
+              right={rightToolbar}
             />
 
-            <div className="flex pb-2 flex-row justify-content-evenly card-container col-12">
-              <div className="flex">
-                <label
-                  className="p-component p-text-secondary my-auto text-teal-900 pr-2"
-                  htmlFor="totalcost"
-                >
-                  Total Cost:
-                </label>
-                <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
-                  {priceBodyTemplate(totalCost ?? 0)}
-                </p>
-              </div>
-              <div>
-                <label
-                  htmlFor="date"
-                  className="pt-2 pr-2 p-component text-teal-900 p-text-secondary"
-                >
-                  Date
-                </label>
-                <Calendar
-                  id="date"
-                  disabled={!isModifiable}
-                  value={date}
-                  readOnlyInput
-                  onChange={(event: CalendarChangeEvent): void => {
-                    setDate(event.value as Date);
-                  }}
-                />
-              </div>
-
+            <div className="flex col-12 justify-content-evenly mb-3">
+              {totalDollars}
+              {calendar}
               <div>
                 <label
                   htmlFor="vendor"
-                  className="pt-2 pr-2 p-component text-teal-900 p-text-secondary"
+                  className="p-component text-teal-900 p-text-secondary my-auto pr-2"
                 >
                   Vendor
                 </label>
-                <>{vendorDropdown}</>
+                {vendorDropdown}
               </div>
             </div>
 
@@ -602,17 +541,8 @@ export default function PODetail() {
               }}
             >
               {columns}
-              <Column
-                body={actionBodyTemplate}
-                header="Delete Line Item"
-                hidden={!isModifiable}
-                exportable={false}
-                style={{ minWidth: "8rem" }}
-              ></Column>
+              {deleteColumn}
             </DataTable>
-
-            {/* Maybe be needed in case the confrim button using the popup breaks */}
-            {/* <Button disabled={!this.state.isModifiable} label="submit" type="submit" /> */}
           </form>
         </div>
         {deletePopupVisible && deletePopup}

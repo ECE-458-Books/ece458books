@@ -336,7 +336,7 @@ export default function BBDetail() {
   const backButton = <BackButton onClick={() => navigate("/book-buybacks")} />;
 
   const deleteButton = (
-    <DeleteButton isEnabled={!isBBAddPage} onClick={() => deleteBuyBackPopup} />
+    <DeleteButton isEnabled={!isBBAddPage} onClick={deleteBuyBackPopup} />
   );
 
   const deletePopup = (

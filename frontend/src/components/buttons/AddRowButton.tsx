@@ -38,8 +38,8 @@ export default function AddRowButton<T extends IDer>(
         icon="pi pi-plus"
         className="p-button-info mr-2"
         onClick={addNewRow}
-        disabled={props.isDisabled}
-        visible={props.isVisible}
+        disabled={props.isDisabled ?? false}
+        visible={props.isVisible ?? true}
       />
     </>
   );

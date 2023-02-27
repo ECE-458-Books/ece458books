@@ -48,7 +48,7 @@ import AddDetailModifyTitle from "../../components/text/AddDetailModifyTitle";
 import BackButton from "../../components/buttons/BackButton";
 import DeleteButton from "../../components/buttons/DeleteButton";
 import AddRowButton from "../../components/buttons/AddRowButton";
-import EditCancelButton from "../../components/buttons/EditCancelButton";
+import EditCancelButton from "../../components/buttons/EditCancelDetailButton";
 import TotalDollars from "../../components/text/TotalDollars";
 import OneDayCalendar from "../../components/OneDayCalendar";
 import DeleteColumn from "../../components/datatable/DeleteColumn";
@@ -331,24 +331,30 @@ export default function SRDetail() {
   // Top Line
 
   const titleText = (
-    <AddDetailModifyTitle
-      isModifyPage={isModifiable}
-      isAddPage={isSRAddPage}
-      detailTitle={"Sales Reconciliation Details"}
-      addTitle={"Add Sales Reconciliation"}
-      modifyTitle={"Modify Sales Reconciliation"}
-    />
+    <div className="pt-2 col-10">
+      <AddDetailModifyTitle
+        isModifyPage={isModifiable}
+        isAddPage={isSRAddPage}
+        detailTitle={"Sales Reconciliation Details"}
+        addTitle={"Add Sales Reconciliation"}
+        modifyTitle={"Modify Sales Reconciliation"}
+      />
+    </div>
   );
 
   const backButton = (
-    <BackButton onClick={() => navigate("/purchase-orders")} />
+    <div className="flex col-1">
+      <BackButton onClick={() => navigate("/purchase-orders")} />
+    </div>
   );
 
   const deleteButton = (
-    <DeleteButton
-      isEnabled={!isSRAddPage}
-      onClick={deleteSalesReconciliationPopup}
-    />
+    <div className="flex col-1">
+      <DeleteButton
+        isEnabled={!isSRAddPage}
+        onClick={deleteSalesReconciliationPopup}
+      />
+    </div>
   );
 
   const deletePopup = (
@@ -440,11 +446,13 @@ export default function SRDetail() {
   // Items below toolbar
 
   const totalDollars = (
-    <TotalDollars label={"Total Revenue:"} totalDollars={totalRevenue} />
+    <div className="flex">
+      <TotalDollars label={"Total Revenue:"} totalDollars={totalRevenue} />
+    </div>
   );
 
   const calendar = (
-    <OneDayCalendar isModifiable={isModifiable} date={date} setDate={setDate} />
+    <OneDayCalendar disabled={!isModifiable} date={date} setDate={setDate} />
   );
 
   // Datatable

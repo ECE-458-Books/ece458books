@@ -6,9 +6,9 @@ interface TitleTextProps {
   isModifyPage: boolean;
 }
 
-export default function DefaultTitleText(props: TitleTextProps) {
+export default function AddDetailModifyTitle(props: TitleTextProps) {
   return (
-    <div className="pt-2 col-10">
+    <div>
       {props.isAddPage ? (
         <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
           {props.addTitle}

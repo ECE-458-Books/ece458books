@@ -49,7 +49,7 @@ import AddDetailModifyTitle from "../../components/text/AddDetailModifyTitle";
 import BackButton from "../../components/buttons/BackButton";
 import DeleteButton from "../../components/buttons/DeleteButton";
 import AddRowButton from "../../components/buttons/AddRowButton";
-import EditCancelButton from "../../components/buttons/EditCancelButton";
+import EditCancelButton from "../../components/buttons/EditCancelDetailButton";
 import TotalDollars from "../../components/text/TotalDollars";
 import OneDayCalendar from "../../components/OneDayCalendar";
 import DeleteColumn from "../../components/datatable/DeleteColumn";
@@ -341,21 +341,30 @@ export default function PODetail() {
   // Top Line
 
   const titleText = (
-    <AddDetailModifyTitle
-      isModifyPage={isModifiable}
-      isAddPage={isPOAddPage}
-      detailTitle={"Purchase Order Details"}
-      addTitle={"Add Purchase Order"}
-      modifyTitle={"Modify Purchase Order"}
-    />
+    <div className="pt-2 col-10">
+      <AddDetailModifyTitle
+        isModifyPage={isModifiable}
+        isAddPage={isPOAddPage}
+        detailTitle={"Purchase Order Details"}
+        addTitle={"Add Purchase Order"}
+        modifyTitle={"Modify Purchase Order"}
+      />{" "}
+    </div>
   );
 
   const backButton = (
-    <BackButton onClick={() => navigate("/purchase-orders")} />
+    <div className="flex col-1">
+      <BackButton onClick={() => navigate("/purchase-orders")} />
+    </div>
   );
 
   const deleteButton = (
-    <DeleteButton isEnabled={!isPOAddPage} onClick={deletePurchaseOrderPopup} />
+    <div className="flex col-1">
+      <DeleteButton
+        isEnabled={!isPOAddPage}
+        onClick={deletePurchaseOrderPopup}
+      />
+    </div>
   );
 
   const deletePopup = (
@@ -446,11 +455,13 @@ export default function PODetail() {
 
   // Items below toolbar
   const totalDollars = (
-    <TotalDollars label={"Total Cost:"} totalDollars={totalCost} />
+    <div className="flex">
+      <TotalDollars label={"Total Cost:"} totalDollars={totalCost} />
+    </div>
   );
 
   const calendar = (
-    <OneDayCalendar isModifiable={isModifiable} date={date} setDate={setDate} />
+    <OneDayCalendar disabled={!isModifiable} date={date} setDate={setDate} />
   );
 
   const vendorDropdown = (

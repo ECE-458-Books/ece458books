@@ -1,7 +1,7 @@
 import { Calendar, CalendarChangeEvent } from "primereact/calendar";
 
 interface OneDayCalendarProps {
-  isModifiable: boolean;
+  disabled?: boolean;
   date: Date;
   setDate: (date: Date) => void;
 }
@@ -17,7 +17,7 @@ export default function OneDayCalendar(props: OneDayCalendarProps) {
       </label>
       <Calendar
         id="date"
-        disabled={!props.isModifiable}
+        disabled={props.disabled ?? false}
         value={props.date}
         readOnlyInput
         onChange={(event: CalendarChangeEvent): void => {

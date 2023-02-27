@@ -40,7 +40,7 @@ import DeleteButton from "../../components/buttons/DeleteButton";
 import VendorDropdown from "../../components/dropdowns/VendorDropdown";
 import DeleteColumn from "../../components/datatable/DeleteColumn";
 import AddRowButton from "../../components/buttons/AddRowButton";
-import EditCancelButton from "../../components/buttons/EditCancelButton";
+import EditCancelButton from "../../components/buttons/EditCancelDetailButton";
 
 export interface BBDetailState {
   id: number;
@@ -319,19 +319,27 @@ export default function BBDetail() {
 
   // Top Line
   const titleText = (
-    <AddDetailModifyTitle
-      isModifyPage={isModifiable}
-      isAddPage={isBBAddPage}
-      detailTitle={"Book Buyback Details"}
-      addTitle={"Add Book Buyback"}
-      modifyTitle={"Modify Book Buyback"}
-    />
+    <div className="pt-2 col-10">
+      <AddDetailModifyTitle
+        isModifyPage={isModifiable}
+        isAddPage={isBBAddPage}
+        detailTitle={"Book Buyback Details"}
+        addTitle={"Add Book Buyback"}
+        modifyTitle={"Modify Book Buyback"}
+      />
+    </div>
   );
 
-  const backButton = <BackButton onClick={() => navigate("/book-buybacks")} />;
+  const backButton = (
+    <div className="flex col-1">
+      <BackButton onClick={() => navigate("/book-buybacks")} />
+    </div>
+  );
 
   const deleteButton = (
-    <DeleteButton isEnabled={!isBBAddPage} onClick={deleteBuyBackPopup} />
+    <div className="flex col-1">
+      <DeleteButton isEnabled={!isBBAddPage} onClick={deleteBuyBackPopup} />
+    </div>
   );
 
   const deletePopup = (
@@ -418,11 +426,13 @@ export default function BBDetail() {
 
   // Items below toolbar
   const totalDollars = (
-    <TotalDollars label={"Total Revenue:"} totalDollars={totalRevenue} />
+    <div className="flex">
+      <TotalDollars label={"Total Revenue:"} totalDollars={totalRevenue} />
+    </div>
   );
 
   const calendar = (
-    <OneDayCalendar isModifiable={isModifiable} date={date} setDate={setDate} />
+    <OneDayCalendar disabled={!isModifiable} date={date} setDate={setDate} />
   );
 
   const vendorDropdown = (

@@ -65,8 +65,9 @@ class SalesReconciliationSerializer(TransactionGroupBaseSerializer):
 
     def __book_has_previous_purchase(self, date, book_id):
         try:
-            return PurchaseOrder.objects.filter(date__lte=date).annotate(prev_purchase=Subquery(Purchase.objects.filter(purchase_order=OuterRef('id')).filter(
-                book=book_id).values('book'))).values('prev_purchase').exclude(prev_purchase=None).first()['prev_purchase'] != None
+            return PurchaseOrder.objects.filter(date__lte=date).annotate(
+                prev_purchase=Subquery(Purchase.objects.filter(purchase_order=OuterRef('id')).filter(book=book_id).distinct('purchase_order').values('book'))).values('prev_purchase').exclude(
+                    prev_purchase=None).first()['prev_purchase'] != None
         except TypeError:
             return None
 

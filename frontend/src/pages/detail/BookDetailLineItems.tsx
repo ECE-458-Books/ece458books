@@ -61,7 +61,6 @@ export default function BookDetailLineItems(props: BookDetailLineItemsProps) {
 
   const onRowClick = (event: DataTableRowClickEvent) => {
     const lineItem = event.data as BookDetailLineItem;
-    console.log(lineItem)
     logger.debug("Line Item Clicked (Book Detail View)", lineItem);
     const urlExtension = LineItemURLMapper.get(lineItem.type);
     navigate(`/${urlExtension}/detail/${lineItem.id}`);

@@ -28,10 +28,7 @@ import GenreDropdown, {
   GenresDropdownData,
 } from "../../components/dropdowns/GenreDropdown";
 import { InputSwitch } from "primereact/inputswitch";
-import {
-  BookDetailLineItem,
-  BookDetailLineItemType,
-} from "../detail/BookDetailLineItems";
+import { BookDetailLineItem } from "../detail/BookDetailLineItems";
 
 export const NUM_ROWS = 10;
 

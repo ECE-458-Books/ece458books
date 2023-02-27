@@ -10,9 +10,9 @@ const GENRES_EXTENSION = "genres";
 
 // getGenres
 export interface GetGenresReq {
-  page?: number;
-  page_size?: number;
-  ordering?: string;
+  page: number;
+  page_size: number;
+  ordering: string;
 }
 
 export interface APIGenre {

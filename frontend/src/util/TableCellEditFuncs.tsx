@@ -73,6 +73,33 @@ export function priceEditor(
   );
 }
 
+export function percentEditor(
+  value: number | undefined,
+  onChange: (newValue: number) => void,
+  disabled?: boolean
+) {
+  return (
+    <InputNumber
+      value={value}
+      onValueChange={(e) => onChange(e.target.value ?? 0)}
+      suffix="%"
+      mode="decimal"
+      maxFractionDigits={2}
+      minFractionDigits={2}
+      max={100}
+      disabled={disabled ?? false}
+    />
+  );
+}
+
+export function percentBodyTemplate(value: number) {
+  return new Intl.NumberFormat("en-US", {
+    style: "percent",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value / 100);
+}
+
 export function priceBodyTemplate(value: number | bigint) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",

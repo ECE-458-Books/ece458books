@@ -12,7 +12,6 @@ import ModifyPO from "../pages/detail/PODetail";
 import ModifyBB from "../pages/detail/BBDetail";
 import BookAdd from "../pages/add/BookAdd";
 import GenreAdd from "../pages/add/GenreAdd";
-import VendorAdd from "../pages/add/VendorAdd";
 import GenreDetail from "../pages/detail/GenreDetail";
 import VendorDetail from "../pages/detail/VendorDetail";
 import PurchaseOrderList from "../pages/list/POList";
@@ -67,7 +66,7 @@ export default function Router() {
         <Route path="purchase-orders/detail/:id" element={<ModifyPO />} />
         <Route path="sales-reconciliations/add" element={<ModifySR />} />
         <Route path="sales-reconciliations/detail/:id" element={<ModifySR />} />
-        <Route path="vendors/add" element={<VendorAdd />} />
+        <Route path="vendors/add" element={<VendorDetail />} />
         <Route path="buy-backs/add" element={<ModifyBB />} />
         <Route path="buy-backs/detail/:id" element={<ModifyBB />} />
         <Route path="vendors/detail/:id" element={<VendorDetail />} />

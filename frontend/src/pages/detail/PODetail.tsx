@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ToggleButton } from "primereact/togglebutton";
 import { Calendar, CalendarChangeEvent } from "primereact/calendar";
 import { DataTable } from "primereact/datatable";
 import { createColumns, TableColumn } from "../../components/TableColumns";
@@ -13,7 +12,7 @@ import {
   priceBodyTemplate,
   priceEditor,
 } from "../../util/TableCellEditFuncs";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   AddPOReq,
   APIPOPurchaseRow,
@@ -22,7 +21,6 @@ import {
 } from "../../apis/PurchasesAPI";
 import { internalToExternalDate } from "../../util/DateOperations";
 import { Toast } from "primereact/toast";
-import { InputNumber } from "primereact/inputnumber";
 import { FileUploadHandlerEvent } from "primereact/fileupload";
 import {
   APIToInternalPOConversion,
@@ -48,6 +46,8 @@ import { Book } from "../list/BookList";
 import { useImmer } from "use-immer";
 import { findById } from "../../util/IDOperations";
 import { calculateTotal } from "../../util/CalculateTotal";
+import { logger } from "../../util/Logger";
+import DeletePopup from "../../components/popups/DeletePopup";
 
 export interface POPurchaseRow {
   isNewRow: boolean; // true if the user added this row, false if it already existed
@@ -94,6 +94,8 @@ export default function PODetail() {
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
   const [hasUploadedCSV, setHasUploadedCSV] = useState<boolean>(false);
+  const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false); // Whether the delete popup is shown
+  const [isGoBackActive, setIsGoBackActive] = useState<boolean>(false);
 
   // Load the PO data on page load
   useEffect(() => {
@@ -122,35 +124,41 @@ export default function PODetail() {
       header: "Book",
       customBody: (rowData: POPurchaseRow) =>
         booksDropDownEditor(rowData.bookTitle, (newValue) => {
-          setPurchases((draft) => {
-            const purchase = findById(draft, rowData.id);
-            purchase!.bookTitle = newValue;
-          });
-        }),
+            setPurchases((draft) => {
+              const purchase = findById(draft, rowData.id);
+              purchase!.bookTitle = newValue;
+            });
+          },
+          !isModifiable
+        ),
     },
     {
       field: "quantity",
       header: "Quantity",
       customBody: (rowData: POPurchaseRow) =>
         numberEditor(rowData.quantity, (newValue) => {
-          setPurchases((draft) => {
-            const purchase = findById(draft, rowData.id);
-            purchase!.quantity = newValue;
-            setTotalCost(calculateTotal(draft));
-          });
-        }),
+            setPurchases((draft) => {
+              const purchase = findById(draft, rowData.id);
+              purchase!.quantity = newValue;
+              setTotalCost(calculateTotal(draft));
+            });
+          },
+          !isModifiable
+        ),
     },
     {
       field: "unitWholesalePrice",
       header: "Unit Wholesale Price ($)",
       customBody: (rowData: POPurchaseRow) =>
         priceEditor(rowData.price, (newValue) => {
-          setPurchases((draft) => {
-            const purchase = findById(draft, rowData.id);
-            purchase!.price = newValue;
-            setTotalCost(calculateTotal(draft));
-          });
-        }),
+            setPurchases((draft) => {
+              const purchase = findById(draft, rowData.id);
+              purchase!.price = newValue;
+              setTotalCost(calculateTotal(draft));
+            });
+          },
+          !isModifiable
+        ),
     },
     {
       field: "subtotal",
@@ -179,6 +187,35 @@ export default function PODetail() {
     setPurchases(_data);
     setTotalCost(calculateTotal(_data));
   };
+
+  // Called to make delete pop up show
+  const deletePurchaseOrderPopup = () => {
+    logger.debug("Delete Purchase Order Clicked");
+    setDeletePopupVisible(true);
+  };
+
+  // Call to actually delete the element
+  const deletePurchaseOrderFinal = () => {
+    logger.debug("Edit Purchase Order Finalized");
+    setDeletePopupVisible(false);
+    PURCHASES_API.deletePurchaseOrder({
+      id: id!,
+    })
+      .then(() => {
+        showSuccess(toast, "Purchase Order Deleted");
+        navigate("/purchase-orders");
+      })
+      .catch(() => showFailure(toast, "Purchase Order Failed to Delete"));
+  };
+
+  // The delete popup
+  const deletePopup = (
+    <DeletePopup
+      deleteItemIdentifier={"this purchase order"}
+      onConfirm={() => deletePurchaseOrderFinal()}
+      setIsVisible={setDeletePopupVisible}
+    />
+  );
 
   // Handler for a CSV upload
   const csvUploadHandler = (event: FileUploadHandlerEvent) => {
@@ -249,7 +286,12 @@ export default function PODetail() {
     } as AddPOReq;
 
     PURCHASES_API.addPurchaseOrder(purchaseOrder)
-      .then(() => showSuccess(toast, "Purchase order added successfully"))
+      .then(() => {
+        showSuccess(toast, "Purchase order added successfully");
+        isGoBackActive
+          ? navigate("/purchase-orders")
+          : window.location.reload();
+      })
       .catch(() => showFailure(toast, "Could not add purchase order"));
   }
 
@@ -273,7 +315,10 @@ export default function PODetail() {
     } as ModifyPOReq;
 
     PURCHASES_API.modifyPurchaseOrder(purchaseOrder)
-      .then(() => showSuccess(toast, "Purchase order modified successfully"))
+      .then(() => {
+        showSuccess(toast, "Purchase order modified successfully");
+        setIsModifiable(!isModifiable);
+      })
       .catch(() => showFailure(toast, "Could not modify purchase order"));
   }
 
@@ -299,38 +344,94 @@ export default function PODetail() {
   const leftToolbarTemplate = () => {
     return (
       <>
-        <React.Fragment>
-          <CSVUploader uploadHandler={csvUploadHandler} />
-        </React.Fragment>
-        <React.Fragment>
-          <Button
-            type="button"
-            label="Add Book"
-            className="p-button-info mr-2"
-            icon="pi pi-plus"
-            onClick={addNewPurchase}
-            disabled={!isModifiable}
-          />
-        </React.Fragment>
+        {isModifiable && (
+          <React.Fragment>
+            <Button
+              type="button"
+              label="Add Book"
+              className="p-button-info mr-2"
+              icon="pi pi-plus"
+              onClick={addNewPurchase}
+              disabled={!isModifiable}
+            />
+            <CSVUploader
+              disabled={!isModifiable}
+              uploadHandler={csvUploadHandler}
+            />
+          </React.Fragment>
+        )}
       </>
+    );
+  };
+
+  const centerToolbarTemplate = () => {
+    return (
+      <React.Fragment>
+        {!isPOAddPage && !isModifiable && (
+          <Button
+            id="modifyBBToggle"
+            name="modifyBBToggle"
+            label="Edit"
+            icon="pi pi-pencil"
+            disabled={isPOAddPage}
+            onClick={() => {
+              setIsModifiable(!isModifiable);
+            }}
+          />
+        )}
+        {!isPOAddPage && isModifiable && (
+          <Button
+            id="modifyBBToggle2"
+            name="modifyBBToggle2"
+            label="Cancel"
+            icon="pi pi-times"
+            className="p-button-warning"
+            disabled={isPOAddPage}
+            onClick={() => {
+              setIsModifiable(!isModifiable);
+              window.location.reload();
+            }}
+          />
+        )}
+      </React.Fragment>
     );
   };
 
   const rightToolbarTemplate = () => {
     return (
       <React.Fragment>
-        <ConfirmPopup
-          isVisible={isConfirmationPopupVisible}
-          hideFunc={() => setIsConfirmationPopupVisible(false)}
-          acceptFunc={onSubmit}
-          rejectFunc={() => {
-            console.log("reject");
-          }}
-          buttonClickFunc={() => setIsConfirmationPopupVisible(true)}
-          disabled={!isModifiable}
-          label={"Submit"}
-          className="p-button-success p-button-raised"
-        />
+        {isModifiable && (
+          <ConfirmPopup
+            isVisible={isConfirmationPopupVisible}
+            hideFunc={() => setIsConfirmationPopupVisible(false)}
+            acceptFunc={onSubmit}
+            rejectFunc={() => {
+              console.log("reject");
+            }}
+            buttonClickFunc={() => setIsConfirmationPopupVisible(true)}
+            disabled={!isModifiable}
+            label={"Submit"}
+            className="p-button-success p-button-raised"
+          />
+        )}
+        {isModifiable && isPOAddPage && (
+          <ConfirmPopup
+            isVisible={isConfirmationPopupVisible}
+            hideFunc={() => setIsConfirmationPopupVisible(false)}
+            acceptFunc={onSubmit}
+            rejectFunc={() => {
+              console.log("reject");
+              setIsGoBackActive(false);
+            }}
+            buttonClickFunc={() => {
+              setIsConfirmationPopupVisible(true);
+              setIsGoBackActive(true);
+            }}
+            disabled={!isModifiable}
+            label={"Submit and Go Back"}
+            className="p-button-success p-button-raised ml-2"
+          />
+        )}
       </React.Fragment>
     );
   };
@@ -347,13 +448,15 @@ export default function PODetail() {
 
   const booksDropDownEditor = (
     value: string,
-    onChange: (newValue: string) => void
+    onChange: (newValue: string) => void,
+    isDisabled?: boolean
   ) => (
     <BooksDropdown
       // This will always be used in a table cell, so we can disable the warning
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       setSelectedBook={onChange}
       selectedBook={value}
+      isDisabled={isDisabled}
       bookTitlesList={booksDropdownTitles}
       placeholder={value}
     />
@@ -370,60 +473,76 @@ export default function PODetail() {
 
   const columns = createColumns(COLUMNS);
 
+  // The navigator to switch pages
+  const navigate = useNavigate();
+
   return (
     <div>
       <Toast ref={toast} />
       <div className="grid flex justify-content-center">
-        <link
-          rel="stylesheet"
-          href="https://unpkg.com/primeflex@3.1.2/primeflex.css"
-        ></link>
-        <div className="col-11">
-          <div className="pt-2">
+        <div className="flex col-12 p-0">
+          <div className="flex col-1">
+            <Button
+              type="button"
+              label="Back"
+              icon="pi pi-arrow-left"
+              onClick={() => navigate("/purchase-orders")}
+              className="p-button-sm my-auto ml-1"
+            />
+          </div>
+          <div className="pt-2 col-10">
             {isPOAddPage ? (
               <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
                 Add Purchase Order
               </h1>
-            ) : (
+            ) : isModifiable ? (
               <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
                 Modify Purchase Order
               </h1>
+            ) : (
+              <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
+                Purchase Order Details
+              </h1>
             )}
           </div>
+          <div className="flex col-1">
+            {!isPOAddPage && (
+              <Button
+                type="button"
+                label="Delete"
+                tooltip="Delete this purchase order"
+                tooltipOptions={{
+                  position: "bottom",
+                  showDelay: 500,
+                  hideDelay: 300,
+                }}
+                icon="pi pi-trash"
+                onClick={() => deletePurchaseOrderPopup()}
+                className="p-button-sm my-auto ml-1 p-button-danger"
+              />
+            )}
+          </div>
+        </div>
+        <div className="col-11">
           <form onSubmit={onSubmit}>
-            <div className="flex flex-row justify-content-center card-container col-12">
-              {!isPOAddPage && (
-                <ToggleButton
-                  id="modifyPOToggle"
-                  name="modifyPOToggle"
-                  onLabel="Editable"
-                  offLabel="Edit"
-                  onIcon="pi pi-check"
-                  offIcon="pi pi-times"
-                  disabled={isPOAddPage}
-                  checked={isModifiable}
-                  onChange={() => setIsModifiable(!isModifiable)}
-                />
-              )}
-            </div>
+            <Toolbar
+              className="mb-4"
+              left={leftToolbarTemplate}
+              center={centerToolbarTemplate}
+              right={rightToolbarTemplate}
+            />
 
             <div className="flex pb-2 flex-row justify-content-evenly card-container col-12">
-              <div>
+              <div className="flex">
                 <label
-                  className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
+                  className="p-component p-text-secondary my-auto text-teal-900 pr-2"
                   htmlFor="totalcost"
                 >
-                  Total Cost ($):
+                  Total Cost:
                 </label>
-                <InputNumber
-                  id="totalcost2"
-                  className="w-6"
-                  minFractionDigits={2}
-                  useGrouping={false}
-                  name="totalcost2"
-                  value={totalCost ?? 0}
-                  disabled={true}
-                />
+                <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
+                  {priceBodyTemplate(totalCost ?? 0)}
+                </p>
               </div>
               <div>
                 <label
@@ -454,12 +573,6 @@ export default function PODetail() {
               </div>
             </div>
 
-            <Toolbar
-              className="mb-4"
-              left={leftToolbarTemplate}
-              right={rightToolbarTemplate}
-            />
-
             <DataTable
               showGridlines
               value={purchases}
@@ -470,6 +583,8 @@ export default function PODetail() {
               {columns}
               <Column
                 body={actionBodyTemplate}
+                header="Delete Line Item"
+                hidden={!isModifiable}
                 exportable={false}
                 style={{ minWidth: "8rem" }}
               ></Column>
@@ -479,6 +594,7 @@ export default function PODetail() {
             {/* <Button disabled={!this.state.isModifiable} label="submit" type="submit" /> */}
           </form>
         </div>
+        {deletePopupVisible && deletePopup}
       </div>
     </div>
   );

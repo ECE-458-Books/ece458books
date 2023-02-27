@@ -195,7 +195,7 @@ export default function BuyBackList() {
   // The delete popup
   const deletePopup = (
     <DeletePopup
-      deleteItemIdentifier={" this sales reconciliation"}
+      deleteItemIdentifier={" this buy back"}
       onConfirm={() => deleteBuyBackFinal()}
       setIsVisible={setDeletePopupVisible}
     />

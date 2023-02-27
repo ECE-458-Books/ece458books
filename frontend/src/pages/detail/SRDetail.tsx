@@ -11,7 +11,7 @@ import {
   priceBodyTemplate,
   priceEditor,
 } from "../../util/TableCellEditFuncs";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Toolbar } from "primereact/toolbar";
 import { Button } from "primereact/button";
 import {
@@ -47,6 +47,8 @@ import { Book } from "../list/BookList";
 import { useImmer } from "use-immer";
 import { findById } from "../../util/IDOperations";
 import { calculateTotal } from "../../util/CalculateTotal";
+import { logger } from "../../util/Logger";
+import DeletePopup from "../../components/popups/DeletePopup";
 
 export interface SRSaleRow {
   isNewRow: boolean;
@@ -86,6 +88,8 @@ export default function SRDetail() {
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
   const [hasUploadedCSV, setHasUploadedCSV] = useState<boolean>(false);
+  const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false); // Whether the delete popup is shown
+  const [isGoBackActive, setIsGoBackActive] = useState<boolean>(false);
 
   // Load the SR data on page load
   useEffect(() => {
@@ -115,13 +119,15 @@ export default function SRDetail() {
       header: "Book",
       customBody: (rowData: SRSaleRow) =>
         booksDropDownEditor(rowData.bookTitle, (newValue) => {
-          setSales((draft) => {
-            const sale = findById(draft, rowData.id);
-            sale!.bookTitle = newValue;
-            sale!.price = booksMap.get(newValue)!.retailPrice;
-            setTotalRevenue(calculateTotal(draft));
-          });
-        }),
+            setSales((draft) => {
+              const sale = findById(draft, rowData.id);
+              sale!.bookTitle = newValue;
+              sale!.price = booksMap.get(newValue)!.retailPrice;
+              setTotalRevenue(calculateTotal(draft));
+            });
+          },
+          !isModifiable
+        ),
     },
 
     {
@@ -129,24 +135,28 @@ export default function SRDetail() {
       header: "Quantity",
       customBody: (rowData: SRSaleRow) =>
         numberEditor(rowData.quantity, (newValue) => {
-          setSales((draft) => {
-            const sale = findById(draft, rowData.id);
-            sale!.quantity = newValue;
-            setTotalRevenue(calculateTotal(draft));
-          });
-        }),
+            setSales((draft) => {
+              const sale = findById(draft, rowData.id);
+              sale!.quantity = newValue;
+              setTotalRevenue(calculateTotal(draft));
+            });
+          },
+          !isModifiable
+        ),
     },
     {
       field: "price",
       header: "Unit Retail Price ($)",
       customBody: (rowData: SRSaleRow) =>
         priceEditor(rowData.price, (newValue) => {
-          setSales((draft) => {
-            const sale = findById(draft, rowData.id);
-            sale!.price = newValue;
-            setTotalRevenue(calculateTotal(draft));
-          });
-        }),
+            setSales((draft) => {
+              const sale = findById(draft, rowData.id);
+              sale!.price = newValue;
+              setTotalRevenue(calculateTotal(draft));
+            });
+          },
+          !isModifiable
+        ),
     },
     {
       field: "subtotal",
@@ -171,6 +181,35 @@ export default function SRDetail() {
     setSales(_data);
     setTotalRevenue(calculateTotal(_data));
   };
+
+  // Called to make delete pop up show
+  const deleteSalesReconciliationPopup = () => {
+    logger.debug("Delete Sales Reconciliation Clicked");
+    setDeletePopupVisible(true);
+  };
+
+  // Call to actually delete the element
+  const deleteSalesReconciliationFinal = () => {
+    logger.debug("Delete Sales Reconciliation Finalized");
+    setDeletePopupVisible(false);
+    SALES_API.deleteSalesReconciliation({
+      id: id!,
+    })
+      .then(() => {
+        showSuccess(toast, "Sales Reconciliation Deleted");
+        navigate("/sales-reconciliations");
+      })
+      .catch(() => showFailure(toast, "Sales Reconciliation Failed to Delete"));
+  };
+
+  // The delete popup
+  const deletePopup = (
+    <DeletePopup
+      deleteItemIdentifier={" this sales reconciliation"}
+      onConfirm={() => deleteSalesReconciliationFinal()}
+      setIsVisible={setDeletePopupVisible}
+    />
+  );
 
   const csvUploadHandler = (event: FileUploadHandlerEvent) => {
     const csv = event.files[0];
@@ -239,7 +278,12 @@ export default function SRDetail() {
     } as AddSRReq;
 
     SALES_API.addSalesReconciliation(salesReconciliation)
-      .then(() => showSuccess(toast, "Sales reconciliation added successfully"))
+      .then(() => {
+        showSuccess(toast, "Sales reconciliation added successfully");
+        isGoBackActive
+          ? navigate("/sales-reconciliations")
+          : window.location.reload();
+      })
       .catch(() => showFailure(toast, "Could not add sales reconciliation"));
   };
 
@@ -262,10 +306,12 @@ export default function SRDetail() {
     } as ModifySRReq;
 
     SALES_API.modifySalesReconciliation(salesReconciliation)
-      .then(() =>
-        showSuccess(toast, "Sales reconciliation modified successfully")
-      )
+      .then(() => {
+        showSuccess(toast, "Sales reconciliation modified successfully");
+        setIsModifiable(!isModifiable);
+      })
       .catch(() => showFailure(toast, "Could not modify sales reconciliation"));
+
   };
 
   // -------- TEMPLATES/VISUAL ELEMENTS --------
@@ -290,40 +336,93 @@ export default function SRDetail() {
   const leftToolbarTemplate = () => {
     return (
       <>
-        <React.Fragment>
-          <CSVUploader uploadHandler={csvUploadHandler} />
-        </React.Fragment>
-        <React.Fragment>
-          <Button
-            type="button"
-            label="New"
-            icon="pi pi-plus"
-            className="p-button-info mr-2"
-            onClick={addNewSale}
-            disabled={!isModifiable}
-          />
-        </React.Fragment>
+        {isModifiable && (
+          <React.Fragment>
+            <Button
+              type="button"
+              label="New"
+              icon="pi pi-plus"
+              className="p-button-info mr-2"
+              onClick={addNewSale}
+              disabled={!isModifiable}
+            />
+            <CSVUploader uploadHandler={csvUploadHandler} />
+          </React.Fragment>
+        )}
       </>
+    );
+  };
+
+  const centerToolbarTemplate = () => {
+    return (
+      <React.Fragment>
+        {!isSRAddPage && !isModifiable && (
+          <Button
+            id="modifyBBToggle"
+            name="modifyBBToggle"
+            label="Edit"
+            icon="pi pi-pencil"
+            disabled={isSRAddPage}
+            onClick={() => {
+              setIsModifiable(!isModifiable);
+            }}
+          />
+        )}
+        {!isSRAddPage && isModifiable && (
+          <Button
+            id="modifyBBToggle2"
+            name="modifyBBToggle2"
+            label="Cancel"
+            icon="pi pi-times"
+            className="p-button-warning"
+            disabled={isSRAddPage}
+            onClick={() => {
+              setIsModifiable(!isModifiable);
+              window.location.reload();
+            }}
+          />
+        )}
+      </React.Fragment>
     );
   };
 
   const rightToolbarTemplate = () => {
     return (
       <React.Fragment>
-        <ConfirmPopup
-          isVisible={isConfirmationPopupVisible}
-          hideFunc={() => setIsConfirmationPopupVisible(false)}
-          acceptFunc={onSubmit}
-          rejectFunc={() => {
-            console.log("reject");
-          }}
-          buttonClickFunc={() => {
-            setIsConfirmationPopupVisible(true);
-          }}
-          disabled={!isModifiable}
-          label={"Submit"}
-          className="p-button-success p-button-raised"
-        />
+        {isModifiable && (
+          <ConfirmPopup
+            isVisible={isConfirmationPopupVisible}
+            hideFunc={() => setIsConfirmationPopupVisible(false)}
+            acceptFunc={onSubmit}
+            rejectFunc={() => {
+              console.log("reject");
+            }}
+            buttonClickFunc={() => {
+              setIsConfirmationPopupVisible(true);
+            }}
+            disabled={!isModifiable}
+            label={"Submit"}
+            className="p-button-success p-button-raised"
+          />
+        )}
+        {isModifiable && isSRAddPage && (
+          <ConfirmPopup
+            isVisible={isConfirmationPopupVisible}
+            hideFunc={() => setIsConfirmationPopupVisible(false)}
+            acceptFunc={onSubmit}
+            rejectFunc={() => {
+              console.log("reject");
+              setIsGoBackActive(false);
+            }}
+            buttonClickFunc={() => {
+              setIsConfirmationPopupVisible(true);
+              setIsGoBackActive(true);
+            }}
+            disabled={!isModifiable}
+            label={"Submit and Go Back"}
+            className="p-button-success p-button-raised ml-2"
+          />
+        )}
       </React.Fragment>
     );
   };
@@ -340,13 +439,15 @@ export default function SRDetail() {
 
   const booksDropDownEditor = (
     value: string,
-    onChange: (newValue: string) => void
+    onChange: (newValue: string) => void,
+    isDisabled?: boolean
   ) => (
     <BooksDropdown
       // This will always be used in a table cell, so we can disable the warning
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       setSelectedBook={onChange}
       selectedBook={value}
+      isDisabled={isDisabled}
       bookTitlesList={booksDropdownTitles}
       placeholder={value}
     />
@@ -354,60 +455,76 @@ export default function SRDetail() {
 
   const columns = createColumns(COLUMNS);
 
+  // The navigator to switch pages
+  const navigate = useNavigate();
+
   return (
     <div>
       <Toast ref={toast} />
       <div className="grid flex justify-content-center">
-        <link
-          rel="stylesheet"
-          href="https://unpkg.com/primeflex@3.1.2/primeflex.css"
-        ></link>
-        <div className="col-11">
-          <div className="pt-2">
+        <div className="flex col-12 p-0">
+          <div className="flex col-1">
+            <Button
+              type="button"
+              label="Back"
+              icon="pi pi-arrow-left"
+              onClick={() => navigate("/sales-reconciliations")}
+              className="p-button-sm my-auto ml-1"
+            />
+          </div>
+          <div className="pt-2 col-10">
             {isSRAddPage ? (
               <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
                 Add Sales Reconciliation
               </h1>
-            ) : (
+            ) : isModifiable ? (
               <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
                 Modify Sales Reconciliation
               </h1>
+            ) : (
+              <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
+                Sales Reconciliation Details
+              </h1>
             )}
           </div>
+          <div className="flex col-1">
+            {!isSRAddPage && (
+              <Button
+                type="button"
+                label="Delete"
+                tooltip="Delete this sales reconciliation"
+                tooltipOptions={{
+                  position: "bottom",
+                  showDelay: 500,
+                  hideDelay: 300,
+                }}
+                icon="pi pi-trash"
+                onClick={() => deleteSalesReconciliationPopup()}
+                className="p-button-sm my-auto ml-1 p-button-danger"
+              />
+            )}
+          </div>
+        </div>
+        <div className="col-11">
           <form id="localForm">
-            <div className="flex flex-row justify-content-center card-container col-12">
-              {!isSRAddPage && (
-                <ToggleButton
-                  id="modifySRToggle"
-                  name="modifySRToggle"
-                  onLabel="Editable"
-                  offLabel="Edit"
-                  onIcon="pi pi-check"
-                  offIcon="pi pi-times"
-                  checked={isModifiable}
-                  disabled={isSRAddPage}
-                  onChange={() => setIsModifiable(!isModifiable)}
-                />
-              )}
-            </div>
+            <Toolbar
+              className="mb-4"
+              left={leftToolbarTemplate}
+              center={centerToolbarTemplate}
+              right={rightToolbarTemplate}
+            />
 
             <div className="flex pb-2 flex-row justify-content-evenly card-container col-12">
-              <div>
+              <div className="flex">
                 <label
-                  className="p-component p-text-secondary pr-2 pt-2 text-teal-900"
+                  className="p-component p-text-secondary my-auto text-teal-900 pr-2"
                   htmlFor="totalrevenue"
                 >
-                  Total Revenue ($):
+                  Total Revenue:
                 </label>
-                <InputNumber
-                  id="totalrevenue2"
-                  className="w-6"
-                  useGrouping={false}
-                  minFractionDigits={2}
-                  name="totalrevenue2"
-                  value={totalRevenue ?? 0}
-                  disabled={true}
-                />
+                <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
+                  {priceBodyTemplate(totalRevenue ?? 0)}
+                </p>
               </div>
               <div>
                 <label
@@ -428,11 +545,6 @@ export default function SRDetail() {
               </div>
             </div>
 
-            <Toolbar
-              className="mb-4"
-              left={leftToolbarTemplate}
-              right={rightToolbarTemplate}
-            />
             <DataTable
               showGridlines
               value={sales}
@@ -443,6 +555,8 @@ export default function SRDetail() {
               {columns}
               <Column
                 body={rowDeleteButton}
+                header="Delete Line Item"
+                hidden={!isModifiable}
                 exportable={false}
                 style={{ minWidth: "8rem" }}
               ></Column>
@@ -452,6 +566,7 @@ export default function SRDetail() {
             {/* <Button type="submit" onClick={this.onSubmit} /> */}
           </form>
         </div>
+        {deletePopupVisible && deletePopup}
       </div>
     </div>
   );

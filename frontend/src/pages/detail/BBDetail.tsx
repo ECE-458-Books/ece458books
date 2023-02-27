@@ -6,7 +6,7 @@ import { Toast } from "primereact/toast";
 import { ToggleButton } from "primereact/togglebutton";
 import { Toolbar } from "primereact/toolbar";
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { v4 as uuid } from "uuid";
 import { TableColumn, createColumns } from "../../components/TableColumns";
 import {
@@ -37,6 +37,8 @@ import { VENDORS_API } from "../../apis/VendorsAPI";
 import BooksDropdown, {
   BooksDropdownData,
 } from "../../components/dropdowns/BookDropdown";
+import { logger } from "../../util/Logger";
+import DeletePopup from "../../components/popups/DeletePopup";
 
 export interface BBDetailState {
   id: number;
@@ -88,6 +90,8 @@ export default function BBDetail() {
     useState<boolean>(false);
   const [isBooksBuyBackSold, setIsBooksBuyBackSold] = useState<boolean>(false);
   const [hasUploadedCSV, setHasUploadedCSV] = useState<boolean>(false);
+  const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false); // Whether the delete popup is shown
+  const [isGoBackActive, setIsGoBackActive] = useState<boolean>(false);
 
   // Load the SR data on page load
   useEffect(() => {
@@ -185,6 +189,35 @@ export default function BBDetail() {
     setTotalRevenue(calculateTotal(_data));
   };
 
+  // Called to make delete pop up show
+  const deleteBuyBackPopup = () => {
+    logger.debug("Delete Sales Reconciliation Clicked");
+    setDeletePopupVisible(true);
+  };
+
+  // Call to actually delete the element
+  const deleteBuyBackFinal = () => {
+    logger.debug("Delete Buy Back Finalized");
+    setDeletePopupVisible(false);
+    BUYBACK_API.deleteBuyBack({
+      id: id!,
+    })
+      .then(() => {
+        showSuccess(toast, "Buy Back Sale Deleted");
+        navigate("/buy-backs");
+      })
+      .catch(() => showFailure(toast, "Buy Back Sale Failed to Delete"));
+  };
+
+  // The delete popup
+  const deletePopup = (
+    <DeletePopup
+      deleteItemIdentifier={" this buy back"}
+      onConfirm={() => deleteBuyBackFinal()}
+      setIsVisible={setDeletePopupVisible}
+    />
+  );
+
   // Validate submission before making API req
   const validateSubmission = () => {
     for (const sale of sales) {
@@ -216,6 +249,7 @@ export default function BBDetail() {
       // Otherwise, it is a modify page
       callModifyBBAPI();
     }
+    
   };
 
   // Add the buy back
@@ -234,7 +268,10 @@ export default function BBDetail() {
       buybacks: apiSales,
     } as AddBBReq;
     BUYBACK_API.addBuyBack(buyBack)
-      .then(() => showSuccess(toast, "Buy back added successfully"))
+      .then(() => {
+        showSuccess(toast, "Buy back added successfully");
+        isGoBackActive ? navigate("/buy-backs") : window.location.reload();
+      })
       .catch(() => showFailure(toast, "Could not add buy back"));
   };
 
@@ -258,7 +295,10 @@ export default function BBDetail() {
     } as ModifyBBReq;
 
     BUYBACK_API.modifyBuyBack(buyBack)
-      .then(() => showSuccess(toast, "Buy back modified successfully"))
+      .then(() => {
+        showSuccess(toast, "Buy back modified successfully");
+        setIsModifiable(!isModifiable);
+    })
       .catch(() => showFailure(toast, "Could not modify buy back"));
   };
 
@@ -326,7 +366,7 @@ export default function BBDetail() {
             name="modifyBBToggle2"
             label="Cancel"
             icon="pi pi-times"
-            className="p-button-warning"
+            className="p-button-warningp"
             disabled={isBBAddPage}
             onClick={() => {
               setIsModifiable(!isModifiable);
@@ -353,6 +393,24 @@ export default function BBDetail() {
             disabled={!isModifiable}
             label={"Submit"}
             className="p-button-success p-button-raised"
+          />
+        )}
+        {isModifiable && isBBAddPage && (
+          <ConfirmPopup
+            isVisible={isConfirmationPopupVisible}
+            hideFunc={() => setIsConfirmationPopupVisible(false)}
+            acceptFunc={onSubmit}
+            rejectFunc={() => {
+              console.log("reject");
+              setIsGoBackActive(false);
+            }}
+            buttonClickFunc={() => {
+              setIsConfirmationPopupVisible(true);
+              setIsGoBackActive(true);
+            }}
+            disabled={!isModifiable}
+            label={"Submit and Go Back"}
+            className="p-button-success p-button-raised ml-2"
           />
         )}
       </React.Fragment>
@@ -401,26 +459,57 @@ export default function BBDetail() {
     });
   }, []);
 
+  // The navigator to switch pages
+  const navigate = useNavigate();
+
   return (
     <div>
       <Toast ref={toast} />
       <div className="grid flex justify-content-center">
-        <link
-          rel="stylesheet"
-          href="https://unpkg.com/primeflex@3.1.2/primeflex.css"
-        ></link>
-        <div className="col-11">
-          <div className="pt-2">
+        <div className="flex col-12 p-0">
+          <div className="flex col-1">
+            <Button
+              type="button"
+              label="Back"
+              icon="pi pi-arrow-left"
+              onClick={() => navigate("/buy-backs")}
+              className="p-button-sm my-auto ml-1"
+            />
+          </div>
+          <div className="pt-2 col-10">
             {isBBAddPage ? (
               <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
-                Add Buy Back Sales
+                Add Buy Back Sale
+              </h1>
+            ) : isModifiable ? (
+              <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
+                Modify Buy Back Sale
               </h1>
             ) : (
               <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
-                Modify Buy Back Sales
+                Buy Back Sale Details
               </h1>
             )}
           </div>
+          <div className="flex col-1">
+            {!isBBAddPage && (
+              <Button
+                type="button"
+                label="Delete"
+                tooltip="Delete this sales reconciliation"
+                tooltipOptions={{
+                  position: "bottom",
+                  showDelay: 500,
+                  hideDelay: 300,
+                }}
+                icon="pi pi-trash"
+                onClick={() => deleteBuyBackPopup()}
+                className="p-button-sm my-auto ml-1 p-button-danger"
+              />
+            )}
+          </div>
+        </div>
+        <div className="col-11">
           <form onSubmit={onSubmit}>
             <Toolbar
               className="mb-4"
@@ -490,6 +579,7 @@ export default function BBDetail() {
                 body={actionBodyTemplate}
                 header="Delete Line Item"
                 exportable={false}
+                hidden={!isModifiable}
                 style={{ minWidth: "8rem" }}
               ></Column>
             </DataTable>
@@ -498,6 +588,7 @@ export default function BBDetail() {
             {/* <Button disabled={!this.state.isModifiable} label="submit" type="submit" /> */}
           </form>
         </div>
+        {deletePopupVisible && deletePopup}
       </div>
     </div>
   );

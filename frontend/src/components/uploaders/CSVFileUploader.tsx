@@ -4,6 +4,7 @@ const MAX_FILE_UPLOAD = 1000000; // Bytes
 
 interface CSVUploaderProps {
   uploadHandler: (e: FileUploadHandlerEvent) => void;
+  disabled?: boolean;
 }
 
 export default function CSVUploader(props: CSVUploaderProps) {
@@ -15,6 +16,7 @@ export default function CSVUploader(props: CSVUploaderProps) {
         accept=".csv"
         maxFileSize={MAX_FILE_UPLOAD}
         customUpload
+        disabled={props.disabled ?? false}
         uploadHandler={props.uploadHandler}
         chooseLabel={"Import CSV"}
       />

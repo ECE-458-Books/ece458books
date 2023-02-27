@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ToggleButton } from "primereact/togglebutton";
 import { Calendar, CalendarProps } from "primereact/calendar";
-import { DataTable } from "primereact/datatable";
+import { DataTable, DataTableRowClickEvent } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { createColumns, TableColumn } from "../../components/TableColumns";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
@@ -11,7 +11,7 @@ import {
   priceBodyTemplate,
   priceEditor,
 } from "../../util/TableCellEditFuncs";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Toolbar } from "primereact/toolbar";
 import { Button } from "primereact/button";
 import {
@@ -47,6 +47,7 @@ import { Book } from "../list/BookList";
 import { useImmer } from "use-immer";
 import { findById } from "../../util/IDOperations";
 import { calculateTotal } from "../../util/CalculateTotal";
+import { logger } from "../../util/Logger";
 
 export interface SRSaleRow {
   isNewRow: boolean;
@@ -169,6 +170,24 @@ export default function SRDetail() {
   const deleteProduct = (rowData: SRSaleRow) => {
     const _data = sales.filter((val) => val.id !== rowData.id);
     setSales(_data);
+  };
+
+  // The navigator to switch pages
+  const navigate = useNavigate();
+
+  const onRowClick = (event: DataTableRowClickEvent) => {
+    // I couldn't figure out a better way to do this...
+    // It takes the current index as the table knows it and calculates the actual index in the books array
+    const index = event.index;
+    const sale = sales[index];
+    logger.debug("Purchase Order Row Clicked", sale);
+    toBookDetailsPage(sale);
+  };
+
+  // Callback functions for edit/delete buttons
+  const toBookDetailsPage = (sale: SRSaleRow) => {
+    logger.debug("Edit Book Clicked", sale);
+    navigate(`/books/detail/${sale.bookId}`);
   };
 
   const csvUploadHandler = (event: FileUploadHandlerEvent) => {
@@ -438,6 +457,13 @@ export default function SRDetail() {
               className="editable-cells-table"
               responsiveLayout="scroll"
               editMode="cell"
+              rowHover={!isSRAddPage}
+              selectionMode={"single"}
+              onRowClick={(event) => {
+                if (!isSRAddPage && !isModifiable) {
+                  onRowClick(event);
+                }
+              }}
             >
               {columns}
               <Column

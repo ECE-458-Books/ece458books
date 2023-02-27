@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ToggleButton } from "primereact/togglebutton";
 import { Calendar, CalendarChangeEvent } from "primereact/calendar";
-import { DataTable } from "primereact/datatable";
+import { DataTable, DataTableRowClickEvent } from "primereact/datatable";
 import { createColumns, TableColumn } from "../../components/TableColumns";
 import { Column } from "primereact/column";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
@@ -13,7 +13,7 @@ import {
   priceBodyTemplate,
   priceEditor,
 } from "../../util/TableCellEditFuncs";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   AddPOReq,
   APIPOPurchaseRow,
@@ -48,6 +48,7 @@ import { Book } from "../list/BookList";
 import { useImmer } from "use-immer";
 import { findById } from "../../util/IDOperations";
 import { calculateTotal } from "../../util/CalculateTotal";
+import { logger } from "../../util/Logger";
 
 export interface POPurchaseRow {
   isNewRow: boolean; // true if the user added this row, false if it already existed
@@ -197,6 +198,24 @@ export default function PODetail() {
       .catch((error) => {
         showFailuresMapper(toast, error.data.errors, CSVImport400Errors);
       });
+  };
+
+  // The navigator to switch pages
+  const navigate = useNavigate();
+
+  const onRowClick = (event: DataTableRowClickEvent) => {
+    // I couldn't figure out a better way to do this...
+    // It takes the current index as the table knows it and calculates the actual index in the books array
+    const index = event.index;
+    const purchase = purchases[index];
+    logger.debug("Purchase Order Row Clicked", purchase);
+    toBookDetailsPage(purchase);
+  };
+
+  // Callback functions for edit/delete buttons
+  const toBookDetailsPage = (purcahse: POPurchaseRow) => {
+    logger.debug("Edit Book Clicked", purcahse);
+    navigate(`/books/detail/${purcahse.bookId}`);
   };
 
   const validateSubmission = () => {
@@ -465,6 +484,13 @@ export default function PODetail() {
               className="editable-cells-table"
               responsiveLayout="scroll"
               editMode="cell"
+              rowHover={!isPOAddPage}
+              selectionMode={"single"}
+              onRowClick={(event) => {
+                if (!isPOAddPage && !isModifiable) {
+                  onRowClick(event);
+                }
+              }}
             >
               {columns}
               <Column

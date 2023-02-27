@@ -13,12 +13,15 @@ import { logger } from "../../util/Logger";
 import { CommaSeparatedStringToArray } from "../../util/StringOperations";
 import { Image } from "primereact/image";
 import { FileUploadHandlerEvent } from "primereact/fileupload";
-import GenreDropdown from "../../components/dropdowns/GenreDropdown";
+import GenresDropdown, {
+  GenresDropdownData,
+} from "../../components/dropdowns/GenreDropdown";
 import { IMAGES_API } from "../../apis/ImagesAPI";
 import ImageUploader from "../../components/uploaders/ImageFileUploader";
 import { showFailure, showSuccess } from "../../components/Toast";
 import { APIToInternalBookConversion } from "../../apis/Conversions";
 import { Button } from "primereact/button";
+import GenreDropdown from "../../components/dropdowns/GenreDropdown";
 
 interface ErrorDisplay {
   message: string;
@@ -65,6 +68,7 @@ export default function BookDetail() {
     isConfirmationPopupVisibleImageDelete,
     setIsConfirmationPopupVisibleImageDelete,
   ] = useState<boolean>(false);
+  const [genreNamesList, setGenreNamesList] = useState<string[]>([]);
 
   // Load the book data on page load
   useEffect(() => {
@@ -207,12 +211,19 @@ export default function BookDetail() {
     }
   }, [isModifiable]);
 
-  // The dropdown configuration for each cell
-  const genreDropdown = GenreDropdown({
-    setSelectedGenre: setGenre,
-    selectedGenre: genre,
-    isModifiable: !isModifiable,
-  });
+  // Genre dropdown
+  useEffect(() => {
+    GenresDropdownData({ setGenreNamesList });
+  }, []);
+
+  const genreDropdown = (
+    <GenreDropdown
+      selectedGenre={genre}
+      setSelectedGenre={setGenre}
+      genresList={genreNamesList}
+      isDisabled={!isModifiable}
+    />
+  );
 
   const onImageDelete = () => {
     setImage({

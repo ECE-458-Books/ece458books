@@ -378,7 +378,7 @@ export default function BBDetail() {
               BooksDropdownData({
                 setBooksMap: setBooksMap,
                 setBookTitlesList: setBooksDropdownTitles,
-                vendorName: vendorMap.get(selectedVendorName)!,
+                vendor: vendorMap.get(selectedVendorName)!,
               });
             }}
           />
@@ -443,7 +443,7 @@ export default function BBDetail() {
       BooksDropdownData({
         setBooksMap: setBooksMap,
         setBookTitlesList: setBooksDropdownTitles,
-        vendorName: vendorMap.get(selectedVendorName)!,
+        vendor: vendorMap.get(selectedVendorName)!,
       }),
     [selectedVendorName]
   );

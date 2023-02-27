@@ -1,40 +1,35 @@
 import { Dropdown } from "primereact/dropdown";
-import { useEffect, useState } from "react";
 import { GENRES_API } from "../../apis/GenresAPI";
+
+export interface GenreDropdownDataProps {
+  setGenreNamesList: (arg0: string[]) => void; // Setter for genre name list
+}
 
 export interface GenreDropdownProps {
   setSelectedGenre: (arg0: string) => void;
+  genresList: string[];
   selectedGenre: string;
-  isTableCell?: boolean;
-  isModifiable?: boolean;
+  isDisabled?: boolean;
 }
 
-// This cannot be used in a table cell in the current form, only when there is one on the page
-export default function GenreDropdown(props: GenreDropdownProps) {
-  const [genreList, setGenreList] = useState<string[]>([]);
+export function GenresDropdownData(props: GenreDropdownDataProps) {
+  GENRES_API.getGenresNoPagination().then((response) => {
+    props.setGenreNamesList(response.map((genre) => genre.name));
+  });
+}
 
-  useEffect(() => {
-    GENRES_API.getGenres({
-      page: 1,
-      page_size: 30,
-      ordering: "name",
-    }).then((response) =>
-      setGenreList(response.results.map((genre) => genre.name))
-    );
-  }, []);
-
+export default function GenresDropdown(props: GenreDropdownProps) {
   return (
     <Dropdown
       value={props.selectedGenre}
-      options={genreList}
-      appendTo={"self"}
+      options={props.genresList}
       onChange={(e) => props.setSelectedGenre(e.value)}
       placeholder={"Select Genre"}
       showClear
-      disabled={props.isModifiable ?? false}
-      style={
-        props.isTableCell ? { position: "absolute", zIndex: 9999 } : undefined
-      }
+      disabled={props.isDisabled}
+      style={{
+        width: "100%",
+      }}
     />
   );
 }

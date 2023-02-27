@@ -1,4 +1,4 @@
-import { FormEvent, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Button } from "primereact/button";
 import { DataTable } from "primereact/datatable";
@@ -17,11 +17,14 @@ import {
   InternalToAPIBookConversion,
 } from "../../apis/Conversions";
 import { createColumns, TableColumn } from "../../components/TableColumns";
-import GenreDropdown from "../../components/dropdowns/GenreDropdown";
-import { ColumnEditorOptions } from "primereact/column";
-import { showFailure, showSuccess } from "../../components/Toast";
+import GenresDropdown, {
+  GenresDropdownData,
+} from "../../components/dropdowns/GenreDropdown";
+import { showFailure } from "../../components/Toast";
 import ImageUploader from "../../components/uploaders/ImageFileUploader";
 import { FileUploadHandlerEvent } from "primereact/fileupload";
+import { useImmer } from "use-immer";
+import { findById } from "../../util/IDOperations";
 
 export interface BookWithDBTag extends Book {
   fromDB: boolean;
@@ -29,7 +32,8 @@ export interface BookWithDBTag extends Book {
 
 export default function BookAdd() {
   const [textBox, setTextBox] = useState<string>("");
-  const [books, setBooks] = useState<BookWithDBTag[]>([]);
+  const [books, setBooks] = useImmer<BookWithDBTag[]>([]);
+  const [genreNamesList, setGenreNamesList] = useState<string[]>([]);
 
   const statusTemplate = (rowData: BookWithDBTag) => {
     if (rowData.fromDB) {
@@ -39,13 +43,19 @@ export default function BookAdd() {
     }
   };
 
-  const genreDropdown = (options: ColumnEditorOptions) => (
-    <GenreDropdown
-      // This will always be used in a table cell, so we can disable the warning
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      setSelectedGenre={options.editorCallback!}
-      selectedGenre={options.value}
-      isTableCell
+  // Genre dropdown
+  useEffect(() => {
+    GenresDropdownData({ setGenreNamesList });
+  }, []);
+
+  const genresDropdownEditor = (
+    value: string,
+    onChange: (newValue: string) => void
+  ) => (
+    <GenresDropdown
+      setSelectedGenre={onChange}
+      genresList={genreNamesList}
+      selectedGenre={value}
     />
   );
 
@@ -84,7 +94,13 @@ export default function BookAdd() {
       field: "genres",
       header: "Genre",
       style: { width: "20%" },
-      cellEditor: (options) => genreDropdown(options),
+      customBody: (rowData: BookWithDBTag) =>
+        genresDropdownEditor(rowData.genres, (newValue) => {
+          setBooks((draft) => {
+            const book = findById(draft, rowData.id)!;
+            book.genres = newValue;
+          });
+        }),
     },
     {
       field: "isbn13",

@@ -16,6 +16,7 @@ export default function GenreDetail() {
   const [isModifiable, setIsModifiable] = useState<boolean>(false);
 
   const [genreName, setGenreName] = useState<string>("");
+  const [genreBookCount, setGenreBookCount] = useState<number>(0);
   const [isConfirmationPopVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
   const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false); // Whether the delete popup is shown
@@ -26,7 +27,10 @@ export default function GenreDetail() {
   // Load the Genre data on page load
   useEffect(() => {
     GENRES_API.getGenreDetail({ id: id! })
-      .then((response) => setGenreName(response.name))
+      .then((response) => {
+        setGenreName(response.name);
+        setGenreBookCount(response.book_cnt);
+      })
       .catch(() => showFailure(toast, "Could not fetch genre data"));
   }, []);
 
@@ -106,7 +110,7 @@ export default function GenreDetail() {
               type="button"
               label="Delete"
               icon="pi pi-trash"
-              disabled
+              disabled={genreBookCount > 0}
               onClick={() => deleteGenrePopup()}
               className="p-button-sm my-auto ml-1 p-button-danger"
             />

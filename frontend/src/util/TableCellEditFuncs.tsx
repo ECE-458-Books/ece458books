@@ -25,13 +25,17 @@ export function isPositiveInteger(val: number) {
   return n !== Infinity && String(n) === str && n >= 0;
 }
 
-export function textEditor(options: ColumnEditorOptions, isDisabled?: boolean) {
+export function textEditor(
+  value: string,
+  onChange: (newValue: string) => void,
+  isDisabled?: boolean
+) {
   return (
     <InputText
       type="text"
-      value={options.value}
+      value={value}
       disabled={isDisabled ?? false}
-      onChange={(e) => options.editorCallback?.(e.target.value)}
+      onChange={(e) => onChange(e.target.value ?? "")}
     />
   );
 }

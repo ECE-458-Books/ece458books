@@ -10,7 +10,7 @@ export interface ConfirmButtonProps {
   acceptFunc: () => void;
   rejectFunc: () => void;
   buttonClickFunc: () => void;
-  disabled: boolean;
+  disabled?: boolean;
   label: string;
   icons?: string;
 }

@@ -406,7 +406,7 @@ export default function PODetail() {
             hideFunc={() => setIsConfirmationPopupVisible(false)}
             acceptFunc={onSubmit}
             rejectFunc={() => {
-              console.log("reject");
+              // do nothing
             }}
             buttonClickFunc={() => setIsConfirmationPopupVisible(true)}
             disabled={!isModifiable}
@@ -420,7 +420,6 @@ export default function PODetail() {
             hideFunc={() => setIsConfirmationPopupVisible(false)}
             acceptFunc={onSubmit}
             rejectFunc={() => {
-              console.log("reject");
               setIsGoBackActive(false);
             }}
             buttonClickFunc={() => {
@@ -510,12 +509,6 @@ export default function PODetail() {
               <Button
                 type="button"
                 label="Delete"
-                tooltip="Delete this purchase order"
-                tooltipOptions={{
-                  position: "bottom",
-                  showDelay: 500,
-                  hideDelay: 300,
-                }}
                 icon="pi pi-trash"
                 onClick={() => deletePurchaseOrderPopup()}
                 className="p-button-sm my-auto ml-1 p-button-danger"

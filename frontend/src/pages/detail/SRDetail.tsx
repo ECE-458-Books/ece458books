@@ -395,7 +395,7 @@ export default function SRDetail() {
             hideFunc={() => setIsConfirmationPopupVisible(false)}
             acceptFunc={onSubmit}
             rejectFunc={() => {
-              console.log("reject");
+              // do nothing
             }}
             buttonClickFunc={() => {
               setIsConfirmationPopupVisible(true);
@@ -411,7 +411,6 @@ export default function SRDetail() {
             hideFunc={() => setIsConfirmationPopupVisible(false)}
             acceptFunc={onSubmit}
             rejectFunc={() => {
-              console.log("reject");
               setIsGoBackActive(false);
             }}
             buttonClickFunc={() => {
@@ -492,12 +491,6 @@ export default function SRDetail() {
               <Button
                 type="button"
                 label="Delete"
-                tooltip="Delete this sales reconciliation"
-                tooltipOptions={{
-                  position: "bottom",
-                  showDelay: 500,
-                  hideDelay: 300,
-                }}
                 icon="pi pi-trash"
                 onClick={() => deleteSalesReconciliationPopup()}
                 className="p-button-sm my-auto ml-1 p-button-danger"

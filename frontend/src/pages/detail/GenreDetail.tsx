@@ -105,13 +105,8 @@ export default function GenreDetail() {
             <Button
               type="button"
               label="Delete"
-              tooltip="Delete this genre"
-              tooltipOptions={{
-                position: "bottom",
-                showDelay: 500,
-                hideDelay: 300,
-              }}
               icon="pi pi-trash"
+              disabled
               onClick={() => deleteGenrePopup()}
               className="p-button-sm my-auto ml-1 p-button-danger"
             />
@@ -167,7 +162,7 @@ export default function GenreDetail() {
                   hideFunc={() => setIsConfirmationPopupVisible(false)}
                   acceptFunc={onSubmit}
                   rejectFunc={() => {
-                    console.log("reject");
+                    // do nothing
                   }}
                   buttonClickFunc={() => setIsConfirmationPopupVisible(true)}
                   disabled={!isModifiable}

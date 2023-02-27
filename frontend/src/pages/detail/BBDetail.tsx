@@ -1,9 +1,7 @@
 import { Calendar, CalendarChangeEvent } from "primereact/calendar";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
-import { InputNumber } from "primereact/inputnumber";
 import { Toast } from "primereact/toast";
-import { ToggleButton } from "primereact/togglebutton";
 import { Toolbar } from "primereact/toolbar";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -104,7 +102,7 @@ export default function BBDetail() {
           setTotalRevenue(buyBack.totalRevenue);
           setSelectedVendorName(buyBack.vendorName);
         })
-        .catch(() => showFailure(toast, "Could not fetch buy back sales data"));
+        .catch(() => showFailure(toast, "Could not fetch book buyback sales data"));
     }
 
     setIsBooksBuyBackSold(sales.length > 0);
@@ -157,7 +155,7 @@ export default function BBDetail() {
     },
     {
       field: "price",
-      header: "Unit Buy Back Price ($)",
+      header: "Unit Buyback Price ($)",
       customBody: (rowData: BBSaleRow) =>
         priceEditor(
           rowData.price,
@@ -203,22 +201,22 @@ export default function BBDetail() {
 
   // Call to actually delete the element
   const deleteBuyBackFinal = () => {
-    logger.debug("Delete Buy Back Finalized");
+    logger.debug("Delete Book BuyBack Finalized");
     setDeletePopupVisible(false);
     BUYBACK_API.deleteBuyBack({
       id: id!,
     })
       .then(() => {
-        showSuccess(toast, "Buy Back Sale Deleted");
-        navigate("/buy-backs");
+        showSuccess(toast, "Book BuyBack Sale Deleted");
+        navigate("/book-buybacks");
       })
-      .catch(() => showFailure(toast, "Buy Back Sale Failed to Delete"));
+      .catch(() => showFailure(toast, "Book BuyBack Sale Failed to Delete"));
   };
 
   // The delete popup
   const deletePopup = (
     <DeletePopup
-      deleteItemIdentifier={" this buy back"}
+      deleteItemIdentifier={"this book buyback"}
       onConfirm={() => deleteBuyBackFinal()}
       setIsVisible={setDeletePopupVisible}
     />
@@ -230,7 +228,7 @@ export default function BBDetail() {
       if (!sale.bookTitle || !(sale.price >= 0) || !sale.quantity) {
         showFailure(
           toast,
-          "Book, buy back price, and quantity are required for all line items"
+          "Book, buyback price, and quantity are required for all line items"
         );
         return false;
       }
@@ -258,7 +256,7 @@ export default function BBDetail() {
     
   };
 
-  // Add the buy back
+  // Add the book buyback
   const callAddBBAPI = () => {
     const apiSales = sales.map((sale) => {
       return {
@@ -275,10 +273,10 @@ export default function BBDetail() {
     } as AddBBReq;
     BUYBACK_API.addBuyBack(buyBack)
       .then(() => {
-        showSuccess(toast, "Buy back added successfully");
-        isGoBackActive ? navigate("/buy-backs") : window.location.reload();
+        showSuccess(toast, "Book Buyback added successfully");
+        isGoBackActive ? navigate("/book-buybacks") : window.location.reload();
       })
-      .catch(() => showFailure(toast, "Could not add buy back"));
+      .catch(() => showFailure(toast, "Could not add book buyback"));
   };
 
   // Modify the sales reconciliation
@@ -302,10 +300,10 @@ export default function BBDetail() {
 
     BUYBACK_API.modifyBuyBack(buyBack)
       .then(() => {
-        showSuccess(toast, "Buy back modified successfully");
+        showSuccess(toast, "Book Buyback modified successfully");
         setIsModifiable(!isModifiable);
     })
-      .catch(() => showFailure(toast, "Could not modify buy back"));
+      .catch(() => showFailure(toast, "Could not modify book buyback"));
   };
 
   // -------- TEMPLATES/VISUAL ELEMENTS --------
@@ -392,9 +390,7 @@ export default function BBDetail() {
             isVisible={isConfirmationPopupVisible}
             hideFunc={() => setIsConfirmationPopupVisible(false)}
             acceptFunc={onSubmit}
-            rejectFunc={() => {
-              console.log("reject");
-            }}
+            rejectFunc={() => {}}
             buttonClickFunc={() => setIsConfirmationPopupVisible(true)}
             disabled={!isModifiable}
             label={"Submit"}
@@ -407,7 +403,6 @@ export default function BBDetail() {
             hideFunc={() => setIsConfirmationPopupVisible(false)}
             acceptFunc={onSubmit}
             rejectFunc={() => {
-              console.log("reject");
               setIsGoBackActive(false);
             }}
             buttonClickFunc={() => {
@@ -478,22 +473,22 @@ export default function BBDetail() {
               type="button"
               label="Back"
               icon="pi pi-arrow-left"
-              onClick={() => navigate("/buy-backs")}
+              onClick={() => navigate("/book-buybacks")}
               className="p-button-sm my-auto ml-1"
             />
           </div>
           <div className="pt-2 col-10">
             {isBBAddPage ? (
               <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
-                Add Buy Back Sale
+                Add Book Buyback
               </h1>
             ) : isModifiable ? (
               <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
-                Modify Buy Back Sale
+                Modify Book Buyback
               </h1>
             ) : (
               <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
-                Buy Back Sale Details
+                Book Buyback Details
               </h1>
             )}
           </div>
@@ -502,12 +497,6 @@ export default function BBDetail() {
               <Button
                 type="button"
                 label="Delete"
-                tooltip="Delete this sales reconciliation"
-                tooltipOptions={{
-                  position: "bottom",
-                  showDelay: 500,
-                  hideDelay: 300,
-                }}
                 icon="pi pi-trash"
                 onClick={() => deleteBuyBackPopup()}
                 className="p-button-sm my-auto ml-1 p-button-danger"

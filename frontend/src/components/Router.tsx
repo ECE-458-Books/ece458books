@@ -56,7 +56,7 @@ export default function Router() {
           element={<SalesReconciliationList />}
         />
         <Route path="vendors" element={<VendorList />} />
-        <Route path="buy-backs" element={<BuyBackList />} />
+        <Route path="book-buybacks" element={<BuyBackList />} />
         <Route path="books/add" element={<BookAdd />} />
         <Route path="books/detail/:id" element={<ModifyBook />} />
         <Route path="books/shelf-calculator" element={<ShelfCalculator />} />
@@ -67,8 +67,8 @@ export default function Router() {
         <Route path="sales-reconciliations/add" element={<ModifySR />} />
         <Route path="sales-reconciliations/detail/:id" element={<ModifySR />} />
         <Route path="vendors/add" element={<VendorDetail />} />
-        <Route path="buy-backs/add" element={<ModifyBB />} />
-        <Route path="buy-backs/detail/:id" element={<ModifyBB />} />
+        <Route path="book-buybacks/add" element={<ModifyBB />} />
+        <Route path="book-buybacks/detail/:id" element={<ModifyBB />} />
         <Route path="vendors/detail/:id" element={<VendorDetail />} />
         <Route path="change-password" element={<PasswordChangePage />} />
         <Route path="sales-report" element={<SalesReportPage />} />

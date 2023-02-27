@@ -58,6 +58,11 @@ def uri_to_local_image_location(uri):
 
     return local_image_location
 
+
+def str2bool(v):
+    if v: return v.lower() in ("true", "1")
+    return False
+
 class ImageTools:
     def __init__(
         self,

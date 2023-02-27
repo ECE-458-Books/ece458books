@@ -14,10 +14,11 @@ from .isbn import ISBNTools
 from .models import Book, Author, BookImage
 from .paginations import BookPagination
 from .search_filters import CustomSearchFilter
-from .utils import delete_all_files_in_folder_location
-from purchase_orders.models import Purchase
+from .scpconnect import SCPTools
+from .utils import delete_all_files_in_folder_location, str2bool
 
 from genres.models import Genre
+from purchase_orders.models import Purchase
 
 
 class ISBNSearchView(APIView):
@@ -77,7 +78,8 @@ class ISBNSearchView(APIView):
         ret = dict()
 
         for field in book._meta.fields:
-            ret[field.name] = getattr(book, field.name)
+            if (v := getattr(book, field.name)) is not None:
+                ret[field.name] = v 
 
         # Deal with many-to-many fields
         # Get Authors
@@ -88,9 +90,15 @@ class ISBNSearchView(APIView):
         for genre in book.genres.all():
             ret.setdefault("genres", []).append(genre.name)
 
+        # At this point there should be a BookImage associated with the book
         images = BookImage.objects.filter(book=book)
+        
+        if len(images) == 0:
+            # This is the case where there is no default image associated with the book.
+            local_url = self.isbn_toolbox.download_external_book_image_to_local(book.isbn_13, uri)
+        else:
+            local_url = self.isbn_toolbox.download_existing_image_to_local(images[0].url, book.isbn_13, uri)
 
-        local_url = self.isbn_toolbox.download_existing_image_to_local(images[0].url, book.isbn_13, uri)
         ret["image_url"] = local_url
         ret["fromDB"] = True
 
@@ -112,43 +120,68 @@ class ListCreateBookAPIView(ListCreateAPIView):
             return None
         else:
             return super().paginate_queryset(queryset)
+    
+    def preprocess_multipart_form_data(self, request):
+        data = request.data.dict()
+
+        # handle authors, genres
+        data['authors'] = data['authors'].split(',')
+        data['genres'] = data['genres'].split(',')
+
+        return data
 
     # Override default create method
     def create(self, request, *args, **kwargs):
+        data = request.data
+        content_type = request.content_type.split(';')[0]
+        
+        if content_type == 'multipart/form-data':
+            # Preprocess Request when the content-type is not application/json but multipart/form-data
+            data = self.preprocess_multipart_form_data(request)
+
         # Need to handle creating authors and genres if not present in DB
-        self.getOrCreateModel(request.data['authors'], Author)
-        self.getOrCreateModel(request.data['genres'], Genre)
+        self.getOrCreateModel(data['authors'], Author)
+        self.getOrCreateModel(data['genres'], Genre)
 
         # Handle the isbn that is already in DB
         try:
-            obj = Book.objects.get(isbn_13=request.data['isbn_13'])
+            obj = Book.objects.get(isbn_13=data['isbn_13'])
         except Exception as e:
             obj = None
-
+        
         # If the object with the specific isbn_13 is found we do the following:
         # 1. add the isGhost field to the request data
         # 2. update the already existing row in DB
         if obj is not None:
-            request.data['isGhost'] = False
-            serializer = self.get_serializer(obj, data=request.data, partial=False)
+            data['isGhost'] = False
+            serializer = self.get_serializer(obj, data=data, partial=False)
         else:
             # This is different from the above serializer because this is creating a new row in the table
-            serializer = self.get_serializer(data=request.data)
+            serializer = self.get_serializer(data=data)
 
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
+        res = serializer.data
+
+        setDefaultImage = str2bool(data.get('setDefaultImage'))
+
         # Get and Create the Image
-        self.bookimage_get_and_create(request, serializer.data.get('isbn_13'))
+        if ((request.FILES.get('image') is not None) or setDefaultImage):
+            url = self.bookimage_get_and_create(request, res.get('isbn_13'), setDefaultImage)
+            res['url'] = url
 
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-
-    def bookimage_get_and_create(self, request, isbn_13):
+        return Response(res, status=status.HTTP_201_CREATED, headers=headers)
+    
+    def bookimage_get_and_create(self, request, isbn_13, setDefaultImage):
         book = Book.objects.filter(isbn_13=isbn_13)
 
         # This creates an image in static and sends a file
-        url = self.isbn_toolbox.commit_image_raw_bytes(request, book[0].id, isbn_13)
+        if setDefaultImage:
+            url = self.isbn_toolbox.get_default_image_url()
+        else:
+            url = self.isbn_toolbox.commit_image_raw_bytes(request, book[0].id, isbn_13)
 
         obj, created = BookImage.objects.get_or_create(
             book_id=book[0].id,
@@ -160,10 +193,12 @@ class ListCreateBookAPIView(ListCreateAPIView):
             obj.url = url
             obj.save()
 
+        return url
+    
     def getOrCreateModel(self, item_list, model):
         if isinstance(item_list, str):
             item_list = item_list.split(',')
-
+        
         for item in item_list:
             obj, created = model.objects.get_or_create(name=item.strip(),)
 
@@ -208,24 +243,65 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
     lookup_url_kwarg = 'id'
     isbn_toolbox = ISBNTools()
 
+    def preprocess_multipart_form_data(self, request):
+        data = request.data.dict()
+
+        # handle authors, genres
+        data['authors'] = data['authors'].split(',')
+        data['genres'] = data['genres'].split(',')
+
+        return data
+
     def update(self, request, *args, **kwargs):
+        data = request.data
+        content_type = request.content_type.split(';')[0]
+
+        if content_type == 'multipart/form-data':
+            # Preprocess Request when the content-type is not application/json but multipart/form-data
+            data = self.preprocess_multipart_form_data(request)
+
+        # if the dimension of a book is zero convert it to None
+        data = self.convert_zero_to_null(data)
+
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+
+        serializer = self.get_serializer(instance, data=data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
 
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        res = serializer.data
+        setDefaultImage = str2bool(request.data.get('setDefaultImage'))
+
         # Get and Create the Image
-        url = self.bookimage_get_and_create(request, serializer.data.get('isbn_13'))
-        serializer.data['url'] = url
+        if ((request.FILES.get('image') is not None) or setDefaultImage):
+            url = self.bookimage_get_and_create(request, res.get('isbn_13'), setDefaultImage)
+            res['url'] = url
 
-        return Response(serializer.data)
+        return Response(res)
+    
+    def convert_zero_to_null(self, data):
+        possible_zero_fields = ['pageCount', 'width', 'height', 'thickness']
+        for possible_zero_field in possible_zero_fields:
+            v = data.get(possible_zero_field, None)
+            if v == '0' or v == 0:
+                data[possible_zero_field] = None
+        
+        return data
 
-    def bookimage_get_and_create(self, request, isbn_13):
+    def bookimage_get_and_create(self, request, isbn_13, setDefaultImage):
         book = Book.objects.filter(isbn_13=isbn_13)
 
         # This creates an image in static and sends a file
-        url = self.isbn_toolbox.commit_image_raw_bytes(request, book[0].id, isbn_13)
+        if setDefaultImage:
+            url = self.isbn_toolbox.get_default_image_url()
+        else:
+            url = self.isbn_toolbox.commit_image_raw_bytes(request, book[0].id, isbn_13)
 
         obj, created = BookImage.objects.get_or_create(
             book_id=book[0].id,

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Book, emptyBook } from "../list/BookList";
 import {
   InputNumber,
@@ -13,20 +13,24 @@ import { logger } from "../../util/Logger";
 import { CommaSeparatedStringToArray } from "../../util/StringOperations";
 import { Image } from "primereact/image";
 import { FileUploadHandlerEvent } from "primereact/fileupload";
-import GenreDropdown from "../../components/dropdowns/GenreDropdown";
+import GenresDropdown, {
+  GenresDropdownData,
+} from "../../components/dropdowns/GenreDropdown";
 import { IMAGES_API } from "../../apis/ImagesAPI";
 import ImageUploader from "../../components/uploaders/ImageFileUploader";
 import { showFailure, showSuccess } from "../../components/Toast";
-import { InputSwitch } from "primereact/inputswitch";
 import { APIToInternalBookConversion } from "../../apis/Conversions";
+import { Button } from "primereact/button";
+import GenreDropdown from "../../components/dropdowns/GenreDropdown";
 
 interface ErrorDisplay {
   message: string;
 }
 
+// Leaving this line in case of future image browser side caching workaround is needed
 interface ImageUrlHashStruct {
   imageSrc: string;
-  imageHash: number;
+  imageHash: string;
 }
 
 export default function BookDetail() {
@@ -42,19 +46,29 @@ export default function BookDetail() {
   const [isbn10, setISBN10] = useState<number>(0);
   const [publisher, setPublisher] = useState<string>("");
   const [pubYear, setPubYear] = useState<number>(0);
-  const [pageCount, setPageCount] = useState<number>(0);
+  const [pageCount, setPageCount] = useState<number>();
   const [price, setPrice] = useState<number>(0);
-  const [width, setWidth] = useState<number>(0);
-  const [height, setHeight] = useState<number>(0);
-  const [thickness, setThickness] = useState<number>(0);
+  const [width, setWidth] = useState<number>();
+  const [height, setHeight] = useState<number>();
+  const [thickness, setThickness] = useState<number>();
   const [stock, setStock] = useState<number>(0);
+  // Leaving this line in case of future image browser side caching workaround is needed
   const [image, setImage] = useState<ImageUrlHashStruct>({
     imageSrc: "",
-    imageHash: Date.now(),
+    imageHash: Date.now().toString(),
   });
+  //const [image, setImage] = useState<string>("");
+  const [imageFile, setImageFile] = useState<File>(new File([""], "filename"));
+  const [isImageUploaded, setIsImageUploaded] = useState<boolean>(false);
+  const [isImageRemoved, setIsImageRemoved] = useState<boolean>(false);
 
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
+  const [
+    isConfirmationPopupVisibleImageDelete,
+    setIsConfirmationPopupVisibleImageDelete,
+  ] = useState<boolean>(false);
+  const [genreNamesList, setGenreNamesList] = useState<string[]>([]);
 
   // Load the book data on page load
   useEffect(() => {
@@ -77,17 +91,14 @@ export default function BookDetail() {
         setStock(book.stock);
       })
       .catch(() => showFailure(toast, "Could not fetch book data"));
-  }, []);
 
-  // Load the book image on page load
-  useEffect(() => {
     IMAGES_API.getImage({ id: id! })
-      .then((response) =>
+      .then((response) => {
         setImage({
           imageSrc: response.url,
-          imageHash: Date.now(),
-        })
-      )
+          imageHash: Date.now().toString(),
+        });
+      })
       .catch(() =>
         showFailure(toast, "Image Cannot be Retrieved to Update Display")
       );
@@ -137,10 +148,48 @@ export default function BookDetail() {
         url: "",
       };
       logger.debug("Submitting Book Modify", book);
-      BOOKS_API.modifyBook({ book: book })
-        .then(() => showSuccess(toast, "Book Edited"))
+      BOOKS_API.modifyBook({
+        book: book,
+        image: imageFile,
+        isImageUploaded: isImageUploaded,
+        isImageRemoved: isImageRemoved,
+      })
+        .then(() => {
+          showSuccess(toast, "Book Edited");
+          IMAGES_API.getImage({ id: id! })
+            .then((response) => {
+              //setImage(response.url);
+              setImage({
+                imageSrc: response.url,
+                imageHash: Date.now().toString(),
+              });
+            })
+            .catch(() =>
+              showFailure(toast, "Image Cannot be Retrieved to Update Display")
+            );
+        })
         .catch(() => showFailure(toast, "Could not modify book"));
       formik.resetForm();
+      setOriginalBookData({
+        id: id!,
+        title: title,
+        author: authors,
+        isbn10: isbn10,
+        isbn13: isbn13,
+        publisher: publisher,
+        publishedYear: pubYear,
+        genres: genre,
+        height: height,
+        width: width,
+        thickness: thickness,
+        pageCount: pageCount,
+        stock: stock,
+        retailPrice: price,
+        thumbnailURL: image.imageSrc,
+      });
+      setIsModifiable(false);
+      setIsImageUploaded(false);
+      setIsImageRemoved(false);
     },
   });
 
@@ -153,77 +202,105 @@ export default function BookDetail() {
       setThickness(originalBookData.thickness);
       setPageCount(originalBookData.pageCount);
       setPrice(originalBookData.retailPrice);
+      setImage({
+        imageSrc: originalBookData.thumbnailURL,
+        imageHash: Date.now().toString(),
+      });
+      setIsImageUploaded(false);
+      setIsImageRemoved(false);
     }
   }, [isModifiable]);
 
-  // The dropdown configuration for each cell
-  const genreDropdown = GenreDropdown({
-    setSelectedGenre: setGenre,
-    selectedGenre: genre,
-    isModifiable: !isModifiable,
-  });
+  // Genre dropdown
+  useEffect(() => {
+    GenresDropdownData({ setGenreNamesList });
+  }, []);
+
+  const genreDropdown = (
+    <GenreDropdown
+      selectedGenre={genre}
+      setSelectedGenre={setGenre}
+      genresList={genreNamesList}
+      isDisabled={!isModifiable}
+    />
+  );
+
+  const onImageDelete = () => {
+    setImage({
+      imageSrc: "http://books-db.colab.duke.edu/media/books/default.jpg",
+      imageHash: Date.now().toString(),
+    });
+    setImageFile(new File([""], "filename"));
+    setIsImageUploaded(false);
+    setIsImageRemoved(true);
+  };
 
   const uploadImageFileHandler = (event: FileUploadHandlerEvent) => {
     const file = event.files[0];
-    IMAGES_API.uploadImage({ id: id!, image: file })
-      .then(() => {
-        IMAGES_API.getImage({ id: id! })
-          .then((response) =>
-            setImage({
-              imageSrc: response.url,
-              imageHash: Date.now(),
-            })
-          )
-          .catch(() =>
-            showFailure(toast, "Image Cannot be Retrieved to Update Display")
-          );
-
-        showSuccess(toast, "Image Uploaded Successfully");
-      })
-      .catch(() => showFailure(toast, "Image Upload Failed"));
+    setImageFile(file);
+    setImage({ imageSrc: URL.createObjectURL(file), imageHash: "" });
+    setIsImageUploaded(true);
     event.options.clear();
   };
 
-  const imageDeleteSubtmit = () => {
-    showSuccess(toast, "Image Deleted");
-  };
+  // The navigator to switch pages
+  const navigate = useNavigate();
 
   return (
     <div className="grid flex justify-content-center">
       <Toast ref={toast} />
-      <div className="col-12">
-        <h1 className="p-component p-text-secondary my-3 text-5xl text-center text-900 color: var(--surface-800);">
+      <div className="grid col-12">
+        <div className="flex col-1">
+          <Button
+            type="button"
+            label="Back"
+            icon="pi pi-arrow-left"
+            onClick={() => navigate("/books")}
+            className="p-button-sm my-auto ml-1"
+          />
+        </div>
+        <h1 className="p-component col-10 p-text-secondary my-3 text-5xl text-center text-900 color: var(--surface-800);">
           Book Details
         </h1>
       </div>
       <Image
-        src={`${image.imageSrc}?${image.imageHash}`}
+        // Leaving this line in case of future image browser side caching workaround is needed
+        src={`${image.imageSrc}${image.imageHash == "" ? "" : "?"}${
+          image.imageHash
+        }`}
+        //src={image}
         id="imageONpage"
         alt="Image"
         height="350"
         className="col-12 align-items-center flex justify-content-center"
       />
       <div className="col-12">
-        <ConfirmPopup
-          className={"p-button-danger"}
-          isVisible={isConfirmationPopupVisible}
-          hideFunc={() => setIsConfirmationPopupVisible(false)}
-          acceptFunc={() => {
-            imageDeleteSubtmit;
-          }}
-          rejectFunc={() => {
-            console.log("reject");
-          }}
-          buttonClickFunc={() => {
-            setIsConfirmationPopupVisible(true);
-          }}
-          disabled={!isModifiable}
-          label={"Delete Cover Image"}
-        />
-        <ImageUploader
-          disabled={!isModifiable}
-          uploadHandler={uploadImageFileHandler}
-        />
+        {isModifiable && (
+          <ImageUploader
+            disabled={!isModifiable}
+            uploadHandler={uploadImageFileHandler}
+          />
+        )}
+        {isModifiable && (
+          <div className="card flex justify-content-center my-3">
+            <ConfirmPopup
+              id={"deleteImage"}
+              name={"deleteImage"}
+              className={"p-button-danger flex"}
+              isPopupVisible={isConfirmationPopupVisibleImageDelete}
+              hideFunc={() => setIsConfirmationPopupVisibleImageDelete(false)}
+              onFinalSubmission={onImageDelete}
+              onRejectFinalSubmission={() => {
+                console.log("reject2");
+              }}
+              onShowPopup={() => {
+                setIsConfirmationPopupVisibleImageDelete(true);
+              }}
+              disabled={!isModifiable}
+              label={"Delete Cover Image"}
+            />
+          </div>
+        )}
       </div>
       <form onSubmit={formik.handleSubmit}>
         <div className="flex col-12 justify-content-center p-1">
@@ -234,7 +311,7 @@ export default function BookDetail() {
             >
               Title:
             </label>
-            <p className="p-component p-text-secondary text-900 text-xl text-center my-0">
+            <p className="p-component p-text-secondary text-900 text-3xl text-center my-0">
               {title}
             </p>
           </div>
@@ -247,7 +324,7 @@ export default function BookDetail() {
             >
               Author(s):
             </label>
-            <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
+            <p className="p-component p-text-secondary text-900 text-2xl text-center m-0">
               {authors}
             </p>
           </div>
@@ -330,7 +407,7 @@ export default function BookDetail() {
               maxFractionDigits={15}
               disabled={!isModifiable}
               onValueChange={(e: InputNumberValueChangeEvent) =>
-                setHeight(e.value ?? 0)
+                setHeight(e.value ?? undefined)
               }
             />
           </div>
@@ -349,7 +426,7 @@ export default function BookDetail() {
               disabled={!isModifiable}
               maxFractionDigits={15}
               onValueChange={(e: InputNumberValueChangeEvent) =>
-                setWidth(e.value ?? 0)
+                setWidth(e.value ?? undefined)
               }
             />
           </div>
@@ -368,7 +445,7 @@ export default function BookDetail() {
               maxFractionDigits={15}
               disabled={!isModifiable}
               onValueChange={(e: InputNumberValueChangeEvent) =>
-                setThickness(e.value ?? 0)
+                setThickness(e.value ?? undefined)
               }
             />
           </div>
@@ -388,7 +465,7 @@ export default function BookDetail() {
               value={pageCount}
               disabled={!isModifiable}
               onValueChange={(e: InputNumberValueChangeEvent) =>
-                setPageCount(e.value ?? 0)
+                setPageCount(e.value ?? undefined)
               }
             />
           </div>
@@ -426,37 +503,43 @@ export default function BookDetail() {
           </div>
         </div>
 
-        <div className="grid col-12 justify-content-evenly">
-          <div className="flex col-2 p-0">
-            <label
-              className="p-component p-text-secondary text-teal-900 my-auto mr-2"
-              htmlFor="retail_price"
-            >
-              {isModifiable ? "Reset?" : "Edit?"}
-            </label>
-            <InputSwitch
-              checked={isModifiable}
-              id="modifyBookToggle"
-              name="modifyBookToggle"
-              onChange={() => setIsModifiable(!isModifiable)}
-              className="my-auto "
+        <div className="grid col-12 justify-content-evenly mt-2">
+          {isModifiable && (
+            <Button
+              type="button"
+              label="Cancel"
+              icon="pi pi-times"
+              className="p-button-warning"
+              onClick={() => setIsModifiable(false)}
             />
-          </div>
-
-          <ConfirmPopup
-            isVisible={isConfirmationPopupVisible}
-            hideFunc={() => setIsConfirmationPopupVisible(false)}
-            acceptFunc={formik.handleSubmit}
-            rejectFunc={() => {
-              console.log("reject");
-            }}
-            buttonClickFunc={() => {
-              setIsConfirmationPopupVisible(true);
-            }}
-            disabled={!isModifiable}
-            label={"Update"}
-            className="p-button-success p-button-raised"
-          />
+          )}
+          {!isModifiable && (
+            <Button
+              type="button"
+              label="Edit"
+              icon="pi pi-pencil"
+              onClick={() => setIsModifiable(true)}
+            />
+          )}
+          {isModifiable && (
+            <ConfirmPopup
+              id={"bookDetailSubmit"}
+              name={"bookDetailSubmit"}
+              isPopupVisible={isConfirmationPopupVisible}
+              hideFunc={() => setIsConfirmationPopupVisible(false)}
+              onFinalSubmission={formik.handleSubmit}
+              onRejectFinalSubmission={() => {
+                //do nothing
+              }}
+              onShowPopup={() => {
+                setIsConfirmationPopupVisible(true);
+              }}
+              disabled={!isModifiable}
+              label={"Update"}
+              className="p-button-success p-button-raised"
+              icons="pi pi-save"
+            />
+          )}
         </div>
         {/* Maybe be needed in case the confrim button using the popup breaks */}
         {/* <Button disabled={!this.state.isModifiable} label="submit" type="submit" /> */}

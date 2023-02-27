@@ -28,6 +28,9 @@ import {
 import { APISaleCSVImportRow, APISR, APISRSaleRow } from "./SalesAPI";
 import { GetSalesReportResp } from "./SalesRepAPI";
 import { APIVendor } from "./VendorsAPI";
+import { BuyBack } from "../pages/list/BuyBackList";
+import { APIBB, APIBBSaleRow } from "./BuyBackAPI";
+import { BBSaleRow } from "../pages/detail/BBDetail";
 
 // Internal data type -> ordering required for book get API
 export const APIBookSortFieldMap = new Map<string, string>([
@@ -64,11 +67,21 @@ export const APISRSortFieldMap = new Map<string, string>([
   ["date", "date"],
 ]);
 
+// Internal data type -> ordering required for book get API
+export const APIBBSortFieldMap = new Map<string, string>([
+  ["vendorName", "vendor_name"],
+  ["vendorId", "vendor"],
+  ["uniqueBooks", "num_unique_books"],
+  ["totalBooks", "num_books"],
+  ["totalRevenue", "total_revenue"],
+  ["date", "date"],
+]);
+
 // Books
 
 export function APIToInternalBookConversion(book: APIBook): Book {
   return {
-    id: book.id.toString(),
+    id: book.id!.toString(),
     author: ArrayToCommaSeparatedString(book.authors),
     genres: ArrayToCommaSeparatedString(book.genres),
     title: book.title,
@@ -82,7 +95,7 @@ export function APIToInternalBookConversion(book: APIBook): Book {
     thickness: book.thickness,
     retailPrice: book.retail_price,
     stock: book.stock,
-    thumbnailURL: [book.url],
+    thumbnailURL: book.url,
   };
 }
 
@@ -102,7 +115,7 @@ export function InternalToAPIBookConversion(book: Book): APIBook {
     thickness: book.thickness,
     retail_price: book.retailPrice,
     stock: book.stock,
-    url: book.thumbnailURL[0],
+    url: book.thumbnailURL,
   };
 }
 
@@ -110,7 +123,7 @@ export function APIToInternalBookConversionWithDB(
   book: APIBookWithDBTag
 ): BookWithDBTag {
   return {
-    id: book.id.toString(),
+    id: book.id?.toString() ?? uuid(),
     author: ArrayToCommaSeparatedString(book.authors),
     genres: ArrayToCommaSeparatedString(book.genres ?? []),
     title: book.title,
@@ -124,8 +137,13 @@ export function APIToInternalBookConversionWithDB(
     thickness: book.thickness,
     retailPrice: book.retail_price ?? 0,
     stock: book.stock,
-    thumbnailURL: [book.url],
+    thumbnailURL: book.image_url,
     fromDB: book.fromDB,
+    newImageData: {
+      isImageDelete: false,
+      isImageUpload: false,
+      imageFile: new File([""], "imageFile" + book.id),
+    },
   };
 }
 
@@ -136,6 +154,7 @@ export function APIToInternalVendorConversion(vendor: APIVendor): Vendor {
     id: vendor.id.toString(),
     name: vendor.name,
     numPO: vendor.num_purchase_orders,
+    buybackRate: vendor.buyback_rate,
   };
 }
 
@@ -248,6 +267,38 @@ export function APIToInternalSalesCSVConversion(
       errors: sale.errors,
     } as SRSaleRow;
   });
+}
+
+// Buy Backs
+
+function APIToInternalBBSaleConversion(sale: APIBBSaleRow): BBSaleRow {
+  return {
+    isNewRow: false,
+    // (id is always defined from API)
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    id: sale.id!.toString(),
+    bookId: sale.book,
+    bookTitle: sale.book_title,
+    quantity: sale.quantity,
+    price: sale.unit_buyback_price,
+  };
+}
+
+export function APIToInternalBBConversion(bb: APIBB): BuyBack {
+  const sales: BBSaleRow[] = bb.buybacks.map((sale) =>
+    APIToInternalBBSaleConversion(sale)
+  );
+
+  return {
+    id: bb.id.toString(),
+    date: externalToInternalDate(bb.date),
+    totalBooks: bb.num_books,
+    uniqueBooks: bb.num_unique_books,
+    totalRevenue: bb.total_revenue,
+    vendorID: bb.vendor,
+    vendorName: bb.vendor_name,
+    sales: sales,
+  };
 }
 
 // Sales Report

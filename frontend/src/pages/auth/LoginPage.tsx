@@ -2,7 +2,6 @@ import { createRef, FormEvent, useState } from "react";
 import { Button } from "primereact/button";
 import { Messages } from "primereact/messages";
 import { useNavigate } from "react-router-dom";
-import { API } from "../../apis/Config";
 import { AUTH_API, LoginReq } from "../../apis/AuthAPI";
 import { Password } from "primereact/password";
 
@@ -10,11 +9,6 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const wrongPasswordRef = createRef<Messages>();
   const [password, setPassword] = useState<string>("");
-
-  // Sets the default auth token used by axios
-  const setAuthToken = (token: string) => {
-    API.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-  };
 
   // On password change
   const onChange = (event: FormEvent<HTMLInputElement>): void => {
@@ -30,9 +24,8 @@ export default function LoginPage() {
 
     AUTH_API.login(req)
       .then((response) => {
-        setAuthToken(response.access);
-        sessionStorage.setItem("refreshToken", response.refresh);
-        sessionStorage.setItem("accessToken", response.access);
+        localStorage.setItem("accessToken", response.access);
+        localStorage.setItem("loginTime", new Date().toString());
         navigate("/books");
       })
       .catch(() => {
@@ -83,7 +76,7 @@ export default function LoginPage() {
             />
           </div>
           <div className="flex flex-row justify-content-center card-container col-12">
-            <Button type="submit" label="Submit" aria-label="Submit" />
+            <Button type="submit" label="Log In" aria-label="Submit" />
           </div>
           <Messages ref={wrongPasswordRef} />
         </form>

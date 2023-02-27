@@ -1,55 +1,54 @@
-import React, { useEffect, useRef, useState } from "react";
 import { DataTable, DataTableRowClickEvent } from "primereact/datatable";
-import { createColumns, TableColumn } from "../../components/TableColumns";
-import ConfirmPopup from "../../components/popups/ConfirmPopup";
+import { Toast } from "primereact/toast";
+import { Toolbar } from "primereact/toolbar";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { v4 as uuid } from "uuid";
+import { TableColumn, createColumns } from "../../components/TableColumns";
 import {
   numberEditor,
   priceBodyTemplate,
   priceEditor,
 } from "../../util/TableCellEditFuncs";
-import { useNavigate, useParams } from "react-router-dom";
-import { Toolbar } from "primereact/toolbar";
+import { errorCellBody } from "./errors/CSVImportErrors";
+import React from "react";
+import ConfirmPopup from "../../components/popups/ConfirmPopup";
+import { showFailure, showSuccess } from "../../components/Toast";
 import {
-  AddSRReq,
-  APISRSaleRow,
-  ModifySRReq,
-  SALES_API,
-} from "../../apis/SalesAPI";
-import { Toast } from "primereact/toast";
+  APIBBSaleRow,
+  AddBBReq,
+  BUYBACK_API,
+  ModifyBBReq,
+} from "../../apis/BuyBackAPI";
 import { internalToExternalDate } from "../../util/DateOperations";
+import { filterById, findById } from "../../util/IDOperations";
+import { calculateTotal } from "../../util/CalculateTotal";
+import { Book } from "../list/BookList";
+
+import { useImmer } from "use-immer";
+import { APIToInternalBBConversion } from "../../apis/Conversions";
 import BooksDropdown, {
   BooksDropdownData,
 } from "../../components/dropdowns/BookDropdown";
-import CSVUploader from "../../components/uploaders/CSVFileUploader";
-import { FileUploadHandlerEvent } from "primereact/fileupload";
-import {
-  APIToInternalSalesCSVConversion,
-  APIToInternalSRConversion,
-} from "../../apis/Conversions";
-import {
-  showFailure,
-  showSuccess,
-  showFailuresMapper,
-  showWarning,
-} from "../../components/Toast";
-import { CSVImport400Errors, errorCellBody } from "./errors/CSVImportErrors";
-import { Book } from "../list/BookList";
-import { useImmer } from "use-immer";
-import { filterById, findById } from "../../util/IDOperations";
-import { calculateTotal } from "../../util/CalculateTotal";
 import { logger } from "../../util/Logger";
 import DeletePopup from "../../components/popups/DeletePopup";
 import AddDetailModifyTitle from "../../components/text/AddDetailModifyTitle";
+import OneDayCalendar from "../../components/OneDayCalendar";
+import TotalDollars from "../../components/text/TotalDollars";
 import BackButton from "../../components/buttons/BackButton";
 import DeleteButton from "../../components/buttons/DeleteButton";
+import VendorDropdown from "../../components/dropdowns/VendorDropdown";
+import DeleteColumn from "../../components/datatable/DeleteColumn";
 import AddRowButton from "../../components/buttons/AddRowButton";
 import EditCancelButton from "../../components/buttons/EditCancelDetailButton";
-import TotalDollars from "../../components/text/TotalDollars";
-import OneDayCalendar from "../../components/OneDayCalendar";
-import DeleteColumn from "../../components/datatable/DeleteColumn";
 
-export interface SRSaleRow {
+export interface BBDetailState {
+  id: number;
+  isAddPage: boolean;
+  isModifiable: boolean;
+}
+
+export interface BBSaleRow {
   isNewRow: boolean;
   id: string;
   bookId: number;
@@ -59,8 +58,9 @@ export interface SRSaleRow {
   errors?: { [key: string]: string };
 }
 
-export default function SRDetail() {
-  const emptySale: SRSaleRow = {
+export default function BBDetail() {
+  // Used for setting initial state
+  const emptySale: BBSaleRow = {
     isNewRow: true,
     id: uuid(),
     bookId: 0,
@@ -69,41 +69,51 @@ export default function SRDetail() {
     price: 0,
   };
 
+  // -------- STATE --------
   // From URL
   const { id } = useParams();
-  const isSRAddPage = id === undefined;
+  const isBBAddPage = id === undefined;
   const [isModifiable, setIsModifiable] = useState<boolean>(id === undefined);
+
+  // The navigator to switch pages
+  const navigate = useNavigate();
 
   // For dropdown menus
   const [booksMap, setBooksMap] = useState<Map<string, Book>>(new Map());
+  const [vendorMap, setVendorMap] = useState<Map<string, number>>(new Map());
   const [booksDropdownTitles, setBooksDropdownTitles] = useState<string[]>([]);
 
   // The rest of the data
   const [date, setDate] = useState<Date>(new Date());
-  // useImmer is used to set state for nested data in a simplified format
-  const [sales, setSales] = useImmer<SRSaleRow[]>([]);
+  const [selectedVendorName, setSelectedVendorName] = useState<string>("");
 
+  // useImmer is used to set state for nested data in a simplified format
+  const [sales, setSales] = useImmer<BBSaleRow[]>([]);
   const [totalRevenue, setTotalRevenue] = useState<number>(0);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
+  const [isBooksBuyBackSold, setIsBooksBuyBackSold] = useState<boolean>(false);
   const [hasUploadedCSV, setHasUploadedCSV] = useState<boolean>(false);
   const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false); // Whether the delete popup is shown
   const [isGoBackActive, setIsGoBackActive] = useState<boolean>(false);
 
   // Load the SR data on page load
   useEffect(() => {
-    if (!isSRAddPage) {
-      SALES_API.getSalesReconciliationDetail({ id: id! })
+    if (!isBBAddPage) {
+      BUYBACK_API.getBuyBackDetail({ id: id! })
         .then((response) => {
-          const salesReconciliation = APIToInternalSRConversion(response);
-          setDate(salesReconciliation.date);
-          setSales(salesReconciliation.sales);
-          setTotalRevenue(salesReconciliation.totalRevenue);
+          const buyBack = APIToInternalBBConversion(response);
+          setDate(buyBack.date);
+          setSales(buyBack.sales);
+          setTotalRevenue(buyBack.totalRevenue);
+          setSelectedVendorName(buyBack.vendorName);
         })
         .catch(() =>
-          showFailure(toast, "Could not fetch sales reconciliation data")
+          showFailure(toast, "Could not fetch book buyback sales data")
         );
     }
+
+    setIsBooksBuyBackSold(sales.length > 0);
   }, []);
 
   // Get the data for the books dropdown
@@ -112,21 +122,26 @@ export default function SRDetail() {
       BooksDropdownData({
         setBooksMap: setBooksMap,
         setBookTitlesList: setBooksDropdownTitles,
+        vendor: vendorMap.get(selectedVendorName)!,
       }),
-    []
+    [selectedVendorName]
   );
+
+  useEffect(() => {
+    setIsBooksBuyBackSold(sales.length > 0);
+  }, [sales]);
 
   const COLUMNS: TableColumn[] = [
     {
       field: "errors",
       header: "Errors",
       hidden: !hasUploadedCSV,
-      customBody: (rowData: SRSaleRow) => errorCellBody(rowData.errors),
+      customBody: (rowData: BBSaleRow) => errorCellBody(rowData.errors),
     },
     {
       field: "bookTitle",
       header: "Book",
-      customBody: (rowData: SRSaleRow) =>
+      customBody: (rowData: BBSaleRow) =>
         booksDropDownEditor(
           rowData.bookTitle,
           (newValue) => {
@@ -140,11 +155,10 @@ export default function SRDetail() {
           !isModifiable
         ),
     },
-
     {
       field: "quantity",
       header: "Quantity",
-      customBody: (rowData: SRSaleRow) =>
+      customBody: (rowData: BBSaleRow) =>
         numberEditor(
           rowData.quantity,
           (newValue) => {
@@ -156,11 +170,12 @@ export default function SRDetail() {
           },
           !isModifiable
         ),
+      style: { width: "15%" },
     },
     {
       field: "price",
-      header: "Unit Retail Price ($)",
-      customBody: (rowData: SRSaleRow) =>
+      header: "Unit Buyback Price ($)",
+      customBody: (rowData: BBSaleRow) =>
         priceEditor(
           rowData.price,
           (newValue) => {
@@ -176,33 +191,30 @@ export default function SRDetail() {
     {
       field: "subtotal",
       header: "Subtotal ($)",
-      customBody: (rowData: SRSaleRow) =>
+      customBody: (rowData: BBSaleRow) =>
         priceBodyTemplate(rowData.price * rowData.quantity),
     },
   ];
 
   // Called to make delete pop up show
-  const deleteSalesReconciliationPopup = () => {
+  const deleteBuyBackPopup = () => {
     logger.debug("Delete Sales Reconciliation Clicked");
     setDeletePopupVisible(true);
   };
 
   // Call to actually delete the element
-  const deleteSalesReconciliationFinal = () => {
-    logger.debug("Delete Sales Reconciliation Finalized");
+  const deleteBuyBackFinal = () => {
+    logger.debug("Delete Book BuyBack Finalized");
     setDeletePopupVisible(false);
-    SALES_API.deleteSalesReconciliation({
+    BUYBACK_API.deleteBuyBack({
       id: id!,
     })
       .then(() => {
-        showSuccess(toast, "Sales Reconciliation Deleted");
-        navigate("/sales-reconciliations");
+        showSuccess(toast, "Book BuyBack Sale Deleted");
+        navigate("/book-buybacks");
       })
-      .catch(() => showFailure(toast, "Sales Reconciliation Failed to Delete"));
+      .catch(() => showFailure(toast, "Book BuyBack Sale Failed to Delete"));
   };
-
-  // The navigator to switch pages
-  const navigate = useNavigate();
 
   const onRowClick = (event: DataTableRowClickEvent) => {
     // I couldn't figure out a better way to do this...
@@ -214,32 +226,9 @@ export default function SRDetail() {
   };
 
   // Callback functions for edit/delete buttons
-  const toBookDetailsPage = (sale: SRSaleRow) => {
+  const toBookDetailsPage = (sale: BBSaleRow) => {
     logger.debug("Edit Book Clicked", sale);
     navigate(`/books/detail/${sale.bookId}`);
-  };
-
-  const csvUploadHandler = (event: FileUploadHandlerEvent) => {
-    const csv = event.files[0];
-    SALES_API.salesReconciliationCSVImport({ file: csv })
-      .then((response) => {
-        const sales = APIToInternalSalesCSVConversion(response.sales);
-        setSales(sales);
-        setHasUploadedCSV(true);
-
-        // Show nonblocking errors (warnings)
-        const nonBlockingErrors = response.errors;
-        for (const warning of nonBlockingErrors) {
-          showWarning(
-            toast,
-            warning.concat(" is an extra column and was not used")
-          );
-        }
-      })
-      .catch((error) => {
-        showFailuresMapper(toast, error.data.errors, CSVImport400Errors);
-      });
-    event.options.clear();
   };
 
   // Validate submission before making API req
@@ -248,7 +237,7 @@ export default function SRDetail() {
       if (!sale.bookTitle || !(sale.price >= 0) || !sale.quantity) {
         showFailure(
           toast,
-          "Book, retail price, and quantity are required for all line items"
+          "Book, buyback price, and quantity are required for all line items"
         );
         return false;
       }
@@ -267,101 +256,96 @@ export default function SRDetail() {
       return;
     }
 
-    if (isSRAddPage) {
-      callAddSRAPI();
+    if (isBBAddPage) {
+      callAddBBAPI();
     } else {
       // Otherwise, it is a modify page
-      callModifySRAPI();
+      callModifyBBAPI();
     }
   };
 
-  // Add the sales reconciliation
-  const callAddSRAPI = () => {
+  // Add the book buyback
+  const callAddBBAPI = () => {
     const apiSales = sales.map((sale) => {
       return {
         book: Number(booksMap.get(sale.bookTitle)!.id),
         quantity: sale.quantity,
-        unit_retail_price: sale.price,
-      } as APISRSaleRow;
+        unit_buyback_price: sale.price,
+      } as APIBBSaleRow;
     });
 
-    const salesReconciliation = {
+    const buyBack = {
       date: internalToExternalDate(date),
-      sales: apiSales,
-    } as AddSRReq;
-
-    SALES_API.addSalesReconciliation(salesReconciliation)
+      vendor: vendorMap.get(selectedVendorName),
+      buybacks: apiSales,
+    } as AddBBReq;
+    BUYBACK_API.addBuyBack(buyBack)
       .then(() => {
-        showSuccess(toast, "Sales reconciliation added successfully");
-        isGoBackActive
-          ? navigate("/sales-reconciliations")
-          : window.location.reload();
+        showSuccess(toast, "Book Buyback added successfully");
+        isGoBackActive ? navigate("/book-buybacks") : window.location.reload();
       })
-      .catch(() => showFailure(toast, "Could not add sales reconciliation"));
+      .catch(() => showFailure(toast, "Could not add book buyback"));
   };
 
   // Modify the sales reconciliation
-  const callModifySRAPI = () => {
+  const callModifyBBAPI = () => {
+    // Otherwise, it is a modify page
     const apiSales = sales.map((sale) => {
       return {
         id: sale.isNewRow ? undefined : sale.id,
-        // If the book has been deleted, will have to use the id that is already present in the row
         book: booksMap.get(sale.bookTitle)?.id ?? sale.bookId,
         quantity: sale.quantity,
-        unit_retail_price: sale.price,
-      } as APISRSaleRow;
+        unit_buyback_price: sale.price,
+      } as APIBBSaleRow;
     });
 
-    const salesReconciliation = {
+    const buyBack = {
       id: id,
       date: internalToExternalDate(date),
-      sales: apiSales,
-    } as ModifySRReq;
+      vendor: vendorMap.get(selectedVendorName),
+      buybacks: apiSales,
+    } as ModifyBBReq;
 
-    SALES_API.modifySalesReconciliation(salesReconciliation)
+    BUYBACK_API.modifyBuyBack(buyBack)
       .then(() => {
-        showSuccess(toast, "Sales reconciliation modified successfully");
+        showSuccess(toast, "Book Buyback modified successfully");
         setIsModifiable(!isModifiable);
       })
-      .catch(() => showFailure(toast, "Could not modify sales reconciliation"));
+      .catch(() => showFailure(toast, "Could not modify book buyback"));
   };
 
   // -------- TEMPLATES/VISUAL ELEMENTS --------
   const toast = useRef<Toast>(null);
 
   // Top Line
-
   const titleText = (
     <div className="pt-2 col-10">
       <AddDetailModifyTitle
         isModifyPage={isModifiable}
-        isAddPage={isSRAddPage}
-        detailTitle={"Sales Reconciliation Details"}
-        addTitle={"Add Sales Reconciliation"}
-        modifyTitle={"Modify Sales Reconciliation"}
+        isAddPage={isBBAddPage}
+        detailTitle={"Book Buyback Details"}
+        addTitle={"Add Book Buyback"}
+        modifyTitle={"Modify Book Buyback"}
       />
     </div>
   );
 
   const backButton = (
     <div className="flex col-1">
-      <BackButton onClick={() => navigate("/purchase-orders")} />
+      <BackButton onClick={() => navigate("/book-buybacks")} />
     </div>
   );
 
   const deleteButton = (
     <div className="flex col-1">
-      <DeleteButton
-        isEnabled={!isSRAddPage}
-        onClick={deleteSalesReconciliationPopup}
-      />
+      <DeleteButton isEnabled={!isBBAddPage} onClick={deleteBuyBackPopup} />
     </div>
   );
 
   const deletePopup = (
     <DeletePopup
-      deleteItemIdentifier={" this sales reconciliation"}
-      onConfirm={() => deleteSalesReconciliationFinal()}
+      deleteItemIdentifier={"this book buyback"}
+      onConfirm={() => deleteBuyBackFinal()}
       setIsVisible={setDeletePopupVisible}
     />
   );
@@ -374,32 +358,28 @@ export default function SRDetail() {
       emptyItem={emptySale}
       rows={sales}
       setRows={setSales}
-      isDisabled={!isModifiable}
+      isDisabled={!isModifiable || selectedVendorName == ""}
       label={"Add Book"}
       isVisible={isModifiable}
     />
   );
 
-  const csvImportButton = (
-    <CSVUploader visible={isModifiable} uploadHandler={csvUploadHandler} />
-  );
-
-  const leftToolbar = (
-    <>
-      {addRowButton}
-      {csvImportButton}
-    </>
-  );
-
   // Center
   const editCancelButton = (
     <EditCancelButton
-      onClickEdit={() => setIsModifiable(!isModifiable)}
+      onClickEdit={() => {
+        setIsModifiable(!isModifiable);
+        BooksDropdownData({
+          setBooksMap: setBooksMap,
+          setBookTitlesList: setBooksDropdownTitles,
+          vendor: vendorMap.get(selectedVendorName)!,
+        });
+      }}
       onClickCancel={() => {
         setIsModifiable(!isModifiable);
         window.location.reload();
       }}
-      isAddPage={isSRAddPage}
+      isAddPage={isBBAddPage}
       isModifiable={isModifiable}
     />
   );
@@ -420,8 +400,8 @@ export default function SRDetail() {
 
   const submitAndGoBackButton = (
     <ConfirmPopup
-      isButtonVisible={isModifiable && isSRAddPage}
-      isPopupVisible={isConfirmationPopupVisible && isModifiable && isSRAddPage}
+      isButtonVisible={isModifiable && isBBAddPage}
+      isPopupVisible={isConfirmationPopupVisible && isModifiable && isBBAddPage}
       hideFunc={() => setIsConfirmationPopupVisible(false)}
       onFinalSubmission={onSubmit}
       onRejectFinalSubmission={() => {
@@ -445,7 +425,6 @@ export default function SRDetail() {
   );
 
   // Items below toolbar
-
   const totalDollars = (
     <div className="flex">
       <TotalDollars label={"Total Revenue:"} totalDollars={totalRevenue} />
@@ -456,7 +435,18 @@ export default function SRDetail() {
     <OneDayCalendar disabled={!isModifiable} date={date} setDate={setDate} />
   );
 
-  // Datatable
+  const vendorDropdown = (
+    <VendorDropdown
+      setVendorMap={setVendorMap}
+      setSelectedVendor={setSelectedVendorName}
+      selectedVendor={selectedVendorName}
+      isModifiable={isModifiable && !isBooksBuyBackSold}
+    />
+  );
+
+  // Datatable Items
+
+  const columns = createColumns(COLUMNS);
 
   const booksDropDownEditor = (
     value: string,
@@ -464,18 +454,16 @@ export default function SRDetail() {
     isDisabled?: boolean
   ) => (
     <BooksDropdown
-      // This will always be used in a table cell, so we can disable the warning
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       setSelectedBook={onChange}
       selectedBook={value}
-      isDisabled={isDisabled}
       bookTitlesList={booksDropdownTitles}
+      isDisabled={isDisabled}
       placeholder={value}
     />
   );
 
   // Delete icon for each row
-  const deleteColumn = DeleteColumn<SRSaleRow>({
+  const deleteColumn = DeleteColumn<BBSaleRow>({
     onDelete: (rowData) => {
       const newSales = filterById(sales, rowData.id, setSales);
       setTotalRevenue(calculateTotal(newSales));
@@ -483,31 +471,36 @@ export default function SRDetail() {
     hidden: !isModifiable,
   });
 
-  const columns = createColumns(COLUMNS);
-
   return (
     <div>
       <Toast ref={toast} />
       <div className="grid flex justify-content-center">
         <div className="flex col-12 p-0">
-          <div className="flex col-12 p-0">
-            {backButton}
-            {titleText}
-            {deleteButton}
-          </div>
+          {backButton}
+          {titleText}
+          {deleteButton}
         </div>
         <div className="col-11">
-          <form id="localForm">
+          <form onSubmit={onSubmit}>
             <Toolbar
               className="mb-4"
-              left={leftToolbar}
+              left={addRowButton}
               center={editCancelButton}
               right={rightToolbar}
             />
 
-            <div className="flex pb-2 flex-row justify-content-evenly card-container col-12">
+            <div className="flex col-12 justify-content-evenly mb-3">
               {totalDollars}
               {calendar}
+              <div>
+                <label
+                  htmlFor="vendor"
+                  className="p-component text-teal-900 p-text-secondary my-auto pr-2"
+                >
+                  Vendor
+                </label>
+                {vendorDropdown}
+              </div>
             </div>
 
             <DataTable
@@ -516,10 +509,10 @@ export default function SRDetail() {
               className="editable-cells-table"
               responsiveLayout="scroll"
               editMode="cell"
-              rowHover={!isSRAddPage}
+              rowHover={!isBBAddPage}
               selectionMode={"single"}
               onRowClick={(event) => {
-                if (!isSRAddPage && !isModifiable) {
+                if (!isBBAddPage && !isModifiable) {
                   onRowClick(event);
                 }
               }}
@@ -527,9 +520,6 @@ export default function SRDetail() {
               {columns}
               {deleteColumn}
             </DataTable>
-
-            {/* Maybe be needed in case the confrim button using the popup breaks */}
-            {/* <Button type="submit" onClick={this.onSubmit} /> */}
           </form>
         </div>
         {deletePopupVisible && deletePopup}

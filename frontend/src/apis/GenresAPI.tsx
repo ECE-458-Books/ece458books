@@ -56,6 +56,16 @@ export const GENRES_API = {
     });
   },
 
+  getGenresNoPagination: async function (): Promise<APIGenre[]> {
+    return await API.request({
+      url: GENRES_EXTENSION,
+      method: METHOD_GET,
+      params: {
+        no_pagination: true,
+      },
+    });
+  },
+
   getGenreDetail: async function (req: GetGenreDetailReq): Promise<APIGenre> {
     return await API.request({
       url: GENRES_EXTENSION.concat("/".concat(req.id.toString())),

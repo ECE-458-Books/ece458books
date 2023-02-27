@@ -4,11 +4,14 @@ from rest_framework import status, filters
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from .paginations import BuybackPagination
 from .models import Buyback, BuybackOrder
-from .serializers import BuybackOrderSerializer, BuybackSerializer
-from django.db.models import Sum, OuterRef, Subquery, Func, Count
+from .serializers import BuybackOrderSerializer
+from django.db.models import Sum, OuterRef, Subquery, Func, Count, F
 from books.models import Book
 import datetime, pytz
-from datetime import datetime, timedelta
+from datetime import datetime
+from rest_framework.views import APIView
+from rest_framework.request import Request
+from helpers.csv_reader import CSVReader
 
 
 class ListCreateBuybackAPIView(ListCreateAPIView):
@@ -52,6 +55,13 @@ class ListCreateBuybackAPIView(ListCreateAPIView):
         default_query_set = default_query_set.annotate(num_books=Subquery(num_books_subquery))
 
         default_query_set = default_query_set.annotate(num_unique_books=Count('buybacks__book', distinct=True))
+
+        default_query_set = default_query_set.annotate(vendor_name=F('vendor__name'))
+
+        # Filter by vendor
+        vendor = self.request.GET.get('vendor')
+        if vendor is not None:
+            default_query_set = default_query_set.filter(vendor=vendor)
 
         # Filter by date
         start_date = self.request.GET.get('start')
@@ -154,3 +164,11 @@ class RetrieveUpdateDestroyBuybackAPIView(RetrieveUpdateDestroyAPIView):
             book_to_remove_buyback.stock += buyback_book_quantity['num_books']
             book_to_remove_buyback.save()
         return super().destroy(request, *args, **kwargs)
+
+
+class CSVBuybackAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request):
+        csv_reader = CSVReader("buybacks")
+        return csv_reader.read_csv(request)

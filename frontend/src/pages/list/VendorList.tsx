@@ -14,12 +14,14 @@ import DeletePopup from "../../components/popups/DeletePopup";
 import { createColumns, TableColumn } from "../../components/TableColumns";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import { logger } from "../../util/Logger";
+import { percentBodyTemplate } from "../../util/TableCellEditFuncs";
 import { NUM_ROWS } from "./BookList";
 
 // The Vendor Interface
 export interface Vendor {
   id: string;
   name: string;
+  buybackRate?: number;
   numPO: number;
 }
 
@@ -29,6 +31,15 @@ const COLUMNS: TableColumn[] = [
     field: "name",
     header: "Vendor Name",
     sortable: true,
+  },
+  {
+    field: "buybackRate",
+    header: "Buyback Rate",
+    sortable: true,
+    customBody: (rowData: Vendor) =>
+      rowData.buybackRate
+        ? percentBodyTemplate(rowData.buybackRate)
+        : undefined,
   },
 ];
 

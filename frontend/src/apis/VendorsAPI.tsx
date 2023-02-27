@@ -18,6 +18,7 @@ export interface APIVendor {
   id: number;
   name: string;
   num_purchase_orders: number;
+  buyback_rate?: number;
 }
 
 export interface GetVendorsResp {
@@ -39,11 +40,13 @@ export interface DeleteVendorReq {
 export interface ModifyVendorReq {
   id: string;
   name: string;
+  buyback_rate?: number;
 }
 
 // addVendor
 export interface AddVendorReq {
   name: string;
+  buyback_rate?: number;
 }
 
 export const VENDORS_API = {
@@ -64,12 +67,15 @@ export const VENDORS_API = {
     });
   },
 
-  getVendorsNoPagination: async function (): Promise<APIVendor[]> {
+  getVendorsNoPagination: async function (
+    has_buyback_policy?: boolean
+  ): Promise<APIVendor[]> {
     return await API.request({
       url: VENDORS_EXTENSION,
       method: METHOD_GET,
       params: {
         no_pagination: true,
+        has_buyback_policy: has_buyback_policy,
       },
     });
   },

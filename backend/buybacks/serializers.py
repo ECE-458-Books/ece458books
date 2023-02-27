@@ -52,7 +52,13 @@ class BuybackOrderSerializer(TransactionGroupBaseSerializer):
     def get_vendor_name(self, instance):
         return instance.vendor.name
 
-    def validate_before_creation(self, transaction_quantities, date):
+    def validate_before_creation(self, transaction_quantities, data):
+        # Check that vendor has a buyback policy
+        vendor = data['vendor']
+        if not vendor.buyback_rate:
+            raise serializers.ValidationError(f'{vendor.name} has no buyback policy')
+
+        date = data['date']
         for book_id, buyback_quantity in transaction_quantities.items():
             book_to_buyback = Book.objects.get(id=book_id)
 
@@ -66,8 +72,13 @@ class BuybackOrderSerializer(TransactionGroupBaseSerializer):
                 raise serializers.ValidationError(f"Not enough books in stock to buyback {book_to_buyback.title}")
 
     def __book_has_previous_purchase(self, date, book_id):
-        return PurchaseOrder.objects.filter(date__lte=date).annotate(prev_purchase=Subquery(Purchase.objects.filter(purchase_order=OuterRef('id')).filter(
-            book=book_id).values('book'))).values('prev_purchase').exclude(prev_purchase=None).first()['prev_purchase'] != None
+        print(Purchase.objects.filter(book=book_id).distinct('purchase_order').values('book', 'purchase_order'))
+        try:
+            return PurchaseOrder.objects.filter(date__lte=date).annotate(
+                prev_purchase=Subquery(Purchase.objects.filter(purchase_order=OuterRef('id')).filter(book=book_id).distinct('purchase_order').values('book'))).values('prev_purchase').exclude(
+                    prev_purchase=None).first()['prev_purchase'] != None
+        except TypeError:
+            return None
 
     def update_non_nested_fields(self, instance, validated_data):
         instance.date = validated_data.get('date', instance.date)

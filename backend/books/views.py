@@ -247,8 +247,13 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
         return Response(res)
     
     def convert_zero_to_null(self, request_data):
+        content_type = request_data.content_type.split(';')[0]
+
         # convert QueryDict to dict
-        data = request_data.dict()
+        data = request_data
+
+        if content_type == 'multipart/form-data':
+            data = request_data.dict()
 
         possible_zero_fields = ['pageCount', 'width', 'height', 'thickness']
         for possible_zero_field in possible_zero_fields:

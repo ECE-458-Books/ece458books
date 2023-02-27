@@ -229,7 +229,7 @@ export default function SRDetail() {
 
         // Show nonblocking errors (warnings)
         const nonBlockingErrors = response.errors;
-        for (const warning of nonBlockingErrors) {
+        for (const warning of nonBlockingErrors ?? []) {
           showWarning(
             toast,
             warning.concat(" is an extra column and was not used")

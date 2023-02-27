@@ -219,7 +219,7 @@ export default function PODetail() {
 
         // Show nonblocking errors (warnings)
         const nonBlockingErrors = response.errors;
-        for (const warning of nonBlockingErrors) {
+        for (const warning of nonBlockingErrors ?? []) {
           showWarning(
             toast,
             warning.concat(" is an extra column and was not used")
@@ -229,6 +229,7 @@ export default function PODetail() {
       .catch((error) => {
         showFailuresMapper(toast, error.data.errors, CSVImport400Errors);
       });
+    event.options.clear();
   };
 
   // The navigator to switch pages

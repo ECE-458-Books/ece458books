@@ -70,7 +70,7 @@ export interface APISaleCSVImportRow extends APISRSaleRow {
 
 export interface SRCSVImportResp {
   sales: APISaleCSVImportRow[];
-  errors: string[];
+  errors?: string[];
 }
 
 export const SALES_API = {

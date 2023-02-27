@@ -29,7 +29,7 @@ import { APISaleCSVImportRow, APISR, APISRSaleRow } from "./SalesAPI";
 import { GetSalesReportResp } from "./SalesRepAPI";
 import { APIVendor } from "./VendorsAPI";
 import { BuyBack } from "../pages/list/BuyBackList";
-import { APIBB, APIBBSaleRow } from "./BuyBackAPI";
+import { APIBB, APIBBCSVImportRow, APIBBSaleRow } from "./BuyBackAPI";
 import { BBSaleRow } from "../pages/detail/BBDetail";
 
 // Internal data type -> ordering required for book get API
@@ -299,6 +299,24 @@ export function APIToInternalBBConversion(bb: APIBB): BuyBack {
     vendorName: bb.vendor_name,
     sales: sales,
   };
+}
+
+export function APIToInternalBuybackCSVConversion(
+  buybacks: APIBBCSVImportRow[]
+): BBSaleRow[] {
+  return buybacks.map((buyback) => {
+    return {
+      isNewRow: true,
+      id: uuid(),
+      subtotal: 0, // Temporary, subtotal will be deprecated
+      bookId: buyback.book,
+      bookTitle: buyback.book_title,
+      bookISBN: buyback.book_isbn,
+      quantity: buyback.quantity,
+      price: buyback.unit_buyback_price,
+      errors: buyback.errors,
+    } as POPurchaseRow;
+  });
 }
 
 // Sales Report

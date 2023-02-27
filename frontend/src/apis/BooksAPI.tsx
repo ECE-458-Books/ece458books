@@ -96,6 +96,17 @@ export const BOOKS_API = {
     });
   },
 
+  getBooksNoPagination: async function (vendor?: number): Promise<APIBook[]> {
+    return await API.request({
+      url: BOOKS_EXTENSION,
+      method: METHOD_GET,
+      params: {
+        no_pagination: true,
+        vendor: vendor,
+      },
+    });
+  },
+
   getBookDetail: async function (req: GetBookDetailReq): Promise<APIBook> {
     return await API.request({
       url: BOOKS_EXTENSION.concat("/".concat(req.id.toString())),
@@ -120,18 +131,13 @@ export const BOOKS_API = {
     formData.append("authors", req.book.authors.join(", "));
     formData.append("genres", req.book.genres.join(", "));
     formData.append("retail_price", req.book.retail_price.toString());
-    if (req.book.width) {
-      formData.append("width", req.book.width.toString());
-    }
-    if (req.book.height) {
-      formData.append("height", req.book.height.toString());
-    }
-    if (req.book.thickness) {
-      formData.append("thickness", req.book.thickness.toString());
-    }
-    if (req.book.pageCount) {
-      formData.append("pageCount", req.book.pageCount.toString());
-    }
+
+    // The 0 is converted to null in the DB
+    formData.append("width", req.book.width?.toString() ?? "0");
+    formData.append("height", req.book.height?.toString() ?? "0");
+    formData.append("thickness", req.book.thickness?.toString() ?? "0");
+    formData.append("pageCount", req.book.pageCount?.toString() ?? "0");
+
     if (req.isImageUploaded) {
       formData.append("image", req.image);
     }
@@ -170,18 +176,13 @@ export const BOOKS_API = {
     formData.append("authors", req.book.authors.join(", "));
     formData.append("genres", req.book.genres.join(", "));
     formData.append("retail_price", req.book.retail_price.toString());
-    if (req.book.width) {
-      formData.append("width", req.book.width.toString());
-    }
-    if (req.book.height) {
-      formData.append("height", req.book.height.toString());
-    }
-    if (req.book.thickness) {
-      formData.append("thickness", req.book.thickness.toString());
-    }
-    if (req.book.pageCount) {
-      formData.append("pageCount", req.book.pageCount.toString());
-    }
+
+    // The 0 is converted to null in the DB
+    formData.append("width", req.book.width?.toString() ?? "0");
+    formData.append("height", req.book.height?.toString() ?? "0");
+    formData.append("thickness", req.book.thickness?.toString() ?? "0");
+    formData.append("pageCount", req.book.pageCount?.toString() ?? "0");
+
     if (req.isImageUploaded) {
       formData.append("image", req.image);
     }

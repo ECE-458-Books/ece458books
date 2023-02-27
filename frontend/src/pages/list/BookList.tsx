@@ -24,7 +24,9 @@ import {
   imageBodyTemplate,
 } from "../../util/TableCellEditFuncs";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
-import GenreDropdown from "../../components/dropdowns/GenreDropdown";
+import GenreDropdown, {
+  GenresDropdownData,
+} from "../../components/dropdowns/GenreDropdown";
 import { InputSwitch } from "primereact/inputswitch";
 
 export const NUM_ROWS = 10;
@@ -93,6 +95,7 @@ export default function BookList() {
   const [selectedDeleteBook, setSelectedDeleteBook] = useState<Book>(emptyBook); // track the current book that has been selected to be deleted
   const [rows, setRows] = useState<number>(NUM_ROWS);
   const [isNoPagination, setIsNoPagination] = useState<boolean>(false);
+  const [genreNamesList, setGenreNamesList] = useState<string[]>([]); // List of all genre names
 
   // The current state of sorting.
   const [sortParams, setSortParams] = useState<DataTableSortEvent>({
@@ -118,11 +121,16 @@ export default function BookList() {
     } as Filters,
   });
 
-  // Custom dropdown selector for genre
+  // Genre dropdown
+  useEffect(() => {
+    GenresDropdownData({ setGenreNamesList });
+  }, []);
+
   const genreFilter = (
     <GenreDropdown
       selectedGenre={selectedGenre}
       setSelectedGenre={setSelectedGenre}
+      genresList={genreNamesList}
     />
   );
 

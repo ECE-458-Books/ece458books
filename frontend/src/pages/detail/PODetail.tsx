@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ToggleButton } from "primereact/togglebutton";
 import { Calendar, CalendarChangeEvent } from "primereact/calendar";
-import { DataTable } from "primereact/datatable";
+import { DataTable, DataTableRowClickEvent } from "primereact/datatable";
 import { createColumns, TableColumn } from "../../components/TableColumns";
 import { Column } from "primereact/column";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
@@ -48,6 +48,7 @@ import { Book } from "../list/BookList";
 import { useImmer } from "use-immer";
 import { findById } from "../../util/IDOperations";
 import { calculateTotal } from "../../util/CalculateTotal";
+import { logger } from "../../util/Logger";
 
 export interface POPurchaseRow {
   isNewRow: boolean; // true if the user added this row, false if it already existed
@@ -197,6 +198,15 @@ export default function PODetail() {
       .catch((error) => {
         showFailuresMapper(toast, error.data.errors, CSVImport400Errors);
       });
+  };
+
+  const onRowClick = (event: DataTableRowClickEvent) => {
+    // I couldn't figure out a better way to do this...
+    // It takes the current index as the table knows it and calculates the actual index in the books array
+    const index = event.index - NUM_ROWS * (pageParams.page ?? 0);
+    const purchase = purchases[index];
+    logger.debug("Purchase Order Row Clicked", purchase);
+    toDetailsPage(book);
   };
 
   const validateSubmission = () => {
@@ -465,6 +475,9 @@ export default function PODetail() {
               className="editable-cells-table"
               responsiveLayout="scroll"
               editMode="cell"
+              rowHover
+              selectionMode={"single"}
+              onRowClick={(event) => onRowClick(event)}
             >
               {columns}
               <Column

@@ -13,7 +13,7 @@ import {
   priceBodyTemplate,
   priceEditor,
 } from "../../util/TableCellEditFuncs";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   AddPOReq,
   APIPOPurchaseRow,
@@ -200,13 +200,22 @@ export default function PODetail() {
       });
   };
 
+  // The navigator to switch pages
+  const navigate = useNavigate();
+
   const onRowClick = (event: DataTableRowClickEvent) => {
     // I couldn't figure out a better way to do this...
     // It takes the current index as the table knows it and calculates the actual index in the books array
-    const index = event.index - NUM_ROWS * (pageParams.page ?? 0);
+    const index = event.index;
     const purchase = purchases[index];
     logger.debug("Purchase Order Row Clicked", purchase);
-    toDetailsPage(book);
+    toBookDetailsPage(purchase);
+  };
+
+  // Callback functions for edit/delete buttons
+  const toBookDetailsPage = (purcahse: POPurchaseRow) => {
+    logger.debug("Edit Book Clicked", purcahse);
+    navigate(`/books/detail/${purcahse.bookId}`);
   };
 
   const validateSubmission = () => {
@@ -475,9 +484,13 @@ export default function PODetail() {
               className="editable-cells-table"
               responsiveLayout="scroll"
               editMode="cell"
-              rowHover
+              rowHover={!isPOAddPage}
               selectionMode={"single"}
-              onRowClick={(event) => onRowClick(event)}
+              onRowClick={(event) => {
+                if (!isPOAddPage && !isModifiable) {
+                  onRowClick(event);
+                }
+              }}
             >
               {columns}
               <Column

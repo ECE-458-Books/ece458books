@@ -1,12 +1,12 @@
 import { Calendar, CalendarChangeEvent } from "primereact/calendar";
 import { Column } from "primereact/column";
-import { DataTable } from "primereact/datatable";
+import { DataTable, DataTableRowClickEvent } from "primereact/datatable";
 import { InputNumber } from "primereact/inputnumber";
 import { Toast } from "primereact/toast";
 import { ToggleButton } from "primereact/togglebutton";
 import { Toolbar } from "primereact/toolbar";
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { v4 as uuid } from "uuid";
 import { TableColumn, createColumns } from "../../components/TableColumns";
 import {
@@ -37,6 +37,7 @@ import { VENDORS_API } from "../../apis/VendorsAPI";
 import BooksDropdown, {
   BooksDropdownData,
 } from "../../components/dropdowns/BookDropdown";
+import { logger } from "../../util/Logger";
 
 export interface BBDetailState {
   id: number;
@@ -182,6 +183,24 @@ export default function BBDetail() {
   const deleteSale = (rowData: BBSaleRow) => {
     const _data = sales.filter((val) => val.id !== rowData.id);
     setSales(_data);
+  };
+
+  // The navigator to switch pages
+  const navigate = useNavigate();
+
+  const onRowClick = (event: DataTableRowClickEvent) => {
+    // I couldn't figure out a better way to do this...
+    // It takes the current index as the table knows it and calculates the actual index in the books array
+    const index = event.index;
+    const sale = sales[index];
+    logger.debug("Purchase Order Row Clicked", sale);
+    toBookDetailsPage(sale);
+  };
+
+  // Callback functions for edit/delete buttons
+  const toBookDetailsPage = (sale: BBSaleRow) => {
+    logger.debug("Edit Book Clicked", sale);
+    navigate(`/books/detail/${sale.bookId}`);
   };
 
   // Validate submission before making API req
@@ -483,6 +502,13 @@ export default function BBDetail() {
               className="editable-cells-table"
               responsiveLayout="scroll"
               editMode="cell"
+              rowHover={!isBBAddPage}
+              selectionMode={"single"}
+              onRowClick={(event) => {
+                if (!isBBAddPage && !isModifiable) {
+                  onRowClick(event);
+                }
+              }}
             >
               {columns}
               <Column

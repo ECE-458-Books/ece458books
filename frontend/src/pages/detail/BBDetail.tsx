@@ -121,7 +121,9 @@ export default function BBDetail() {
       field: "bookTitle",
       header: "Book",
       customBody: (rowData: BBSaleRow) =>
-        booksDropDownEditor(rowData.bookTitle, (newValue) => {
+        booksDropDownEditor(
+          rowData.bookTitle,
+          (newValue) => {
             setSales((draft) => {
               const sale = findById(draft, rowData.id);
               sale!.bookTitle = newValue;
@@ -136,7 +138,9 @@ export default function BBDetail() {
       field: "quantity",
       header: "Quantity",
       customBody: (rowData: BBSaleRow) =>
-        numberEditor(rowData.quantity, (newValue) => {
+        numberEditor(
+          rowData.quantity,
+          (newValue) => {
             setSales((draft) => {
               const sale = findById(draft, rowData.id);
               sale!.quantity = newValue;
@@ -151,7 +155,9 @@ export default function BBDetail() {
       field: "price",
       header: "Unit Buy Back Price ($)",
       customBody: (rowData: BBSaleRow) =>
-        priceEditor(rowData.price, (newValue) => {
+        priceEditor(
+          rowData.price,
+          (newValue) => {
             setSales((draft) => {
               const sale = findById(draft, rowData.id);
               sale!.price = newValue;

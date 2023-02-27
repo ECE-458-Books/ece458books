@@ -2,9 +2,10 @@ import { ColumnEditorOptions } from "primereact/column";
 import { InputNumber } from "primereact/inputnumber";
 import { InputText } from "primereact/inputtext";
 import { internalToExternalDate } from "./DateOperations";
+import { Image } from "primereact/image";
 
-export const MAX_IMAGE_HEIGHT = 100;
-export const MAX_IMAGE_WIDTH = 100;
+export const MAX_IMAGE_HEIGHT = 80;
+export const MAX_IMAGE_WIDTH = 80;
 
 //Clean the incoming number input (integer or decimal)
 //Convert to string and correct any issues with the input number.
@@ -107,18 +108,25 @@ export function priceBodyTemplate(value: number | bigint) {
   }).format(value);
 }
 
-export function imageBodyTemplate(thumbnailURL: string[]) {
+export function imageBodyTemplate(thumbnailURL: string) {
+  if (!thumbnailURL) {
+    thumbnailURL = "http://books-db.colab.duke.edu/media/books/default.jpg";
+  }
   return (
-    <img
-      // Change the [0] when implementing for multiple images
-      src={thumbnailURL[0]}
+    <Image
+      // Leaving this line in case of future image browser side caching workaround is needed
+      src={`${thumbnailURL}${
+        thumbnailURL.startsWith("https://books") ? "?" + Date.now() : ""
+      }`}
+      // src={thumbnailURL}
+      id="imageONpage"
       alt="Image"
-      className="product-image"
-      style={{
+      imageStyle={{
         objectFit: "contain",
         maxHeight: MAX_IMAGE_HEIGHT,
         maxWidth: MAX_IMAGE_WIDTH,
       }}
+      className="col-12 align-items-center flex justify-content-center"
     />
   );
 }

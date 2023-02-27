@@ -518,7 +518,7 @@ export default function BookDetail() {
               hideFunc={() => setIsConfirmationPopupVisible(false)}
               acceptFunc={formik.handleSubmit}
               rejectFunc={() => {
-                console.log("reject");
+                //do nothing
               }}
               buttonClickFunc={() => {
                 setIsConfirmationPopupVisible(true);

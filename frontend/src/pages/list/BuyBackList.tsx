@@ -66,7 +66,7 @@ const COLUMNS: TableColumn[] = [
   },
 ];
 
-// Empty buy back, used to initialize state
+// Empty buyback, used to initialize state
 const emptyBuyBack: BuyBack = {
   id: "0",
   date: new Date(),
@@ -108,8 +108,8 @@ export default function BuyBackList() {
 
   // Callback functions for edit/delete buttons
   const toDetailPage = (bb: BuyBack) => {
-    logger.debug("Edit Buy Back Clicked", bb);
-    navigate(`/buy-backs/detail/${bb.id}`);
+    logger.debug("Edit Book Buyback Clicked", bb);
+    navigate(`/book-buybacks/detail/${bb.id}`);
   };
 
   // Called to make delete pop up show
@@ -121,13 +121,13 @@ export default function BuyBackList() {
 
   // Call to actually delete the element
   const deleteBuyBackFinal = () => {
-    logger.debug("Delete Buy Back Finalized", selectedDeleteBuyBack);
+    logger.debug("Delete Book Buyback Finalized", selectedDeleteBuyBack);
     setDeletePopupVisible(false);
     BUYBACK_API.deleteBuyBack({
       id: selectedDeleteBuyBack.id,
     })
-      .then(() => showSuccess(toast, "Buy Back Sale Deleted"))
-      .catch(() => showFailure(toast, "Buy Back Sale Failed to Delete"));
+      .then(() => showSuccess(toast, "Book Buyback Sale Deleted"))
+      .catch(() => showFailure(toast, "Book Buyback Sale Failed to Delete"));
     const _buyBacks = buyBacks.filter(
       (selectBB) => selectedDeleteBuyBack.id != selectBB.id
     );
@@ -155,7 +155,7 @@ export default function BuyBackList() {
     // It takes the current index as the table knows it and calculates the actual index in the genres array
     const index = event.index - NUM_ROWS * (pageParams.page ?? 0);
     const buyBack = buyBacks[index];
-    logger.debug("Buy Back Row Clicked", buyBack);
+    logger.debug("Book Buyback Row Clicked", buyBack);
     toDetailPage(buyBack);
   };
 
@@ -195,7 +195,7 @@ export default function BuyBackList() {
   // The delete popup
   const deletePopup = (
     <DeletePopup
-      deleteItemIdentifier={" this sales reconciliation"}
+      deleteItemIdentifier={"this book buyback"}
       onConfirm={() => deleteBuyBackFinal()}
       setIsVisible={setDeletePopupVisible}
     />

@@ -92,18 +92,18 @@ function NavigationBar() {
       ],
     },
     {
-      label: "Buy Backs",
+      label: "Book Buybacks",
       icon: "pi pi-fw pi-chart-bar",
       items: [
         {
           label: "List",
           icon: "pi pi-fw pi-list",
-          command: () => navigate("/buy-backs"),
+          command: () => navigate("/book-buybacks"),
         },
         {
           label: "Add",
           icon: "pi pi-fw pi-plus",
-          command: () => navigate("/buy-backs/add"),
+          command: () => navigate("/book-buybacks/add"),
         },
       ],
     },

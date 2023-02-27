@@ -1,9 +1,7 @@
 import { Calendar, CalendarChangeEvent } from "primereact/calendar";
 import { Column } from "primereact/column";
 import { DataTable, DataTableRowClickEvent } from "primereact/datatable";
-import { InputNumber } from "primereact/inputnumber";
 import { Toast } from "primereact/toast";
-import { ToggleButton } from "primereact/togglebutton";
 import { Toolbar } from "primereact/toolbar";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -38,6 +36,7 @@ import BooksDropdown, {
   BooksDropdownData,
 } from "../../components/dropdowns/BookDropdown";
 import { logger } from "../../util/Logger";
+import DeletePopup from "../../components/popups/DeletePopup";
 
 export interface BBDetailState {
   id: number;
@@ -89,6 +88,8 @@ export default function BBDetail() {
     useState<boolean>(false);
   const [isBooksBuyBackSold, setIsBooksBuyBackSold] = useState<boolean>(false);
   const [hasUploadedCSV, setHasUploadedCSV] = useState<boolean>(false);
+  const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false); // Whether the delete popup is shown
+  const [isGoBackActive, setIsGoBackActive] = useState<boolean>(false);
 
   // Load the SR data on page load
   useEffect(() => {
@@ -101,7 +102,7 @@ export default function BBDetail() {
           setTotalRevenue(buyBack.totalRevenue);
           setSelectedVendorName(buyBack.vendorName);
         })
-        .catch(() => showFailure(toast, "Could not fetch buy back sales data"));
+        .catch(() => showFailure(toast, "Could not fetch book buyback sales data"));
     }
 
     setIsBooksBuyBackSold(sales.length > 0);
@@ -154,7 +155,7 @@ export default function BBDetail() {
     },
     {
       field: "price",
-      header: "Unit Buy Back Price ($)",
+      header: "Unit Buyback Price ($)",
       customBody: (rowData: BBSaleRow) =>
         priceEditor(
           rowData.price,
@@ -189,7 +190,37 @@ export default function BBDetail() {
   const deleteSale = (rowData: BBSaleRow) => {
     const _data = sales.filter((val) => val.id !== rowData.id);
     setSales(_data);
+    setTotalRevenue(calculateTotal(_data));
   };
+
+  // Called to make delete pop up show
+  const deleteBuyBackPopup = () => {
+    logger.debug("Delete Sales Reconciliation Clicked");
+    setDeletePopupVisible(true);
+  };
+
+  // Call to actually delete the element
+  const deleteBuyBackFinal = () => {
+    logger.debug("Delete Book BuyBack Finalized");
+    setDeletePopupVisible(false);
+    BUYBACK_API.deleteBuyBack({
+      id: id!,
+    })
+      .then(() => {
+        showSuccess(toast, "Book BuyBack Sale Deleted");
+        navigate("/book-buybacks");
+      })
+      .catch(() => showFailure(toast, "Book BuyBack Sale Failed to Delete"));
+  };
+
+  // The delete popup
+  const deletePopup = (
+    <DeletePopup
+      deleteItemIdentifier={"this book buyback"}
+      onConfirm={() => deleteBuyBackFinal()}
+      setIsVisible={setDeletePopupVisible}
+    />
+  );
 
   // The navigator to switch pages
   const navigate = useNavigate();
@@ -215,7 +246,7 @@ export default function BBDetail() {
       if (!sale.bookTitle || !(sale.price >= 0) || !sale.quantity) {
         showFailure(
           toast,
-          "Book, buy back price, and quantity are required for all line items"
+          "Book, buyback price, and quantity are required for all line items"
         );
         return false;
       }
@@ -240,9 +271,10 @@ export default function BBDetail() {
       // Otherwise, it is a modify page
       callModifyBBAPI();
     }
+    
   };
 
-  // Add the buy back
+  // Add the book buyback
   const callAddBBAPI = () => {
     const apiSales = sales.map((sale) => {
       return {
@@ -258,8 +290,11 @@ export default function BBDetail() {
       buybacks: apiSales,
     } as AddBBReq;
     BUYBACK_API.addBuyBack(buyBack)
-      .then(() => showSuccess(toast, "Buy back added successfully"))
-      .catch(() => showFailure(toast, "Could not add buy back"));
+      .then(() => {
+        showSuccess(toast, "Book Buyback added successfully");
+        isGoBackActive ? navigate("/book-buybacks") : window.location.reload();
+      })
+      .catch(() => showFailure(toast, "Could not add book buyback"));
   };
 
   // Modify the sales reconciliation
@@ -282,8 +317,11 @@ export default function BBDetail() {
     } as ModifyBBReq;
 
     BUYBACK_API.modifyBuyBack(buyBack)
-      .then(() => showSuccess(toast, "Buy back modified successfully"))
-      .catch(() => showFailure(toast, "Could not modify buy back"));
+      .then(() => {
+        showSuccess(toast, "Book Buyback modified successfully");
+        setIsModifiable(!isModifiable);
+    })
+      .catch(() => showFailure(toast, "Could not modify book buyback"));
   };
 
   // -------- TEMPLATES/VISUAL ELEMENTS --------
@@ -350,7 +388,7 @@ export default function BBDetail() {
             name="modifyBBToggle2"
             label="Cancel"
             icon="pi pi-times"
-            className="p-button-warning"
+            className="p-button-warningp"
             disabled={isBBAddPage}
             onClick={() => {
               setIsModifiable(!isModifiable);
@@ -370,13 +408,28 @@ export default function BBDetail() {
             isVisible={isConfirmationPopupVisible}
             hideFunc={() => setIsConfirmationPopupVisible(false)}
             acceptFunc={onSubmit}
-            rejectFunc={() => {
-              console.log("reject");
-            }}
+            rejectFunc={() => {}}
             buttonClickFunc={() => setIsConfirmationPopupVisible(true)}
             disabled={!isModifiable}
             label={"Submit"}
             className="p-button-success p-button-raised"
+          />
+        )}
+        {isModifiable && isBBAddPage && (
+          <ConfirmPopup
+            isVisible={isConfirmationPopupVisible}
+            hideFunc={() => setIsConfirmationPopupVisible(false)}
+            acceptFunc={onSubmit}
+            rejectFunc={() => {
+              setIsGoBackActive(false);
+            }}
+            buttonClickFunc={() => {
+              setIsConfirmationPopupVisible(true);
+              setIsGoBackActive(true);
+            }}
+            disabled={!isModifiable}
+            label={"Submit and Go Back"}
+            className="p-button-success p-button-raised ml-2"
           />
         )}
       </React.Fragment>
@@ -429,22 +482,44 @@ export default function BBDetail() {
     <div>
       <Toast ref={toast} />
       <div className="grid flex justify-content-center">
-        <link
-          rel="stylesheet"
-          href="https://unpkg.com/primeflex@3.1.2/primeflex.css"
-        ></link>
-        <div className="col-11">
-          <div className="pt-2">
+        <div className="flex col-12 p-0">
+          <div className="flex col-1">
+            <Button
+              type="button"
+              label="Back"
+              icon="pi pi-arrow-left"
+              onClick={() => navigate("/book-buybacks")}
+              className="p-button-sm my-auto ml-1"
+            />
+          </div>
+          <div className="pt-2 col-10">
             {isBBAddPage ? (
               <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
-                Add Buy Back Sales
+                Add Book Buyback
+              </h1>
+            ) : isModifiable ? (
+              <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
+                Modify Book Buyback
               </h1>
             ) : (
               <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
-                Modify Buy Back Sales
+                Book Buyback Details
               </h1>
             )}
           </div>
+          <div className="flex col-1">
+            {!isBBAddPage && (
+              <Button
+                type="button"
+                label="Delete"
+                icon="pi pi-trash"
+                onClick={() => deleteBuyBackPopup()}
+                className="p-button-sm my-auto ml-1 p-button-danger"
+              />
+            )}
+          </div>
+        </div>
+        <div className="col-11">
           <form onSubmit={onSubmit}>
             <Toolbar
               className="mb-4"
@@ -459,10 +534,10 @@ export default function BBDetail() {
                   className="p-component p-text-secondary my-auto text-teal-900 pr-2"
                   htmlFor="totalcost"
                 >
-                  Total Revenue ($):
+                  Total Revenue:
                 </label>
                 <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
-                  {totalRevenue ?? 0}
+                  {priceBodyTemplate(totalRevenue ?? 0)}
                 </p>
               </div>
               <div>
@@ -521,6 +596,7 @@ export default function BBDetail() {
                 body={actionBodyTemplate}
                 header="Delete Line Item"
                 exportable={false}
+                hidden={!isModifiable}
                 style={{ minWidth: "8rem" }}
               ></Column>
             </DataTable>
@@ -529,6 +605,7 @@ export default function BBDetail() {
             {/* <Button disabled={!this.state.isModifiable} label="submit" type="submit" /> */}
           </form>
         </div>
+        {deletePopupVisible && deletePopup}
       </div>
     </div>
   );

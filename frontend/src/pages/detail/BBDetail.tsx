@@ -182,6 +182,7 @@ export default function BBDetail() {
   const deleteSale = (rowData: BBSaleRow) => {
     const _data = sales.filter((val) => val.id !== rowData.id);
     setSales(_data);
+    setTotalRevenue(calculateTotal(_data));
   };
 
   // Validate submission before making API req
@@ -434,10 +435,10 @@ export default function BBDetail() {
                   className="p-component p-text-secondary my-auto text-teal-900 pr-2"
                   htmlFor="totalcost"
                 >
-                  Total Revenue ($):
+                  Total Revenue:
                 </label>
                 <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
-                  {totalRevenue ?? 0}
+                  {priceBodyTemplate(totalRevenue ?? 0)}
                 </p>
               </div>
               <div>

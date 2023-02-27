@@ -169,6 +169,7 @@ export default function SRDetail() {
   const deleteProduct = (rowData: SRSaleRow) => {
     const _data = sales.filter((val) => val.id !== rowData.id);
     setSales(_data);
+    setTotalRevenue(calculateTotal(_data));
   };
 
   const csvUploadHandler = (event: FileUploadHandlerEvent) => {

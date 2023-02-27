@@ -177,6 +177,7 @@ export default function PODetail() {
   const deletePurchase = (rowData: POPurchaseRow) => {
     const _data = purchases.filter((val) => val.id !== rowData.id);
     setPurchases(_data);
+    setTotalCost(calculateTotal(_data));
   };
 
   // Handler for a CSV upload

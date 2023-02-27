@@ -24,12 +24,12 @@ export default function VendorDetail() {
 
   const [isModifiable, setIsModifiable] = useState<boolean>(false);
   const [vendorName, setVendorName] = useState<string>("");
+  const [numPOFromVendor, setNumPOFromVendor] = useState<number>(0);
   const [buybackRate, setBuybackRate] = useState<number>();
 
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
   const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false); // Whether the delete popup is shown
-
 
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
@@ -45,7 +45,10 @@ export default function VendorDetail() {
     logger.debug("Delete Vendor Finalized");
     setDeletePopupVisible(false);
     VENDORS_API.deleteVendor({ id: id! })
-      .then(() => showSuccess(toast, "Vendor Deleted"))
+      .then(() => {
+        showSuccess(toast, "Vendor Deleted");
+        navigate("/vendors");
+      })
       .catch(() => {
         showFailure(toast, "Vendor Failed to Delete");
         return;
@@ -66,6 +69,7 @@ export default function VendorDetail() {
     VENDORS_API.getVendorDetail({ id: id! })
       .then((response) => {
         setVendorName(response.name);
+        setNumPOFromVendor(response.num_purchase_orders);
         setBuybackRate(response.buyback_rate);
       })
       .catch(() => showFailure(toast, "Could not fetch vendor data"));
@@ -111,7 +115,11 @@ export default function VendorDetail() {
 
   const deleteButton = (
     <div className="flex col-1">
-      <DeleteButton onClick={deleteVendorFinal} className={"ml-1 "} />
+      <DeleteButton
+        onClick={deleteVendorPopup}
+        disabled={numPOFromVendor > 0}
+        className={"ml-1 "}
+      />
     </div>
   );
 

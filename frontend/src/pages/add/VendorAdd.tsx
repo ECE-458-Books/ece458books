@@ -17,6 +17,7 @@ import { Toolbar } from "primereact/toolbar";
 import { VENDORS_API, AddVendorReq } from "../../apis/VendorsAPI";
 import axios from "axios";
 import AddRowButton from "../../components/buttons/AddRowButton";
+import BackButton from "../../components/buttons/BackButton";
 
 export interface VendorRow {
   id: string;
@@ -166,21 +167,19 @@ export default function GenreAdd() {
     </>
   );
 
+  const backButton = (
+    <div className="flex col-1">
+      <BackButton onClick={() => navigate("/vendors")} className="ml-1" />
+    </div>
+  );
+
   const columns = createColumns(COLUMNS);
 
   return (
     <div className="grid flex justify-content-center">
       <Toast ref={toast} />
       <div className="flex col-12 p-0">
-        <div className="flex col-1">
-          <Button
-            type="button"
-            label="Back"
-            icon="pi pi-arrow-left"
-            onClick={() => navigate("/vendors")}
-            className="p-button-sm my-auto ml-1"
-          />
-        </div>
+        {backButton}
         <div className="pt-2 col-10">
           <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
             Add Vendors

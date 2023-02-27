@@ -80,13 +80,17 @@ export default function GenreDetail() {
 
   const backButton = (
     <div className="flex col-1">
-      <BackButton onClick={() => navigate("/vendors")} className="ml-1" />
+      <BackButton onClick={() => navigate("/genres")} className="ml-1" />
     </div>
   );
 
   const deleteButton = (
     <div className="flex col-1">
-      <DeleteButton onClick={deleteGenreFinal} className={"ml-1 "} />
+      <DeleteButton
+        onClick={deleteGenrePopup}
+        disabled={genreBookCount > 0}
+        className={"ml-1 "}
+      />
     </div>
   );
 

@@ -287,13 +287,13 @@ export default function BookDetail() {
               id={"deleteImage"}
               name={"deleteImage"}
               className={"p-button-danger flex"}
-              isVisible={isConfirmationPopupVisibleImageDelete}
+              isPopupVisible={isConfirmationPopupVisibleImageDelete}
               hideFunc={() => setIsConfirmationPopupVisibleImageDelete(false)}
-              acceptFunc={onImageDelete}
-              rejectFunc={() => {
+              onFinalSubmission={onImageDelete}
+              onRejectFinalSubmission={() => {
                 console.log("reject2");
               }}
-              buttonClickFunc={() => {
+              onShowPopup={() => {
                 setIsConfirmationPopupVisibleImageDelete(true);
               }}
               disabled={!isModifiable}
@@ -525,13 +525,13 @@ export default function BookDetail() {
             <ConfirmPopup
               id={"bookDetailSubmit"}
               name={"bookDetailSubmit"}
-              isVisible={isConfirmationPopupVisible}
+              isPopupVisible={isConfirmationPopupVisible}
               hideFunc={() => setIsConfirmationPopupVisible(false)}
-              acceptFunc={formik.handleSubmit}
-              rejectFunc={() => {
+              onFinalSubmission={formik.handleSubmit}
+              onRejectFinalSubmission={() => {
                 //do nothing
               }}
-              buttonClickFunc={() => {
+              onShowPopup={() => {
                 setIsConfirmationPopupVisible(true);
               }}
               disabled={!isModifiable}

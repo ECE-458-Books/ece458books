@@ -1,8 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ToggleButton } from "primereact/togglebutton";
-import { Calendar, CalendarProps } from "primereact/calendar";
 import { DataTable, DataTableRowClickEvent } from "primereact/datatable";
-import { Column } from "primereact/column";
 import { createColumns, TableColumn } from "../../components/TableColumns";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
 import { v4 as uuid } from "uuid";
@@ -13,7 +10,6 @@ import {
 } from "../../util/TableCellEditFuncs";
 import { useNavigate, useParams } from "react-router-dom";
 import { Toolbar } from "primereact/toolbar";
-import { Button } from "primereact/button";
 import {
   AddSRReq,
   APISRSaleRow,
@@ -22,7 +18,6 @@ import {
 } from "../../apis/SalesAPI";
 import { Toast } from "primereact/toast";
 import { internalToExternalDate } from "../../util/DateOperations";
-import { InputNumber } from "primereact/inputnumber";
 import BooksDropdown, {
   BooksDropdownData,
 } from "../../components/dropdowns/BookDropdown";
@@ -45,10 +40,18 @@ import {
 } from "./errors/CSVImportErrors";
 import { Book } from "../list/BookList";
 import { useImmer } from "use-immer";
-import { findById } from "../../util/IDOperations";
+import { filterById, findById } from "../../util/IDOperations";
 import { calculateTotal } from "../../util/CalculateTotal";
 import { logger } from "../../util/Logger";
 import DeletePopup from "../../components/popups/DeletePopup";
+import AddDetailModifyTitle from "../../components/text/AddDetailModifyTitle";
+import BackButton from "../../components/buttons/BackButton";
+import DeleteButton from "../../components/buttons/DeleteButton";
+import AddRowButton from "../../components/buttons/AddRowButton";
+import EditCancelButton from "../../components/buttons/EditCancelDetailButton";
+import TotalDollars from "../../components/text/TotalDollars";
+import OneDayCalendar from "../../components/OneDayCalendar";
+import DeleteColumn from "../../components/datatable/DeleteColumn";
 
 export interface SRSaleRow {
   isNewRow: boolean;
@@ -83,7 +86,7 @@ export default function SRDetail() {
   const [date, setDate] = useState<Date>(new Date());
   // useImmer is used to set state for nested data in a simplified format
   const [sales, setSales] = useImmer<SRSaleRow[]>([]);
-  const [lineData, setLineData] = useState<SRSaleRow>(emptySale);
+
   const [totalRevenue, setTotalRevenue] = useState<number>(0);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
@@ -106,6 +109,16 @@ export default function SRDetail() {
         );
     }
   }, []);
+
+  // Get the data for the books dropdown
+  useEffect(
+    () =>
+      BooksDropdownData({
+        setBooksMap: setBooksMap,
+        setBookTitlesList: setBooksDropdownTitles,
+      }),
+    []
+  );
 
   const COLUMNS: TableColumn[] = [
     {
@@ -172,22 +185,6 @@ export default function SRDetail() {
     },
   ];
 
-  const addNewSale = () => {
-    setLineData(emptySale);
-    const _lineData = lineData;
-    _lineData.id = uuid();
-    setLineData(_lineData);
-    const _data = [...sales];
-    _data.push({ ...lineData });
-    setSales(_data);
-  };
-
-  const deleteProduct = (rowData: SRSaleRow) => {
-    const _data = sales.filter((val) => val.id !== rowData.id);
-    setSales(_data);
-    setTotalRevenue(calculateTotal(_data));
-  };
-
   // Called to make delete pop up show
   const deleteSalesReconciliationPopup = () => {
     logger.debug("Delete Sales Reconciliation Clicked");
@@ -207,15 +204,6 @@ export default function SRDetail() {
       })
       .catch(() => showFailure(toast, "Sales Reconciliation Failed to Delete"));
   };
-
-  // The delete popup
-  const deletePopup = (
-    <DeletePopup
-      deleteItemIdentifier={" this sales reconciliation"}
-      onConfirm={() => deleteSalesReconciliationFinal()}
-      setIsVisible={setDeletePopupVisible}
-    />
-  );
 
   // The navigator to switch pages
   const navigate = useNavigate();
@@ -338,126 +326,136 @@ export default function SRDetail() {
   };
 
   // -------- TEMPLATES/VISUAL ELEMENTS --------
-
-  // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
 
-  const rowDeleteButton = (rowData: SRSaleRow) => {
-    return (
-      <React.Fragment>
-        <Button
-          type="button"
-          icon="pi pi-trash"
-          className="p-button-rounded p-button-danger"
-          onClick={() => deleteProduct(rowData)}
-          disabled={!isModifiable}
-        />
-      </React.Fragment>
-    );
-  };
+  // Top Line
 
-  const leftToolbarTemplate = () => {
-    return (
-      <>
-        {isModifiable && (
-          <React.Fragment>
-            <Button
-              type="button"
-              label="New"
-              icon="pi pi-plus"
-              className="p-button-info mr-2"
-              onClick={addNewSale}
-              disabled={!isModifiable}
-            />
-            <CSVUploader uploadHandler={csvUploadHandler} />
-          </React.Fragment>
-        )}
-      </>
-    );
-  };
-
-  const centerToolbarTemplate = () => {
-    return (
-      <React.Fragment>
-        {!isSRAddPage && !isModifiable && (
-          <Button
-            id="modifyBBToggle"
-            name="modifyBBToggle"
-            label="Edit"
-            icon="pi pi-pencil"
-            disabled={isSRAddPage}
-            onClick={() => {
-              setIsModifiable(!isModifiable);
-            }}
-          />
-        )}
-        {!isSRAddPage && isModifiable && (
-          <Button
-            id="modifyBBToggle2"
-            name="modifyBBToggle2"
-            label="Cancel"
-            icon="pi pi-times"
-            className="p-button-warning"
-            disabled={isSRAddPage}
-            onClick={() => {
-              setIsModifiable(!isModifiable);
-              window.location.reload();
-            }}
-          />
-        )}
-      </React.Fragment>
-    );
-  };
-
-  const rightToolbarTemplate = () => {
-    return (
-      <React.Fragment>
-        {isModifiable && (
-          <ConfirmPopup
-            isVisible={isConfirmationPopupVisible}
-            hideFunc={() => setIsConfirmationPopupVisible(false)}
-            acceptFunc={onSubmit}
-            rejectFunc={() => {
-              // do nothing
-            }}
-            buttonClickFunc={() => {
-              setIsConfirmationPopupVisible(true);
-            }}
-            disabled={!isModifiable}
-            label={"Submit"}
-            className="p-button-success p-button-raised"
-          />
-        )}
-        {isModifiable && isSRAddPage && (
-          <ConfirmPopup
-            isVisible={isConfirmationPopupVisible}
-            hideFunc={() => setIsConfirmationPopupVisible(false)}
-            acceptFunc={onSubmit}
-            rejectFunc={() => {
-              setIsGoBackActive(false);
-            }}
-            buttonClickFunc={() => {
-              setIsConfirmationPopupVisible(true);
-              setIsGoBackActive(true);
-            }}
-            disabled={!isModifiable}
-            label={"Submit and Go Back"}
-            className="p-button-success p-button-raised ml-2"
-          />
-        )}
-      </React.Fragment>
-    );
-  };
-
-  // Get the data for the books dropdown
-  useEffect(
-    () =>
-      BooksDropdownData({
-        setBooksMap: setBooksMap,
-        setBookTitlesList: setBooksDropdownTitles,
-      }),
-    []
+  const titleText = (
+    <div className="pt-2 col-10">
+      <AddDetailModifyTitle
+        isModifyPage={isModifiable}
+        isAddPage={isSRAddPage}
+        detailTitle={"Sales Reconciliation Details"}
+        addTitle={"Add Sales Reconciliation"}
+        modifyTitle={"Modify Sales Reconciliation"}
+      />
+    </div>
   );
+
+  const backButton = (
+    <div className="flex col-1">
+      <BackButton onClick={() => navigate("/purchase-orders")} />
+    </div>
+  );
+
+  const deleteButton = (
+    <div className="flex col-1">
+      <DeleteButton
+        isEnabled={!isSRAddPage}
+        onClick={deleteSalesReconciliationPopup}
+      />
+    </div>
+  );
+
+  const deletePopup = (
+    <DeletePopup
+      deleteItemIdentifier={" this sales reconciliation"}
+      onConfirm={() => deleteSalesReconciliationFinal()}
+      setIsVisible={setDeletePopupVisible}
+    />
+  );
+
+  // Toolbar
+
+  // Left
+  const addRowButton = (
+    <AddRowButton
+      emptyItem={emptySale}
+      rows={sales}
+      setRows={setSales}
+      isDisabled={!isModifiable}
+      label={"Add Book"}
+      isVisible={isModifiable}
+    />
+  );
+
+  const csvImportButton = (
+    <CSVUploader visible={isModifiable} uploadHandler={csvUploadHandler} />
+  );
+
+  const leftToolbar = (
+    <>
+      {addRowButton}
+      {csvImportButton}
+    </>
+  );
+
+  // Center
+  const editCancelButton = (
+    <EditCancelButton
+      onClickEdit={() => setIsModifiable(!isModifiable)}
+      onClickCancel={() => {
+        setIsModifiable(!isModifiable);
+        window.location.reload();
+      }}
+      isAddPage={isSRAddPage}
+      isModifiable={isModifiable}
+    />
+  );
+
+  // Right
+  const submitButton = (
+    <ConfirmPopup
+      isButtonVisible={isModifiable}
+      isPopupVisible={isConfirmationPopupVisible}
+      hideFunc={() => setIsConfirmationPopupVisible(false)}
+      onFinalSubmission={onSubmit}
+      onShowPopup={() => setIsConfirmationPopupVisible(true)}
+      disabled={!isModifiable}
+      label={"Submit"}
+      className="p-button-success ml-2"
+    />
+  );
+
+  const submitAndGoBackButton = (
+    <ConfirmPopup
+      isButtonVisible={isModifiable && isSRAddPage}
+      isPopupVisible={isConfirmationPopupVisible && isModifiable && isSRAddPage}
+      hideFunc={() => setIsConfirmationPopupVisible(false)}
+      onFinalSubmission={onSubmit}
+      onRejectFinalSubmission={() => {
+        setIsGoBackActive(false);
+      }}
+      onShowPopup={() => {
+        setIsConfirmationPopupVisible(true);
+        setIsGoBackActive(true);
+      }}
+      disabled={!isModifiable}
+      label={"Submit and Go Back"}
+      className="p-button-success ml-2"
+    />
+  );
+
+  const rightToolbar = (
+    <>
+      {submitAndGoBackButton}
+      {submitButton}
+    </>
+  );
+
+  // Items below toolbar
+
+  const totalDollars = (
+    <div className="flex">
+      <TotalDollars label={"Total Revenue:"} totalDollars={totalRevenue} />
+    </div>
+  );
+
+  const calendar = (
+    <OneDayCalendar disabled={!isModifiable} date={date} setDate={setDate} />
+  );
+
+  // Datatable
 
   const booksDropDownEditor = (
     value: string,
@@ -475,6 +473,15 @@ export default function SRDetail() {
     />
   );
 
+  // Delete icon for each row
+  const deleteColumn = DeleteColumn<SRSaleRow>({
+    onDelete: (rowData) => {
+      const newSales = filterById(sales, rowData.id, setSales);
+      setTotalRevenue(calculateTotal(newSales));
+    },
+    hidden: !isModifiable,
+  });
+
   const columns = createColumns(COLUMNS);
 
   return (
@@ -482,80 +489,24 @@ export default function SRDetail() {
       <Toast ref={toast} />
       <div className="grid flex justify-content-center">
         <div className="flex col-12 p-0">
-          <div className="flex col-1">
-            <Button
-              type="button"
-              label="Back"
-              icon="pi pi-arrow-left"
-              onClick={() => navigate("/sales-reconciliations")}
-              className="p-button-sm my-auto ml-1"
-            />
-          </div>
-          <div className="pt-2 col-10">
-            {isSRAddPage ? (
-              <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
-                Add Sales Reconciliation
-              </h1>
-            ) : isModifiable ? (
-              <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
-                Modify Sales Reconciliation
-              </h1>
-            ) : (
-              <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
-                Sales Reconciliation Details
-              </h1>
-            )}
-          </div>
-          <div className="flex col-1">
-            {!isSRAddPage && (
-              <Button
-                type="button"
-                label="Delete"
-                icon="pi pi-trash"
-                onClick={() => deleteSalesReconciliationPopup()}
-                className="p-button-sm my-auto ml-1 p-button-danger"
-              />
-            )}
+          <div className="flex col-12 p-0">
+            {backButton}
+            {titleText}
+            {deleteButton}
           </div>
         </div>
         <div className="col-11">
           <form id="localForm">
             <Toolbar
               className="mb-4"
-              left={leftToolbarTemplate}
-              center={centerToolbarTemplate}
-              right={rightToolbarTemplate}
+              left={leftToolbar}
+              center={editCancelButton}
+              right={rightToolbar}
             />
 
             <div className="flex pb-2 flex-row justify-content-evenly card-container col-12">
-              <div className="flex">
-                <label
-                  className="p-component p-text-secondary my-auto text-teal-900 pr-2"
-                  htmlFor="totalrevenue"
-                >
-                  Total Revenue:
-                </label>
-                <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
-                  {priceBodyTemplate(totalRevenue ?? 0)}
-                </p>
-              </div>
-              <div>
-                <label
-                  htmlFor="date"
-                  className="pt-2 pr-2 p-component text-teal-900 p-text-secondary"
-                >
-                  Date
-                </label>
-                <Calendar
-                  id="date"
-                  disabled={!isModifiable}
-                  value={date}
-                  readOnlyInput
-                  onChange={(event: CalendarProps): void => {
-                    setDate(event.value as Date);
-                  }}
-                />
-              </div>
+              {totalDollars}
+              {calendar}
             </div>
 
             <DataTable
@@ -573,13 +524,7 @@ export default function SRDetail() {
               }}
             >
               {columns}
-              <Column
-                body={rowDeleteButton}
-                header="Delete Line Item"
-                hidden={!isModifiable}
-                exportable={false}
-                style={{ minWidth: "8rem" }}
-              ></Column>
+              {deleteColumn}
             </DataTable>
 
             {/* Maybe be needed in case the confrim button using the popup breaks */}

@@ -1,4 +1,4 @@
-interface IDer {
+export interface IDer {
   id: string | number;
 }
 
@@ -14,4 +14,5 @@ export function filterById<T extends IDer>(
 ) {
   const newData = array.filter((element) => element.id !== id);
   setArray(newData);
+  return newData;
 }

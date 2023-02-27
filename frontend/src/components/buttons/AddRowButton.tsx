@@ -10,7 +10,9 @@ interface AddRowButtonProps<T extends IDer> {
   emptyItem: T;
   rows: T[];
   setRows: (items: T[]) => void;
-  isModifiable?: boolean;
+  isDisabled?: boolean;
+  label?: string;
+  isVisible?: boolean;
 }
 
 export default function AddRowButton<T extends IDer>(
@@ -29,13 +31,16 @@ export default function AddRowButton<T extends IDer>(
   };
 
   return (
-    <Button
-      type="button"
-      label="New"
-      icon="pi pi-plus"
-      className="p-button-info mr-2"
-      onClick={addNewRow}
-      disabled={!!props.isModifiable}
-    />
+    <>
+      <Button
+        type="button"
+        label={props.label ?? "Add"}
+        icon="pi pi-plus"
+        className="p-button-info mr-2"
+        onClick={addNewRow}
+        disabled={props.isDisabled ?? false}
+        visible={props.isVisible ?? true}
+      />
+    </>
   );
 }

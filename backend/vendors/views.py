@@ -57,6 +57,16 @@ class RetrieveUpdateDestroyVendorAPIView(RetrieveUpdateDestroyAPIView):
     permission_classes=[IsAuthenticated]
     lookup_url_kwarg = 'id'
 
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+
+        # Add PO Related to Vendor
+        data = serializer.data        
+        data['num_purchase_orders'] = len(PurchaseOrder.objects.filter(vendor=instance))
+
+        return Response(data)
+
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()

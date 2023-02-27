@@ -3,6 +3,8 @@ import { ConfirmDialog } from "primereact/confirmdialog";
 
 export interface ConfirmButtonProps {
   className: string | undefined;
+  id?: string;
+  name?: string;
   isVisible: boolean;
   hideFunc: () => void;
   acceptFunc: () => void;
@@ -10,13 +12,14 @@ export interface ConfirmButtonProps {
   buttonClickFunc: () => void;
   disabled: boolean;
   label: string;
+  icons?: string;
 }
 
 export default function ConfirmButton(props: ConfirmButtonProps) {
   return (
     <div>
       <ConfirmDialog
-        id="confirmButtonPopup"
+        id={"confirmButtonPopup" + props.id}
         visible={props.isVisible}
         onHide={props.hideFunc}
         message="Are you sure you want to proceed?"
@@ -26,12 +29,14 @@ export default function ConfirmButton(props: ConfirmButtonProps) {
         reject={props.rejectFunc}
       />
       <Button
-        id="enterfinalsubmission"
+        id={"enterfinalsubmission" + props.id}
+        name={"confirmButtonPopup" + props.name}
         type="button"
         onClick={props.buttonClickFunc}
         disabled={props.disabled}
         label={props.label}
         className={props.className}
+        icon={props.icons}
       />
     </div>
   );

@@ -18,14 +18,14 @@ export interface BookDropdownProps {
 }
 
 export function BooksDropdownData(props: BookDropdownDataProps) {
-  BOOKS_API.getBooksNoPagination(props.vendorName).then((response) => {
+  BOOKS_API.getBooks({ vendor: props.vendorName }).then((response) => {
     const tempBookMap = new Map<string, Book>();
-    for (const book of response) {
+    for (const book of response.results) {
       const convertedBook = APIToInternalBookConversion(book);
       tempBookMap.set(book.title, convertedBook);
     }
     props.setBooksMap(tempBookMap);
-    props.setBookTitlesList(response.map((book) => book.title));
+    props.setBookTitlesList(response.results.map((book) => book.title));
   });
 }
 

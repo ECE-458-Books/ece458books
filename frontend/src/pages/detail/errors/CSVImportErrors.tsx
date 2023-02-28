@@ -5,49 +5,90 @@ import { ReactElement } from "react";
 // Each one is present when a column with that name is missing from the CSV file, and the error will
 // be displayed with a toast message
 export const CSVImport400Errors = new Map<string, string>([
-  ["isbn_13 ", "ISBN 13 Column Missing from the CSV"],
+  ["isbn_13", "ISBN 13 Column Missing from the CSV"],
   ["quantity", "Quantity Column Missing from the CSV"],
   ["unit_buyback_price", "Unit Buyback Price Column Missing from the CSV"],
   ["unit_retail_price", "Unit Retail Price Column Missing from the CSV"],
   ["unit_wholesale_price ", "Unit Wholesale Price Column Missing from the CSV"],
-]);
-
-// These are the possible 200 (success) error keys NOT at the row level, and will result
-// in a warning message but a successful CSV import. The warning will be displayed with a toast message
-export const CSVImport200Errors = new Map<string, string>([
-  ["extra_column", "Extra Column present in the CSV"],
+  ["duplicate_valid_headers", "Duplicate headers are present in the CSV"],
+  ["empty_csv", "CSV file is empty"],
 ]);
 
 // These are the possible 200 (success) error keys at the row level, and will result
 // in tags being shown in the rows with the errors
+// Danger = Book issue
+// Warning = Format issue (negative, NAN, etc)
 export function CSVImport200RowErrors(
   field: string,
   error: string
 ): ReactElement {
-  switch (error) {
-    case "incorrect_format":
+  switch (true) {
+    case error === "invalid_isbn_13_length":
       return (
         <Tag
           severity="danger"
           icon="pi pi-book"
-          value={field.concat(" Incorrect Format")}
+          value={"ISBN 13 Invalid Length"}
           key={field}
         />
       );
-    case "not_in_db":
+    case error === "not_in_db":
       return (
-        <Tag icon="pi pi-database" value="Book Not in System" key={field} />
+        <Tag
+          severity="danger"
+          icon="pi pi-database"
+          value="Book Not in System"
+          key={field}
+        />
       );
-    case "quantity_below_0":
+    case error.includes("insufficient_stock"):
+      // eslint-disable-next-line no-case-declarations
+      const stock = error.split("_")[2];
+      return (
+        <Tag
+          severity="danger"
+          icon="pi pi-chart-bar"
+          value={`Book Stock is only ${stock}`}
+          key={field}
+        />
+      );
+    case error === "not_an_int":
       return (
         <Tag
           severity="warning"
-          icon="pi pi-pencil"
-          value="Book Quantity Below 0"
+          icon="pi pi-hashtag"
+          value={field.concat(" must be an integer")}
           key={field}
         />
       );
-    case "not_sold_by_vendor":
+    case error === "not_a_number":
+      return (
+        <Tag
+          severity="warning"
+          icon="pi pi-hashtag"
+          value={field.concat(" must be an number")}
+          key={field}
+        />
+      );
+    case error === "negative":
+      return (
+        <Tag
+          severity="warning"
+          icon="pi pi-plus"
+          value={field.concat(" can't be negative")}
+          key={field}
+        />
+      );
+    case error === "empty_value":
+      return (
+        <Tag
+          severity="info"
+          icon="pi pi-briefcase"
+          value={field.concat(" is empty")}
+          key={field}
+        />
+      );
+    case error === "not_sold_by_vendor":
       return (
         <Tag
           severity="info"

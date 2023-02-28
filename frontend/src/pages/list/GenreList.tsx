@@ -13,16 +13,12 @@ import {
   APIGenreSortFieldMap,
   APIToInternalGenreConversion,
 } from "../../apis/Conversions";
-import { APIGenre, GENRES_API, GetGenresResp } from "../../apis/GenresAPI";
+import { GENRES_API, GetGenresResp } from "../../apis/GenresAPI";
 import DeletePopup from "../../components/popups/DeletePopup";
 import { createColumns, TableColumn } from "../../components/TableColumns";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import { logger } from "../../util/Logger";
 import { NUM_ROWS } from "./BookList";
-import AddPageButton from "../../components/buttons/AddPageButton";
-import LabeledSwitch from "../../components/buttons/LabeledSwitch";
-import SelectSizeButton from "../../components/buttons/SelectSizeButton";
-import { Button } from "primereact/button";
 
 // The Genre interface
 export interface Genre {
@@ -31,28 +27,26 @@ export interface Genre {
   bookCount: number;
 }
 
-// Empty genre, used to initialize state
-const emptyGenre: Genre = {
-  name: "",
-  bookCount: 0,
-  id: "0",
-};
-
 // Properties of each column that change, the rest are set below when creating the actual Columns to be rendered
 const COLUMNS: TableColumn[] = [
   {
     field: "name",
     header: "Genre",
     sortable: true,
-    style: { minWidth: "8rem", width: "16rem" },
   },
   {
     field: "bookCount",
     header: "Number of Books",
     sortable: true,
-    style: { minWidth: "8rem", width: "12rem" },
   },
 ];
+
+// Empty genre, used to initialize state
+const emptyGenre: Genre = {
+  name: "",
+  bookCount: 0,
+  id: "0",
+};
 
 export default function GenreList() {
   // ----------------- STATE -----------------
@@ -62,10 +56,6 @@ export default function GenreList() {
   const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false); // Whether the delete popup is shown
   const [selectedDeleteGenre, setSelectedDeleteGenre] =
     useState<Genre>(emptyGenre); // The element that has been clicked on to delete
-
-  const [rows, setRows] = useState<number>(NUM_ROWS);
-  const [isNoPagination, setIsNoPagination] = useState<boolean>(false);
-  const [size, setSize] = useState<string>("small");
 
   // The current state of sorting.
   const [sortParams, setSortParams] = useState<DataTableSortEvent>({
@@ -77,7 +67,7 @@ export default function GenreList() {
   // The current state of the paginator
   const [pageParams, setPageParams] = useState<DataTablePageEvent>({
     first: 0,
-    rows: rows,
+    rows: NUM_ROWS,
     page: 0,
   });
 
@@ -86,9 +76,9 @@ export default function GenreList() {
   const navigate = useNavigate();
 
   // Callback functions for edit/delete buttons
-  const goToFilteredBookList = (genre: Genre) => {
-    logger.debug("Genre Row Clicked", genre);
-    navigate("/books", { state: { genre: genre.name } });
+  const editGenre = (genre: Genre) => {
+    logger.debug("Edit Genre Clicked", genre);
+    navigate(`/genres/detail/${genre.id}`);
   };
 
   // Called to make delete pop up show
@@ -125,7 +115,6 @@ export default function GenreList() {
   // Called when the paginator page is switched
   const onPage = (event: DataTablePageEvent) => {
     logger.debug("Page Applied", event);
-    setRows(event.rows);
     setLoading(true);
     setPageParams(event);
   };
@@ -133,14 +122,14 @@ export default function GenreList() {
   const onRowClick = (event: DataTableRowClickEvent) => {
     // I couldn't figure out a better way to do this...
     // It takes the current index as the table knows it and calculates the actual index in the genres array
-    const index = event.index - rows * (pageParams.page ?? 0);
+    const index = event.index - NUM_ROWS * (pageParams.page ?? 0);
     const genre = genres[index];
-    logger.debug("Edit Genre Clicked", genre);
-    navigate(`/genres/detail/${genre.id}`);
+    logger.debug("Genre Row Clicked", genre);
+    navigate("/books", { state: { genre: genre.name } });
   };
 
   // API call on page load
-  useEffect(() => callAPI(), [sortParams, pageParams, isNoPagination]);
+  useEffect(() => callAPI(), [sortParams, pageParams]);
 
   // Calls the Genres API
   const callAPI = () => {
@@ -150,23 +139,11 @@ export default function GenreList() {
       sortField = "-".concat(sortField);
     }
 
-    if (!isNoPagination) {
-      GENRES_API.getGenres({
-        page: (pageParams.page ?? 0) + 1,
-        page_size: pageParams.rows,
-        ordering: sortField,
-      }).then((response) => onAPIResponse(response));
-    } else {
-      GENRES_API.getGenresNoPagination().then((response) =>
-        onAPIResponseNoPagination(response)
-      );
-    }
-  };
-
-  const onAPIResponseNoPagination = (response: APIGenre[]) => {
-    setGenres(response.map((genre) => APIToInternalGenreConversion(genre)));
-    setNumberOfGenres(response.length);
-    setLoading(false);
+    GENRES_API.getGenres({
+      page: (pageParams.page ?? 0) + 1,
+      page_size: pageParams.rows,
+      ordering: sortField,
+    }).then((response) => onAPIResponse(response));
   };
 
   // Set state when response to API call is received
@@ -187,26 +164,10 @@ export default function GenreList() {
 
   // Edit/Delete Cell Template
   const editDeleteCellTemplate = EditDeleteTemplate<Genre>({
-    onEdit: (rowData) => goToFilteredBookList(rowData),
+    onEdit: (rowData) => editGenre(rowData),
     onDelete: (rowData) => deleteGenrePopup(rowData),
     deleteDisabled: (rowData) => isDeleteDisabled(rowData),
   });
-
-  // Edit/Delete Cell Template
-  const bookFilteredList = (rowData: Genre) => {
-    return (
-      <React.Fragment>
-        <div className="flex justify-content-center">
-          <Button
-            icon="pi pi-align-justify"
-            className="p-button-rounded p-button-info"
-            style={{ height: 40, width: 40 }}
-            onClick={() => goToFilteredBookList(rowData)}
-          />
-        </div>
-      </React.Fragment>
-    );
-  };
 
   // The delete popup
   const deletePopup = (
@@ -233,82 +194,39 @@ export default function GenreList() {
 
   const columns = createColumns(COLUMNS);
 
-  const addGenreButton = (
-    <div className="flex justify-content-end col-3">
-      <AddPageButton
-        onClick={() => navigate("/genres/add")}
-        label="Add Genre"
-        className="mr-2"
-      />
-    </div>
-  );
-
-  const noPaginationSwitch = (
-    <div className="flex col-3 justify-content-center p-0 my-auto">
-      <LabeledSwitch
-        label="Show All"
-        onChange={() => setIsNoPagination(!isNoPagination)}
-        value={isNoPagination}
-      />
-    </div>
-  );
-
-  const selectSizeButton = (
-    <div className="flex col-6 justify-content-center my-1 p-0">
-      <SelectSizeButton value={size} onChange={(e) => setSize(e.value)} />
-    </div>
-  );
-
   return (
-    <div>
-      <div className="grid flex m-1">
-        {noPaginationSwitch}
-        {selectSizeButton}
-        {addGenreButton}
-      </div>
-      <div className="flex justify-content-center">
-        <div className="card col-8 pt-0 px-3 justify-content-center">
-          <Toast ref={toast} />
-          <DataTable
-            showGridlines
-            // General Settings
-            value={genres}
-            lazy
-            responsiveLayout="scroll"
-            loading={loading}
-            size={size ?? "small"}
-            // Operations on rows
-            rowHover
-            selectionMode={"single"}
-            onRowClick={(event) => onRowClick(event)}
-            // Paginator
-            paginator={!isNoPagination}
-            first={pageParams.first}
-            rows={rows}
-            totalRecords={numberOfGenres}
-            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-            onPage={onPage}
-            rowsPerPageOptions={[5, 10, 15, 25, 50]}
-            paginatorPosition="both"
-            // Sorting
-            onSort={onSort}
-            sortField={sortParams.sortField}
-            sortOrder={sortParams.sortOrder}
-          >
-            {columns}
-            <Column
-              body={bookFilteredList}
-              style={{ width: "3rem", padding: 2 }}
-            />
-            <Column
-              hidden
-              body={(rowData) => editDeleteCellTemplate(rowData)}
-              style={{ width: "4rem" }}
-            />
-          </DataTable>
-          {deletePopupVisible && deletePopup}
-        </div>
-      </div>
+    <div className="card pt-5 px-2">
+      <Toast ref={toast} />
+      <DataTable
+        showGridlines
+        // General Settings
+        value={genres}
+        lazy
+        responsiveLayout="scroll"
+        loading={loading}
+        // Operations on rows
+        rowHover
+        selectionMode={"single"}
+        onRowClick={(event) => onRowClick(event)}
+        // Paginator
+        paginator
+        first={pageParams.first}
+        rows={NUM_ROWS}
+        totalRecords={numberOfGenres}
+        paginatorTemplate="PrevPageLink NextPageLink"
+        onPage={onPage}
+        // Sorting
+        onSort={onSort}
+        sortField={sortParams.sortField}
+        sortOrder={sortParams.sortOrder}
+      >
+        {columns}
+        <Column
+          body={(rowData) => editDeleteCellTemplate(rowData)}
+          style={{ minWidth: "16rem" }}
+        />
+      </DataTable>
+      {deletePopupVisible && deletePopup}
     </div>
   );
 }

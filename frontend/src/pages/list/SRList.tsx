@@ -12,7 +12,7 @@ import {
   APISRSortFieldMap,
   APIToInternalSRConversion,
 } from "../../apis/Conversions";
-import { APISR, GetSRsResp, SALES_API } from "../../apis/SalesAPI";
+import { GetSRsResp, SALES_API } from "../../apis/SalesAPI";
 import DeletePopup from "../../components/popups/DeletePopup";
 import { createColumns, TableColumn } from "../../components/TableColumns";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
@@ -23,9 +23,6 @@ import {
 } from "../../util/TableCellEditFuncs";
 import { SRSaleRow } from "../detail/SRDetail";
 import { NUM_ROWS } from "./BookList";
-import AddPageButton from "../../components/buttons/AddPageButton";
-import LabeledSwitch from "../../components/buttons/LabeledSwitch";
-import SelectSizeButton from "../../components/buttons/SelectSizeButton";
 
 export interface SalesReconciliation {
   id: string;
@@ -43,19 +40,16 @@ const COLUMNS: TableColumn[] = [
     sortable: true,
     customBody: (rowData: SalesReconciliation) =>
       dateBodyTemplate(rowData.date),
-    style: { minWidth: "8rem", width: "10rem" },
   },
   {
     field: "uniqueBooks",
     header: "Unique Books",
     sortable: true,
-    style: { minWidth: "8rem", width: "10rem" },
   },
   {
     field: "totalBooks",
     header: "Total Books",
     sortable: true,
-    style: { minWidth: "8rem", width: "10rem" },
   },
   {
     field: "totalRevenue",
@@ -63,7 +57,6 @@ const COLUMNS: TableColumn[] = [
     sortable: true,
     customBody: (rowData: SalesReconciliation) =>
       priceBodyTemplate(rowData.totalRevenue),
-    style: { minWidth: "8rem", width: "12rem" },
   },
 ];
 
@@ -91,10 +84,6 @@ export default function SalesReconciliationList() {
     setSelectedDeleteSalesReconciliation,
   ] = useState<SalesReconciliation>(emptySalesReconciliation); // The element that has been clicked on to delete
 
-  const [rows, setRows] = useState<number>(NUM_ROWS);
-  const [isNoPagination, setIsNoPagination] = useState<boolean>(false);
-  const [size, setSize] = useState<string>("small");
-
   // The current state of sorting.
   const [sortParams, setSortParams] = useState<DataTableSortEvent>({
     sortField: "",
@@ -105,7 +94,7 @@ export default function SalesReconciliationList() {
   // The current state of the paginator
   const [pageParams, setPageParams] = useState<DataTablePageEvent>({
     first: 0,
-    rows: rows,
+    rows: NUM_ROWS,
     page: 0,
   });
 
@@ -157,7 +146,6 @@ export default function SalesReconciliationList() {
   // Called when the paginator page is switched
   const onPage = (event: DataTablePageEvent) => {
     logger.debug("Page Applied", event);
-    setRows(event.rows);
     setLoading(true);
     setPageParams(event);
   };
@@ -165,14 +153,14 @@ export default function SalesReconciliationList() {
   const onRowClick = (event: DataTableRowClickEvent) => {
     // I couldn't figure out a better way to do this...
     // It takes the current index as the table knows it and calculates the actual index in the genres array
-    const index = event.index - rows * (pageParams.page ?? 0);
+    const index = event.index - NUM_ROWS * (pageParams.page ?? 0);
     const salesReconciliation = salesReconciliations[index];
     logger.debug("Sales Reconciliation Row Clicked", salesReconciliation);
     toDetailPage(salesReconciliation);
   };
 
   // When any of the list of params are changed, useEffect is called to hit the API endpoint
-  useEffect(() => callAPI(), [sortParams, pageParams, isNoPagination]);
+  useEffect(() => callAPI(), [sortParams, pageParams]);
 
   const callAPI = () => {
     // Invert sort order
@@ -181,26 +169,11 @@ export default function SalesReconciliationList() {
       sortField = "-".concat(sortField);
     }
 
-    if (!isNoPagination) {
-      SALES_API.getSalesReconciliations({
-        page: (pageParams.page ?? 0) + 1,
-        page_size: pageParams.rows,
-        ordering: sortField,
-      }).then((response) => onAPIResponse(response));
-    } else {
-      SALES_API.getSalesReconciliationsNoPagination().then((response) =>
-        onAPIResponseNoPagination(response)
-      );
-    }
-  };
-
-  // Set state when response to API call is received
-  const onAPIResponseNoPagination = (response: APISR[]) => {
-    setSalesReconciliations(
-      response.map((sr) => APIToInternalSRConversion(sr))
-    );
-    setNumberOfSalesReconciliations(response.length);
-    setLoading(false);
+    SALES_API.getSalesReconciliations({
+      page: (pageParams.page ?? 0) + 1,
+      page_size: pageParams.rows,
+      ordering: sortField,
+    }).then((response) => onAPIResponse(response));
   };
 
   // Set state when response to API call is received
@@ -249,78 +222,36 @@ export default function SalesReconciliationList() {
 
   const columns = createColumns(COLUMNS);
 
-  const addSRButton = (
-    <div className="flex justify-content-end col-3">
-      <AddPageButton
-        onClick={() => navigate("/sales-reconciliations/add")}
-        label="Add Sale"
-        className="mr-2"
-      />
-    </div>
-  );
-
-  const noPaginationSwitch = (
-    <div className="flex col-3 justify-content-center p-0 my-auto">
-      <LabeledSwitch
-        label="Show All"
-        onChange={() => setIsNoPagination(!isNoPagination)}
-        value={isNoPagination}
-      />
-    </div>
-  );
-
-  const selectSizeButton = (
-    <div className="flex col-6 justify-content-center my-1 p-0">
-      <SelectSizeButton value={size} onChange={(e) => setSize(e.value)} />
-    </div>
-  );
-
   return (
-    <div>
-      <div className="grid flex m-1">
-        {noPaginationSwitch}
-        {selectSizeButton}
-        {addSRButton}
-      </div>
-      <div className="flex justify-content-center">
-        <div className="card col-11 pt-0 px-3 justify-content-center">
-          <Toast ref={toast} />
-          <DataTable
-            // General Settings
-            showGridlines
-            value={salesReconciliations}
-            lazy
-            responsiveLayout="scroll"
-            loading={loading}
-            size={size ?? "small"}
-            // Row clicking
-            rowHover
-            selectionMode={"single"}
-            onRowClick={(event) => onRowClick(event)}
-            // Paginator
-            paginator={!isNoPagination}
-            first={pageParams.first}
-            rows={rows}
-            totalRecords={numberOfSalesReconciliations}
-            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-            onPage={onPage}
-            rowsPerPageOptions={[5, 10, 15, 25, 50]}
-            paginatorPosition="both"
-            // Sorting
-            onSort={onSort}
-            sortField={sortParams.sortField}
-            sortOrder={sortParams.sortOrder}
-          >
-            {columns}
-            <Column
-              body={editDeleteCellTemplate}
-              hidden
-              style={{ minWidth: "4rem" }}
-            />
-          </DataTable>
-          {deletePopupVisible && deletePopup}
-        </div>
-      </div>
+    <div className="card pt-5 px-2">
+      <Toast ref={toast} />
+      <DataTable
+        // General Settings
+        showGridlines
+        value={salesReconciliations}
+        lazy
+        responsiveLayout="scroll"
+        loading={loading}
+        // Row clicking
+        rowHover
+        selectionMode={"single"}
+        onRowClick={(event) => onRowClick(event)}
+        // Paginator
+        paginator
+        first={pageParams.first}
+        rows={NUM_ROWS}
+        totalRecords={numberOfSalesReconciliations}
+        paginatorTemplate="PrevPageLink NextPageLink"
+        onPage={onPage}
+        // Sorting
+        onSort={onSort}
+        sortField={sortParams.sortField}
+        sortOrder={sortParams.sortOrder}
+      >
+        {columns}
+        <Column body={editDeleteCellTemplate} style={{ minWidth: "16rem" }} />
+      </DataTable>
+      {deletePopupVisible && deletePopup}
     </div>
   );
 }

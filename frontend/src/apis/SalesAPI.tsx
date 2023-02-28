@@ -84,16 +84,6 @@ export const SALES_API = {
     });
   },
 
-  getSalesReconciliationsNoPagination: async function (): Promise<APISR[]> {
-    return await API.request({
-      url: SALES_EXTENSION,
-      method: METHOD_GET,
-      params: {
-        no_pagination: true,
-      },
-    });
-  },
-
   getSalesReconciliationDetail: async function (
     req: GetSRDetailReq
   ): Promise<APISR> {

@@ -86,16 +86,6 @@ export const PURCHASES_API = {
     });
   },
 
-  getPurchaseOrdersNoPagination: async function (): Promise<APIPO[]> {
-    return await API.request({
-      url: PURCHASES_EXTENSION,
-      method: METHOD_GET,
-      params: {
-        no_pagination: true,
-      },
-    });
-  },
-
   getPurchaseOrderDetail: async function (req: GetPODetailReq): Promise<APIPO> {
     return await API.request({
       url: PURCHASES_EXTENSION.concat("/".concat(req.id.toString())),

@@ -39,8 +39,6 @@ export interface APIBook {
   retail_price: number;
   stock: number;
   url: string;
-  best_buyback_price: number;
-  last_month_sales: number;
 }
 
 export interface GetBooksResp {

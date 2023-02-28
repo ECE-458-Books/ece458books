@@ -13,7 +13,7 @@ import {
   DataTableSortEvent,
 } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { APIBB, BUYBACK_API, GetBBsResp } from "../../apis/BuyBackAPI";
+import { BUYBACK_API, GetBBsResp } from "../../apis/BuyBackAPI";
 import {
   APIBBSortFieldMap,
   APIToInternalBBConversion,
@@ -24,9 +24,6 @@ import { useNavigate } from "react-router-dom";
 import DeletePopup from "../../components/popups/DeletePopup";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import { showFailure, showSuccess } from "../../components/Toast";
-import AddPageButton from "../../components/buttons/AddPageButton";
-import LabeledSwitch from "../../components/buttons/LabeledSwitch";
-import SelectSizeButton from "../../components/buttons/SelectSizeButton";
 
 export interface BuyBack {
   id: string;
@@ -45,32 +42,27 @@ const COLUMNS: TableColumn[] = [
     header: "Date (YYYY-MM-DD)",
     sortable: true,
     customBody: (rowData: BuyBack) => dateBodyTemplate(rowData.date),
-    style: { minWidth: "8rem", width: "10rem" },
   },
   {
     field: "vendorName",
     header: "Vendor",
     sortable: true,
-    style: { minWidth: "8rem", width: "16rem" },
   },
   {
     field: "uniqueBooks",
     header: "Unique Books",
     sortable: true,
-    style: { minWidth: "8rem", width: "7rem" },
   },
   {
     field: "totalBooks",
     header: "Total Books",
     sortable: true,
-    style: { minWidth: "8rem", width: "7rem" },
   },
   {
     field: "totalRevenue",
     header: "Total Revenue ($)",
     sortable: true,
     customBody: (rowData: BuyBack) => priceBodyTemplate(rowData.totalRevenue),
-    style: { minWidth: "8rem", width: "10rem" },
   },
 ];
 
@@ -95,10 +87,6 @@ export default function BuyBackList() {
   const [selectedDeleteBuyBack, setSelectedDeleteBuyBack] =
     useState<BuyBack>(emptyBuyBack); // The element that has been clicked on to delete
 
-  const [rows, setRows] = useState<number>(NUM_ROWS);
-  const [isNoPagination, setIsNoPagination] = useState<boolean>(false);
-  const [size, setSize] = useState<string>("small");
-
   // The current state of sorting.
   const [sortParams, setSortParams] = useState<DataTableSortEvent>({
     sortField: "",
@@ -109,7 +97,7 @@ export default function BuyBackList() {
   // The current state of the paginator
   const [pageParams, setPageParams] = useState<DataTablePageEvent>({
     first: 0,
-    rows: rows,
+    rows: NUM_ROWS,
     page: 0,
   });
 
@@ -158,7 +146,6 @@ export default function BuyBackList() {
   // Called when the paginator page is switched
   const onPage = (event: DataTablePageEvent) => {
     logger.debug("Page Applied", event);
-    setRows(event.rows);
     setLoading(true);
     setPageParams(event);
   };
@@ -166,14 +153,14 @@ export default function BuyBackList() {
   const onRowClick = (event: DataTableRowClickEvent) => {
     // I couldn't figure out a better way to do this...
     // It takes the current index as the table knows it and calculates the actual index in the genres array
-    const index = event.index - rows * (pageParams.page ?? 0);
+    const index = event.index - NUM_ROWS * (pageParams.page ?? 0);
     const buyBack = buyBacks[index];
     logger.debug("Book Buyback Row Clicked", buyBack);
     toDetailPage(buyBack);
   };
 
   // When any of the list of params are changed, useEffect is called to hit the API endpoint
-  useEffect(() => callAPI(), [sortParams, pageParams, isNoPagination]);
+  useEffect(() => callAPI(), [sortParams, pageParams]);
 
   const callAPI = () => {
     // Invert sort order
@@ -182,22 +169,11 @@ export default function BuyBackList() {
       sortField = "-".concat(sortField);
     }
 
-    if (!isNoPagination) {
-      BUYBACK_API.getBuyBacks({
-        page: (pageParams.page ?? 0) + 1,
-        page_size: pageParams.rows,
-        ordering: sortField,
-      }).then((response) => onAPIResponse(response));
-    } else [
-      BUYBACK_API.getBuyBacksNoPagination().then((response) => onAPIResponseNoPagination(response))
-    ]
-  };
-
-  // Set state when response to API call is received
-  const onAPIResponseNoPagination = (response: APIBB[]) => {
-    setBuyBacks(response.map((bb) => APIToInternalBBConversion(bb)));
-    setNumberOfBuyBacks(response.length);
-    setLoading(false);
+    BUYBACK_API.getBuyBacks({
+      page: (pageParams.page ?? 0) + 1,
+      page_size: pageParams.rows,
+      ordering: sortField,
+    }).then((response) => onAPIResponse(response));
   };
 
   // Set state when response to API call is received
@@ -230,74 +206,36 @@ export default function BuyBackList() {
 
   const columns = createColumns(COLUMNS);
 
-  const addBBButton = (
-    <div className="flex justify-content-end col-3">
-      <AddPageButton
-        onClick={() => navigate("/book-buybacks/add")}
-        label="Add Buyback"
-        className="mr-2"
-      />
-    </div>
-  );
-
-  const noPaginationSwitch = (
-    <div className="flex col-3 justify-content-center p-0 my-auto">
-      <LabeledSwitch
-        label="Show All"
-        onChange={() => setIsNoPagination(!isNoPagination)}
-        value={isNoPagination}
-      />
-    </div>
-  );
-
-  const selectSizeButton = (
-    <div className="flex col-6 justify-content-center my-1 p-0">
-      <SelectSizeButton value={size} onChange={(e) => setSize(e.value)} />
-    </div>
-  );
-
   return (
-    <div>
-      <div className="grid flex m-1">
-        {noPaginationSwitch}
-        {selectSizeButton}
-        {addBBButton}
-      </div>
-      <div className="flex justify-content-center">
-        <div className="card col-11 pt-0 px-3 justify-content-center">
-          <Toast ref={toast} />
-          <DataTable
-            // General Settings
-            showGridlines
-            value={buyBacks}
-            lazy
-            responsiveLayout="scroll"
-            loading={loading}
-            size={size ?? "small"}
-            // Row clicking
-            rowHover
-            selectionMode={"single"}
-            onRowClick={(event) => onRowClick(event)}
-            // Paginator
-            paginator={!isNoPagination}
-            first={pageParams.first}
-            rows={rows}
-            totalRecords={numberOfBuyBacks}
-            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-            onPage={onPage}
-            rowsPerPageOptions={[5, 10, 15, 25, 50]}
-            paginatorPosition="both"
-            // Sorting
-            onSort={onSort}
-            sortField={sortParams.sortField}
-            sortOrder={sortParams.sortOrder}
-          >
-            {columns}
-            <Column body={editDeleteCellTemplate} hidden style={{ minWidth: "4rem" }} />
-          </DataTable>
-          {deletePopupVisible && deletePopup}
-        </div>
-      </div>
+    <div className="card pt-5 px-2">
+      <Toast ref={toast} />
+      <DataTable
+        // General Settings
+        showGridlines
+        value={buyBacks}
+        lazy
+        responsiveLayout="scroll"
+        loading={loading}
+        // Row clicking
+        rowHover
+        selectionMode={"single"}
+        onRowClick={(event) => onRowClick(event)}
+        // Paginator
+        paginator
+        first={pageParams.first}
+        rows={NUM_ROWS}
+        totalRecords={numberOfBuyBacks}
+        paginatorTemplate="PrevPageLink NextPageLink"
+        onPage={onPage}
+        // Sorting
+        onSort={onSort}
+        sortField={sortParams.sortField}
+        sortOrder={sortParams.sortOrder}
+      >
+        {columns}
+        <Column body={editDeleteCellTemplate} style={{ minWidth: "16rem" }} />
+      </DataTable>
+      {deletePopupVisible && deletePopup}
     </div>
   );
 }

@@ -70,16 +70,6 @@ export const BUYBACK_API = {
     });
   },
 
-  getBuyBacksNoPagination: async function (): Promise<APIBB[]> {
-    return await API.request({
-      url: BUYBACK_EXTENSION,
-      method: METHOD_GET,
-      params: {
-        no_pagination: true,
-      },
-    });
-  },
-
   getBuyBackDetail: async function (req: GetBBDetailReq): Promise<APIBB> {
     return await API.request({
       url: BUYBACK_EXTENSION.concat("/".concat(req.id.toString())),

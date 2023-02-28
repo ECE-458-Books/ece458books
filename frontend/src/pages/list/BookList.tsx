@@ -1,4 +1,4 @@
-import { APIBook, BOOKS_API, GetBooksResp } from "../../apis/BooksAPI";
+import { BOOKS_API, GetBooksResp } from "../../apis/BooksAPI";
 import {
   DataTable,
   DataTableFilterEvent,
@@ -8,7 +8,7 @@ import {
 } from "primereact/datatable";
 import { Column } from "primereact/column";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
-import { CSSProperties, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DataTableFilterMetaData } from "primereact/datatable";
 import DeletePopup from "../../components/popups/DeletePopup";
 import { logger } from "../../util/Logger";
@@ -27,9 +27,7 @@ import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import GenreDropdown, {
   GenresDropdownData,
 } from "../../components/dropdowns/GenreDropdown";
-import AddPageButton from "../../components/buttons/AddPageButton";
-import LabeledSwitch from "../../components/buttons/LabeledSwitch";
-import SelectSizeButton from "../../components/buttons/SelectSizeButton";
+import { InputSwitch } from "primereact/inputswitch";
 
 export const NUM_ROWS = 10;
 
@@ -53,9 +51,7 @@ export interface Book {
   height?: number;
   thickness?: number;
   retailPrice: number;
-  bestBuybackPrice: number;
   stock: number;
-  lastMonthSales: number;
   thumbnailURL: string;
   newImageData?: NewImageUploadData;
 }
@@ -84,8 +80,6 @@ export const emptyBook: Book = {
   retailPrice: 0,
   stock: 0,
   thumbnailURL: "",
-  bestBuybackPrice: 0,
-  lastMonthSales: 0,
 };
 
 export default function BookList() {
@@ -99,11 +93,8 @@ export default function BookList() {
     location.state?.genre ?? ""
   ); // Initialize genre to the genre passed, if coming from genre list
   const [selectedDeleteBook, setSelectedDeleteBook] = useState<Book>(emptyBook); // track the current book that has been selected to be deleted
-
   const [rows, setRows] = useState<number>(NUM_ROWS);
   const [isNoPagination, setIsNoPagination] = useState<boolean>(false);
-  const [size, setSize] = useState<string>("small");
-
   const [genreNamesList, setGenreNamesList] = useState<string[]>([]); // List of all genre names
 
   // The current state of sorting.
@@ -135,12 +126,11 @@ export default function BookList() {
     GenresDropdownData({ setGenreNamesList });
   }, []);
 
-  const genreFilter = (style: CSSProperties) => (
+  const genreFilter = (
     <GenreDropdown
       selectedGenre={selectedGenre}
       setSelectedGenre={setSelectedGenre}
       genresList={genreNamesList}
-      style={style}
     />
   );
 
@@ -149,7 +139,7 @@ export default function BookList() {
       field: "thumbnailURL",
       header: "Cover Art",
       customBody: (rowData: Book) => imageBodyTemplate(rowData.thumbnailURL),
-      style: { minWidth: "1rem", padding: "0.25rem" },
+      style: { minWidth: "9rem" },
     },
     {
       field: "title",
@@ -171,8 +161,7 @@ export default function BookList() {
       filterPlaceholder: "Search by Genre",
       filterable: true,
       sortable: true,
-      customFilter: genreFilter({ width: "8rem" }),
-      style: { minWidth: "10rem" },
+      customFilter: genreFilter,
     },
     {
       field: "isbn13",
@@ -180,7 +169,6 @@ export default function BookList() {
       filterPlaceholder: "Search by ISBN",
       sortable: true,
       filterable: true,
-      style: { minWidth: "10rem" },
     },
     {
       field: "isbn10",
@@ -188,7 +176,6 @@ export default function BookList() {
       filterPlaceholder: "Search by ISBN",
       sortable: true,
       filterable: false,
-      style: { minWidth: "8rem" },
     },
     {
       field: "publisher",
@@ -202,27 +189,11 @@ export default function BookList() {
       header: "Retail Price ($)",
       sortable: true,
       customBody: (rowData: Book) => priceBodyTemplate(rowData.retailPrice),
-      style: { minWidth: "8rem" },
-    },
-    {
-      field: "bestBuybackPrice",
-      header: "Best Buyback Price ($)",
-      sortable: true,
-      customBody: (rowData: Book) =>
-        priceBodyTemplate(rowData.bestBuybackPrice ?? 0),
-      style: { minWidth: "8rem" },
     },
     {
       field: "stock",
       header: "Inventory Count",
       sortable: true,
-      style: { minWidth: "8rem" },
-    },
-    {
-      field: "lastMonthSales",
-      header: "Last Month Sales",
-      sortable: true,
-      style: { minWidth: "8rem" },
     },
   ];
 
@@ -318,30 +289,18 @@ export default function BookList() {
       sortField = "-".concat(sortField);
     }
 
-    if (!isNoPagination) {
-      BOOKS_API.getBooks({
-        no_pagination: undefined,
-        page: isNoPagination ? undefined : (pageParams.page ?? 0) + 1,
-        page_size: isNoPagination ? undefined : pageParams.rows,
-        ordering: isNoPagination ? undefined : sortField,
-        genre: selectedGenre,
-        search: search_string,
-        title_only: title_only,
-        publisher_only: publisher_only,
-        author_only: author_only,
-        isbn_only: isbn_only,
-      }).then((response) => onAPIResponse(response));
-    } else {
-      BOOKS_API.getBooksNoPagination().then((response) =>
-        onAPIResponseNoPagination(response)
-      );
-    }
-  };
-
-  const onAPIResponseNoPagination = (response: APIBook[]) => {
-    setBooks(response.map((book) => APIToInternalBookConversion(book)));
-    setNumberOfBooks(response.length);
-    setLoading(false);
+    BOOKS_API.getBooks({
+      no_pagination: isNoPagination ? true : undefined,
+      page: isNoPagination ? undefined : (pageParams.page ?? 0) + 1,
+      page_size: isNoPagination ? undefined : pageParams.rows,
+      ordering: isNoPagination ? undefined : sortField,
+      genre: selectedGenre,
+      search: search_string,
+      title_only: title_only,
+      publisher_only: publisher_only,
+      author_only: author_only,
+      isbn_only: isbn_only,
+    }).then((response) => onAPIResponse(response));
   };
 
   // Set state when response to API call is received
@@ -357,7 +316,7 @@ export default function BookList() {
     setLoading(true);
     setPageParams({
       first: 0,
-      rows: rows,
+      rows: NUM_ROWS,
       page: 0,
     });
     setFilterParams(event);
@@ -382,7 +341,7 @@ export default function BookList() {
   const onRowClick = (event: DataTableRowClickEvent) => {
     // I couldn't figure out a better way to do this...
     // It takes the current index as the table knows it and calculates the actual index in the books array
-    const index = event.index - rows * (pageParams.page ?? 0);
+    const index = event.index - NUM_ROWS * (pageParams.page ?? 0);
     const book = books[index];
     logger.debug("Book Row Clicked", book);
     toDetailsPage(book);
@@ -409,79 +368,56 @@ export default function BookList() {
 
   const columns = createColumns(COLUMNS);
 
-  const addBookButton = (
-    <div className="flex justify-content-end col-3">
-      <AddPageButton
-        onClick={() => navigate("/books/add")}
-        label="Add Book"
-        className="mr-2"
-      />
-    </div>
-  );
-
-  const noPaginationSwitch = (
-    <div className="flex col-3 justify-content-center p-0 my-auto">
-      <LabeledSwitch
-        label="Show All"
-        onChange={() => setIsNoPagination(!isNoPagination)}
-        value={isNoPagination}
-      />
-    </div>
-  );
-
-  const selectSizeButton = (
-    <div className="flex col-6 justify-content-center my-1 p-0">
-      <SelectSizeButton
-        value={size}
-        onChange={(e) => setSize(e.value)}
-        className=""
-      />
-    </div>
-  );
-
   return (
-    <div>
-      <div className="grid flex m-1">
-        {noPaginationSwitch}
-        {selectSizeButton}
-        {addBookButton}
-      </div>
-      <div className="card pt-0 px-3">
-        <Toast ref={toast} />
-        <DataTable
-          // General Settings
-          showGridlines
-          value={books}
-          lazy
-          responsiveLayout="scroll"
-          filterDisplay="row"
-          loading={loading}
-          size={size ?? "small"}
-          // Row clicking
-          rowHover
-          selectionMode={"single"}
-          onRowClick={(event) => onRowClick(event)}
-          // Paginator
-          paginator={!isNoPagination}
-          first={pageParams.first}
-          rows={rows}
-          totalRecords={numberOfBooks}
-          paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-          onPage={onPage}
-          rowsPerPageOptions={[5, 10, 15, 25, 50]}
-          paginatorPosition="both"
-          // Sorting
-          onSort={onSort}
-          sortField={sortParams.sortField}
-          sortOrder={sortParams.sortOrder}
-          // Filtering
-          onFilter={onFilter}
-          filters={filterParams.filters}
+    <div className="card pt-5 px-2">
+      <Toast ref={toast} />
+      <DataTable
+        // General Settings
+        showGridlines
+        value={books}
+        lazy
+        responsiveLayout="scroll"
+        filterDisplay="row"
+        loading={loading}
+        // Row clicking
+        rowHover
+        selectionMode={"single"}
+        onRowClick={(event) => onRowClick(event)}
+        // Paginator
+        paginator={!isNoPagination}
+        first={pageParams.first}
+        rows={rows}
+        totalRecords={numberOfBooks}
+        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+        onPage={onPage}
+        rowsPerPageOptions={[5, 10, 25, 50]}
+        paginatorPosition="both"
+        // Sorting
+        onSort={onSort}
+        sortField={sortParams.sortField}
+        sortOrder={sortParams.sortOrder}
+        // Filtering
+        onFilter={onFilter}
+        filters={filterParams.filters}
+      >
+        {columns}
+        <Column body={editDeleteCellTemplate} style={{ minWidth: "9rem" }} />
+      </DataTable>
+      {deletePopupVisible && deletePopup}
+      <div className="flex col-2 p-0">
+        <label
+          className="p-component p-text-secondary text-teal-900 my-auto mr-2"
+          htmlFor="retail_price"
         >
-          {columns}
-          <Column body={editDeleteCellTemplate} style={{ minWidth: "9rem" }} />
-        </DataTable>
-        {deletePopupVisible && deletePopup}
+          No Pagination
+        </label>
+        <InputSwitch
+          checked={isNoPagination}
+          id="modifyBookToggle"
+          name="modifyBookToggle"
+          onChange={() => setIsNoPagination(!isNoPagination)}
+          className="my-auto "
+        />
       </div>
     </div>
   );

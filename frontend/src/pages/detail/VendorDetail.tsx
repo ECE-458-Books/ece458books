@@ -1,16 +1,22 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { InputText } from "primereact/inputtext";
+import { ToggleButton } from "primereact/togglebutton";
+import ConfirmPopup from "../../components/popups/ConfirmPopup";
 import { useNavigate, useParams } from "react-router-dom";
-import { ModifyVendorReq, VENDORS_API } from "../../apis/VendorsAPI";
+import {
+  AddVendorReq,
+  ModifyVendorReq,
+  VENDORS_API,
+} from "../../apis/VendorsAPI";
 import { logger } from "../../util/Logger";
 import { Toast } from "primereact/toast";
 import { showFailure, showSuccess } from "../../components/Toast";
 import { percentEditor } from "../../util/TableCellEditFuncs";
 import { Button } from "primereact/button";
 import ConfirmButton from "../../components/popups/ConfirmPopup";
+import BackButton from "../../components/buttons/BackButton";
 import DeleteButton from "../../components/buttons/DeleteButton";
 import DeletePopup from "../../components/popups/DeletePopup";
-import BackButton from "../../components/buttons/BackButton";
 
 export default function VendorDetail() {
   // From URL

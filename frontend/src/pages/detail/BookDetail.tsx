@@ -273,7 +273,6 @@ export default function BookDetail() {
         alt="Image"
         height="350"
         className="col-12 align-items-center flex justify-content-center"
-        imageClassName="shadow-2 border-round"
       />
       <div className="col-12">
         {isModifiable && (

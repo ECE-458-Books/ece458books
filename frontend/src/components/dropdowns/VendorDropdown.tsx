@@ -7,6 +7,7 @@ export interface VendorDropdownProps {
   setSelectedVendor: (arg0: string) => void; // Set the selected vendor
   selectedVendor: string; // The selected vendor
   isModifiable?: boolean; // If the dropdown can be changed
+  hasBuybackPolicy?: boolean; // If the vendor has a buyback policy
 }
 
 // This cannot be used in a table cell in the current form, only when there is one on the page
@@ -14,14 +15,16 @@ export default function VendorDropdown(props: VendorDropdownProps) {
   const [vendorNamesList, setVendorNamesList] = useState<string[]>([]);
 
   useEffect(() => {
-    VENDORS_API.getVendorsNoPagination().then((response) => {
-      const tempVendorMap = new Map<string, number>();
-      for (const vendor of response) {
-        tempVendorMap.set(vendor.name, vendor.id);
+    VENDORS_API.getVendorsNoPagination(props.hasBuybackPolicy).then(
+      (response) => {
+        const tempVendorMap = new Map<string, number>();
+        for (const vendor of response) {
+          tempVendorMap.set(vendor.name, vendor.id);
+        }
+        props.setVendorMap(tempVendorMap);
+        setVendorNamesList(response.map((vendor) => vendor.name));
       }
-      props.setVendorMap(tempVendorMap);
-      setVendorNamesList(response.map((vendor) => vendor.name));
-    });
+    );
   }, []);
 
   return (

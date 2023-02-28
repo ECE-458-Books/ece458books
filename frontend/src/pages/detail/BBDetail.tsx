@@ -49,6 +49,7 @@ import VendorDropdown from "../../components/dropdowns/VendorDropdown";
 import DeleteColumn from "../../components/datatable/DeleteColumn";
 import AddRowButton from "../../components/buttons/AddRowButton";
 import EditCancelButton from "../../components/buttons/EditCancelDetailButton";
+import { VENDORS_API } from "../../apis/VendorsAPI";
 import { FileUploadHandlerEvent } from "primereact/fileupload";
 import CSVUploader from "../../components/uploaders/CSVFileUploader";
 
@@ -155,12 +156,7 @@ export default function BBDetail() {
         booksDropDownEditor(
           rowData.bookTitle,
           (newValue) => {
-            setBuybacks((draft) => {
-              const sale = findById(draft, rowData.id);
-              sale!.bookTitle = newValue;
-              sale!.price = booksMap.get(newValue)!.retailPrice;
-              setTotalRevenue(calculateTotal(draft));
-            });
+            updateRowOnTitleChange(rowData, newValue);
           },
           !isModifiable
         ),
@@ -205,6 +201,24 @@ export default function BBDetail() {
         priceBodyTemplate(rowData.price * rowData.quantity),
     },
   ];
+
+  const updateRowOnTitleChange = (rowData: BBSaleRow, newBookTitle: string) => {
+    VENDORS_API.bestBuybackPrice({
+      bookid: booksMap.get(newBookTitle)!.id,
+      vendor_id: vendorMap.get(selectedVendorName)!.toString(),
+    })
+      .then((response) => {
+        setBuybacks((draft) => {
+          const sale = findById(draft, rowData.id)!;
+          sale.bookTitle = newBookTitle;
+          sale.price = response;
+          setTotalRevenue(calculateTotal(draft));
+        });
+      })
+      .catch(() => {
+        showFailure(toast, "Could not fetch best buyback price");
+      });
+  };
 
   // Called to make delete pop up show
   const deleteBuyBackPopup = () => {
@@ -494,6 +508,7 @@ export default function BBDetail() {
       setSelectedVendor={setSelectedVendorName}
       selectedVendor={selectedVendorName}
       isModifiable={isModifiable && !isBooksBuyBackSold}
+      hasBuybackPolicy={true}
     />
   );
 

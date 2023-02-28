@@ -1,11 +1,14 @@
 from .csv_column_headers import get_csv_headers, csv_column_headers
 import pandas as pd
-from .csv_exceptions import MissingHeadersException, ExtraHeadersException, InvalidISBN13LengthException, NotInDbException, InsufficientStockException, NotAnIntegerException, NegativeValueException, NotANumberException, EmptyValueException, DuplicateValidHeadersException
+from .csv_exceptions import MissingHeadersException, ExtraHeadersException, NotInDbException, InsufficientStockException, NotAnIntegerException, NegativeValueException, NotANumberException, EmptyValueException, DuplicateValidHeadersException, InvalidISBNException
 from typing import Callable
 from books.models import Book
+from books.isbn import ISBNTools
+from django.db.models import Q
 
 
 class CSVFormatChecker:
+    isbn_tools = ISBNTools()
 
     def __init__(self, csv_import_type: str) -> None:
         self.expected_headers = get_csv_headers(csv_import_type)
@@ -32,7 +35,6 @@ class CSVFormatChecker:
 
     def find_malformed_data(self, csv_df: pd.DataFrame) -> list:
         """Returns for each row the columns with malformed data"""
-        csv_df = csv_df.rename(columns={"isbn_13": "isbn13"})
         malformed_cells = [{} for _ in range(len(csv_df.index))]
 
         for index, row in csv_df.iterrows():
@@ -48,28 +50,25 @@ class CSVFormatChecker:
     def apply_condition(self, header: str, df: pd.DataFrame, func: Callable) -> None:
         df[header] = df[header].apply(func)
 
-    def isbn13_conditions(self, row):
-        isbn_13 = row["isbn13"]
-        self.is_empty(isbn_13)
-        self.is_number(isbn_13)
-        self.is_int(isbn_13)
-        self.is_int_negative(isbn_13)
-        self.is_length_13(isbn_13)
-        self.book_exists_in_db(isbn_13)
+    def isbn_conditions(self, row):
+        isbn = row["isbn"]
+        self.is_empty(isbn)
+        self.is_valid_isbn(isbn)
+        self.book_exists_in_db(isbn)
 
     def quantity_conditions(self, row) -> bool:
         quantity = row["quantity"]
-        isbn_13 = row["isbn13"]
+        isbn = row["isbn"]
         self.is_empty(quantity)
         self.is_number(quantity)
         self.is_int(quantity)
         self.is_int_negative(quantity)
         if "unit_wholesale_price" not in row.index:
-            self.check_for_sufficient_inventory(quantity, isbn_13)
+            self.check_for_sufficient_inventory(quantity, isbn)
 
-    def check_for_sufficient_inventory(self, quantity, isbn_13):
+    def check_for_sufficient_inventory(self, quantity, isbn):
         try:
-            book_stock = Book.objects.filter(isbn_13=isbn_13).get().stock
+            book_stock = Book.objects.filter(isbn_13=isbn).get().stock
         except Book.DoesNotExist:  # if the book does not exist, can't do a quantity check, so just return
             return
         if int(quantity) > book_stock:
@@ -81,10 +80,14 @@ class CSVFormatChecker:
         self.is_number(price)
         self.is_float_negative(price)
 
-    def book_exists_in_db(self, isbn_13: str) -> bool:
-        book = Book.objects.filter(isbn_13=isbn_13)
+    def book_exists_in_db(self, isbn: str) -> bool:
+        book = Book.objects.filter(Q(isbn_13=isbn) | Q(isbn_10=isbn))
         if len(book) == 0 or book.get().isGhost:
             raise NotInDbException()
+
+    def is_valid_isbn(self, isbn: str):
+        if not self.isbn_tools.is_valid_isbn(isbn):
+            raise InvalidISBNException()
 
     def is_number(self, value: str):
         try:
@@ -109,7 +112,3 @@ class CSVFormatChecker:
     def is_empty(self, value: str):
         if len(value) == 0:
             raise EmptyValueException()
-
-    def is_length_13(self, value: str):
-        if len(value) != 13:
-            raise InvalidISBN13LengthException()

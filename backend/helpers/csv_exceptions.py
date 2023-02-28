@@ -19,13 +19,6 @@ class DuplicateValidHeadersException(Exception):
         super().__init__(self.message)
 
 
-class InvalidISBN13LengthException(Exception):
-
-    def __init__(self) -> None:
-        self.message = "invalid_isbn_13_length"
-        super().__init__(self.message)
-
-
 class NotInDbException(Exception):
 
     def __init__(self) -> None:
@@ -65,4 +58,11 @@ class EmptyValueException(Exception):
 
     def __init__(self) -> None:
         self.message = "empty_value"
+        super().__init__(self.message)
+
+
+class InvalidISBNException(Exception):
+
+    def __init__(self, *args: object) -> None:
+        self.message = "invalid_isbn"
         super().__init__(self.message)

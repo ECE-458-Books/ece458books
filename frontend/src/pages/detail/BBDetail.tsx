@@ -26,7 +26,6 @@ import { calculateTotal } from "../../util/CalculateTotal";
 import { Book } from "../list/BookList";
 
 import { useImmer } from "use-immer";
-import produce from "immer";
 import { APIToInternalBBConversion } from "../../apis/Conversions";
 import BooksDropdown, {
   BooksDropdownData,

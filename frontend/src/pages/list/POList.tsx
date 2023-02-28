@@ -12,7 +12,7 @@ import {
   APIPOSortFieldMap,
   APIToInternalPOConversion,
 } from "../../apis/Conversions";
-import { GetPOsResp, PURCHASES_API } from "../../apis/PurchasesAPI";
+import { APIPO, GetPOsResp, PURCHASES_API } from "../../apis/PurchasesAPI";
 import DeletePopup from "../../components/popups/DeletePopup";
 import { createColumns, TableColumn } from "../../components/TableColumns";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
@@ -23,6 +23,9 @@ import {
 } from "../../util/TableCellEditFuncs";
 import { POPurchaseRow } from "../detail/PODetail";
 import { NUM_ROWS } from "./BookList";
+import AddPageButton from "../../components/buttons/AddPageButton";
+import LabeledSwitch from "../../components/buttons/LabeledSwitch";
+import SelectSizeButton from "../../components/buttons/SelectSizeButton";
 
 export interface PurchaseOrder {
   id: string;
@@ -41,21 +44,25 @@ const COLUMNS: TableColumn[] = [
     header: "Date (YYYY-MM-DD)",
     sortable: true,
     customBody: (rowData: PurchaseOrder) => dateBodyTemplate(rowData.date),
+    style: { minWidth: "8rem", width: "10rem" },
   },
   {
     field: "vendorName",
     header: "Vendor Name",
     sortable: true,
+    style: { minWidth: "8rem", width: "16rem" },
   },
   {
     field: "uniqueBooks",
     header: "Unique Books",
     sortable: true,
+    style: { minWidth: "8rem", width: "10rem" },
   },
   {
     field: "totalBooks",
     header: "Total Books",
     sortable: true,
+    style: { minWidth: "8rem", width: "10rem" },
   },
   {
     field: "totalCost",
@@ -63,6 +70,7 @@ const COLUMNS: TableColumn[] = [
     sortable: true,
     customBody: (rowData: PurchaseOrder) =>
       priceBodyTemplate(rowData.totalCost),
+    style: { minWidth: "8rem", width: "12rem" },
   },
 ];
 
@@ -88,6 +96,10 @@ export default function PurchaseOrderList() {
   const [selectedDeletePurchaseOrder, setSelectedDeletePurchaseOrder] =
     useState<PurchaseOrder>(emptyPurchaseOrder); // The element that has been clicked on to delete
 
+  const [rows, setRows] = useState<number>(NUM_ROWS);
+  const [isNoPagination, setIsNoPagination] = useState<boolean>(false);
+  const [size, setSize] = useState<string>("small");
+
   // The current state of sorting.
   const [sortParams, setSortParams] = useState<DataTableSortEvent>({
     sortField: "",
@@ -98,7 +110,7 @@ export default function PurchaseOrderList() {
   // The current state of the paginator
   const [pageParams, setPageParams] = useState<DataTablePageEvent>({
     first: 0,
-    rows: NUM_ROWS,
+    rows: rows,
     page: 0,
   });
 
@@ -146,6 +158,7 @@ export default function PurchaseOrderList() {
   // Called when the paginator page is switched
   const onPage = (event: DataTablePageEvent) => {
     logger.debug("Sort Applied", event);
+    setRows(event.rows);
     setLoading(true);
     setPageParams(event);
   };
@@ -153,14 +166,14 @@ export default function PurchaseOrderList() {
   const onRowClick = (event: DataTableRowClickEvent) => {
     // I couldn't figure out a better way to do this...
     // It takes the current index as the table knows it and calculates the actual index in the genres array
-    const index = event.index - NUM_ROWS * (pageParams.page ?? 0);
+    const index = event.index - rows * (pageParams.page ?? 0);
     const purchaseOrder = purchaseOrders[index];
     logger.debug("Purchase Order Row Clicked", purchaseOrder);
     toDetailPage(purchaseOrder);
   };
 
   // When any of the list of params are changed, useEffect is called to hit the API endpoint
-  useEffect(() => callAPI(), [sortParams, pageParams]);
+  useEffect(() => callAPI(), [sortParams, pageParams, isNoPagination]);
 
   // Calls the Vendors API
   const callAPI = () => {
@@ -170,13 +183,26 @@ export default function PurchaseOrderList() {
       sortField = "-".concat(sortField);
     }
 
-    PURCHASES_API.getPurchaseOrders({
-      page: (pageParams.page ?? 0) + 1,
-      page_size: pageParams.rows,
-      ordering: sortField,
-    }).then((response) => {
-      return onAPIResponse(response);
-    });
+    if (!isNoPagination) {
+      PURCHASES_API.getPurchaseOrders({
+        page: (pageParams.page ?? 0) + 1,
+        page_size: pageParams.rows,
+        ordering: sortField,
+      }).then((response) => {
+        return onAPIResponse(response);
+      });
+    } else {
+      PURCHASES_API.getPurchaseOrdersNoPagination().then((response) =>
+        onAPIResponseNoPagination(response)
+      );
+    }
+  };
+
+  // Set state when response to API call is received
+  const onAPIResponseNoPagination = (response: APIPO[]) => {
+    setPurchaseOrders(response.map((po) => APIToInternalPOConversion(po)));
+    setNumberOfPurchaseOrders(response.length);
+    setLoading(false);
   };
 
   // Set state when response to API call is received
@@ -226,36 +252,78 @@ export default function PurchaseOrderList() {
 
   const columns = createColumns(COLUMNS);
 
+  const addPOButton = (
+    <div className="flex justify-content-end col-3">
+      <AddPageButton
+        onClick={() => navigate("/purchase-orders/add")}
+        label="Add Order"
+        className="mr-2"
+      />
+    </div>
+  );
+
+  const noPaginationSwitch = (
+    <div className="flex col-3 justify-content-center p-0 my-auto">
+      <LabeledSwitch
+        label="Show All"
+        onChange={() => setIsNoPagination(!isNoPagination)}
+        value={isNoPagination}
+      />
+    </div>
+  );
+
+  const selectSizeButton = (
+    <div className="flex col-6 justify-content-center my-1 p-0">
+      <SelectSizeButton value={size} onChange={(e) => setSize(e.value)} />
+    </div>
+  );
+
   return (
-    <div className="card pt-5 px-2">
-      <Toast ref={toast} />
-      <DataTable
-        showGridlines
-        // General Settings
-        value={purchaseOrders}
-        lazy
-        responsiveLayout="scroll"
-        loading={loading}
-        // Row clicking
-        rowHover
-        selectionMode={"single"}
-        onRowClick={(event) => onRowClick(event)}
-        // Paginator
-        paginator
-        first={pageParams.first}
-        rows={NUM_ROWS}
-        totalRecords={numberOfPurchaseOrders}
-        paginatorTemplate="PrevPageLink NextPageLink"
-        onPage={onPage}
-        // Sorting
-        onSort={onSort}
-        sortField={sortParams.sortField}
-        sortOrder={sortParams.sortOrder}
-      >
-        {columns}
-        <Column body={editDeleteCellTemplate} style={{ minWidth: "16rem" }} />
-      </DataTable>
-      {deletePopupVisible && deletePopup}
+    <div>
+      <div className="grid flex m-1">
+        {noPaginationSwitch}
+        {selectSizeButton}
+        {addPOButton}
+      </div>
+      <div className="flex justify-content-center">
+        <div className="card col-11 pt-0 px-3 justify-content-center">
+          <Toast ref={toast} />
+          <DataTable
+            showGridlines
+            // General Settings
+            value={purchaseOrders}
+            lazy
+            responsiveLayout="scroll"
+            loading={loading}
+            size={size ?? "small"}
+            // Row clicking
+            rowHover
+            selectionMode={"single"}
+            onRowClick={(event) => onRowClick(event)}
+            // Paginator
+            paginator={!isNoPagination}
+            first={pageParams.first}
+            rows={rows}
+            totalRecords={numberOfPurchaseOrders}
+            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+            onPage={onPage}
+            rowsPerPageOptions={[5, 10, 15, 25, 50]}
+            paginatorPosition="both"
+            // Sorting
+            onSort={onSort}
+            sortField={sortParams.sortField}
+            sortOrder={sortParams.sortOrder}
+          >
+            {columns}
+            <Column
+              hidden
+              body={editDeleteCellTemplate}
+              style={{ minWidth: "4rem" }}
+            />
+          </DataTable>
+          {deletePopupVisible && deletePopup}
+        </div>
+      </div>
     </div>
   );
 }

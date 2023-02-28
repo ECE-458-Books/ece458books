@@ -125,8 +125,8 @@ class ListCreateBookAPIView(ListCreateAPIView):
         data = request.data.dict()
 
         # handle authors, genres
-        data['authors'] = data['authors'].split(',')
-        data['genres'] = data['genres'].split(',')
+        data['authors'] = [author.strip() for author in data['authors'].split(',')]
+        data['genres'] = [genre.strip() for genre in data['genres'].split(',')]
 
         return data
 
@@ -247,8 +247,8 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
         data = request.data.dict()
 
         # handle authors, genres
-        data['authors'] = data['authors'].split(',')
-        data['genres'] = data['genres'].split(',')
+        data['authors'] = [author.strip() for author in data['authors'].split(',')]
+        data['genres'] = [genre.strip() for genre in data['genres'].split(',')]
 
         return data
 

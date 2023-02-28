@@ -158,7 +158,7 @@ export default function SalesReport() {
     //console.log(salesReport);
     setTotalsData([salesReport.totalRow]);
     setDailyData(salesReport.dailySummaryRows);
-    setTopBooksData(salesReport.topBooksRows);
+    setTopBooksData(salesReport.topBooksRows.slice(0, 10));
   };
 
   // Toast is used for showing success/error messages
@@ -204,11 +204,11 @@ export default function SalesReport() {
             Sales Report
           </h1>
           <form onSubmit={onSubmit}>
-            <div className="flex pb-2 flex-row justify-content-evenly card-container">
-              <div>
+            <div className="flex pb-2 justify-content-evenly card-container">
+              <div className="flex col-4 p-0 m-0">
                 <label
                   htmlFor="date"
-                  className="pt-2 pr-2 p-component text-teal-900 p-text-secondary"
+                  className="flex p-component p-text-secondary text-center text-teal-900 my-auto mr-2 p-0"
                 >
                   Date Range:
                 </label>
@@ -220,7 +220,7 @@ export default function SalesReport() {
                   readOnlyInput
                   showButtonBar
                   placeholder="Start - End"
-                  className="p-datepicker-current-day"
+                  className="p-datepicker-current-day w-8"
                 />
               </div>
 

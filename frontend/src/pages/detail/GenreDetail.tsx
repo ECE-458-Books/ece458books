@@ -9,6 +9,8 @@ import { Toast } from "primereact/toast";
 import { showFailure, showSuccess } from "../../components/Toast";
 import { Button } from "primereact/button";
 import DeletePopup from "../../components/popups/DeletePopup";
+import BackButton from "../../components/buttons/BackButton";
+import DeleteButton from "../../components/buttons/DeleteButton";
 
 export default function GenreDetail() {
   // From URL
@@ -16,6 +18,7 @@ export default function GenreDetail() {
   const [isModifiable, setIsModifiable] = useState<boolean>(false);
 
   const [genreName, setGenreName] = useState<string>("");
+  const [genreBookCount, setGenreBookCount] = useState<number>(0);
   const [isConfirmationPopVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
   const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false); // Whether the delete popup is shown
@@ -26,7 +29,10 @@ export default function GenreDetail() {
   // Load the Genre data on page load
   useEffect(() => {
     GENRES_API.getGenreDetail({ id: id! })
-      .then((response) => setGenreName(response.name))
+      .then((response) => {
+        setGenreName(response.name);
+        setGenreBookCount(response.book_cnt);
+      })
       .catch(() => showFailure(toast, "Could not fetch genre data"));
   }, []);
 
@@ -72,6 +78,22 @@ export default function GenreDetail() {
   // The navigator to switch pages
   const navigate = useNavigate();
 
+  const backButton = (
+    <div className="flex col-1">
+      <BackButton onClick={() => navigate("/genres")} className="ml-1" />
+    </div>
+  );
+
+  const deleteButton = (
+    <div className="flex col-1">
+      <DeleteButton
+        onClick={deleteGenrePopup}
+        disabled={genreBookCount > 0}
+        className={"ml-1 "}
+      />
+    </div>
+  );
+
   return (
     <div>
       <div className="grid flex justify-content-center">
@@ -81,15 +103,7 @@ export default function GenreDetail() {
           href="https://unpkg.com/primeflex@3.1.2/primeflex.css"
         ></link>
         <div className="flex col-12 p-0">
-          <div className="flex col-1">
-            <Button
-              type="button"
-              label="Back"
-              icon="pi pi-arrow-left"
-              onClick={() => navigate("/genres")}
-              className="p-button-sm my-auto ml-1"
-            />
-          </div>
+          {backButton}
           <div className="pt-2 col-10">
             {isModifiable ? (
               <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
@@ -101,16 +115,7 @@ export default function GenreDetail() {
               </h1>
             )}
           </div>
-          <div className="flex col-1">
-            <Button
-              type="button"
-              label="Delete"
-              icon="pi pi-trash"
-              disabled
-              onClick={() => deleteGenrePopup()}
-              className="p-button-sm my-auto ml-1 p-button-danger"
-            />
-          </div>
+          {deleteButton}
         </div>
         <div className="col-7">
           <form onSubmit={onSubmit}>

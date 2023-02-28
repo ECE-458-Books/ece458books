@@ -20,6 +20,7 @@ import SalesReportPage from "../pages/list/SalesReport";
 import BuyBackList from "../pages/list/BuyBackList";
 import GoToLoginPageIfNotLoggedIn from "../util/AuthCheck";
 import ShelfCalculator from "../pages/ShelfCalculator";
+import VendorAdd from "../pages/add/VendorAdd";
 
 const WithNavBar = () => {
   return (
@@ -66,7 +67,7 @@ export default function Router() {
         <Route path="purchase-orders/detail/:id" element={<ModifyPO />} />
         <Route path="sales-reconciliations/add" element={<ModifySR />} />
         <Route path="sales-reconciliations/detail/:id" element={<ModifySR />} />
-        <Route path="vendors/add" element={<VendorDetail />} />
+        <Route path="vendors/add" element={<VendorAdd />} />
         <Route path="book-buybacks/add" element={<ModifyBB />} />
         <Route path="book-buybacks/detail/:id" element={<ModifyBB />} />
         <Route path="vendors/detail/:id" element={<VendorDetail />} />

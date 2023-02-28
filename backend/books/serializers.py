@@ -71,7 +71,7 @@ class BookListAddSerializer(serializers.ModelSerializer):
         last_month_sales = self.get_last_month_sales(instance)
         if(last_month_sales == 0):
             return "inf"
-        return round(stock/last_month_sales*30, 2)
+        return round((stock/last_month_sales)*30, 2)
 
 
 class BookSerializer(serializers.ModelSerializer):

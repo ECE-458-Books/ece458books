@@ -10,10 +10,15 @@ import {
   priceBodyTemplate,
   priceEditor,
 } from "../../util/TableCellEditFuncs";
-import { errorCellBody } from "./errors/CSVImportErrors";
+import { CSVImport400Errors, errorCellBody } from "./errors/CSVImportErrors";
 import React from "react";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
-import { showFailure, showSuccess } from "../../components/Toast";
+import {
+  showFailure,
+  showFailuresMapper,
+  showSuccess,
+  showWarning,
+} from "../../components/Toast";
 import {
   APIBBSaleRow,
   AddBBReq,
@@ -26,7 +31,10 @@ import { calculateTotal } from "../../util/CalculateTotal";
 import { Book } from "../list/BookList";
 
 import { useImmer } from "use-immer";
-import { APIToInternalBBConversion } from "../../apis/Conversions";
+import {
+  APIToInternalBBConversion,
+  APIToInternalBuybackCSVConversion,
+} from "../../apis/Conversions";
 import BooksDropdown, {
   BooksDropdownData,
 } from "../../components/dropdowns/BookDropdown";
@@ -41,6 +49,8 @@ import VendorDropdown from "../../components/dropdowns/VendorDropdown";
 import DeleteColumn from "../../components/datatable/DeleteColumn";
 import AddRowButton from "../../components/buttons/AddRowButton";
 import EditCancelButton from "../../components/buttons/EditCancelDetailButton";
+import { FileUploadHandlerEvent } from "primereact/fileupload";
+import CSVUploader from "../../components/uploaders/CSVFileUploader";
 
 export interface BBDetailState {
   id: number;
@@ -88,7 +98,7 @@ export default function BBDetail() {
   const [selectedVendorName, setSelectedVendorName] = useState<string>("");
 
   // useImmer is used to set state for nested data in a simplified format
-  const [sales, setSales] = useImmer<BBSaleRow[]>([]);
+  const [buybacks, setBuybacks] = useImmer<BBSaleRow[]>([]);
   const [totalRevenue, setTotalRevenue] = useState<number>(0);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
@@ -104,7 +114,7 @@ export default function BBDetail() {
         .then((response) => {
           const buyBack = APIToInternalBBConversion(response);
           setDate(buyBack.date);
-          setSales(buyBack.sales);
+          setBuybacks(buyBack.sales);
           setTotalRevenue(buyBack.totalRevenue);
           setSelectedVendorName(buyBack.vendorName);
         })
@@ -113,7 +123,7 @@ export default function BBDetail() {
         );
     }
 
-    setIsBooksBuyBackSold(sales.length > 0);
+    setIsBooksBuyBackSold(buybacks.length > 0);
   }, []);
 
   // Get the data for the books dropdown
@@ -128,8 +138,8 @@ export default function BBDetail() {
   );
 
   useEffect(() => {
-    setIsBooksBuyBackSold(sales.length > 0);
-  }, [sales]);
+    setIsBooksBuyBackSold(buybacks.length > 0);
+  }, [buybacks]);
 
   const COLUMNS: TableColumn[] = [
     {
@@ -145,7 +155,7 @@ export default function BBDetail() {
         booksDropDownEditor(
           rowData.bookTitle,
           (newValue) => {
-            setSales((draft) => {
+            setBuybacks((draft) => {
               const sale = findById(draft, rowData.id);
               sale!.bookTitle = newValue;
               sale!.price = booksMap.get(newValue)!.retailPrice;
@@ -162,7 +172,7 @@ export default function BBDetail() {
         numberEditor(
           rowData.quantity,
           (newValue) => {
-            setSales((draft) => {
+            setBuybacks((draft) => {
               const sale = findById(draft, rowData.id);
               sale!.quantity = newValue;
               setTotalRevenue(calculateTotal(draft));
@@ -179,7 +189,7 @@ export default function BBDetail() {
         priceEditor(
           rowData.price,
           (newValue) => {
-            setSales((draft) => {
+            setBuybacks((draft) => {
               const sale = findById(draft, rowData.id);
               sale!.price = newValue;
               setTotalRevenue(calculateTotal(draft));
@@ -216,11 +226,39 @@ export default function BBDetail() {
       .catch(() => showFailure(toast, "Book BuyBack Sale Failed to Delete"));
   };
 
+  // Handler for a CSV upload
+  const csvUploadHandler = (event: FileUploadHandlerEvent) => {
+    const csv = event.files[0];
+    BUYBACK_API.buybackCSVImport({
+      file: csv,
+      vendor: vendorMap.get(selectedVendorName)!.toString(),
+    })
+      .then((response) => {
+        const buybacks = APIToInternalBuybackCSVConversion(response.buybacks);
+        setBuybacks(buybacks);
+        setHasUploadedCSV(true);
+
+        // Show nonblocking errors (warnings)
+        const nonBlockingErrors = response.errors;
+        for (const warning of nonBlockingErrors ?? []) {
+          showWarning(
+            toast,
+            warning.concat(" is an extra column and was not used")
+          );
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+        showFailuresMapper(toast, error.data.errors, CSVImport400Errors);
+      });
+    event.options.clear();
+  };
+
   const onRowClick = (event: DataTableRowClickEvent) => {
     // I couldn't figure out a better way to do this...
     // It takes the current index as the table knows it and calculates the actual index in the books array
     const index = event.index;
-    const sale = sales[index];
+    const sale = buybacks[index];
     logger.debug("Purchase Order Row Clicked", sale);
     toBookDetailsPage(sale);
   };
@@ -233,7 +271,7 @@ export default function BBDetail() {
 
   // Validate submission before making API req
   const validateSubmission = () => {
-    for (const sale of sales) {
+    for (const sale of buybacks) {
       if (!sale.bookTitle || !(sale.price >= 0) || !sale.quantity) {
         showFailure(
           toast,
@@ -266,7 +304,7 @@ export default function BBDetail() {
 
   // Add the book buyback
   const callAddBBAPI = () => {
-    const apiSales = sales.map((sale) => {
+    const apiSales = buybacks.map((sale) => {
       return {
         book: Number(booksMap.get(sale.bookTitle)!.id),
         quantity: sale.quantity,
@@ -290,7 +328,7 @@ export default function BBDetail() {
   // Modify the sales reconciliation
   const callModifyBBAPI = () => {
     // Otherwise, it is a modify page
-    const apiSales = sales.map((sale) => {
+    const apiSales = buybacks.map((sale) => {
       return {
         id: sale.isNewRow ? undefined : sale.id,
         book: booksMap.get(sale.bookTitle)?.id ?? sale.bookId,
@@ -332,7 +370,7 @@ export default function BBDetail() {
 
   const backButton = (
     <div className="flex col-1">
-      <BackButton onClick={() => navigate("/book-buybacks")} />
+      <BackButton onClick={() => navigate("/book-buybacks")} className="ml-1" />
     </div>
   );
 
@@ -356,12 +394,27 @@ export default function BBDetail() {
   const addRowButton = (
     <AddRowButton
       emptyItem={emptySale}
-      rows={sales}
-      setRows={setSales}
+      rows={buybacks}
+      setRows={setBuybacks}
       isDisabled={!isModifiable || selectedVendorName == ""}
       label={"Add Book"}
       isVisible={isModifiable}
     />
+  );
+
+  const csvImportButton = (
+    <CSVUploader
+      visible={isModifiable}
+      disabled={selectedVendorName == ""}
+      uploadHandler={csvUploadHandler}
+    />
+  );
+
+  const leftToolbar = (
+    <>
+      {addRowButton}
+      {csvImportButton}
+    </>
   );
 
   // Center
@@ -465,7 +518,7 @@ export default function BBDetail() {
   // Delete icon for each row
   const deleteColumn = DeleteColumn<BBSaleRow>({
     onDelete: (rowData) => {
-      const newSales = filterById(sales, rowData.id, setSales);
+      const newSales = filterById(buybacks, rowData.id, setBuybacks);
       setTotalRevenue(calculateTotal(newSales));
     },
     hidden: !isModifiable,
@@ -484,7 +537,7 @@ export default function BBDetail() {
           <form onSubmit={onSubmit}>
             <Toolbar
               className="mb-4"
-              left={addRowButton}
+              left={leftToolbar}
               center={editCancelButton}
               right={rightToolbar}
             />
@@ -505,7 +558,7 @@ export default function BBDetail() {
 
             <DataTable
               showGridlines
-              value={sales}
+              value={buybacks}
               className="editable-cells-table"
               responsiveLayout="scroll"
               editMode="cell"

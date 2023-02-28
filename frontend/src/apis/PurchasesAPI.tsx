@@ -74,7 +74,7 @@ export interface APIPurchaseCSVImportRow extends APIPOPurchaseRow {
 
 export interface POCSVImportResp {
   purchases: APIPurchaseCSVImportRow[];
-  errors: string[];
+  errors?: string[];
 }
 
 export const PURCHASES_API = {

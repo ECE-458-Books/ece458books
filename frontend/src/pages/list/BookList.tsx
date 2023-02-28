@@ -30,6 +30,7 @@ import GenreDropdown, {
 import AddPageButton from "../../components/buttons/AddPageButton";
 import LabeledSwitch from "../../components/buttons/LabeledSwitch";
 import SelectSizeButton from "../../components/buttons/SelectSizeButton";
+import { BookDetailLineItem } from "../detail/BookDetailLineItems";
 
 export const NUM_ROWS = 10;
 
@@ -58,6 +59,7 @@ export interface Book {
   lastMonthSales: number;
   thumbnailURL: string;
   newImageData?: NewImageUploadData;
+  lineItems?: BookDetailLineItem[];
 }
 
 interface Filters {
@@ -86,6 +88,7 @@ export const emptyBook: Book = {
   thumbnailURL: "",
   bestBuybackPrice: 0,
   lastMonthSales: 0,
+  lineItems: [],
 };
 
 export default function BookList() {

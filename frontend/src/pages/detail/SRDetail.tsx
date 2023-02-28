@@ -30,14 +30,10 @@ import {
 import {
   showFailure,
   showSuccess,
-  showWarningsMapper,
   showFailuresMapper,
+  showWarning,
 } from "../../components/Toast";
-import {
-  CSVImport200Errors,
-  CSVImport400Errors,
-  errorCellBody,
-} from "./errors/CSVImportErrors";
+import { CSVImport400Errors, errorCellBody } from "./errors/CSVImportErrors";
 import { Book } from "../list/BookList";
 import { useImmer } from "use-immer";
 import { filterById, findById } from "../../util/IDOperations";
@@ -233,7 +229,12 @@ export default function SRDetail() {
 
         // Show nonblocking errors (warnings)
         const nonBlockingErrors = response.errors;
-        showWarningsMapper(toast, nonBlockingErrors, CSVImport200Errors);
+        for (const warning of nonBlockingErrors ?? []) {
+          showWarning(
+            toast,
+            warning.concat(" is an extra column and was not used")
+          );
+        }
       })
       .catch((error) => {
         showFailuresMapper(toast, error.data.errors, CSVImport400Errors);
@@ -344,7 +345,10 @@ export default function SRDetail() {
 
   const backButton = (
     <div className="flex col-1">
-      <BackButton onClick={() => navigate("/sales-reconciliations")} />
+      <BackButton
+        onClick={() => navigate("/sales-reconciliations")}
+        className="ml-1"
+      />
     </div>
   );
 

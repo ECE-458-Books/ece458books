@@ -2,6 +2,7 @@ import { Button } from "primereact/button";
 
 interface BackButtonProps {
   onClick: () => void;
+  className?: string;
 }
 
 export default function BackButton(props: BackButtonProps) {
@@ -11,7 +12,7 @@ export default function BackButton(props: BackButtonProps) {
       label="Back"
       icon="pi pi-arrow-left"
       onClick={props.onClick}
-      className="p-button-sm my-auto ml-1"
+      className={"p-button-sm my-auto " + props.className}
     />
   );
 }

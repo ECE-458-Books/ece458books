@@ -2,7 +2,7 @@ import { Button } from "primereact/button";
 import { ConfirmDialog } from "primereact/confirmdialog";
 
 export interface ConfirmButtonProps {
-  className: string | undefined;
+  className?: string;
   id?: string;
   name?: string;
   isPopupVisible: boolean;
@@ -11,7 +11,7 @@ export interface ConfirmButtonProps {
   onFinalSubmission: () => void;
   onRejectFinalSubmission?: () => void;
   onShowPopup: () => void;
-  disabled: boolean;
+  disabled?: boolean;
   label: string;
   icons?: string;
 }
@@ -35,7 +35,7 @@ export default function ConfirmButton(props: ConfirmButtonProps) {
         type="button"
         onClick={props.onShowPopup}
         visible={props.isButtonVisible ?? true}
-        disabled={props.disabled}
+        disabled={props.disabled ?? false}
         label={props.label}
         className={props.className}
         icon={props.icons}

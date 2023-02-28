@@ -18,12 +18,15 @@ class CSVReader:
         csv_format_checker = CSVFormatChecker(self.csv_import_type)
         csv = request.FILES["file"]
         try:
-            csv_df = pd.read_csv(csv, dtype=str, keep_default_na=False)
+            csv_df = pd.read_csv(csv, dtype=str, keep_default_na=False, index_col=False)
             csv_df = csv_df.apply(lambda x: x.str.strip()).rename(columns=lambda x: x.strip())
             isbn_tools = ISBNTools()
             csv_df.loc[:, 'isbn'] = csv_df.loc[:, 'isbn'].apply(lambda x: isbn_tools.parse_isbn(x) if isbn_tools.is_valid_isbn(x) else x)
         except pd.errors.EmptyDataError:
-            return Response({"errors": "empty_csv"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"errors": ["empty_csv"]}, status=status.HTTP_400_BAD_REQUEST)
+        except pd.errors.ParserError as e:
+            parse_error = str(e)[str(e).find("C error: ") + len("C error: "):].strip()
+            return Response({"errors": [parse_error]}, status=status.HTTP_400_BAD_REQUEST)
         try:
             csv_format_checker.are_headers_correct(csv)
         except DuplicateValidHeadersException as dvhe:

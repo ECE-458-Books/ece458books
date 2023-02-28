@@ -10,10 +10,12 @@ from .paginations import SalesReconciliationPagination
 from django.db.models import OuterRef, Subquery, Func, Count, Sum, F
 from purchase_orders.models import Purchase, PurchaseOrder
 from purchase_orders.serializers import PurchaseOrderSerializer
+from buybacks.serializers import BuybackOrderSerializer
 import datetime, pytz
 from datetime import datetime, timedelta
 from books.models import Book
 from helpers.csv_reader import CSVReader
+from buybacks.models import BuybackOrder
 
 
 class ListCreateSalesReconciliationAPIView(ListCreateAPIView):
@@ -165,26 +167,34 @@ class RetrieveSalesReportAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, start_date, end_date):
-        daily_revenues = {}
-        daily_costs = {}
+        daily_sales = {}
+        daily_purchases = {}
         daily_profits = {}
+        daily_buybacks = {}
 
         # Get range of dates from starting date to ending date
         dates = self.dates_range(start_date, end_date)
 
         for date in dates:
             date_str = date.strftime("%Y-%m-%d")
-            self.get_daily_revenues(daily_revenues, date_str)
-            self.get_daily_costs(daily_costs, date_str)
-            daily_profits[date_str] = round(daily_revenues[date_str] - daily_costs[date_str], 2)
+            self.get_daily_sales(daily_sales, date_str)
+            self.get_daily_purchases(daily_purchases, date_str)
+            self.get_daily_buybacks(daily_buybacks, date_str)
+            daily_profits[date_str] = round(daily_sales[date_str] + daily_buybacks[date_str] - daily_purchases[date_str], 2)
 
-        total_cost = round(sum(daily_costs.values()), 2)
-        total_revenue = round(sum(daily_revenues.values()), 2)
+        total_cost = round(sum(daily_purchases.values()), 2)
+        total_sales_revenue = round(sum(daily_sales.values()), 2)
+        total_buybacks_revenue = round(sum(daily_buybacks.values()), 2)
+        total_revenue = round(sum(list(daily_sales.values()) + list(daily_buybacks.values())), 2)
         total_profit = round(total_revenue - total_cost, 2)
 
         sales_data_by_book = list(
             SalesReconciliation.objects.filter(date__range=(start_date, end_date)).values(book_id=F('sales__book')).annotate(num_books_sold=Sum('sales__quantity')).annotate(
                 book_revenue=Sum('sales__revenue')).order_by('-num_books_sold'))[:10]
+
+        buybacks_data_by_book = list(
+            BuybackOrder.objects.filter(date__range=(start_date, end_date)).values(book_id=F('buybacks__book')).annotate(num_books_buyback=Sum('buybacks__quantity')).annotate(
+                book_revenue=Sum('buybacks__revenue')))[:10]
 
         for book_sale in list(sales_data_by_book):
             try:
@@ -198,10 +208,20 @@ class RetrieveSalesReportAPIView(APIView):
 
         for book_sale in sales_data_by_book:
             book_sale['book_title'] = Book.objects.filter(id=book_sale['book_id']).get().title
+
+            # Not needed because requirement says that for top ten selling books, 'total revenue should be based on a sum of sales reconciliations for the period' which means not include buybacks
+            # book_buyback_data = self.get_buyback_data_for_book(buybacks_data_by_book, book_sale['book_id'])
+            # if book_buyback_data:
+            #     buyback_revenue = book_buyback_data['book_revenue']
+            # else:
+            #     buyback_revenue = 0
+
             book_sale['book_profit'] = round(book_sale['book_revenue'] - book_sale['total_cost_most_recent'], 2)
 
         return Response({
             "total_summary": {
+                "sales revenue": total_sales_revenue,
+                "buybacks revenue": total_buybacks_revenue,
                 "revenue": total_revenue,
                 "cost": total_cost,
                 "profit": total_profit,
@@ -209,15 +229,35 @@ class RetrieveSalesReportAPIView(APIView):
             "daily_summary":  # date, revenue, cost, profit
                 [{
                     "date": date,
-                    "revenue": revenue,
+                    "sales revenue": sales_revenue,
+                    "buybacks revenue": buybacks_revenue,
                     "cost": cost,
                     "profit": profit
-                } for (date, revenue, cost, profit) in zip(daily_revenues.keys(), daily_revenues.values(), daily_costs.values(), daily_profits.values())],
+                } for (date, sales_revenue, buybacks_revenue, cost, profit) in zip(daily_sales.keys(), daily_sales.values(), daily_buybacks.values(), daily_purchases.values(), daily_profits.values())
+                ],
             "top_books":  # title, quantity, total_revenue, total_cost, total_profit
                 sales_data_by_book
         })
 
-    def get_daily_costs(self, daily_costs, date: str):
+    # Keeping for now in case the requirements are clarified to be including buybacks
+    # def get_buyback_data_for_book(self, buybacks_data_by_book: list, book_id: int):
+    #     for buyback_book_data in buybacks_data_by_book:
+    #         if buyback_book_data['book_id'] == book_id:
+    #             return buyback_book_data
+
+    def get_daily_buybacks(self, daily_buybacks, date: str):
+        buyback_orders = BuybackOrder.objects.filter(date=date)
+        if len(buyback_orders) == 0:
+            daily_buybacks[date] = 0
+            return
+        for buyback_order in buyback_orders:
+            serializer = BuybackOrderSerializer(buyback_order)
+            if date not in daily_buybacks.keys():
+                daily_buybacks[date] = serializer.data['total_revenue']
+            else:
+                daily_buybacks[date] += serializer.data['total_revenue']
+
+    def get_daily_purchases(self, daily_costs, date: str):
         purchase_orders = PurchaseOrder.objects.filter(date=date)
         if len(purchase_orders) == 0:
             daily_costs[date] = 0
@@ -229,7 +269,7 @@ class RetrieveSalesReportAPIView(APIView):
             else:
                 daily_costs[date] += serializer.data['total_cost']
 
-    def get_daily_revenues(self, daily_revenues, date: str):
+    def get_daily_sales(self, daily_revenues, date: str):
         sales_reconciliations = SalesReconciliation.objects.filter(date=date)
         if len(sales_reconciliations) == 0:
             daily_revenues[date] = 0

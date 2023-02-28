@@ -252,7 +252,7 @@ export default function SalesReport() {
       </div>
       <div className="pt-3 col-12 justify-content-center">
         <div className="col-offset-2 col-8">
-          <DataTable value={dailyData} className="">
+          <DataTable value={dailyData} size="small" className="">
             {columnsDaily}
           </DataTable>
         </div>

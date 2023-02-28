@@ -13,12 +13,13 @@ from .serializers import BookListAddSerializer, BookSerializer, ISBNSerializer, 
 from .isbn import ISBNTools
 from .models import Book, Author, BookImage
 from .paginations import BookPagination
-from .search_filters import CustomSearchFilter
+from .search_filters import *
 from .scpconnect import SCPTools
 from .utils import delete_all_files_in_folder_location, str2bool
 
 from genres.models import Genre
 from purchase_orders.models import Purchase
+from helpers.csv_writer import CSVWriter
 
 
 class ISBNSearchView(APIView):
@@ -345,3 +346,10 @@ class RetrieveExternalBookImageAPIView(RetrieveAPIView):
     permission_classes = [IsAuthenticated]
     lookup_field = 'book_id'  # looks up using the book_id field
     lookup_url_kwarg = 'book_id'
+
+class CSVExportBookAPIView(APIView):
+    # permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        csv_writer = CSVWriter("books")
+        return csv_writer.write_csv(request)

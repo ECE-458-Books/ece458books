@@ -1,57 +1,56 @@
 class BookSwitch:
-    def header(self, book, header):
+    def header(self, book: dict, header):
         self.book = book
         default = header
         return getattr(self, 'case_' + str(header), lambda: default)()
 
     def case_title(self):
-        return self.book.__getattribute__('title')
+        return self.book.get('title')
 
     def case_authors(self):
-        return '|'.join([author.name for author in self.book.authors.all()])
+        return '|'.join([author for author in self.book.get('authors')])
 
     def case_isbn_13(self):
-        return self.book.__getattribute__('isbn_13')
+        return self.book.get('isbn_13')
 
     def case_isbn_10(self):
-        return self.book.__getattribute__('isbn_10')
+        return self.book.get('isbn_10')
 
     def case_publisher(self):
-        return self.book.__getattribute__('publisher')
+        return self.book.get('publisher')
 
     def case_publication_year(self):
-        return self.book.__getattribute__('publishedDate')
+        return self.book.get('publishedDate')
 
     def case_page_count(self):
-        return self.book.__getattribute__('pageCount')
+        return self.book.get('pageCount', '')
 
     def case_height(self):
-        try:
-            v = self.book.__getattribute__('height')
-        except AttributeError:
-            v = ''
-        return v
-
+        return self.book.get('height', '')
 
     def case_width(self):
-        try:
-            v = self.book.__getattribute__('width')
-        except AttributeError:
-            v = ''
-        return v
+        return self.book.get('width', '')
 
     def case_thickness(self):
-        try:
-            v = self.book.__getattribute__('thickness')
-        except AttributeError:
-            v = ''
-        return v
+        return self.book.get('thickness', '')
 
     def case_retail_price(self):
-        return self.book.__getattribute__('retail_price')
+        return self.book.get('retail_price')
     
     def case_genre(self):
-        return '|'.join([genre.name for genre in self.book.genres.all()])
+        return '|'.join([genre for genre in self.book.get('genres')])
 
     def case_inventory_count(self):
-        return self.book.__getattribute__('stock')
+        return self.book.get('stock')
+    
+    def case_shelf_space_inches(self):
+        return self.book.get('shelf_space')
+
+    def case_last_month_sales(self):
+        return self.book.get('last_month_sales')
+
+    def case_days_of_supply(self):
+        return self.book.get('days_of_supply')
+
+    def case_best_buyback_price(self):
+        return self.book.get('best_buyback_price')

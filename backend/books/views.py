@@ -348,7 +348,7 @@ class RetrieveExternalBookImageAPIView(RetrieveAPIView):
     lookup_url_kwarg = 'book_id'
 
 class CSVExportBookAPIView(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         csv_writer = CSVWriter("books")

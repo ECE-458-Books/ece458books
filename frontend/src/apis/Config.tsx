@@ -2,7 +2,7 @@ import axios from "axios";
 import { stringify } from "qs";
 import { logger } from "../util/Logger";
 
-const TEST_ENDPOINT = "https://books-test.colab.duke.edu/api/v1/";
+//const TEST_ENDPOINT = "https://books-test.colab.duke.edu/api/v1/";
 //const DEV_ENDPOINT = "https://books-dev.colab.duke.edu/api/v1/";
 export const BACKEND_ENDPOINT = process.env.REACT_APP_BACKEND_ENDPOINT;
 export const JSON_HEADER = { "Content-Type": "application/json" };
@@ -16,7 +16,7 @@ export const API = axios.create({
   paramsSerializer: {
     serialize: (params) => stringify(params, { arrayFormat: "brackets" }),
   },
-  baseURL: TEST_ENDPOINT,
+  baseURL: BACKEND_ENDPOINT,
   headers: {
     "Content-Type": "application/json",
   },

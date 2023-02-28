@@ -36,9 +36,6 @@ export default function GenreAdd() {
     axios
       .all(genreRequests)
       .then((responses) => {
-        responses.forEach((resp) => {
-          showSuccess(toast, "Successfully added genre");
-        });
         isGoBackActive ? navigate("/genres") : window.location.reload();
       })
       .catch(() => {

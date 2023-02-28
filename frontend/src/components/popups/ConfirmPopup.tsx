@@ -2,7 +2,7 @@ import { Button } from "primereact/button";
 import { ConfirmDialog } from "primereact/confirmdialog";
 
 export interface ConfirmButtonProps {
-  className?: string | undefined;
+  className?: string;
   id?: string;
   name?: string;
   isPopupVisible: boolean;

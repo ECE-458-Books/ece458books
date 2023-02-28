@@ -8,7 +8,7 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { TableColumn, createColumns } from "../../components/TableColumns";
 import { percentEditor, textEditor } from "../../util/TableCellEditFuncs";
-import { findById } from "../../util/IDOperations";
+import { filterById, findById } from "../../util/IDOperations";
 import { useImmer } from "use-immer";
 import React from "react";
 import { v4 as uuid } from "uuid";
@@ -18,6 +18,7 @@ import { VENDORS_API, AddVendorReq } from "../../apis/VendorsAPI";
 import axios from "axios";
 import AddRowButton from "../../components/buttons/AddRowButton";
 import BackButton from "../../components/buttons/BackButton";
+import DeleteColumn from "../../components/datatable/DeleteColumn";
 
 export interface VendorRow {
   id: string;
@@ -69,16 +70,6 @@ export default function GenreAdd() {
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
 
-  const addNewVendor = () => {
-    setLineData(emptyVendor);
-    const _lineData = lineData;
-    _lineData.id = uuid();
-    setLineData(_lineData);
-    const _data = [...vendors];
-    _data.push({ ...lineData });
-    setVendors(_data);
-  };
-
   const deleteVendor = (rowData: VendorRow) => {
     const _data = vendors.filter((val) => val.id !== rowData.id);
     setVendors(_data);
@@ -97,27 +88,11 @@ export default function GenreAdd() {
     axios
       .all(vendorRequests)
       .then((responses) => {
-        responses.forEach((resp) => {
-          showSuccess(toast, "Successfully added vendor");
-        });
         isGoBackActive ? navigate("/vendors") : window.location.reload();
       })
       .catch(() => {
         showFailure(toast, "One or more of the vendors failed to add");
       });
-  };
-
-  const actionBodyTemplate = (rowData: VendorRow) => {
-    return (
-      <React.Fragment>
-        <Button
-          type="button"
-          icon="pi pi-trash"
-          className="p-button-rounded p-button-danger"
-          onClick={() => deleteVendor(rowData)}
-        />
-      </React.Fragment>
-    );
   };
 
   const addRowButton = (
@@ -173,6 +148,14 @@ export default function GenreAdd() {
     </div>
   );
 
+  // Delete icon for each row
+  const deleteColumn = DeleteColumn<VendorRow>({
+    onDelete: (rowData) => {
+      const newVendors = filterById(vendors, rowData.id, setVendors);
+    },
+    hidden: false,
+  });
+
   const columns = createColumns(COLUMNS);
 
   return (
@@ -198,12 +181,7 @@ export default function GenreAdd() {
             editMode="cell"
           >
             {columns}
-            <Column
-              body={actionBodyTemplate}
-              header="Delete Line Item"
-              exportable={false}
-              style={{ minWidth: "8rem" }}
-            ></Column>
+            {deleteColumn}
           </DataTable>
         </form>
       </div>

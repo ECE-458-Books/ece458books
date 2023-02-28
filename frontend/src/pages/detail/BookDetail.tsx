@@ -13,15 +13,14 @@ import { logger } from "../../util/Logger";
 import { CommaSeparatedStringToArray } from "../../util/StringOperations";
 import { Image } from "primereact/image";
 import { FileUploadHandlerEvent } from "primereact/fileupload";
-import GenresDropdown, {
-  GenresDropdownData,
-} from "../../components/dropdowns/GenreDropdown";
+import { GenresDropdownData } from "../../components/dropdowns/GenreDropdown";
 import { IMAGES_API } from "../../apis/ImagesAPI";
 import ImageUploader from "../../components/uploaders/ImageFileUploader";
 import { showFailure, showSuccess } from "../../components/Toast";
 import { APIToInternalBookConversion } from "../../apis/Conversions";
 import { Button } from "primereact/button";
 import GenreDropdown from "../../components/dropdowns/GenreDropdown";
+import BookDetailLineItems, { BookDetailLineItem } from "./BookDetailLineItems";
 
 interface ErrorDisplay {
   message: string;
@@ -52,6 +51,7 @@ export default function BookDetail() {
   const [height, setHeight] = useState<number>();
   const [thickness, setThickness] = useState<number>();
   const [stock, setStock] = useState<number>(0);
+  const [lineItems, setLineItems] = useState<BookDetailLineItem[]>([]);
   // Leaving this line in case of future image browser side caching workaround is needed
   const [image, setImage] = useState<ImageUrlHashStruct>({
     imageSrc: "",
@@ -89,6 +89,7 @@ export default function BookDetail() {
         setHeight(book.height);
         setThickness(book.thickness);
         setStock(book.stock);
+        setLineItems(book.lineItems!);
       })
       .catch(() => showFailure(toast, "Could not fetch book data"));
 
@@ -186,6 +187,7 @@ export default function BookDetail() {
         stock: stock,
         retailPrice: price,
         thumbnailURL: image.imageSrc,
+        lineItems: lineItems,
       });
       setIsModifiable(false);
       setIsImageUploaded(false);
@@ -245,6 +247,9 @@ export default function BookDetail() {
 
   // The navigator to switch pages
   const navigate = useNavigate();
+
+  // Line item table
+  const lineItemsTable = <BookDetailLineItems lineItems={lineItems} />;
 
   return (
     <div className="grid flex justify-content-center">
@@ -502,6 +507,7 @@ export default function BookDetail() {
             />
           </div>
         </div>
+        {lineItemsTable}
 
         <div className="grid col-12 justify-content-evenly mt-2">
           {isModifiable && (
@@ -541,8 +547,6 @@ export default function BookDetail() {
             />
           )}
         </div>
-        {/* Maybe be needed in case the confrim button using the popup breaks */}
-        {/* <Button disabled={!this.state.isModifiable} label="submit" type="submit" /> */}
       </form>
     </div>
   );

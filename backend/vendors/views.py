@@ -113,7 +113,7 @@ class RetrieveVendorBuybackUnitPriceAPIView(RetrieveAPIView):
             return Response({"error": f'{vendor.name} has never sold {Book.objects.get(id=book_id).title}'})
         cost_most_recent = most_recent_purchase.unit_wholesale_price
         vendor_buyback_rate = vendor.buyback_rate
-        if not cost_most_recent:
+        if cost_most_recent == None:
             return Response(None, status=status.HTTP_204_NO_CONTENT)
         if not vendor_buyback_rate:
             return Response({"error": f'{vendor.name} does not have a buyback policy'}, status=status.HTTP_400_BAD_REQUEST)

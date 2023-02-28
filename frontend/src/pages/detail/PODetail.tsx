@@ -32,13 +32,9 @@ import {
   showFailure,
   showFailuresMapper,
   showSuccess,
-  showWarningsMapper,
+  showWarning,
 } from "../../components/Toast";
-import {
-  CSVImport200Errors,
-  CSVImport400Errors,
-  errorCellBody,
-} from "./errors/CSVImportErrors";
+import { CSVImport400Errors, errorCellBody } from "./errors/CSVImportErrors";
 import { Book } from "../list/BookList";
 import { useImmer } from "use-immer";
 import { filterById, findById } from "../../util/IDOperations";
@@ -223,11 +219,17 @@ export default function PODetail() {
 
         // Show nonblocking errors (warnings)
         const nonBlockingErrors = response.errors;
-        showWarningsMapper(toast, nonBlockingErrors, CSVImport200Errors);
+        for (const warning of nonBlockingErrors ?? []) {
+          showWarning(
+            toast,
+            warning.concat(" is an extra column and was not used")
+          );
+        }
       })
       .catch((error) => {
         showFailuresMapper(toast, error.data.errors, CSVImport400Errors);
       });
+    event.options.clear();
   };
 
   // The navigator to switch pages

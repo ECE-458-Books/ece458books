@@ -328,10 +328,10 @@ export default function BookList() {
       sortField = "-".concat(sortField);
     }
     return {
-      //no_pagination: undefined,
-      //page: isNoPagination ? undefined : (pageParams.page ?? 0) + 1,
-      //page_size: isNoPagination ? undefined : pageParams.rows,
-      //ordering: isNoPagination ? undefined : sortField,
+      no_pagination: undefined,
+      page: isNoPagination ? undefined : (pageParams.page ?? 0) + 1,
+      page_size: isNoPagination ? undefined : pageParams.rows,
+      ordering: isNoPagination ? undefined : sortField,
       genre: selectedGenre,
       search: search_string,
       title_only: title_only,

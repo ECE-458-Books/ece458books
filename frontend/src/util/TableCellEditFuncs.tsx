@@ -3,6 +3,8 @@ import { InputNumber } from "primereact/inputnumber";
 import { InputText } from "primereact/inputtext";
 import { internalToExternalDate } from "./DateOperations";
 import { Image } from "primereact/image";
+import { Button } from "primereact/button";
+import { FileUpload, FileUploadErrorEvent } from "primereact/fileupload";
 
 export const MAX_IMAGE_HEIGHT = 80;
 export const MAX_IMAGE_WIDTH = 80;
@@ -37,7 +39,7 @@ export function textEditor(options: ColumnEditorOptions, isDisabled?: boolean) {
 }
 
 export function numberEditor(
-  value: number,
+  value: number | undefined,
   onChange: (newValue: number) => void,
   isDisabled?: boolean,
   min?: number,
@@ -128,6 +130,37 @@ export function imageBodyTemplate(thumbnailURL: string) {
       }}
       className="col-12 align-items-center flex justify-content-center"
     />
+  );
+}
+
+export function imageBodyTemplateWithButtons(
+  deleteButton: JSX.Element,
+  uploadButton: JSX.Element,
+  thumbnailURL: string
+) {
+  if (!thumbnailURL) {
+    thumbnailURL = "http://books-db.colab.duke.edu/media/books/default.jpg";
+  }
+  return (
+    <>
+      {uploadButton}
+      {deleteButton}
+      <Image
+        // Leaving this line in case of future image browser side caching workaround is needed
+        src={`${thumbnailURL}${
+          thumbnailURL.startsWith("https://books") ? "?" + Date.now() : ""
+        }`}
+        // src={thumbnailURL}
+        id="imageONpage"
+        alt="Image"
+        imageStyle={{
+          objectFit: "contain",
+          maxHeight: MAX_IMAGE_HEIGHT,
+          maxWidth: MAX_IMAGE_WIDTH,
+        }}
+        className="col-12 align-items-center flex justify-content-center"
+      />
+    </>
   );
 }
 

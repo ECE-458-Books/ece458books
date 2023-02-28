@@ -18,7 +18,12 @@ import {
   ArrayToCommaSeparatedString,
   CommaSeparatedStringToArray,
 } from "../util/StringOperations";
-import { APIBook, APIBookWithDBTag } from "./BooksAPI";
+import {
+  APIBook,
+  APIBookLineItem,
+  APIBookWithDBTag,
+  APILineItemType,
+} from "./BooksAPI";
 import { APIGenre } from "./GenresAPI";
 import {
   APIPO,
@@ -31,6 +36,10 @@ import { APIVendor } from "./VendorsAPI";
 import { BuyBack } from "../pages/list/BuyBackList";
 import { APIBB, APIBBCSVImportRow, APIBBSaleRow } from "./BuyBackAPI";
 import { BBSaleRow } from "../pages/detail/BBDetail";
+import {
+  BookDetailLineItem,
+  BookDetailLineItemType,
+} from "../pages/detail/BookDetailLineItems";
 
 // Internal data type -> ordering required for book get API
 export const APIBookSortFieldMap = new Map<string, string>([
@@ -77,7 +86,31 @@ export const APIBBSortFieldMap = new Map<string, string>([
   ["date", "date"],
 ]);
 
+// External line item -> Internal Line Item
+export const LineItemMapper = new Map<APILineItemType, BookDetailLineItemType>([
+  [APILineItemType.PURCHASE_ORDER, BookDetailLineItemType.PURCHASE_ORDER],
+  [
+    APILineItemType.SALES_RECONCILIATION,
+    BookDetailLineItemType.SALES_RECONCILIATION,
+  ],
+  [APILineItemType.BOOK_BUYBACK, BookDetailLineItemType.BOOK_BUYBACK],
+]);
+
 // Books
+
+function APIToInternalLineItemConversion(
+  lineItem: APIBookLineItem
+): BookDetailLineItem {
+  return {
+    id: lineItem.id.toString(),
+    date: externalToInternalDate(lineItem.date),
+    type: LineItemMapper.get(lineItem.type)!,
+    vendor: lineItem.vendor,
+    vendorName: lineItem.vendor_name,
+    price: lineItem.unit_price,
+    quantity: lineItem.quantity,
+  };
+}
 
 export function APIToInternalBookConversion(book: APIBook): Book {
   return {
@@ -96,6 +129,9 @@ export function APIToInternalBookConversion(book: APIBook): Book {
     retailPrice: book.retail_price,
     stock: book.stock,
     thumbnailURL: book.url,
+    lineItems: book.line_items?.map((lineItem) => {
+      return APIToInternalLineItemConversion(lineItem);
+    }),
   };
 }
 

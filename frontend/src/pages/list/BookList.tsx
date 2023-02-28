@@ -28,6 +28,7 @@ import GenreDropdown, {
   GenresDropdownData,
 } from "../../components/dropdowns/GenreDropdown";
 import { InputSwitch } from "primereact/inputswitch";
+import { BookDetailLineItem } from "../detail/BookDetailLineItems";
 
 export const NUM_ROWS = 10;
 
@@ -54,6 +55,7 @@ export interface Book {
   stock: number;
   thumbnailURL: string;
   newImageData?: NewImageUploadData;
+  lineItems?: BookDetailLineItem[];
 }
 
 interface Filters {
@@ -80,6 +82,7 @@ export const emptyBook: Book = {
   retailPrice: 0,
   stock: 0,
   thumbnailURL: "",
+  lineItems: [],
 };
 
 export default function BookList() {

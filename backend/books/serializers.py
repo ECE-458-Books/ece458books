@@ -24,12 +24,14 @@ class BookListAddSerializer(serializers.ModelSerializer):
     url = serializers.StringRelatedField()
     best_buyback_price = serializers.SerializerMethodField()
     last_month_sales = serializers.SerializerMethodField()
+    shelf_space = serializers.SerializerMethodField()
+    days_of_supply = serializers.SerializerMethodField()
 
     class Meta:
         model = Book
         fields = [
             'id', 'title', 'authors', 'genres', 'isbn_13', 'isbn_10', 'publisher', 'publishedDate', 'pageCount', 'width', 'height', 'thickness', 'retail_price', 'isGhost', 'stock', 'url',
-            'best_buyback_price', 'last_month_sales'
+            'best_buyback_price', 'last_month_sales', 'shelf_space', 'days_of_supply'
         ]
 
     def to_representation(self, instance):
@@ -58,6 +60,18 @@ class BookListAddSerializer(serializers.ModelSerializer):
             return max(buyback_prices)
         except:
             return None
+        
+    def get_shelf_space(self, instance):
+        default_thickness = 0.8
+        thickness = default_thickness if instance.thickness is None else instance.thickness
+        return round(thickness*instance.stock, 2)
+
+    def get_days_of_supply(self, instance):
+        stock = instance.stock
+        last_month_sales = self.get_last_month_sales(instance)
+        if(last_month_sales == 0):
+            return "inf"
+        return round(stock/last_month_sales*30, 2)
 
 
 class BookSerializer(serializers.ModelSerializer):

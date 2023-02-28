@@ -7,6 +7,7 @@ from rest_framework.response import Response
 
 from books.models import Book
 from books.search_filters import generate_filter_from_query_params
+from books.serializers import BookListAddSerializer
 from .csv_export_formatter import CSVExportFormatter
 
 
@@ -32,7 +33,9 @@ class CSVWriter:
         writer = csv.writer(response)
         writer.writerow(self.csv_export_formatter.get_export_headers())
         for book in books:
-            row = self.csv_export_formatter.format_book(book)
+            # Serialize each book
+            serializer = BookListAddSerializer(book)
+            row = self.csv_export_formatter.format_book(serializer.data)
             writer.writerow(row)
 
         return response

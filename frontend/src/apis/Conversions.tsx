@@ -364,7 +364,8 @@ export function APIToInternalSalesReportConversion(
     (daily) => {
       return {
         date: daily.date,
-        revenue: daily.revenue,
+        buybacksRevenue: daily.buybacks_revenue,
+        salesRevenue: daily.sales_revenue,
         cost: daily.cost,
         profit: daily.profit,
       };
@@ -385,6 +386,8 @@ export function APIToInternalSalesReportConversion(
   );
 
   const totalRow: SalesReportTotalRow = {
+    buybacksRevenue: salesRep.total_summary.buybacks_revenue,
+    salesRevenue: salesRep.total_summary.sales_revenue,
     revenue: salesRep.total_summary.revenue,
     cost: salesRep.total_summary.cost,
     profit: salesRep.total_summary.profit,

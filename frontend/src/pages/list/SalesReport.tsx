@@ -17,6 +17,8 @@ export interface SalesReport {
 }
 
 export interface SalesReportTotalRow {
+  salesRevenue: number;
+  buybacksRevenue: number;
   revenue: number;
   cost: number;
   profit: number;
@@ -24,7 +26,8 @@ export interface SalesReportTotalRow {
 
 export interface SalesReportDailyRow {
   date: string;
-  revenue: number;
+  salesRevenue: number;
+  buybacksRevenue: number;
   cost: number;
   profit: number;
 }
@@ -40,8 +43,22 @@ export interface SalesReportTopBooksRow {
 
 const COLUMNS_TOTAL: TableColumn[] = [
   {
+    field: "salesRevenue",
+    header: "Sales Revenue",
+    style: { width: "25%" },
+    customBody: (rowData: SalesReportTotalRow) =>
+      priceBodyTemplate(rowData.salesRevenue),
+  },
+  {
+    field: "buybacksRevenue",
+    header: "Buyback Revenue",
+    style: { width: "25%" },
+    customBody: (rowData: SalesReportTotalRow) =>
+      priceBodyTemplate(rowData.buybacksRevenue),
+  },
+  {
     field: "revenue",
-    header: "Revenue",
+    header: "Total Revenue",
     style: { width: "25%" },
     customBody: (rowData: SalesReportTotalRow) =>
       priceBodyTemplate(rowData.revenue),
@@ -65,11 +82,18 @@ const COLUMNS_TOTAL: TableColumn[] = [
 const COLUMNS_DAILY: TableColumn[] = [
   { field: "date", header: "Date (YYYY-MM-DD)" },
   {
-    field: "revenue",
-    header: "Revenue",
+    field: "salesRevenue",
+    header: "Sales Revenue",
     style: { width: "25%" },
-    customBody: (rowData: SalesReportDailyRow) =>
-      priceBodyTemplate(rowData.revenue),
+    customBody: (rowData: SalesReportTotalRow) =>
+      priceBodyTemplate(rowData.salesRevenue),
+  },
+  {
+    field: "buybacksRevenue",
+    header: "Buyback Revenue",
+    style: { width: "25%" },
+    customBody: (rowData: SalesReportTotalRow) =>
+      priceBodyTemplate(rowData.buybacksRevenue),
   },
   {
     field: "cost",
@@ -128,12 +152,10 @@ export default function SalesReport() {
     []
   );
   const [dates, setDates] = useState<any>(null);
-  const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
-    useState<boolean>(false);
 
   const onAPIResponse = (response: GetSalesReportResp) => {
     const salesReport = APIToInternalSalesReportConversion(response);
-    console.log(salesReport);
+    //console.log(salesReport);
     setTotalsData([salesReport.totalRow]);
     setDailyData(salesReport.dailySummaryRows);
     setTopBooksData(salesReport.topBooksRows);

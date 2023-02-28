@@ -16,6 +16,8 @@ export interface GetSalesReportResp {
 }
 
 export interface APISalesReportTotalRow {
+  sales_revenue: number;
+  buybacks_revenue: number;
   revenue: number;
   cost: number;
   profit: number;
@@ -31,8 +33,9 @@ export interface APISalesReportTopBooksRow {
 }
 
 export interface APISalesReportDailyRow {
+  buybacks_revenue: number;
   date: string;
-  revenue: number;
+  sales_revenue: number;
   cost: number;
   profit: number;
 }

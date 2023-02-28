@@ -4,11 +4,12 @@ import { Button } from "primereact/button";
 import { DataTable } from "primereact/datatable";
 import {
   imageBodyTemplate,
+  imageBodyTemplateWithButtons,
   numberEditor,
   priceEditor,
 } from "../../util/TableCellEditFuncs";
 import { BOOKS_API } from "../../apis/BooksAPI";
-import { Book, NewImageUploadData } from "../list/BookList";
+import BookList, { Book, NewImageUploadData } from "../list/BookList";
 import { Badge } from "primereact/badge";
 import { logger } from "../../util/Logger";
 import { Toast } from "primereact/toast";
@@ -22,7 +23,7 @@ import GenresDropdown, {
 } from "../../components/dropdowns/GenreDropdown";
 import { showFailure } from "../../components/Toast";
 import ImageUploader from "../../components/uploaders/ImageFileUploader";
-import { FileUploadHandlerEvent } from "primereact/fileupload";
+import { FileUpload, FileUploadHandlerEvent } from "primereact/fileupload";
 import { useImmer } from "use-immer";
 import { findById } from "../../util/IDOperations";
 
@@ -71,15 +72,14 @@ export default function BookAdd() {
       field: "thumbnailURL",
       header: "Cover Art",
       customBody: (rowData: BookWithDBTag) =>
-        imageBodyTemplate(rowData.thumbnailURL),
+        imageBodyTemplateWithButtons(
+          imageDeleter(rowData),
+          imageUploader(rowData),
+          rowData.thumbnailURL
+        ),
       style: { width: "15%" },
     },
-    {
-      field: "imageUpload",
-      header: "Image Editor",
-      customBody: (rowData: BookWithDBTag) => imageUploadTemplate(rowData),
-      style: { width: "15%" },
-    },
+
     {
       field: "title",
       header: "Title",
@@ -127,119 +127,117 @@ export default function BookAdd() {
       header: "Page Count",
       style: { width: "5%" },
       customBody: (rowData: BookWithDBTag) =>
-        rowData.pageCount
-          ? numberEditor(
-              rowData.pageCount,
-              (newValue) => (rowData.pageCount = newValue)
-            )
-          : undefined,
+        numberEditor(rowData.pageCount, (newValue) => {
+          setBooks((draft) => {
+            const book = findById(draft, rowData.id)!;
+            book.pageCount = newValue;
+          });
+        }),
     },
     {
       field: "width",
       header: "Width",
       style: { width: "5%" },
       customBody: (rowData: BookWithDBTag) =>
-        rowData.width
-          ? numberEditor(
-              rowData.width,
-              (newValue) => (rowData.width = newValue)
-            )
-          : undefined,
+        numberEditor(rowData.width, (newValue) => {
+          setBooks((draft) => {
+            const book = findById(draft, rowData.id)!;
+            book.width = newValue;
+          });
+        }),
     },
     {
       field: "height",
       header: "Height",
       style: { width: "5%" },
       customBody: (rowData: BookWithDBTag) =>
-        rowData.height
-          ? numberEditor(
-              rowData.height,
-              (newValue) => (rowData.height = newValue)
-            )
-          : undefined,
+        numberEditor(rowData.height, (newValue) => {
+          setBooks((draft) => {
+            const book = findById(draft, rowData.id)!;
+            book.height = newValue;
+          });
+        }),
     },
     {
       field: "thickness",
       header: "Thickness",
       style: { width: "5%" },
       customBody: (rowData: BookWithDBTag) =>
-        rowData.thickness
-          ? numberEditor(
-              rowData.thickness,
-              (newValue) => (rowData.thickness = newValue)
-            )
-          : undefined,
+        numberEditor(rowData.thickness, (newValue) => {
+          setBooks((draft) => {
+            const book = findById(draft, rowData.id)!;
+            book.thickness = newValue;
+          });
+        }),
     },
     {
       field: "retailPrice",
       header: "Retail Price",
       style: { width: "5%" },
       customBody: (rowData: BookWithDBTag) =>
-        priceEditor(
-          rowData.retailPrice,
-          (newValue) => (rowData.retailPrice = newValue)
-        ),
+        numberEditor(rowData.thickness, (newValue) => {
+          setBooks((draft) => {
+            const book = findById(draft, rowData.id)!;
+            book.retailPrice = newValue;
+          });
+        }),
     },
   ];
 
-  const imageUploadTemplate = (rowData: BookWithDBTag) => {
-    const chooseOptions = {
-      icon: "pi pi-fw pi-images",
-      iconOnly: true,
-      className: "custom-choose-btn p-button-rounded p-button-outlined",
-    };
-    const uploadOptions = {
-      icon: "pi pi-fw pi-cloud-upload",
-      iconOnly: true,
-      className:
-        "custom-upload-btn p-button-success p-button-rounded p-button-outlined",
-    };
-    const cancelOptions = {
-      icon: "pi pi-fw pi-times",
-      iconOnly: true,
-      className:
-        "custom-cancel-btn p-button-danger p-button-rounded p-button-outlined",
-    };
+  const onImageChange = (event: FileUploadHandlerEvent, bookId: string) => {
+    const file = event.files[0];
+    setBooks((draft) => {
+      const book = findById(draft, bookId)!;
+      const newImage: NewImageUploadData = {
+        imageFile: file,
+        isImageUpload: true,
+        isImageDelete: false,
+      };
 
+      book.newImageData = newImage;
+      book.thumbnailURL = URL.createObjectURL(file);
+    });
+    event.options.clear();
+  };
+
+  const onImageDelete = (bookId: string) => {
+    setBooks((draft) => {
+      const book = findById(draft, bookId)!;
+      book.thumbnailURL =
+        "http://books-db.colab.duke.edu/media/books/default.jpg";
+
+      const newImage: NewImageUploadData = {
+        imageFile: new File([""], "filename"),
+        isImageUpload: false,
+        isImageDelete: true,
+      };
+
+      book.newImageData = newImage;
+    });
+  };
+
+  const imageUploader = (rowData: BookWithDBTag) => {
     return (
-      <div>
-        <ImageUploader
-          disabled={false}
-          uploadHandler={(event: FileUploadHandlerEvent) => {
-            const file = event.files[0];
-            console.log("upload");
+      <FileUpload
+        auto
+        mode="basic"
+        accept="image/gif, image/jpeg, image/png, image/webp"
+        customUpload
+        uploadHandler={(e: FileUploadHandlerEvent) =>
+          onImageChange(e, rowData.id)
+        }
+        chooseLabel={"Upload image"}
+      />
+    );
+  };
 
-            const newImage: NewImageUploadData = {
-              imageFile: file,
-              isImageUpload: true,
-              isImageDelete: false,
-            };
-
-            rowData.newImageData = newImage;
-            rowData.thumbnailURL = URL.createObjectURL(file);
-            event.options.clear();
-          }}
-          chooseOptions={chooseOptions}
-          uploadOptions={uploadOptions}
-          cancelOptions={cancelOptions}
-        />
-        <Button
-          type="button"
-          icon="pi pi-trash"
-          onClick={() => {
-            rowData.thumbnailURL =
-              "http://books-db.colab.duke.edu/media/books/default.jpg";
-
-            const newImage: NewImageUploadData = {
-              imageFile: new File([""], "filename"),
-              isImageUpload: false,
-              isImageDelete: true,
-            };
-
-            rowData.newImageData = newImage;
-          }}
-        />
-      </div>
+  const imageDeleter = (rowData: BookWithDBTag) => {
+    return (
+      <Button
+        type="button"
+        icon="pi pi-trash"
+        onClick={() => onImageDelete(rowData.id)}
+      />
     );
   };
 

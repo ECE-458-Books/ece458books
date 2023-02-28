@@ -49,6 +49,12 @@ export interface AddVendorReq {
   buyback_rate?: number;
 }
 
+// bestBuybackPrice
+export interface BestBuybackPriceReq {
+  bookid: string;
+  vendor_id: string;
+}
+
 export const VENDORS_API = {
   getVendors: async function (req: GetVendorsReq): Promise<GetVendorsResp> {
     return await API.request({
@@ -100,6 +106,16 @@ export const VENDORS_API = {
       url: VENDORS_EXTENSION,
       method: METHOD_POST,
       data: req,
+    });
+  },
+
+  // /api/v1/vendors/<vendor_id>/buybackunitprice?bookid=<bookid></bookid>
+
+  bestBuybackPrice: async function (req: BestBuybackPriceReq): Promise<number> {
+    return await API.request({
+      url: VENDORS_EXTENSION.concat(`/${req.vendor_id}/buybackunitprice`),
+      method: METHOD_GET,
+      params: req,
     });
   },
 };

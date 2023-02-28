@@ -346,7 +346,7 @@ export default function SRDetail() {
   const backButton = (
     <div className="flex col-1">
       <BackButton
-        onClick={() => navigate("/purchase-orders")}
+        onClick={() => navigate("/sales-reconciliations")}
         className="ml-1"
       />
     </div>

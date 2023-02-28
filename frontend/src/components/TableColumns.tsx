@@ -5,6 +5,10 @@ import { ReactNode } from "react";
 export interface ColumnStyle {
   minWidth?: string;
   width?: string;
+  padding?: string;
+  margin?: string;
+  minHeight?: string;
+  height?: string;
 }
 
 // The base column interface, all columns should implement this interface

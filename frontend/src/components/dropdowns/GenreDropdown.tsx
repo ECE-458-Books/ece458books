@@ -1,5 +1,6 @@
 import { Dropdown } from "primereact/dropdown";
 import { GENRES_API } from "../../apis/GenresAPI";
+import { CSSProperties } from "react";
 
 export interface GenreDropdownDataProps {
   setGenreNamesList: (arg0: string[]) => void; // Setter for genre name list
@@ -10,6 +11,7 @@ export interface GenreDropdownProps {
   genresList: string[];
   selectedGenre: string;
   isDisabled?: boolean;
+  style?: CSSProperties;
 }
 
 export function GenresDropdownData(props: GenreDropdownDataProps) {
@@ -27,9 +29,11 @@ export default function GenresDropdown(props: GenreDropdownProps) {
       placeholder={"Select Genre"}
       showClear
       disabled={props.isDisabled}
-      style={{
-        width: "100%",
-      }}
+      style={
+        props.style ?? {
+          width: "100%",
+        }
+      }
     />
   );
 }

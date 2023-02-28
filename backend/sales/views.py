@@ -220,8 +220,8 @@ class RetrieveSalesReportAPIView(APIView):
 
         return Response({
             "total_summary": {
-                "sales revenue": total_sales_revenue,
-                "buybacks revenue": total_buybacks_revenue,
+                "sales_revenue": total_sales_revenue,
+                "buybacks_revenue": total_buybacks_revenue,
                 "revenue": total_revenue,
                 "cost": total_cost,
                 "profit": total_profit,
@@ -229,8 +229,8 @@ class RetrieveSalesReportAPIView(APIView):
             "daily_summary":  # date, revenue, cost, profit
                 [{
                     "date": date,
-                    "sales revenue": sales_revenue,
-                    "buybacks revenue": buybacks_revenue,
+                    "sales_revenue": sales_revenue,
+                    "buybacks_revenue": buybacks_revenue,
                     "cost": cost,
                     "profit": profit
                 } for (date, sales_revenue, buybacks_revenue, cost, profit) in zip(daily_sales.keys(), daily_sales.values(), daily_buybacks.values(), daily_purchases.values(), daily_profits.values())

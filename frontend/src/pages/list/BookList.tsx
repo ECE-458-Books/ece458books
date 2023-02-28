@@ -31,6 +31,7 @@ import AddPageButton from "../../components/buttons/AddPageButton";
 import LabeledSwitch from "../../components/buttons/LabeledSwitch";
 import SelectSizeButton from "../../components/buttons/SelectSizeButton";
 import { BookDetailLineItem } from "../detail/BookDetailLineItems";
+import { Button } from "primereact/button";
 
 export const NUM_ROWS = 10;
 
@@ -413,11 +414,17 @@ export default function BookList() {
   const columns = createColumns(COLUMNS);
 
   const addBookButton = (
-    <div className="flex justify-content-end col-3">
+    <div className="flex justify-content-between col-3 p-0">
+      <Button
+        label="Shelf Calculator"
+        icon="pi pi-calculator"
+        className="p-button-sm my-auto"
+        onClick={() => navigate("/books/shelf-calculator")}
+      />
       <AddPageButton
         onClick={() => navigate("/books/add")}
         label="Add Book"
-        className="mr-2"
+        className="mr-3"
       />
     </div>
   );

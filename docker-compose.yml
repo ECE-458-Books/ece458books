@@ -12,7 +12,7 @@ services:
     image: frontend-image
     build: ./frontend
     ports: 
-      - 3000:3000
+      - 80:3000
     volumes:
       - ./frontend/src:/app/src
     environment:

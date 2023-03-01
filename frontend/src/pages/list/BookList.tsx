@@ -409,10 +409,7 @@ export default function BookList() {
   };
 
   const onRowClick = (event: DataTableRowClickEvent) => {
-    // I couldn't figure out a better way to do this...
-    // It takes the current index as the table knows it and calculates the actual index in the books array
-    const index = event.index - rows * (pageParams.page ?? 0);
-    const book = books[index];
+    const book = event.data as Book;
     logger.debug("Book Row Clicked", book);
     toDetailsPage(book);
   };

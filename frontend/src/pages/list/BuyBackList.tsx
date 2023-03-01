@@ -164,10 +164,7 @@ export default function BuyBackList() {
   };
 
   const onRowClick = (event: DataTableRowClickEvent) => {
-    // I couldn't figure out a better way to do this...
-    // It takes the current index as the table knows it and calculates the actual index in the genres array
-    const index = event.index - rows * (pageParams.page ?? 0);
-    const buyBack = buyBacks[index];
+    const buyBack = event.data as BuyBack;
     logger.debug("Book Buyback Row Clicked", buyBack);
     toDetailPage(buyBack);
   };

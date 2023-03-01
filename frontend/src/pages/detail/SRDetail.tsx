@@ -205,10 +205,7 @@ export default function SRDetail() {
   const navigate = useNavigate();
 
   const onRowClick = (event: DataTableRowClickEvent) => {
-    // I couldn't figure out a better way to do this...
-    // It takes the current index as the table knows it and calculates the actual index in the books array
-    const index = event.index;
-    const sale = sales[index];
+    const sale = event.data as SRSaleRow;
     logger.debug("Purchase Order Row Clicked", sale);
     toBookDetailsPage(sale);
   };

@@ -601,7 +601,7 @@ export default function BookDetail() {
                 className="p-component p-text-secondary text-teal-900 my-auto mr-2"
                 htmlFor="shelfspace"
               >
-                Last of Month Sales:
+                Last Month Sales:
               </label>
               <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
                 {lastMonthSales}

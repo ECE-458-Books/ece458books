@@ -161,6 +161,7 @@ export default function BookList() {
       setSelectedGenre={setSelectedGenre}
       genresList={genreNamesList}
       style={style}
+      showClearButton={true}
     />
   );
 

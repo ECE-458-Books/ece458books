@@ -221,6 +221,7 @@ export default function BookDetail() {
       setSelectedGenre={setGenre}
       genresList={genreNamesList}
       isDisabled={!isModifiable}
+      showClearButton={false}
     />
   );
 
@@ -530,7 +531,7 @@ export default function BookDetail() {
                   className="w-4"
                   name="height"
                   value={height}
-                  maxFractionDigits={5}
+                  maxFractionDigits={2}
                   disabled={!isModifiable}
                   onValueChange={(e: InputNumberValueChangeEvent) =>
                     setHeight(e.value ?? undefined)
@@ -552,7 +553,7 @@ export default function BookDetail() {
                   name="width"
                   value={width}
                   disabled={!isModifiable}
-                  maxFractionDigits={5}
+                  maxFractionDigits={2}
                   onValueChange={(e: InputNumberValueChangeEvent) =>
                     setWidth(e.value ?? undefined)
                   }
@@ -572,7 +573,7 @@ export default function BookDetail() {
                   className="w-4"
                   name="thickness"
                   value={thickness}
-                  maxFractionDigits={5}
+                  maxFractionDigits={2}
                   disabled={!isModifiable}
                   onValueChange={(e: InputNumberValueChangeEvent) =>
                     setThickness(e.value ?? undefined)

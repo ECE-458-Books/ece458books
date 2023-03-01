@@ -1,5 +1,15 @@
 /* .custompanel.css */
-.inputnumber .p-inputtext {
+.integernumber .p-inputtext {
     padding: 0.25rem 0.25rem;
-    width: 100px;
+    width: 90px;
+}
+
+.decimalnumber .p-inputtext {
+    padding: 0.15rem 0.15rem;
+    width: 70px;
+}
+
+.retailnumber .p-inputtext {
+    padding: 0.15rem 0.15rem;
+    width: 90px;
 }

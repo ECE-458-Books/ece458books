@@ -6,6 +6,8 @@ from helpers.csv_format_checker import CSVFormatChecker
 from rest_framework.request import Request
 from helpers.csv_exceptions import ExtraHeadersException, MissingHeadersException, DuplicateValidHeadersException
 import pandas as pd
+from purchase_orders.models import Purchase
+from django.db.models import Q
 
 
 class CSVReader:
@@ -48,5 +50,14 @@ class CSVReader:
             response_data[self.csv_import_type][index]["quantity"] = row["quantity"]
             price_type = csv_format_checker.price
             response_data[self.csv_import_type][index][price_type] = row[price_type]
+
+        if self.csv_import_type == "buybacks":  # check if vendor has sold the book previously
+            for index, buyback in enumerate(response_data['buybacks']):
+                errors_dict = buyback['errors']
+                if 'isbn' in errors_dict.keys():
+                    continue
+                isbn = csv_df.iloc[index, csv_df.columns.get_loc("isbn")]
+                if len(Purchase.objects.filter(Q(book__isbn_13=isbn) & Q(purchase_order__vendor=request.data['vendor']))) == 0:  # Vendor doesn't sell the book
+                    errors_dict['isbn'] = 'book_not_sold_by_vendor'
 
         return Response(response_data, status=status.HTTP_200_OK)

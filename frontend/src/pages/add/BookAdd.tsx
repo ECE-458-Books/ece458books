@@ -20,7 +20,7 @@ import { createColumns, TableColumn } from "../../components/TableColumns";
 import GenresDropdown, {
   GenresDropdownData,
 } from "../../components/dropdowns/GenreDropdown";
-import { showFailure, timer } from "../../components/Toast";
+import { showFailure } from "../../components/Toast";
 import ImageUploader, {
   DEFAULT_BOOK_IMAGE,
 } from "../../components/uploaders/ImageFileUploader";
@@ -249,7 +249,7 @@ export default function BookAdd() {
 
   // Initial add book
 
-  const onISBNInitialSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const onISBNInitialSubmit = (event: FormEvent<HTMLFormElement>): void => {
     logger.debug("Submitting Initial Book Lookup", textBox);
     setBooks([]);
     BOOKS_API.addBookInitialLookup({ isbns: textBox })

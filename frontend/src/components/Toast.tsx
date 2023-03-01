@@ -14,7 +14,7 @@ export const showFailure = (toast: React.RefObject<Toast>, message: string) => {
 
 // This was the only way I could get toast to show multiple errors in a row,
 // by separating them with a 100ms delay
-const timer = (ms: number) => new Promise((res) => setTimeout(res, ms));
+export const timer = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 export async function showSuccesses(
   toast: React.RefObject<Toast>,

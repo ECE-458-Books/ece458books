@@ -1,3 +1,4 @@
+import axios from "axios";
 import {
   API,
   METHOD_DELETE,
@@ -44,6 +45,7 @@ export interface APIBook {
   shelf_space?: number;
   days_of_supply?: number | string;
   line_items?: APIBookLineItem[];
+  isGhost?: boolean;
 }
 
 export enum APILineItemType {

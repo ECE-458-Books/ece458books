@@ -41,6 +41,7 @@ import {
   BookDetailLineItemType,
 } from "../pages/detail/BookDetailLineItems";
 import { DEFAULT_BOOK_IMAGE } from "../components/uploaders/ImageFileUploader";
+import axios from "axios";
 
 // Internal data type -> ordering required for book get API
 export const APIBookSortFieldMap = new Map<string, string>([
@@ -188,11 +189,7 @@ export function APIToInternalBookConversionWithDB(
     lastMonthSales: book.last_month_sales,
     daysOfSupply: book.days_of_supply,
     shelfSpace: book.shelf_space,
-    newImageData: {
-      isImageDelete: false,
-      isImageUpload: false,
-      imageFile: new File([""], "imageFile" + book.id),
-    },
+    isGhost: book.isGhost,
   };
 }
 

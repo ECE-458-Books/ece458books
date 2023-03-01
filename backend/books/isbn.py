@@ -153,6 +153,10 @@ class ISBNTools:
 
     def download_external_book_image_to_local(self, isbn_13, uri):
         end_url = self._image_base_url + f'/{isbn_13}-L.jpg?default=false'
+
+        if self.get_image_raw_bytes(end_url) is None:
+            return self.get_default_image_url()
+
         return end_url
         # return self.get_book_local_image_url(end_url, isbn_13, uri)
     
@@ -167,17 +171,16 @@ class ISBNTools:
         """
         local_image_location = uri_to_local_image_location(uri)
         
-        image_raw_bytes = self.get_image_raw_bytes(end_url, isbn_13)
+        image_raw_bytes = self.get_image_raw_bytes(end_url)
         _, filename = self.create_local_image(isbn_13, image_raw_bytes)
 
         return local_image_location + filename
 
-    def get_image_raw_bytes(self, end_url, isbn_13):
+    def get_image_raw_bytes(self, end_url):
         """Return raw bytes of book image
 
         Args:
             end_url: API Endpoint
-            isbn_13: List of raw isbns
 
         Returns:
             list: Byte array of book from OpenLibrary 

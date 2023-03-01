@@ -36,8 +36,8 @@ import AddPageButton from "../../components/buttons/AddPageButton";
 import LabeledSwitch from "../../components/buttons/LabeledSwitch";
 import SelectSizeButton from "../../components/buttons/SelectSizeButton";
 import { BookDetailLineItem } from "../detail/BookDetailLineItems";
-import { showFailure, showSuccess } from "../../components/Toast";
 import { Button } from "primereact/button";
+import { showFailure, showSuccess } from "../../components/Toast";
 import { saveAs } from "file-saver";
 
 export const NUM_ROWS = 10;
@@ -67,6 +67,8 @@ export interface Book {
   lastMonthSales: number;
   thumbnailURL: string;
   newImageData?: NewImageUploadData;
+  shelfSpace: number;
+  daysOfSupply: string | number;
   lineItems?: BookDetailLineItem[];
 }
 
@@ -96,6 +98,8 @@ export const emptyBook: Book = {
   thumbnailURL: "",
   bestBuybackPrice: 0,
   lastMonthSales: 0,
+  shelfSpace: 0,
+  daysOfSupply: 0,
   lineItems: [],
 };
 
@@ -213,27 +217,39 @@ export default function BookList() {
       header: "Retail Price ($)",
       sortable: true,
       customBody: (rowData: Book) => priceBodyTemplate(rowData.retailPrice),
-      style: { minWidth: "8rem" },
+      style: { minWidth: "6rem" },
     },
     {
       field: "bestBuybackPrice",
       header: "Best Buyback Price ($)",
       sortable: true,
       customBody: (rowData: Book) =>
-        priceBodyTemplate(rowData.bestBuybackPrice ?? 0),
-      style: { minWidth: "8rem" },
+        priceBodyTemplate(rowData.bestBuybackPrice),
+      style: { minWidth: "6rem" },
     },
     {
       field: "stock",
       header: "Inventory Count",
       sortable: true,
-      style: { minWidth: "8rem" },
+      style: { minWidth: "3rem" },
+    },
+    {
+      field: "daysOfSupply",
+      header: "Days of Supply",
+      sortable: true,
+      style: { minWidth: "3rem" },
     },
     {
       field: "lastMonthSales",
       header: "Last Month Sales",
       sortable: true,
-      style: { minWidth: "8rem" },
+      style: { minWidth: "3rem" },
+    },
+    {
+      field: "shelfSpace",
+      header: "Shelf Space",
+      sortable: true,
+      style: { minWidth: "3rem" },
     },
   ];
 
@@ -328,10 +344,10 @@ export default function BookList() {
       sortField = "-".concat(sortField);
     }
     return {
-      no_pagination: undefined,
+      no_pagination: isNoPagination ? true : undefined,
       page: isNoPagination ? undefined : (pageParams.page ?? 0) + 1,
       page_size: isNoPagination ? undefined : pageParams.rows,
-      ordering: isNoPagination ? undefined : sortField,
+      ordering: sortField,
       genre: selectedGenre,
       search: search_string,
       title_only: title_only,
@@ -348,8 +364,8 @@ export default function BookList() {
         onAPIResponse(response)
       );
     } else {
-      BOOKS_API.getBooksNoPagination().then((response) =>
-        onAPIResponseNoPagination(response)
+      BOOKS_API.getBooksNoPaginationLISTVIEW(createAPIRequest()).then(
+        (response) => onAPIResponseNoPagination(response)
       );
     }
   };
@@ -409,10 +425,7 @@ export default function BookList() {
   };
 
   const onRowClick = (event: DataTableRowClickEvent) => {
-    // I couldn't figure out a better way to do this...
-    // It takes the current index as the table knows it and calculates the actual index in the books array
-    const index = event.index - rows * (pageParams.page ?? 0);
-    const book = books[index];
+    const book = event.data as Book;
     logger.debug("Book Row Clicked", book);
     toDetailsPage(book);
   };
@@ -434,7 +447,16 @@ export default function BookList() {
       icon="pi pi-file-export"
       onClick={callCSVExportAPI}
       iconPos="right"
-      className="p-button-sm my-auto mr-2"
+      className="p-button-sm my-auto"
+    />
+  );
+
+  const shelfCalculator = (
+    <Button
+      label="Shelf Calculator"
+      icon="pi pi-calculator"
+      className="p-button-sm my-auto"
+      onClick={() => navigate("/books/shelf-calculator")}
     />
   );
 
@@ -442,13 +464,14 @@ export default function BookList() {
     <AddPageButton
       onClick={() => navigate("/books/add")}
       label="Add Book"
-      className="mr-2"
+      className="mr-3"
     />
   );
 
   const rightSideButtons = (
-    <div className="flex justify-content-end col-3">
+    <div className="flex justify-content-between col-5 p-0">
       {csvExportButton}
+      {shelfCalculator}
       {addBookButton}
     </div>
   );
@@ -464,7 +487,7 @@ export default function BookList() {
   );
 
   const selectSizeButton = (
-    <div className="flex col-6 justify-content-center my-1 p-0">
+    <div className="flex col-4 justify-content-center my-1 p-0">
       <SelectSizeButton
         value={size}
         onChange={(e) => setSize(e.value)}

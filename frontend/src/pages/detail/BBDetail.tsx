@@ -148,6 +148,7 @@ export default function BBDetail() {
       header: "Errors",
       hidden: !hasUploadedCSV,
       customBody: (rowData: BBSaleRow) => errorCellBody(rowData.errors),
+      style: { minWidth: "2rem" },
     },
     {
       field: "bookTitle",
@@ -199,6 +200,7 @@ export default function BBDetail() {
       header: "Subtotal ($)",
       customBody: (rowData: BBSaleRow) =>
         priceBodyTemplate(rowData.price * rowData.quantity),
+      style: { minWidth: "8rem" },
     },
   ];
 
@@ -269,10 +271,7 @@ export default function BBDetail() {
   };
 
   const onRowClick = (event: DataTableRowClickEvent) => {
-    // I couldn't figure out a better way to do this...
-    // It takes the current index as the table knows it and calculates the actual index in the books array
-    const index = event.index;
-    const sale = buybacks[index];
+    const sale = event.data as BBSaleRow;
     logger.debug("Purchase Order Row Clicked", sale);
     toBookDetailsPage(sale);
   };

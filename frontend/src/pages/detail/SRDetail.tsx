@@ -122,6 +122,7 @@ export default function SRDetail() {
       header: "Errors",
       hidden: !hasUploadedCSV,
       customBody: (rowData: SRSaleRow) => errorCellBody(rowData.errors),
+      style: { minWidth: "2rem" },
     },
     {
       field: "bookTitle",
@@ -178,6 +179,7 @@ export default function SRDetail() {
       header: "Subtotal ($)",
       customBody: (rowData: SRSaleRow) =>
         priceBodyTemplate(rowData.price * rowData.quantity),
+      style: { minWidth: "8rem" },
     },
   ];
 
@@ -205,10 +207,7 @@ export default function SRDetail() {
   const navigate = useNavigate();
 
   const onRowClick = (event: DataTableRowClickEvent) => {
-    // I couldn't figure out a better way to do this...
-    // It takes the current index as the table knows it and calculates the actual index in the books array
-    const index = event.index;
-    const sale = sales[index];
+    const sale = event.data as SRSaleRow;
     logger.debug("Purchase Order Row Clicked", sale);
     toBookDetailsPage(sale);
   };

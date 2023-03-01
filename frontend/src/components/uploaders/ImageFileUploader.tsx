@@ -4,6 +4,9 @@ import {
   FileUploadOptions,
 } from "primereact/fileupload";
 
+export const DEFAULT_BOOK_IMAGE =
+  "http://books-db.colab.duke.edu/media/books/default.jpg";
+
 interface ImageUploaderProps {
   uploadHandler: (e: FileUploadHandlerEvent) => void;
   disabled: boolean;

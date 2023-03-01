@@ -128,6 +128,7 @@ export default function PODetail() {
       header: "Errors",
       hidden: !hasUploadedCSV,
       customBody: (rowData: POPurchaseRow) => errorCellBody(rowData.errors),
+      style: { minWidth: "2rem" },
     },
     {
       field: "bookTitle",
@@ -181,6 +182,7 @@ export default function PODetail() {
       header: "Subtotal ($)",
       customBody: (rowData: POPurchaseRow) =>
         priceBodyTemplate(rowData.price * rowData.quantity),
+      style: { minWidth: "8rem" },
     },
   ];
 
@@ -236,10 +238,7 @@ export default function PODetail() {
   const navigate = useNavigate();
 
   const onRowClick = (event: DataTableRowClickEvent) => {
-    // I couldn't figure out a better way to do this...
-    // It takes the current index as the table knows it and calculates the actual index in the books array
-    const index = event.index;
-    const purchase = purchases[index];
+    const purchase = event.data as POPurchaseRow;
     logger.debug("Purchase Order Row Clicked", purchase);
     toBookDetailsPage(purchase);
   };

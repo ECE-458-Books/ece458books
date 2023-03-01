@@ -22,7 +22,9 @@ import GenresDropdown, {
   GenresDropdownData,
 } from "../../components/dropdowns/GenreDropdown";
 import { showFailure } from "../../components/Toast";
-import ImageUploader from "../../components/uploaders/ImageFileUploader";
+import ImageUploader, {
+  DEFAULT_BOOK_IMAGE,
+} from "../../components/uploaders/ImageFileUploader";
 import { FileUpload, FileUploadHandlerEvent } from "primereact/fileupload";
 import { useImmer } from "use-immer";
 import { findById } from "../../util/IDOperations";
@@ -175,7 +177,7 @@ export default function BookAdd() {
       header: "Retail Price",
       style: { width: "5%" },
       customBody: (rowData: BookWithDBTag) =>
-        numberEditor(rowData.thickness, (newValue) => {
+        priceEditor(rowData.retailPrice, (newValue) => {
           setBooks((draft) => {
             const book = findById(draft, rowData.id)!;
             book.retailPrice = newValue;
@@ -203,8 +205,7 @@ export default function BookAdd() {
   const onImageDelete = (bookId: string) => {
     setBooks((draft) => {
       const book = findById(draft, bookId)!;
-      book.thumbnailURL =
-        "http://books-db.colab.duke.edu/media/books/default.jpg";
+      book.thumbnailURL = DEFAULT_BOOK_IMAGE;
 
       const newImage: NewImageUploadData = {
         imageFile: new File([""], "filename"),

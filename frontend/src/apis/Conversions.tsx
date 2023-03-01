@@ -40,6 +40,7 @@ import {
   BookDetailLineItem,
   BookDetailLineItemType,
 } from "../pages/detail/BookDetailLineItems";
+import { DEFAULT_BOOK_IMAGE } from "../components/uploaders/ImageFileUploader";
 
 // Internal data type -> ordering required for book get API
 export const APIBookSortFieldMap = new Map<string, string>([
@@ -163,13 +164,13 @@ export function APIToInternalBookConversionWithDB(
   book: APIBookWithDBTag
 ): BookWithDBTag {
   return {
-    id: book.id?.toString() ?? uuid(),
-    author: ArrayToCommaSeparatedString(book.authors),
+    id: book.id?.toString() ?? uuid(), // ID does not exist for new books
+    author: ArrayToCommaSeparatedString(book.authors ?? ["Unknown"]),
     genres: ArrayToCommaSeparatedString(book.genres ?? []),
     title: book.title,
     isbn13: book.isbn_13,
     isbn10: book.isbn_10,
-    publisher: book.publisher,
+    publisher: book.publisher ?? "Unknown",
     publishedYear: book.publishedDate,
     pageCount: book.pageCount,
     width: book.width,
@@ -177,7 +178,7 @@ export function APIToInternalBookConversionWithDB(
     thickness: book.thickness,
     retailPrice: book.retail_price ?? 0,
     stock: book.stock,
-    thumbnailURL: book.image_url,
+    thumbnailURL: book.image_url ?? DEFAULT_BOOK_IMAGE,
     fromDB: book.fromDB,
     bestBuybackPrice: book.best_buyback_price,
     lastMonthSales: book.last_month_sales,

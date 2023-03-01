@@ -39,6 +39,7 @@ import { BookDetailLineItem } from "../detail/BookDetailLineItems";
 import { Button } from "primereact/button";
 import { showFailure, showSuccess } from "../../components/Toast";
 import { saveAs } from "file-saver";
+import { MultiSelect, MultiSelectChangeEvent } from "primereact/multiselect";
 
 export const NUM_ROWS = 10;
 
@@ -103,6 +104,21 @@ export const emptyBook: Book = {
   lineItems: [],
 };
 
+interface ColumnMeta {
+  field: string;
+  header: string;
+}
+
+const columnsMeta: ColumnMeta[] = [
+  { field: "isbn10", header: "ISBN 10" },
+  { field: "publisher", header: "Publisher" },
+  { field: "bestBuybackPrice", header: "Best Buyback Price ($)" },
+  { field: "daysOfSupply", header: "Days of Supply" },
+  { field: "lastMonthSales", header: "Last Month Sales" },
+  { field: "shelfSpace", header: "Shelf Space" },
+];
+
+
 export default function BookList() {
   // ----- STATE -----
   const location = useLocation(); // Utilized if coming from the genre list
@@ -120,6 +136,8 @@ export default function BookList() {
   const [size, setSize] = useState<string>("small");
 
   const [genreNamesList, setGenreNamesList] = useState<string[]>([]); // List of all genre names
+
+  const [visibleColumns, setVisibleColumns] = useState<ColumnMeta[]>([]);
 
   // The current state of sorting.
   const [sortParams, setSortParams] = useState<DataTableSortEvent>({
@@ -204,6 +222,9 @@ export default function BookList() {
       sortable: true,
       filterable: false,
       style: { minWidth: "8rem" },
+      hidden: !(
+        visibleColumns.filter((item) => item.field == "isbn10").length > 0
+      ),
     },
     {
       field: "publisher",
@@ -211,6 +232,9 @@ export default function BookList() {
       filterPlaceholder: "Search by Publisher",
       sortable: true,
       filterable: true,
+      hidden: !(
+        visibleColumns.filter((item) => item.field == "publisher").length > 0
+      ),
     },
     {
       field: "retailPrice",
@@ -226,6 +250,10 @@ export default function BookList() {
       customBody: (rowData: Book) =>
         priceBodyTemplate(rowData.bestBuybackPrice),
       style: { minWidth: "6rem" },
+      hidden: !(
+        visibleColumns.filter((item) => item.field == "bestBuybackPrice")
+          .length > 0
+      ),
     },
     {
       field: "stock",
@@ -238,18 +266,27 @@ export default function BookList() {
       header: "Days of Supply",
       sortable: true,
       style: { minWidth: "3rem" },
+      hidden: !(
+        visibleColumns.filter((item) => item.field == "daysOfSupply").length > 0
+      ),
     },
     {
       field: "lastMonthSales",
       header: "Last Month Sales",
       sortable: true,
       style: { minWidth: "3rem" },
+      hidden: !(
+        visibleColumns.filter((item) => item.field == "lastMonthSales").length > 0
+      ),
     },
     {
       field: "shelfSpace",
       header: "Shelf Space",
       sortable: true,
       style: { minWidth: "3rem" },
+      hidden: !(
+        visibleColumns.filter((item) => item.field == "shelfSpace").length > 0
+      ),
     },
   ];
 
@@ -469,37 +506,55 @@ export default function BookList() {
   );
 
   const rightSideButtons = (
-    <div className="flex justify-content-between col-5 p-0">
+    <>
       {csvExportButton}
       {shelfCalculator}
       {addBookButton}
-    </div>
+    </>
   );
 
   const noPaginationSwitch = (
-    <div className="flex col-3 justify-content-center p-0 my-auto">
-      <LabeledSwitch
-        label="Show All"
-        onChange={() => setIsNoPagination(!isNoPagination)}
-        value={isNoPagination}
-      />
-    </div>
+    <LabeledSwitch
+      label="Show All"
+      onChange={() => setIsNoPagination(!isNoPagination)}
+      value={isNoPagination}
+    />
   );
 
   const selectSizeButton = (
-    <div className="flex col-4 justify-content-center my-1 p-0">
-      <SelectSizeButton
-        value={size}
-        onChange={(e) => setSize(e.value)}
-        className=""
-      />
-    </div>
+    <SelectSizeButton
+      value={size}
+      onChange={(e) => setSize(e.value)}
+      className="sm"
+    />
+  );
+
+  const onColumnToggle = (event: MultiSelectChangeEvent) => {
+    const selectedColumns = event.value;
+    const orderedSelectedColumns = columnsMeta.filter((col) =>
+      selectedColumns.some(
+        (sCol: { field: string }) => sCol.field === col.field
+      )
+    );
+    setVisibleColumns(orderedSelectedColumns);
+  };
+
+  const toggleColumns = (
+    <MultiSelect
+      value={visibleColumns}
+      options={columnsMeta}
+      optionLabel="header"
+      onChange={onColumnToggle}
+      className="w-full sm:w-10rem"
+      display="chip"
+    />
   );
 
   return (
     <div>
-      <div className="grid flex m-1">
+      <div className="grid justify-content-evenly flex m-1">
         {noPaginationSwitch}
+        {toggleColumns}
         {selectSizeButton}
         {rightSideButtons}
       </div>

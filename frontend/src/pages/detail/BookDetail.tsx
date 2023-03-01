@@ -15,7 +15,9 @@ import { Image } from "primereact/image";
 import { FileUploadHandlerEvent } from "primereact/fileupload";
 import { GenresDropdownData } from "../../components/dropdowns/GenreDropdown";
 import { IMAGES_API } from "../../apis/ImagesAPI";
-import ImageUploader from "../../components/uploaders/ImageFileUploader";
+import ImageUploader, {
+  DEFAULT_BOOK_IMAGE,
+} from "../../components/uploaders/ImageFileUploader";
 import { showFailure, showSuccess } from "../../components/Toast";
 import { APIToInternalBookConversion } from "../../apis/Conversions";
 import { Button } from "primereact/button";
@@ -71,10 +73,6 @@ export default function BookDetail() {
 
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
-  const [
-    isConfirmationPopupVisibleImageDelete,
-    setIsConfirmationPopupVisibleImageDelete,
-  ] = useState<boolean>(false);
   const [genreNamesList, setGenreNamesList] = useState<string[]>([]);
 
   // Load the book data on page load
@@ -101,22 +99,14 @@ export default function BookDetail() {
         setLastMonthSales(book.lastMonthSales);
         setShelfSpace(book.shelfSpace);
         setDaysOfSupply(book.daysOfSupply);
-      })
-      .catch(() => showFailure(toast, "Could not fetch book data"));
-
-    IMAGES_API.getImage({ id: id! })
-      .then((response) => {
         setImage({
-          imageSrc: response.url,
+          imageSrc: response.image_url,
           imageHash: Date.now().toString(),
         });
       })
-      .catch(() =>
-        showFailure(toast, "Image Cannot be Retrieved to Update Display")
-      );
+      .catch(() => showFailure(toast, "Could not fetch book data"));
   }, []);
 
-  // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
 
   // Validation for the form
@@ -157,7 +147,7 @@ export default function BookDetail() {
         height: height,
         thickness: thickness,
         stock: 0,
-        url: "",
+        image_url: "",
       };
       logger.debug("Submitting Book Modify", book);
       BOOKS_API.modifyBook({
@@ -166,47 +156,37 @@ export default function BookDetail() {
         isImageUploaded: isImageUploaded,
         isImageRemoved: isImageRemoved,
       })
-        .then(() => {
+        .then((response) => {
+          const updatedBook = APIToInternalBookConversion(response);
+          setOriginalBookData({
+            id: updatedBook.id!,
+            title: updatedBook.title,
+            author: updatedBook.author,
+            isbn10: updatedBook.isbn10,
+            isbn13: updatedBook.isbn13,
+            publisher: updatedBook.publisher,
+            publishedYear: updatedBook.publishedYear,
+            genres: updatedBook.genres,
+            height: updatedBook.height,
+            width: updatedBook.width,
+            thickness: updatedBook.thickness,
+            pageCount: updatedBook.pageCount,
+            stock: updatedBook.stock,
+            retailPrice: updatedBook.retailPrice,
+            thumbnailURL: updatedBook.thumbnailURL,
+            lineItems: updatedBook.lineItems,
+            bestBuybackPrice: updatedBook.bestBuybackPrice,
+            lastMonthSales: updatedBook.lastMonthSales,
+            shelfSpace: updatedBook.shelfSpace,
+            daysOfSupply: updatedBook.daysOfSupply,
+          });
+          setIsModifiable(false);
+          setIsImageUploaded(false);
+          setIsImageRemoved(false);
           showSuccess(toast, "Book Edited");
-          IMAGES_API.getImage({ id: id! })
-            .then((response) => {
-              //setImage(response.url);
-              setImage({
-                imageSrc: response.url,
-                imageHash: Date.now().toString(),
-              });
-            })
-            .catch(() =>
-              showFailure(toast, "Image Cannot be Retrieved to Update Display")
-            );
         })
         .catch(() => showFailure(toast, "Could not modify book"));
       formik.resetForm();
-      setOriginalBookData({
-        id: id!,
-        title: title,
-        author: authors,
-        isbn10: isbn10,
-        isbn13: isbn13,
-        publisher: publisher,
-        publishedYear: pubYear,
-        genres: genre,
-        height: height,
-        width: width,
-        thickness: thickness,
-        pageCount: pageCount,
-        stock: stock,
-        retailPrice: price,
-        thumbnailURL: image.imageSrc,
-        lineItems: lineItems,
-        bestBuybackPrice: bestBuybackPrice,
-        lastMonthSales: lastMonthSales,
-        shelfSpace: shelfSpace,
-        daysOfSupply: daysOfSupply,
-      });
-      setIsModifiable(false);
-      setIsImageUploaded(false);
-      setIsImageRemoved(false);
     },
   });
 
@@ -242,9 +222,12 @@ export default function BookDetail() {
     />
   );
 
+  // Image handlers
+
+  // For the delete button
   const onImageDelete = () => {
     setImage({
-      imageSrc: "http://books-db.colab.duke.edu/media/books/default.jpg",
+      imageSrc: DEFAULT_BOOK_IMAGE,
       imageHash: Date.now().toString(),
     });
     setImageFile(new File([""], "filename"));
@@ -252,11 +235,24 @@ export default function BookDetail() {
     setIsImageRemoved(true);
   };
 
-  const uploadImageFileHandler = (event: FileUploadHandlerEvent) => {
+  // For the cancel button (revert to original)
+  const onImageCancel = () => {
+    setImage({
+      imageSrc: originalBookData.thumbnailURL,
+      imageHash: Date.now().toString(),
+    });
+    setImageFile(new File([""], "filename"));
+    setIsImageUploaded(false);
+    setIsImageRemoved(false);
+  };
+
+  // For the upload button
+  const onImageUpload = (event: FileUploadHandlerEvent) => {
     const file = event.files[0];
-    setImageFile(file);
     setImage({ imageSrc: URL.createObjectURL(file), imageHash: "" });
+    setImageFile(file);
     setIsImageUploaded(true);
+    setIsImageRemoved(false);
     event.options.clear();
   };
 
@@ -322,6 +318,44 @@ export default function BookDetail() {
     </div>
   );
 
+  // Image upploader buttons
+  const imageUploadButton = (
+    <ImageUploader
+      disabled={!isModifiable}
+      uploadHandler={onImageUpload}
+      className="p-button-sm my-auto"
+    />
+  );
+
+  const imageCancelButton = (
+    <Button
+      type="button"
+      label="Cancel"
+      icon="pi pi-times"
+      onClick={onImageCancel}
+      className={"p-button-sm my-auto ml-2"}
+      disabled={!isImageUploaded && !isImageRemoved}
+      visible={isModifiable}
+    />
+  );
+
+  const imageDeleteButton = (
+    <DeleteButton
+      onClick={onImageDelete}
+      visible={isModifiable}
+      disabled={isImageRemoved}
+      className={"my-auto ml-2"}
+    />
+  );
+
+  const imageUploaderButtons = (
+    <div className="flex justify-content-center">
+      {isModifiable && imageUploadButton}
+      {imageCancelButton}
+      {imageDeleteButton}
+    </div>
+  );
+
   return (
     <div className="grid flex justify-content-center">
       <Toast ref={toast} />
@@ -357,32 +391,7 @@ export default function BookDetail() {
           className="col-12 align-items-center flex justify-content-center"
           imageClassName="shadow-2 border-round"
         />
-        {isModifiable && (
-          <ImageUploader
-            disabled={!isModifiable}
-            uploadHandler={uploadImageFileHandler}
-          />
-        )}
-        {isModifiable && (
-          <div className="card flex justify-content-center my-3">
-            <ConfirmPopup
-              id={"deleteImage"}
-              name={"deleteImage"}
-              className={"p-button-danger flex"}
-              isPopupVisible={isConfirmationPopupVisibleImageDelete}
-              hideFunc={() => setIsConfirmationPopupVisibleImageDelete(false)}
-              onFinalSubmission={onImageDelete}
-              onRejectFinalSubmission={() => {
-                console.log("reject2");
-              }}
-              onShowPopup={() => {
-                setIsConfirmationPopupVisibleImageDelete(true);
-              }}
-              disabled={!isModifiable}
-              label={"Delete Cover Image"}
-            />
-          </div>
-        )}
+        {imageUploaderButtons}
       </div>
 
       <div className="col-8">

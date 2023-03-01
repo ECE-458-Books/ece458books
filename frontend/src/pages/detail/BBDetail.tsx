@@ -389,7 +389,7 @@ export default function BBDetail() {
 
   const deleteButton = (
     <div className="flex col-1">
-      <DeleteButton isEnabled={!isBBAddPage} onClick={deleteBuyBackPopup} />
+      <DeleteButton visible={!isBBAddPage} onClick={deleteBuyBackPopup} />
     </div>
   );
 

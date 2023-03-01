@@ -68,7 +68,7 @@ export interface Book {
   bestBuybackPrice?: number;
   stock: number;
   lastMonthSales?: number;
-  thumbnailURL?: string;
+  thumbnailURL: string;
   newImageData?: NewImageUploadData;
   shelfSpace?: number;
   daysOfSupply?: string | number;

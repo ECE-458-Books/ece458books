@@ -3,13 +3,12 @@ import { InputTextarea } from "primereact/inputtextarea";
 import { Button } from "primereact/button";
 import { DataTable } from "primereact/datatable";
 import {
-  imageBodyTemplate,
   imageBodyTemplateWithButtons,
   numberEditor,
   priceEditor,
 } from "../../util/TableCellEditFuncs";
 import { BOOKS_API } from "../../apis/BooksAPI";
-import BookList, { Book, NewImageUploadData } from "../list/BookList";
+import { Book, NewImageUploadData } from "../list/BookList";
 import { Badge } from "primereact/badge";
 import { logger } from "../../util/Logger";
 import { Toast } from "primereact/toast";
@@ -25,7 +24,7 @@ import { showFailure } from "../../components/Toast";
 import ImageUploader, {
   DEFAULT_BOOK_IMAGE,
 } from "../../components/uploaders/ImageFileUploader";
-import { FileUpload, FileUploadHandlerEvent } from "primereact/fileupload";
+import { FileUploadHandlerEvent } from "primereact/fileupload";
 import { useImmer } from "use-immer";
 import { findById } from "../../util/IDOperations";
 import BackButton from "../../components/buttons/BackButton";
@@ -77,8 +76,8 @@ export default function BookAdd() {
       header: "Cover Art",
       customBody: (rowData: BookWithDBTag) =>
         imageBodyTemplateWithButtons(
-          imageDeleter(rowData),
-          imageUploader(rowData),
+          imageDeleteButton(rowData),
+          imageUploadButton(rowData),
           rowData.thumbnailURL
         ),
       style: { width: "15%" },
@@ -113,7 +112,7 @@ export default function BookAdd() {
     },
     {
       field: "isbn10",
-      header: "ISBN",
+      header: "ISBN 10",
       style: { width: "10%" },
     },
     {
@@ -219,27 +218,26 @@ export default function BookAdd() {
     });
   };
 
-  const imageUploader = (rowData: BookWithDBTag) => {
+  const imageUploadButton = (rowData: BookWithDBTag) => {
     return (
-      <FileUpload
-        auto
-        mode="basic"
-        accept="image/gif, image/jpeg, image/png, image/webp"
-        customUpload
+      <ImageUploader
         uploadHandler={(e: FileUploadHandlerEvent) =>
           onImageChange(e, rowData.id)
         }
-        chooseLabel={"Upload image"}
+        className=""
+        style={{ height: 10, width: 10 }}
       />
     );
   };
 
-  const imageDeleter = (rowData: BookWithDBTag) => {
+  const imageDeleteButton = (rowData: BookWithDBTag) => {
     return (
       <Button
         type="button"
         icon="pi pi-trash"
         onClick={() => onImageDelete(rowData.id)}
+        className=""
+        style={{ height: 10, width: 10 }}
       />
     );
   };

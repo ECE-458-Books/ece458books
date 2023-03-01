@@ -11,7 +11,7 @@ class SaleSerializer(TransactionBaseSerializer):
 
     class Meta:
         model = Sale
-        fields = ['id', 'book', 'book_title', 'quantity', 'unit_retail_price']
+        fields = ['id', 'book', 'book_isbn', 'book_title', 'quantity', 'unit_retail_price']
 
 
 class SalesReconciliationSerializer(TransactionGroupBaseSerializer):

@@ -28,6 +28,8 @@ import ImageUploader, {
 import { FileUpload, FileUploadHandlerEvent } from "primereact/fileupload";
 import { useImmer } from "use-immer";
 import { findById } from "../../util/IDOperations";
+import BackButton from "../../components/buttons/BackButton";
+import { useNavigate } from "react-router-dom";
 
 export interface BookWithDBTag extends Book {
   fromDB: boolean;
@@ -313,20 +315,32 @@ export default function BookAdd() {
 
   const columns = createColumns(COLUMNS);
 
+  // The navigator to switch pages
+  const navigate = useNavigate();
+
+  const backButton = (
+    <div className="flex col-1">
+      <BackButton onClick={() => navigate("/books")} className="ml-1" />
+    </div>
+  );
+
   //Two Forms exist in order for the seperate submission of two seperate types of data.
   //First one is the submission of ISBNS that need to be added
   //Second one is the submission of the added books and their modified fields
 
   return (
     <div className="grid flex justify-content-center">
-      <div className="col-11">
-        <div className="py-1">
+      <Toast ref={toast} />
+      <div className="flex col-12 p-0">
+        {backButton}
+        <div className="pt-2 col-10">
           <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
             Add Books
           </h1>
         </div>
+      </div>
+      <div className="col-11">
         <form onSubmit={onISBNInitialSubmit}>
-          <Toast ref={toast} />
           <div className="justify content center col-6 col-offset-3">
             <div className="py-2">
               <label

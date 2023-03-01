@@ -9,103 +9,32 @@ function NavigationBar() {
     {
       label: "Books",
       icon: "pi pi-fw pi-book",
-      items: [
-        {
-          label: "List",
-          icon: "pi pi-fw pi-list",
-          command: () => navigate("/books"),
-        },
-        {
-          label: "Add",
-          icon: "pi pi-fw pi-plus",
-          command: () => navigate("/books/add"),
-        },
-        {
-          label: "Shelf Calculator",
-          icon: "pi pi-fw pi-calculator",
-          command: () => navigate("/books/shelf-calculator"),
-        },
-      ],
+      command: () => navigate("/books"),
     },
     {
       label: "Genres",
       icon: "pi pi-fw pi-palette",
-      items: [
-        {
-          label: "List",
-          icon: "pi pi-fw pi-list",
-          command: () => navigate("/genres"),
-        },
-        {
-          label: "Add",
-          icon: "pi pi-fw pi-plus",
-          command: () => navigate("/genres/add"),
-        },
-      ],
+      command: () => navigate("/genres"),
     },
     {
       label: "Vendors",
       icon: "pi pi-fw pi-building",
-      items: [
-        {
-          label: "List",
-          icon: "pi pi-fw pi-list",
-          command: () => navigate("/vendors"),
-        },
-        {
-          label: "Add",
-          icon: "pi pi-fw pi-plus",
-          command: () => navigate("/vendors/add"),
-        },
-      ],
+      command: () => navigate("/vendors"),
     },
     {
       label: "Purchase Orders",
       icon: "pi pi-fw pi-credit-card",
-      items: [
-        {
-          label: "List",
-          icon: "pi pi-fw pi-list",
-          command: () => navigate("/purchase-orders"),
-        },
-        {
-          label: "Add",
-          icon: "pi pi-fw pi-plus",
-          command: () => navigate("/purchase-orders/add"),
-        },
-      ],
+      command: () => navigate("/purchase-orders"),
     },
     {
       label: "Sales Reconciliations",
       icon: "pi pi-fw pi-chart-bar",
-      items: [
-        {
-          label: "List",
-          icon: "pi pi-fw pi-list",
-          command: () => navigate("/sales-reconciliations"),
-        },
-        {
-          label: "Add",
-          icon: "pi pi-fw pi-plus",
-          command: () => navigate("/sales-reconciliations/add"),
-        },
-      ],
+      command: () => navigate("/sales-reconciliations"),
     },
     {
       label: "Book Buybacks",
-      icon: "pi pi-fw pi-chart-bar",
-      items: [
-        {
-          label: "List",
-          icon: "pi pi-fw pi-list",
-          command: () => navigate("/book-buybacks"),
-        },
-        {
-          label: "Add",
-          icon: "pi pi-fw pi-plus",
-          command: () => navigate("/book-buybacks/add"),
-        },
-      ],
+      icon: "pi pi-bw rotate-180 pi-sign-out",
+      command: () => navigate("/book-buybacks"),
     },
     {
       label: "Sales Report",
@@ -130,7 +59,8 @@ function NavigationBar() {
       alt="logo"
       src={require("../ImaginarySoftwareLogo.jpeg")}
       height="50"
-      className="mr-2 px-3"
+      className="mr-2 px-3 cursor-pointer"
+      onClick={() => navigate("/books")}
     ></img>
   );
 

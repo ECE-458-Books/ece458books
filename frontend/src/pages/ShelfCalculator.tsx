@@ -15,6 +15,8 @@ import AddRowButton from "../components/buttons/AddRowButton";
 import { DataTable } from "primereact/datatable";
 import { Toolbar } from "primereact/toolbar";
 import { Column } from "primereact/column";
+import { useNavigate } from "react-router-dom";
+import BackButton from "../components/buttons/BackButton";
 
 const DEFAULT_WIDTH = 5;
 const DEFAULT_HEIGHT = 8;
@@ -234,41 +236,46 @@ export default function ShelfCalculator() {
 
   const columns = createColumns(COLUMNS);
 
-  return (
-    <div>
-      <div className="grid flex justify-content-center">
-        <link
-          rel="stylesheet"
-          href="https://unpkg.com/primeflex@3.1.2/primeflex.css"
-        ></link>
-        <div className="col-11">
-          <div className="pt-2">
-            <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
-              Shelf Calculator
-            </h1>
-          </div>
+  // The navigator to switch pages
+  const navigate = useNavigate();
 
-          <Toolbar
-            className="mb-4"
-            left={rowAddButton}
-            right={`Total Shelf Space: ${totalShelfSpace}`}
-          />
-          <DataTable
-            showGridlines
-            value={rows}
-            className="editable-cells-table"
-            responsiveLayout="scroll"
-            editMode="cell"
-          >
-            {columns}
-            <Column
-              body={rowDeleteButton}
-              header={"Delete"}
-              exportable={false}
-              style={{ width: "10%" }}
-            ></Column>
-          </DataTable>
+  const backButton = (
+    <div className="flex col-1">
+      <BackButton onClick={() => navigate("/books")} className="ml-1" />
+    </div>
+  );
+
+  return (
+    <div className="grid flex justify-content-center">
+      <div className="flex col-12 p-0">
+        {backButton}
+        <div className="pt-2 col-10">
+          <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
+            Shelf Calculator
+          </h1>
         </div>
+      </div>
+      <div className="col-11">
+        <Toolbar
+          className="mb-4"
+          left={rowAddButton}
+          right={`Total Shelf Space: ${totalShelfSpace}`}
+        />
+        <DataTable
+          showGridlines
+          value={rows}
+          className="editable-cells-table"
+          responsiveLayout="scroll"
+          editMode="cell"
+        >
+          {columns}
+          <Column
+            body={rowDeleteButton}
+            header={"Delete"}
+            exportable={false}
+            style={{ width: "10%" }}
+          ></Column>
+        </DataTable>
       </div>
     </div>
   );

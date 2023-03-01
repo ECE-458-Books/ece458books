@@ -36,8 +36,8 @@ import AddPageButton from "../../components/buttons/AddPageButton";
 import LabeledSwitch from "../../components/buttons/LabeledSwitch";
 import SelectSizeButton from "../../components/buttons/SelectSizeButton";
 import { BookDetailLineItem } from "../detail/BookDetailLineItems";
-import { showFailure, showSuccess } from "../../components/Toast";
 import { Button } from "primereact/button";
+import { showFailure, showSuccess } from "../../components/Toast";
 import { saveAs } from "file-saver";
 
 export const NUM_ROWS = 10;
@@ -431,7 +431,16 @@ export default function BookList() {
       icon="pi pi-file-export"
       onClick={callCSVExportAPI}
       iconPos="right"
-      className="p-button-sm my-auto mr-2"
+      className="p-button-sm my-auto"
+    />
+  );
+
+  const shelfCalculator = (
+    <Button
+      label="Shelf Calculator"
+      icon="pi pi-calculator"
+      className="p-button-sm my-auto"
+      onClick={() => navigate("/books/shelf-calculator")}
     />
   );
 
@@ -439,13 +448,14 @@ export default function BookList() {
     <AddPageButton
       onClick={() => navigate("/books/add")}
       label="Add Book"
-      className="mr-2"
+      className="mr-3"
     />
   );
 
   const rightSideButtons = (
-    <div className="flex justify-content-end col-3">
+    <div className="flex justify-content-between col-5 p-0">
       {csvExportButton}
+      {shelfCalculator}
       {addBookButton}
     </div>
   );
@@ -461,7 +471,7 @@ export default function BookList() {
   );
 
   const selectSizeButton = (
-    <div className="flex col-6 justify-content-center my-1 p-0">
+    <div className="flex col-4 justify-content-center my-1 p-0">
       <SelectSizeButton
         value={size}
         onChange={(e) => setSize(e.value)}

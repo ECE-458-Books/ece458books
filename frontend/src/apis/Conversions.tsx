@@ -131,6 +131,8 @@ export function APIToInternalBookConversion(book: APIBook): Book {
     thumbnailURL: book.url,
     bestBuybackPrice: book.best_buyback_price,
     lastMonthSales: book.last_month_sales,
+    daysOfSupply: book.days_of_supply,
+    shelfSpace: book.shelf_space,
     lineItems: book.line_items?.map((lineItem) => {
       return APIToInternalLineItemConversion(lineItem);
     }),
@@ -156,6 +158,8 @@ export function InternalToAPIBookConversion(book: Book): APIBook {
     url: book.thumbnailURL,
     best_buyback_price: book.lastMonthSales,
     last_month_sales: book.bestBuybackPrice,
+    shelf_space: book.shelfSpace,
+    days_of_supply: book.daysOfSupply,
   };
 }
 
@@ -181,6 +185,8 @@ export function APIToInternalBookConversionWithDB(
     fromDB: book.fromDB,
     bestBuybackPrice: book.best_buyback_price,
     lastMonthSales: book.last_month_sales,
+    daysOfSupply: book.days_of_supply,
+    shelfSpace: book.shelf_space,
     newImageData: {
       isImageDelete: false,
       isImageUpload: false,

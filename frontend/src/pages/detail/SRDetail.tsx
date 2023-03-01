@@ -122,6 +122,7 @@ export default function SRDetail() {
       header: "Errors",
       hidden: !hasUploadedCSV,
       customBody: (rowData: SRSaleRow) => errorCellBody(rowData.errors),
+      style: { minWidth: "2rem" },
     },
     {
       field: "bookTitle",
@@ -178,6 +179,7 @@ export default function SRDetail() {
       header: "Subtotal ($)",
       customBody: (rowData: SRSaleRow) =>
         priceBodyTemplate(rowData.price * rowData.quantity),
+      style: { minWidth: "8rem" },
     },
   ];
 

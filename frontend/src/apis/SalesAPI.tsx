@@ -15,6 +15,11 @@ export interface GetSRsReq {
   ordering: string;
 }
 
+export interface GetSRsNoPageReq {
+  no_pagination: boolean;
+  ordering: string;
+}
+
 export interface APISRSaleRow {
   id?: number; // ID only for new rows, not already existing ones
   book: number;
@@ -84,13 +89,13 @@ export const SALES_API = {
     });
   },
 
-  getSalesReconciliationsNoPagination: async function (): Promise<APISR[]> {
+  getSalesReconciliationsNoPagination: async function (
+    req: GetSRsNoPageReq
+  ): Promise<APISR[]> {
     return await API.request({
       url: SALES_EXTENSION,
       method: METHOD_GET,
-      params: {
-        no_pagination: true,
-      },
+      params: req,
     });
   },
 

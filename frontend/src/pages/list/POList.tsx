@@ -192,9 +192,10 @@ export default function PurchaseOrderList() {
         return onAPIResponse(response);
       });
     } else {
-      PURCHASES_API.getPurchaseOrdersNoPagination().then((response) =>
-        onAPIResponseNoPagination(response)
-      );
+      PURCHASES_API.getPurchaseOrdersNoPagination({
+        no_pagination: true,
+        ordering: sortField,
+      }).then((response) => onAPIResponseNoPagination(response));
     }
   };
 

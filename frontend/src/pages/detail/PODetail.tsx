@@ -128,6 +128,7 @@ export default function PODetail() {
       header: "Errors",
       hidden: !hasUploadedCSV,
       customBody: (rowData: POPurchaseRow) => errorCellBody(rowData.errors),
+      style: { minWidth: "2rem" },
     },
     {
       field: "bookTitle",
@@ -181,6 +182,7 @@ export default function PODetail() {
       header: "Subtotal ($)",
       customBody: (rowData: POPurchaseRow) =>
         priceBodyTemplate(rowData.price * rowData.quantity),
+      style: { minWidth: "8rem" },
     },
   ];
 

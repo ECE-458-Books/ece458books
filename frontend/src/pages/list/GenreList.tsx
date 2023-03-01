@@ -157,9 +157,10 @@ export default function GenreList() {
         ordering: sortField,
       }).then((response) => onAPIResponse(response));
     } else {
-      GENRES_API.getGenresNoPagination().then((response) =>
-        onAPIResponseNoPagination(response)
-      );
+      GENRES_API.getGenresNoPaginationLISTVIEW({
+        no_pagination: true,
+        ordering: sortField,
+      }).then((response) => onAPIResponseNoPagination(response));
     }
   };
 

@@ -188,12 +188,12 @@ export default function BuyBackList() {
         page_size: pageParams.rows,
         ordering: sortField,
       }).then((response) => onAPIResponse(response));
-    } else
-      [
-        BUYBACK_API.getBuyBacksNoPagination().then((response) =>
-          onAPIResponseNoPagination(response)
-        ),
-      ];
+    } else {
+      BUYBACK_API.getBuyBacksNoPagination({
+        no_pagination: true,
+        ordering: sortField,
+      }).then((response) => onAPIResponseNoPagination(response));
+    }
   };
 
   // Set state when response to API call is received

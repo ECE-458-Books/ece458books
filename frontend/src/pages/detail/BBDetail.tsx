@@ -148,6 +148,7 @@ export default function BBDetail() {
       header: "Errors",
       hidden: !hasUploadedCSV,
       customBody: (rowData: BBSaleRow) => errorCellBody(rowData.errors),
+      style: { minWidth: "2rem" },
     },
     {
       field: "bookTitle",
@@ -199,6 +200,7 @@ export default function BBDetail() {
       header: "Subtotal ($)",
       customBody: (rowData: BBSaleRow) =>
         priceBodyTemplate(rowData.price * rowData.quantity),
+      style: { minWidth: "8rem" },
     },
   ];
 

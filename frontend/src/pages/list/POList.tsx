@@ -25,7 +25,10 @@ import { POPurchaseRow } from "../detail/PODetail";
 import { NUM_ROWS } from "./BookList";
 import AddPageButton from "../../components/buttons/AddPageButton";
 import LabeledSwitch from "../../components/buttons/LabeledSwitch";
-import SelectSizeButton from "../../components/buttons/SelectSizeButton";
+import SelectSizeButton, {
+  SelectSizeButtonOptions,
+} from "../../components/buttons/SelectSizeButton";
+import { isHighlightingText } from "../../util/ClickCheck";
 
 export interface PurchaseOrder {
   id: string;
@@ -98,7 +101,9 @@ export default function PurchaseOrderList() {
 
   const [rows, setRows] = useState<number>(NUM_ROWS);
   const [isNoPagination, setIsNoPagination] = useState<boolean>(false);
-  const [size, setSize] = useState<string>("small");
+  const [size, setSize] = useState<SelectSizeButtonOptions>(
+    SelectSizeButtonOptions.Small
+  );
 
   // The current state of sorting.
   const [sortParams, setSortParams] = useState<DataTableSortEvent>({
@@ -164,6 +169,7 @@ export default function PurchaseOrderList() {
   };
 
   const onRowClick = (event: DataTableRowClickEvent) => {
+    if (isHighlightingText()) return;
     const purchaseOrder = event.data as PurchaseOrder;
     logger.debug("Purchase Order Row Clicked", purchaseOrder);
     toDetailPage(purchaseOrder);
@@ -293,7 +299,7 @@ export default function PurchaseOrderList() {
             lazy
             responsiveLayout="scroll"
             loading={loading}
-            size={size ?? "small"}
+            size={size}
             // Row clicking
             rowHover
             selectionMode={"single"}

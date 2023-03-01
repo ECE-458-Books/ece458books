@@ -2,16 +2,22 @@ import { SelectButton } from "primereact/selectbutton";
 import { useState } from "react";
 
 interface SelectSizeButtonProps {
-  value: any;
+  value: SelectSizeButtonOptions;
   onChange: (e: any) => void;
   className?: string;
 }
 
+export enum SelectSizeButtonOptions {
+  Small = "small",
+  Normal = "normal",
+  Large = "large",
+}
+
 export default function SelectSizeButton(props: SelectSizeButtonProps) {
   const [sizeOptions] = useState([
-    { label: "Small", value: "small" },
-    { label: "Normal", value: "normal" },
-    { label: "Large", value: "large" },
+    { label: "Small", value: SelectSizeButtonOptions.Small },
+    { label: "Normal", value: SelectSizeButtonOptions.Normal },
+    { label: "Large", value: SelectSizeButtonOptions.Large },
   ]);
 
   return (

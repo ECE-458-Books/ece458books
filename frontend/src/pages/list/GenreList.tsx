@@ -21,7 +21,9 @@ import { logger } from "../../util/Logger";
 import { NUM_ROWS } from "./BookList";
 import AddPageButton from "../../components/buttons/AddPageButton";
 import LabeledSwitch from "../../components/buttons/LabeledSwitch";
-import SelectSizeButton from "../../components/buttons/SelectSizeButton";
+import SelectSizeButton, {
+  SelectSizeButtonOptions,
+} from "../../components/buttons/SelectSizeButton";
 import { Button } from "primereact/button";
 import { isHighlightingText } from "../../util/ClickCheck";
 
@@ -66,7 +68,9 @@ export default function GenreList() {
 
   const [rows, setRows] = useState<number>(NUM_ROWS);
   const [isNoPagination, setIsNoPagination] = useState<boolean>(false);
-  const [size, setSize] = useState<string>("small");
+  const [size, setSize] = useState<SelectSizeButtonOptions>(
+    SelectSizeButtonOptions.Small
+  );
 
   // The current state of sorting.
   const [sortParams, setSortParams] = useState<DataTableSortEvent>({
@@ -132,6 +136,7 @@ export default function GenreList() {
   };
 
   const onRowClick = (event: DataTableRowClickEvent) => {
+    if (isHighlightingText()) return;
     const genre = event.data as Genre;
     logger.debug("Edit Genre Clicked", genre);
     navigate(`/genres/detail/${genre.id}`);

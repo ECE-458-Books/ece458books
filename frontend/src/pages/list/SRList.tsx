@@ -25,7 +25,10 @@ import { SRSaleRow } from "../detail/SRDetail";
 import { NUM_ROWS } from "./BookList";
 import AddPageButton from "../../components/buttons/AddPageButton";
 import LabeledSwitch from "../../components/buttons/LabeledSwitch";
-import SelectSizeButton from "../../components/buttons/SelectSizeButton";
+import SelectSizeButton, {
+  SelectSizeButtonOptions,
+} from "../../components/buttons/SelectSizeButton";
+import { isHighlightingText } from "../../util/ClickCheck";
 
 export interface SalesReconciliation {
   id: string;
@@ -93,7 +96,9 @@ export default function SalesReconciliationList() {
 
   const [rows, setRows] = useState<number>(NUM_ROWS);
   const [isNoPagination, setIsNoPagination] = useState<boolean>(false);
-  const [size, setSize] = useState<string>("small");
+  const [size, setSize] = useState<SelectSizeButtonOptions>(
+    SelectSizeButtonOptions.Small
+  );
 
   // The current state of sorting.
   const [sortParams, setSortParams] = useState<DataTableSortEvent>({
@@ -163,6 +168,7 @@ export default function SalesReconciliationList() {
   };
 
   const onRowClick = (event: DataTableRowClickEvent) => {
+    if (isHighlightingText()) return;
     const salesReconciliation = event.data as SalesReconciliation;
     logger.debug("Sales Reconciliation Row Clicked", salesReconciliation);
     toDetailPage(salesReconciliation);
@@ -290,7 +296,7 @@ export default function SalesReconciliationList() {
             lazy
             responsiveLayout="scroll"
             loading={loading}
-            size={size ?? "small"}
+            size={size}
             // Row clicking
             rowHover
             selectionMode={"single"}

@@ -41,12 +41,12 @@ export default function BookDetailLineItems(props: BookDetailLineItemsProps) {
       field: "date",
       customBody: (rowData: BookDetailLineItem) =>
         dateBodyTemplate(rowData.date),
-      style: { minWidth: "8rem", width: "10rem" },
+      style: { minWidth: "8rem", width: "8rem" },
     },
     {
       header: "Type",
       field: "type",
-      style: { minWidth: "8rem", width: "10rem" },
+      style: { minWidth: "8rem", width: "12rem" },
     },
     {
       header: "Vendor",
@@ -75,7 +75,12 @@ export default function BookDetailLineItems(props: BookDetailLineItemsProps) {
 
   const columns = createColumns(COLUMNS);
   return (
-    <DataTable onRowClick={onRowClick} rowHover value={props.lineItems}>
+    <DataTable
+      onRowClick={onRowClick}
+      rowHover
+      size="small"
+      value={props.lineItems}
+    >
       {columns}
     </DataTable>
   );

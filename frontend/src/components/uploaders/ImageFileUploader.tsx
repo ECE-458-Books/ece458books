@@ -19,7 +19,6 @@ export default function ImageUploader(props: ImageUploaderProps) {
       accept="image/gif, image/jpeg, image/png, image/webp"
       customUpload
       uploadHandler={props.uploadHandler}
-      chooseLabel={"Upload image"}
       chooseOptions={{
         icon: "pi pi-upload",
         className: props.className,

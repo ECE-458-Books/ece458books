@@ -225,7 +225,7 @@ export default function BookAdd() {
           onImageChange(e, rowData.id)
         }
         className=""
-        style={{ height: 10, width: 10 }}
+        style={{ height: 10, width: 10, paddingLeft: 5 }}
       />
     );
   };
@@ -237,7 +237,7 @@ export default function BookAdd() {
         icon="pi pi-trash"
         onClick={() => onImageDelete(rowData.id)}
         className=""
-        style={{ height: 10, width: 10 }}
+        style={{ height: 10, width: 22 }}
       />
     );
   };
@@ -391,6 +391,7 @@ export default function BookAdd() {
             editMode="cell"
             className="editable-cells-table py-5"
             responsiveLayout="scroll"
+            size="small"
           >
             {columns}
           </DataTable>

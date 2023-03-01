@@ -53,6 +53,7 @@ export function numberEditor(
       max={max}
       value={value}
       disabled={isDisabled ?? false}
+      className="inputnumber"
       onValueChange={(e) => onChange(e.target.value ?? 1)}
       mode="decimal"
       maxFractionDigits={2}
@@ -163,7 +164,7 @@ export function imageBodyTemplateWithButtons(
           maxWidth: MAX_IMAGE_WIDTH,
         }}
       />
-      <div className="flex justify-content-center">
+      <div className="flex justify-content-between">
         {uploadButton}
         {deleteButton}
       </div>

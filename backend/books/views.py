@@ -1,7 +1,8 @@
-import re
+import re, datetime
 
 from django.conf import settings
-from django.db.models import OuterRef, Subquery, F
+from django.db import models
+from django.db.models import OuterRef, Subquery, F, Case, When, Value, Sum, Func
 
 from rest_framework import status, filters
 from rest_framework.views import APIView
@@ -19,6 +20,8 @@ from .utils import delete_all_files_in_folder_location, str2bool
 
 from genres.models import Genre
 from purchase_orders.models import Purchase
+from sales.models import Sale
+from buybacks.models import Buyback
 from helpers.csv_writer import CSVWriter
 
 
@@ -233,9 +236,48 @@ class ListCreateBookAPIView(ListCreateAPIView):
         vendor = self.request.GET.get('vendor')
         if vendor is not None:
             default_query_set = default_query_set.filter(id__in=Purchase.objects.all().annotate(vendor_id=F('purchase_order__vendor')).filter(vendor_id=vendor).values('book')).distinct()
-
+        
+        # Support Sorting by best_buyback_price, last_month_sales, shelf_space, days_of_supply
+        # The rationale for replicating the filter in the serializer is that it is the most efficient way to support sorting is using DRF's sorting filter
+        # default_query_set = self.annotate_best_buyback_price(default_query_set)
+        default_query_set = self.annotate_last_month_sales(default_query_set)
+        default_query_set = self.annotate_shelf_space(default_query_set)
+        # default_query_set = self.annotate_days_of_supply(default_query_set)
+        
         return default_query_set
+    
+    def annotate_last_month_sales(self, query_set):
+        end_date = datetime.datetime.now().strftime('%Y-%m-%d')
+        start_date = (datetime.datetime.now() - datetime.timedelta(days=30)).strftime('%Y-%m-%d')
 
+        subquery = Sale.objects.filter(
+            book=OuterRef('pk'), 
+            sales_reconciliation__date__range=(start_date, end_date)
+        ).values_list(
+            Func(
+                'quantity', 
+                function='SUM',
+            ),
+        )
+
+        query_set = query_set.annotate(
+            last_month_sales=subquery
+        )
+
+        return query_set
+    
+    def annotate_shelf_space(self, query_set):
+        default_thickness = 0.8
+
+        query_set = query_set.annotate(
+            null_defaulted_thickness=Case(
+                When(thickness__isnull=False, then=F('thickness')), 
+                default=Value(default_thickness))
+        )
+
+        return query_set.annotate(
+            shelf_space=F('null_defaulted_thickness')*F('stock')
+        )
 
 class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = BookSerializer

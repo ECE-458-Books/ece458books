@@ -23,6 +23,7 @@ import AddPageButton from "../../components/buttons/AddPageButton";
 import LabeledSwitch from "../../components/buttons/LabeledSwitch";
 import SelectSizeButton from "../../components/buttons/SelectSizeButton";
 import { Button } from "primereact/button";
+import { isHighlightingText } from "../../util/ClickCheck";
 
 // The Genre interface
 export interface Genre {

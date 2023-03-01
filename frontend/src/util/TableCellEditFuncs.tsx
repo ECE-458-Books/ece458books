@@ -2,8 +2,7 @@ import { InputNumber } from "primereact/inputnumber";
 import { InputText } from "primereact/inputtext";
 import { internalToExternalDate } from "./DateOperations";
 import { Image } from "primereact/image";
-import { Button } from "primereact/button";
-import { FileUpload, FileUploadErrorEvent } from "primereact/fileupload";
+import { DEFAULT_BOOK_IMAGE } from "../components/uploaders/ImageFileUploader";
 
 export const MAX_IMAGE_HEIGHT = 50;
 export const MAX_IMAGE_WIDTH = 50;
@@ -115,7 +114,7 @@ export function priceBodyTemplate(value: number | bigint) {
 
 export function imageBodyTemplate(thumbnailURL: string) {
   if (!thumbnailURL) {
-    thumbnailURL = "http://books-db.colab.duke.edu/media/books/default.jpg";
+    thumbnailURL = DEFAULT_BOOK_IMAGE;
   }
   return (
     <Image
@@ -143,7 +142,7 @@ export function imageBodyTemplateWithButtons(
   thumbnailURL: string
 ) {
   if (!thumbnailURL) {
-    thumbnailURL = "http://books-db.colab.duke.edu/media/books/default.jpg";
+    thumbnailURL = DEFAULT_BOOK_IMAGE;
   }
   return (
     <>

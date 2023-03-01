@@ -163,10 +163,7 @@ export default function SalesReconciliationList() {
   };
 
   const onRowClick = (event: DataTableRowClickEvent) => {
-    // I couldn't figure out a better way to do this...
-    // It takes the current index as the table knows it and calculates the actual index in the genres array
-    const index = event.index - rows * (pageParams.page ?? 0);
-    const salesReconciliation = salesReconciliations[index];
+    const salesReconciliation = event.data as SalesReconciliation;
     logger.debug("Sales Reconciliation Row Clicked", salesReconciliation);
     toDetailPage(salesReconciliation);
   };

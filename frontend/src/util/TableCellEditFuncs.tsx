@@ -3,7 +3,7 @@ import { InputText } from "primereact/inputtext";
 import { internalToExternalDate } from "./DateOperations";
 import { Image } from "primereact/image";
 import { DEFAULT_BOOK_IMAGE } from "../components/uploaders/ImageFileUploader";
-import "./TableCell.css";
+import "./TableCell2.css";
 
 export const MAX_IMAGE_HEIGHT = 50;
 export const MAX_IMAGE_WIDTH = 50;

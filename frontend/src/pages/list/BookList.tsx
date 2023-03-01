@@ -34,12 +34,15 @@ import GenreDropdown, {
 } from "../../components/dropdowns/GenreDropdown";
 import AddPageButton from "../../components/buttons/AddPageButton";
 import LabeledSwitch from "../../components/buttons/LabeledSwitch";
-import SelectSizeButton from "../../components/buttons/SelectSizeButton";
+import SelectSizeButton, {
+  SelectSizeButtonOptions,
+} from "../../components/buttons/SelectSizeButton";
 import { BookDetailLineItem } from "../detail/BookDetailLineItems";
 import { Button } from "primereact/button";
 import { showFailure, showSuccess } from "../../components/Toast";
 import { saveAs } from "file-saver";
 import { MultiSelect, MultiSelectChangeEvent } from "primereact/multiselect";
+import { isHighlightingText } from "../../util/ClickCheck";
 
 export const NUM_ROWS = 10;
 
@@ -133,7 +136,9 @@ export default function BookList() {
 
   const [rows, setRows] = useState<number>(NUM_ROWS);
   const [isNoPagination, setIsNoPagination] = useState<boolean>(false);
-  const [size, setSize] = useState<string>("small");
+  const [size, setSize] = useState<SelectSizeButtonOptions>(
+    SelectSizeButtonOptions.Small
+  );
 
   const [genreNamesList, setGenreNamesList] = useState<string[]>([]); // List of all genre names
 
@@ -462,6 +467,7 @@ export default function BookList() {
   };
 
   const onRowClick = (event: DataTableRowClickEvent) => {
+    if (isHighlightingText()) return;
     const book = event.data as Book;
     logger.debug("Book Row Clicked", book);
     toDetailsPage(book);
@@ -569,7 +575,7 @@ export default function BookList() {
           responsiveLayout="scroll"
           filterDisplay="row"
           loading={loading}
-          size={size ?? "small"}
+          size={size}
           // Row clicking
           rowHover
           selectionMode={"single"}

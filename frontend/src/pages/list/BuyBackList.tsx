@@ -26,7 +26,9 @@ import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import { showFailure, showSuccess } from "../../components/Toast";
 import AddPageButton from "../../components/buttons/AddPageButton";
 import LabeledSwitch from "../../components/buttons/LabeledSwitch";
-import SelectSizeButton from "../../components/buttons/SelectSizeButton";
+import SelectSizeButton, {
+  SelectSizeButtonOptions,
+} from "../../components/buttons/SelectSizeButton";
 
 export interface BuyBack {
   id: string;
@@ -97,7 +99,9 @@ export default function BuyBackList() {
 
   const [rows, setRows] = useState<number>(NUM_ROWS);
   const [isNoPagination, setIsNoPagination] = useState<boolean>(false);
-  const [size, setSize] = useState<string>("small");
+  const [size, setSize] = useState<SelectSizeButtonOptions>(
+    SelectSizeButtonOptions.Small
+  );
 
   // The current state of sorting.
   const [sortParams, setSortParams] = useState<DataTableSortEvent>({
@@ -273,7 +277,7 @@ export default function BuyBackList() {
             lazy
             responsiveLayout="scroll"
             loading={loading}
-            size={size ?? "small"}
+            size={size}
             // Row clicking
             rowHover
             selectionMode={"single"}

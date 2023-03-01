@@ -19,7 +19,10 @@ import { percentBodyTemplate } from "../../util/TableCellEditFuncs";
 import { NUM_ROWS } from "./BookList";
 import AddPageButton from "../../components/buttons/AddPageButton";
 import LabeledSwitch from "../../components/buttons/LabeledSwitch";
-import SelectSizeButton from "../../components/buttons/SelectSizeButton";
+import SelectSizeButton, {
+  SelectSizeButtonOptions,
+} from "../../components/buttons/SelectSizeButton";
+import { isHighlightingText } from "../../util/ClickCheck";
 
 // The Vendor Interface
 export interface Vendor {
@@ -67,7 +70,9 @@ export default function VendorList() {
 
   const [rows, setRows] = useState<number>(NUM_ROWS);
   const [isNoPagination, setIsNoPagination] = useState<boolean>(false);
-  const [size, setSize] = useState<string>("small");
+  const [size, setSize] = useState<SelectSizeButtonOptions>(
+    SelectSizeButtonOptions.Small
+  );
 
   // The current state of sorting.
   const [sortParams, setSortParams] = useState<DataTableSortEvent>({
@@ -197,6 +202,7 @@ export default function VendorList() {
   );
 
   const onRowClick = (event: DataTableRowClickEvent) => {
+    if (isHighlightingText()) return;
     const vendor = event.data as Vendor;
     logger.debug("Vendor Row Clicked", vendor);
     editVendor(vendor);
@@ -261,7 +267,7 @@ export default function VendorList() {
             lazy
             responsiveLayout="scroll"
             loading={loading}
-            size={size ?? "small"}
+            size={size}
             // Row clicking
             rowHover
             selectionMode={"single"}

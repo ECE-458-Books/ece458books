@@ -57,7 +57,7 @@ export default function LoginPage() {
       <div className="flex col-12 justify-content-center">
         <img
           alt="logo"
-          src={require("../../ImaginarySoftwareLogo.jpeg")}
+          src={require("../../ImaginarySoftwareLogo.png")}
           height="200"
           className="mr-2"
         ></img>

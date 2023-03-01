@@ -542,10 +542,11 @@ export default function BookList() {
   const toggleColumns = (
     <MultiSelect
       value={visibleColumns}
+      placeholder="Toggle Columns"
       options={columnsMeta}
       optionLabel="header"
       onChange={onColumnToggle}
-      className="w-full sm:w-10rem"
+      className="w-full sm:w-16rem"
       display="chip"
     />
   );

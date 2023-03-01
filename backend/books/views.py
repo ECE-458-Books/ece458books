@@ -98,7 +98,7 @@ class ISBNSearchView(APIView):
             # This is the case where there is no default image associated with the book.
             local_url = self.isbn_toolbox.download_external_book_image_to_local(book.isbn_13, uri)
         else:
-            local_url = self.isbn_toolbox.download_existing_image_to_local(images[0].url, book.isbn_13, uri)
+            local_url = self.isbn_toolbox.download_existing_image_to_local(images[0].image_url, book.isbn_13, uri)
 
         ret["image_url"] = local_url
         ret["fromDB"] = True
@@ -170,7 +170,7 @@ class ListCreateBookAPIView(ListCreateAPIView):
         # Get and Create the Image
         if ((request.FILES.get('image') is not None) or setDefaultImage):
             url = self.bookimage_get_and_create(request, res.get('isbn_13'), setDefaultImage)
-            res['url'] = url
+            res['image_url'] = url
 
         headers = self.get_success_headers(serializer.data)
         return Response(res, status=status.HTTP_201_CREATED, headers=headers)
@@ -186,12 +186,12 @@ class ListCreateBookAPIView(ListCreateAPIView):
 
         obj, created = BookImage.objects.get_or_create(
             book_id=book[0].id,
-            defaults={'url': url},
+            defaults={'image_url': url},
         )
 
         # We need to patch the url if it is a get
         if not created:
-            obj.url = url
+            obj.image_url = url
             obj.save()
 
         return url
@@ -248,8 +248,11 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
         data = request.data.dict()
 
         # handle authors, genres
-        data['authors'] = [author.strip() for author in data['authors'].split(',')]
-        data['genres'] = [genre.strip() for genre in data['genres'].split(',')]
+        if data.get('authors', False):
+            data['authors'] = [author.strip() for author in data['authors'].split(',')]
+
+        if data.get('genres', False):
+            data['genres'] = [genre.strip() for genre in data['genres'].split(',')]
 
         return data
 
@@ -282,7 +285,7 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
         # Get and Create the Image
         if ((request.FILES.get('image') is not None) or setDefaultImage):
             url = self.bookimage_get_and_create(request, res.get('isbn_13'), setDefaultImage)
-            res['url'] = url
+            res['image_url'] = url
 
         return Response(res)
     
@@ -306,12 +309,12 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
 
         obj, created = BookImage.objects.get_or_create(
             book_id=book[0].id,
-            defaults={'url': url},
+            defaults={'image_url': url},
         )
 
         # We need to patch the url if it is a get
         if not created:
-            obj.url = url
+            obj.image_url = url
             obj.save()
 
         return url

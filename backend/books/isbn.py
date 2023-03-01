@@ -153,8 +153,8 @@ class ISBNTools:
 
     def download_external_book_image_to_local(self, isbn_13, uri):
         end_url = self._image_base_url + f'/{isbn_13}-L.jpg?default=false'
-        return self.get_book_local_image_url(end_url, isbn_13, uri)
-    
+        return end_url
+        # return self.get_book_local_image_url(end_url, isbn_13, uri)
     
     def get_book_local_image_url(self, end_url, isbn_13, uri):
         """Return URL for local book image
@@ -196,14 +196,17 @@ class ISBNTools:
         if image_bytes is None:
             return '', self._default_image_name
 
-        image = Image.open(io.BytesIO(image_bytes))
+        try:
+            image = Image.open(io.BytesIO(image_bytes))
+            filename = f'{filename_without_extension}.{image.format.lower()}'
+            absolute_location = f'{settings.STATICFILES_DIRS[0]}/{filename}'
+            image.save(absolute_location)
+        except:
+            # This means that the image_bytes is corrupted revert to default image in this case
+            filename = self._default_image_name
+            absolute_location = ''
 
-        filename = f'{filename_without_extension}.{image.format.lower()}'
-        absolute_location = f'{settings.STATICFILES_DIRS[0]}/{filename}'
-
-        image.save(absolute_location)
-
-        return absolute_location, filename
+        return absolute_location, filename # Absolute location is used to send the static file to image server
     
     def commit_image_raw_bytes(self, request, book_id, isbn_13):
         # Get the image raw_bytes
@@ -221,7 +224,4 @@ class ISBNTools:
         
     def get_default_image_url(self,):
         return f'{self._internal_image_base_url}/{self._default_image_name}'
-
-
-
 

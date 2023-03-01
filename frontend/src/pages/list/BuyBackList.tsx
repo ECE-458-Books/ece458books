@@ -188,9 +188,12 @@ export default function BuyBackList() {
         page_size: pageParams.rows,
         ordering: sortField,
       }).then((response) => onAPIResponse(response));
-    } else [
-      BUYBACK_API.getBuyBacksNoPagination().then((response) => onAPIResponseNoPagination(response))
-    ]
+    } else
+      [
+        BUYBACK_API.getBuyBacksNoPagination().then((response) =>
+          onAPIResponseNoPagination(response)
+        ),
+      ];
   };
 
   // Set state when response to API call is received
@@ -293,7 +296,11 @@ export default function BuyBackList() {
             sortOrder={sortParams.sortOrder}
           >
             {columns}
-            <Column body={editDeleteCellTemplate} hidden style={{ minWidth: "4rem" }} />
+            <Column
+              body={editDeleteCellTemplate}
+              hidden
+              style={{ minWidth: "4rem" }}
+            />
           </DataTable>
           {deletePopupVisible && deletePopup}
         </div>

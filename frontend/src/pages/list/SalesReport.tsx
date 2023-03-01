@@ -17,6 +17,8 @@ export interface SalesReport {
 }
 
 export interface SalesReportTotalRow {
+  salesRevenue: number;
+  buybacksRevenue: number;
   revenue: number;
   cost: number;
   profit: number;
@@ -24,7 +26,8 @@ export interface SalesReportTotalRow {
 
 export interface SalesReportDailyRow {
   date: string;
-  revenue: number;
+  salesRevenue: number;
+  buybacksRevenue: number;
   cost: number;
   profit: number;
 }
@@ -40,8 +43,22 @@ export interface SalesReportTopBooksRow {
 
 const COLUMNS_TOTAL: TableColumn[] = [
   {
+    field: "salesRevenue",
+    header: "Sales Revenue",
+    style: { width: "25%" },
+    customBody: (rowData: SalesReportTotalRow) =>
+      priceBodyTemplate(rowData.salesRevenue),
+  },
+  {
+    field: "buybacksRevenue",
+    header: "Buyback Revenue",
+    style: { width: "25%" },
+    customBody: (rowData: SalesReportTotalRow) =>
+      priceBodyTemplate(rowData.buybacksRevenue),
+  },
+  {
     field: "revenue",
-    header: "Revenue",
+    header: "Total Revenue",
     style: { width: "25%" },
     customBody: (rowData: SalesReportTotalRow) =>
       priceBodyTemplate(rowData.revenue),
@@ -65,11 +82,18 @@ const COLUMNS_TOTAL: TableColumn[] = [
 const COLUMNS_DAILY: TableColumn[] = [
   { field: "date", header: "Date (YYYY-MM-DD)" },
   {
-    field: "revenue",
-    header: "Revenue",
+    field: "salesRevenue",
+    header: "Sales Revenue",
     style: { width: "25%" },
-    customBody: (rowData: SalesReportDailyRow) =>
-      priceBodyTemplate(rowData.revenue),
+    customBody: (rowData: SalesReportTotalRow) =>
+      priceBodyTemplate(rowData.salesRevenue),
+  },
+  {
+    field: "buybacksRevenue",
+    header: "Buyback Revenue",
+    style: { width: "25%" },
+    customBody: (rowData: SalesReportTotalRow) =>
+      priceBodyTemplate(rowData.buybacksRevenue),
   },
   {
     field: "cost",
@@ -128,15 +152,13 @@ export default function SalesReport() {
     []
   );
   const [dates, setDates] = useState<any>(null);
-  const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
-    useState<boolean>(false);
 
   const onAPIResponse = (response: GetSalesReportResp) => {
     const salesReport = APIToInternalSalesReportConversion(response);
-    console.log(salesReport);
+    //console.log(salesReport);
     setTotalsData([salesReport.totalRow]);
     setDailyData(salesReport.dailySummaryRows);
-    setTopBooksData(salesReport.topBooksRows);
+    setTopBooksData(salesReport.topBooksRows.slice(0, 10));
   };
 
   // Toast is used for showing success/error messages
@@ -182,11 +204,11 @@ export default function SalesReport() {
             Sales Report
           </h1>
           <form onSubmit={onSubmit}>
-            <div className="flex pb-2 flex-row justify-content-evenly card-container">
-              <div>
+            <div className="flex pb-2 justify-content-evenly card-container">
+              <div className="flex col-4 p-0 m-0">
                 <label
                   htmlFor="date"
-                  className="pt-2 pr-2 p-component text-teal-900 p-text-secondary"
+                  className="flex p-component p-text-secondary text-center text-teal-900 my-auto mr-2 p-0"
                 >
                   Date Range:
                 </label>
@@ -198,7 +220,7 @@ export default function SalesReport() {
                   readOnlyInput
                   showButtonBar
                   placeholder="Start - End"
-                  className="p-datepicker-current-day"
+                  className="p-datepicker-current-day w-8"
                 />
               </div>
 
@@ -230,7 +252,7 @@ export default function SalesReport() {
       </div>
       <div className="pt-3 col-12 justify-content-center">
         <div className="col-offset-2 col-8">
-          <DataTable value={dailyData} className="">
+          <DataTable value={dailyData} size="small" className="">
             {columnsDaily}
           </DataTable>
         </div>

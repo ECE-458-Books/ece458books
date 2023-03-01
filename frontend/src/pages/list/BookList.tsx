@@ -1,4 +1,9 @@
-import { APIBook, BOOKS_API, GetBooksResp } from "../../apis/BooksAPI";
+import {
+  APIBook,
+  BOOKS_API,
+  GetBooksReq,
+  GetBooksResp,
+} from "../../apis/BooksAPI";
 import {
   DataTable,
   DataTableFilterEvent,
@@ -32,6 +37,8 @@ import LabeledSwitch from "../../components/buttons/LabeledSwitch";
 import SelectSizeButton from "../../components/buttons/SelectSizeButton";
 import { BookDetailLineItem } from "../detail/BookDetailLineItems";
 import { Button } from "primereact/button";
+import { showFailure, showSuccess } from "../../components/Toast";
+import { saveAs } from "file-saver";
 
 export const NUM_ROWS = 10;
 
@@ -262,10 +269,10 @@ export default function BookList() {
     setDeletePopupVisible(false);
     BOOKS_API.deleteBook({ id: selectedDeleteBook.id })
       .then(() => {
-        showSuccess();
+        showSuccess(toast, "Book deleted");
       })
       .catch(() => {
-        showFailure();
+        showFailure(toast, "Book could not be deleted");
         return;
       });
     // TODO: Show error if book is not actually deleted
@@ -282,8 +289,7 @@ export default function BookList() {
     />
   );
 
-  // Calls the Books API
-  const callAPI = () => {
+  const createAPIRequest = (): GetBooksReq => {
     // Only search by one of the search boxes
     let search_string = "";
     let title_only = false;
@@ -321,25 +327,44 @@ export default function BookList() {
     if (sortParams.sortOrder == -1) {
       sortField = "-".concat(sortField);
     }
+    return {
+      no_pagination: undefined,
+      page: isNoPagination ? undefined : (pageParams.page ?? 0) + 1,
+      page_size: isNoPagination ? undefined : pageParams.rows,
+      ordering: isNoPagination ? undefined : sortField,
+      genre: selectedGenre,
+      search: search_string,
+      title_only: title_only,
+      publisher_only: publisher_only,
+      author_only: author_only,
+      isbn_only: isbn_only,
+    };
+  };
 
+  // Calls the Books API
+  const callAPI = () => {
     if (!isNoPagination) {
-      BOOKS_API.getBooks({
-        no_pagination: undefined,
-        page: isNoPagination ? undefined : (pageParams.page ?? 0) + 1,
-        page_size: isNoPagination ? undefined : pageParams.rows,
-        ordering: isNoPagination ? undefined : sortField,
-        genre: selectedGenre,
-        search: search_string,
-        title_only: title_only,
-        publisher_only: publisher_only,
-        author_only: author_only,
-        isbn_only: isbn_only,
-      }).then((response) => onAPIResponse(response));
+      BOOKS_API.getBooks(createAPIRequest()).then((response) =>
+        onAPIResponse(response)
+      );
     } else {
       BOOKS_API.getBooksNoPagination().then((response) =>
         onAPIResponseNoPagination(response)
       );
     }
+  };
+
+  const callCSVExportAPI = () => {
+    BOOKS_API.exportAsCSV(createAPIRequest())
+      .then((response) => {
+        const blob = new Blob([response], {
+          type: "text/csv;charset=utf-8",
+        });
+        saveAs(blob, "books.csv");
+      })
+      .catch(() => {
+        showFailure(toast, "Could not export to CSV");
+      });
   };
 
   const onAPIResponseNoPagination = (response: APIBook[]) => {
@@ -400,32 +425,41 @@ export default function BookList() {
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
 
-  const showSuccess = () => {
-    toast.current?.show({ severity: "success", summary: "Book deleted" });
-  };
-
-  const showFailure = () => {
-    toast.current?.show({
-      severity: "error",
-      summary: "Book could not be modified",
-    });
-  };
-
   const columns = createColumns(COLUMNS);
 
+  const csvExportButton = (
+    <Button
+      type="button"
+      label={"Export as CSV"}
+      icon="pi pi-file-export"
+      onClick={callCSVExportAPI}
+      iconPos="right"
+      className="p-button-sm my-auto"
+    />
+  );
+
+  const shelfCalculator = (
+    <Button
+      label="Shelf Calculator"
+      icon="pi pi-calculator"
+      className="p-button-sm my-auto"
+      onClick={() => navigate("/books/shelf-calculator")}
+    />
+  );
+
   const addBookButton = (
-    <div className="flex justify-content-between col-3 p-0">
-      <Button
-        label="Shelf Calculator"
-        icon="pi pi-calculator"
-        className="p-button-sm my-auto"
-        onClick={() => navigate("/books/shelf-calculator")}
-      />
-      <AddPageButton
-        onClick={() => navigate("/books/add")}
-        label="Add Book"
-        className="mr-3"
-      />
+    <AddPageButton
+      onClick={() => navigate("/books/add")}
+      label="Add Book"
+      className="mr-3"
+    />
+  );
+
+  const rightSideButtons = (
+    <div className="flex justify-content-between col-5 p-0">
+      {csvExportButton}
+      {shelfCalculator}
+      {addBookButton}
     </div>
   );
 
@@ -440,7 +474,7 @@ export default function BookList() {
   );
 
   const selectSizeButton = (
-    <div className="flex col-6 justify-content-center my-1 p-0">
+    <div className="flex col-4 justify-content-center my-1 p-0">
       <SelectSizeButton
         value={size}
         onChange={(e) => setSize(e.value)}
@@ -454,7 +488,7 @@ export default function BookList() {
       <div className="grid flex m-1">
         {noPaginationSwitch}
         {selectSizeButton}
-        {addBookButton}
+        {rightSideButtons}
       </div>
       <div className="card pt-0 px-3">
         <Toast ref={toast} />

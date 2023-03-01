@@ -218,4 +218,12 @@ export const BOOKS_API = {
       data: formData,
     });
   },
+
+  exportAsCSV: async function (req: GetBooksReq): Promise<string> {
+    return await API.request({
+      url: BOOKS_EXTENSION.concat("/csv/export"),
+      method: METHOD_GET,
+      params: req,
+    });
+  },
 };

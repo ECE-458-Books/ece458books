@@ -105,7 +105,7 @@ export function percentBodyTemplate(value: number) {
   }).format(value / 100);
 }
 
-export function priceBodyTemplate(value: number | bigint) {
+export function priceBodyTemplate(value: number | bigint | undefined) {
   if (value == null) {
     return "-";
   }

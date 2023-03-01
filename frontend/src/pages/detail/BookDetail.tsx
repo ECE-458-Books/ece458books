@@ -21,6 +21,9 @@ import { APIToInternalBookConversion } from "../../apis/Conversions";
 import { Button } from "primereact/button";
 import GenreDropdown from "../../components/dropdowns/GenreDropdown";
 import BookDetailLineItems, { BookDetailLineItem } from "./BookDetailLineItems";
+import DeleteButton from "../../components/buttons/DeleteButton";
+import BackButton from "../../components/buttons/BackButton";
+import { priceBodyTemplate } from "../../util/TableCellEditFuncs";
 
 interface ErrorDisplay {
   message: string;
@@ -51,6 +54,10 @@ export default function BookDetail() {
   const [height, setHeight] = useState<number>();
   const [thickness, setThickness] = useState<number>();
   const [stock, setStock] = useState<number>(0);
+  const [bestBuybackPrice, setBestBuybackPrice] = useState<number>();
+  const [daysOfSupply, setDaysOfSupply] = useState<number | string>();
+  const [shelfSpace, setShelfSpace] = useState<number>();
+  const [lastMonthSales, setLastMonthSales] = useState<number>();
   const [lineItems, setLineItems] = useState<BookDetailLineItem[]>([]);
   // Leaving this line in case of future image browser side caching workaround is needed
   const [image, setImage] = useState<ImageUrlHashStruct>({
@@ -90,6 +97,10 @@ export default function BookDetail() {
         setThickness(book.thickness);
         setStock(book.stock);
         setLineItems(book.lineItems!);
+        setBestBuybackPrice(book.bestBuybackPrice);
+        setLastMonthSales(book.lastMonthSales);
+        setShelfSpace(book.shelfSpace);
+        setDaysOfSupply(book.daysOfSupply);
       })
       .catch(() => showFailure(toast, "Could not fetch book data"));
 
@@ -188,6 +199,10 @@ export default function BookDetail() {
         retailPrice: price,
         thumbnailURL: image.imageSrc,
         lineItems: lineItems,
+        bestBuybackPrice: bestBuybackPrice,
+        lastMonthSales: lastMonthSales,
+        shelfSpace: shelfSpace,
+        daysOfSupply: daysOfSupply,
       });
       setIsModifiable(false);
       setIsImageUploaded(false);
@@ -251,36 +266,97 @@ export default function BookDetail() {
   // Line item table
   const lineItemsTable = <BookDetailLineItems lineItems={lineItems} />;
 
+  const backButton = (
+    <div className="flex col-4">
+      <BackButton onClick={() => navigate("/books")} className="ml-1" />
+    </div>
+  );
+
+  const deleteButton = (
+    <BackButton onClick={() => navigate("/books")} className="ml-1" />
+  );
+
+  // Right
+  const submitButton = (
+    <ConfirmPopup
+      isButtonVisible={isModifiable}
+      isPopupVisible={isConfirmationPopupVisible}
+      hideFunc={() => setIsConfirmationPopupVisible(false)}
+      onFinalSubmission={formik.handleSubmit}
+      onShowPopup={() => setIsConfirmationPopupVisible(true)}
+      disabled={!isModifiable}
+      label={"Submit"}
+      className="p-button-success ml-1 p-button-sm"
+      classNameDiv="flex my-auto"
+    />
+  );
+
+  const editButton = (
+    <Button
+      type="button"
+      visible={!isModifiable}
+      label="Edit"
+      icon="pi pi-pencil"
+      className="p-button-sm my-auto"
+      onClick={() => setIsModifiable(true)}
+    />
+  );
+
+  const cancelButton = (
+    <Button
+      type="button"
+      label="Cancel"
+      visible={isModifiable}
+      icon="pi pi-times"
+      className="p-button-warning p-button-sm my-auto"
+      onClick={() => setIsModifiable(false)}
+    />
+  );
+
+  const rightButtons = (
+    <div className="flex col-4 justify-content-end">
+      {cancelButton}
+      {submitButton}
+      {editButton}
+      {deleteButton}
+    </div>
+  );
+
   return (
     <div className="grid flex justify-content-center">
       <Toast ref={toast} />
       <div className="grid col-12">
-        <div className="flex col-1">
-          <Button
-            type="button"
-            label="Back"
-            icon="pi pi-arrow-left"
-            onClick={() => navigate("/books")}
-            className="p-button-sm my-auto ml-1"
-          />
+        {backButton}
+        <div className="col-4">
+          {isModifiable ? (
+            <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
+              Modify Book
+            </h1>
+          ) : (
+            <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
+              Book Details
+            </h1>
+          )}
         </div>
-        <h1 className="p-component col-10 p-text-secondary my-3 text-5xl text-center text-900 color: var(--surface-800);">
-          Book Details
-        </h1>
+        {rightButtons}
       </div>
-      <Image
-        // Leaving this line in case of future image browser side caching workaround is needed
-        src={`${image.imageSrc}${image.imageHash == "" ? "" : "?"}${
-          image.imageHash
-        }`}
-        //src={image}
-        id="imageONpage"
-        alt="Image"
-        height="350"
-        className="col-12 align-items-center flex justify-content-center"
-        imageClassName="shadow-2 border-round"
-      />
-      <div className="col-12">
+      <div className="col-4">
+        <Image
+          // Leaving this line in case of future image browser side caching workaround is needed
+          src={`${image.imageSrc}${image.imageHash == "" ? "" : "?"}${
+            image.imageHash
+          }`}
+          //src={image}
+          id="imageONpage"
+          alt="Image"
+          imageStyle={{
+            objectFit: "contain",
+            maxHeight: 450,
+            maxWidth: 400,
+          }}
+          className="col-12 align-items-center flex justify-content-center"
+          imageClassName="shadow-2 border-round"
+        />
         {isModifiable && (
           <ImageUploader
             disabled={!isModifiable}
@@ -308,247 +384,266 @@ export default function BookDetail() {
           </div>
         )}
       </div>
-      <form onSubmit={formik.handleSubmit}>
-        <div className="flex col-12 justify-content-center p-1">
-          <div className="flex p-0">
-            <label
-              className="p-component p-text-secondary text-teal-900 my-auto mr-2"
-              htmlFor="title"
-            >
-              Title:
-            </label>
-            <p className="p-component p-text-secondary text-900 text-3xl text-center my-0">
-              {title}
-            </p>
-          </div>
-        </div>
-        <div className="flex col-12 justify-content-center p-1">
-          <div className="flex p-0">
-            <label
-              className="p-component p-text-secondary text-teal-900 my-auto mr-2"
-              htmlFor="authors"
-            >
-              Author(s):
-            </label>
-            <p className="p-component p-text-secondary text-900 text-2xl text-center m-0">
-              {authors}
-            </p>
-          </div>
-        </div>
-        <div className="flex col-12 justify-content-evenly p-1">
-          <div className="flex p-0">
-            <label
-              className="p-component p-text-secondary text-teal-900 my-auto mr-2"
-              htmlFor="isbn13"
-            >
-              ISBN13:
-            </label>
-            <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
-              {isbn13}
-            </p>
-          </div>
-          <div className="flex p-0">
-            <label
-              className="p-component p-text-secondary text-teal-900 my-auto mr-2"
-              htmlFor="isbn10"
-            >
-              ISBN10:
-            </label>
-            <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
-              {isbn10}
-            </p>
-          </div>
-        </div>
-        <div className="flex col-12 justify-content-around p-1">
-          <div className="flex p-0">
-            <label
-              className="p-component p-text-secondary text-teal-900 my-auto mr-2"
-              htmlFor="publisher"
-            >
-              Publisher:
-            </label>
-            <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
-              {publisher}
-            </p>
-          </div>
-          <div className="flex p-0">
-            <label
-              className="p-component p-text-secondary text-teal-900 my-auto mr-2"
-              htmlFor="pubYear"
-            >
-              Publication Year:
-            </label>
-            <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
-              {pubYear}
-            </p>
-          </div>
-        </div>
-        <div className="flex col-12 justify-content-center p-1">
-          <div className="flex p-0 col-4">
-            <label
-              className="p-component p-text-secondary text-teal-900 my-auto mr-2"
-              htmlFor="genre"
-            >
-              Genre:
-            </label>
-            {genreDropdown}
-          </div>
-        </div>
-        <h1 className="p-component p-text-secondary mb-1 mt-2 p-0 text-xl text-center text-900 color: var(--surface-800);">
-          Dimensions (cm)
-        </h1>
-        <div className="flex col-12 justify-content-around p-1">
-          <div className="flex p-0">
-            <label
-              className="p-component p-text-secondary text-teal-900 my-auto mr-2"
-              htmlFor="height"
-            >
-              Height:
-            </label>
-            <InputNumber
-              id="height"
-              className="w-4"
-              name="height"
-              value={height}
-              maxFractionDigits={15}
-              disabled={!isModifiable}
-              onValueChange={(e: InputNumberValueChangeEvent) =>
-                setHeight(e.value ?? undefined)
-              }
-            />
-          </div>
-          <div className="flex p-0 mx-4">
-            <label
-              className="p-component p-text-secondary text-teal-900 my-auto mr-2"
-              htmlFor="width"
-            >
-              Width:
-            </label>
-            <InputNumber
-              id="width"
-              className="w-4"
-              name="width"
-              value={width}
-              disabled={!isModifiable}
-              maxFractionDigits={15}
-              onValueChange={(e: InputNumberValueChangeEvent) =>
-                setWidth(e.value ?? undefined)
-              }
-            />
-          </div>
-          <div className="flex p-0">
-            <label
-              className="p-component p-text-secondary text-teal-900 my-auto mr-2"
-              htmlFor="thickness"
-            >
-              Thickness:
-            </label>
-            <InputNumber
-              id="thickness"
-              className="w-4"
-              name="thickness"
-              value={thickness}
-              maxFractionDigits={15}
-              disabled={!isModifiable}
-              onValueChange={(e: InputNumberValueChangeEvent) =>
-                setThickness(e.value ?? undefined)
-              }
-            />
-          </div>
-        </div>
-        <div className="flex col-12 justify-content-center p-1">
-          <div className="flex p-0 col-5 -ml-2">
-            <label
-              className="p-component p-text-secondary text-teal-900 my-auto mr-2"
-              htmlFor="pageCount"
-            >
-              Page Count:
-            </label>
-            <InputNumber
-              id="pageCount"
-              className="w-4"
-              name="pageCount"
-              value={pageCount}
-              disabled={!isModifiable}
-              onValueChange={(e: InputNumberValueChangeEvent) =>
-                setPageCount(e.value ?? undefined)
-              }
-            />
-          </div>
-        </div>
-        <div className="flex col-12 justify-content-around p-1">
-          <div className="flex p-0">
-            <label
-              className="p-component p-text-secondary text-teal-900 my-auto mr-2"
-              htmlFor="genre"
-            >
-              Inventory Count:
-            </label>
-            <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
-              {stock}
-            </p>
-          </div>
-          <div className="flex p-0">
-            <label
-              className="p-component p-text-secondary text-teal-900 my-auto mr-2"
-              htmlFor="retail_price"
-            >
-              Retail Price ($):
-            </label>
-            <InputNumber
-              id="retail_price"
-              className="w-4"
-              name="retail_price"
-              value={price}
-              maxFractionDigits={15}
-              disabled={!isModifiable}
-              onValueChange={(e: InputNumberValueChangeEvent) =>
-                setPrice(e.value ?? 0)
-              }
-            />
-          </div>
-        </div>
-        {lineItemsTable}
 
-        <div className="grid col-12 justify-content-evenly mt-2">
-          {isModifiable && (
-            <Button
-              type="button"
-              label="Cancel"
-              icon="pi pi-times"
-              className="p-button-warning"
-              onClick={() => setIsModifiable(false)}
-            />
-          )}
-          {!isModifiable && (
-            <Button
-              type="button"
-              label="Edit"
-              icon="pi pi-pencil"
-              onClick={() => setIsModifiable(true)}
-            />
-          )}
-          {isModifiable && (
-            <ConfirmPopup
-              id={"bookDetailSubmit"}
-              name={"bookDetailSubmit"}
-              isPopupVisible={isConfirmationPopupVisible}
-              hideFunc={() => setIsConfirmationPopupVisible(false)}
-              onFinalSubmission={formik.handleSubmit}
-              onRejectFinalSubmission={() => {
-                //do nothing
-              }}
-              onShowPopup={() => {
-                setIsConfirmationPopupVisible(true);
-              }}
-              disabled={!isModifiable}
-              label={"Update"}
-              className="p-button-success p-button-raised"
-              icons="pi pi-save"
-            />
-          )}
-        </div>
-      </form>
+      <div className="col-8">
+        <form onSubmit={formik.handleSubmit}>
+          <div className="flex col-12 justify-content-start p-1">
+            <div className="flex p-0">
+              <label
+                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
+                htmlFor="title"
+              >
+                Title:
+              </label>
+              <p className="p-component p-text-secondary text-900 text-3xl text-center my-0">
+                {title}
+              </p>
+            </div>
+          </div>
+          <div className="flex col-12 justify-content-start p-1">
+            <div className="flex p-0">
+              <label
+                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
+                htmlFor="authors"
+              >
+                Author(s):
+              </label>
+              <p className="p-component p-text-secondary text-900 text-2xl text-center m-0">
+                {authors}
+              </p>
+            </div>
+          </div>
+          <div className="flex col-12 justify-content-start p-1">
+            <div className="flex p-0 col-6">
+              <label
+                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
+                htmlFor="isbn13"
+              >
+                ISBN13:
+              </label>
+              <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
+                {isbn13}
+              </p>
+            </div>
+            <div className="flex p-0 col-6">
+              <label
+                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
+                htmlFor="isbn10"
+              >
+                ISBN10:
+              </label>
+              <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
+                {isbn10}
+              </p>
+            </div>
+          </div>
+          <div className="flex col-12 justify-content-start p-1">
+            <div className="flex p-0 col-6">
+              <label
+                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
+                htmlFor="publisher"
+              >
+                Publisher:
+              </label>
+              <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
+                {publisher}
+              </p>
+            </div>
+            <div className="flex p-0 col-6">
+              <label
+                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
+                htmlFor="pubYear"
+              >
+                Publication Year:
+              </label>
+              <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
+                {pubYear}
+              </p>
+            </div>
+          </div>
+          <div className="flex col-12 justify-content-start p-1">
+            <div className="flex p-0 col-5">
+              <label
+                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
+                htmlFor="genre"
+              >
+                Genre:
+              </label>
+              {genreDropdown}
+            </div>
+          </div>
+          <h1 className="p-component p-text-secondary mb-1 mt-2 p-0 text-xl text-center text-900 color: var(--surface-800);">
+            Dimensions (cm)
+          </h1>
+          <div className="flex col-12 justify-content-start p-1">
+            <div className="p-0 col-4">
+              <label
+                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
+                htmlFor="height"
+              >
+                Height:
+              </label>
+              <div className="flex 2rem">
+                <InputNumber
+                  id="height"
+                  className="w-4"
+                  name="height"
+                  value={height}
+                  maxFractionDigits={5}
+                  disabled={!isModifiable}
+                  onValueChange={(e: InputNumberValueChangeEvent) =>
+                    setHeight(e.value ?? undefined)
+                  }
+                />
+              </div>
+            </div>
+            <div className="p-0 col-4">
+              <label
+                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
+                htmlFor="width"
+              >
+                Width:
+              </label>
+              <div className="flex 2rem">
+                <InputNumber
+                  id="width"
+                  className="w-4"
+                  name="width"
+                  value={width}
+                  disabled={!isModifiable}
+                  maxFractionDigits={5}
+                  onValueChange={(e: InputNumberValueChangeEvent) =>
+                    setWidth(e.value ?? undefined)
+                  }
+                />
+              </div>
+            </div>
+            <div className="p-0 col-4">
+              <label
+                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
+                htmlFor="thickness"
+              >
+                Thickness:
+              </label>
+              <div className="flex 2rem">
+                <InputNumber
+                  id="thickness"
+                  className="w-4"
+                  name="thickness"
+                  value={thickness}
+                  maxFractionDigits={5}
+                  disabled={!isModifiable}
+                  onValueChange={(e: InputNumberValueChangeEvent) =>
+                    setThickness(e.value ?? undefined)
+                  }
+                />
+              </div>
+            </div>
+          </div>
+          <div className="flex col-12 justify-content-start p-1">
+            <div className="p-0 col-6">
+              <label
+                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
+                htmlFor="pageCount"
+              >
+                Page Count:
+              </label>
+              <InputNumber
+                id="pageCount"
+                className="w-4"
+                name="pageCount"
+                value={pageCount}
+                disabled={!isModifiable}
+                onValueChange={(e: InputNumberValueChangeEvent) =>
+                  setPageCount(e.value ?? undefined)
+                }
+              />
+            </div>
+            <div className="flex p-0 col-6">
+              <label
+                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
+                htmlFor="shelfspace"
+              >
+                Shelf Space:
+              </label>
+              <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
+                {shelfSpace}
+              </p>
+            </div>
+          </div>
+          <div className="flex col-12 justify-content-start p-1">
+            <div className="flex col-6 p-0">
+              <label
+                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
+                htmlFor="invencountry"
+              >
+                Inventory Count:
+              </label>
+              <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
+                {stock}
+              </p>
+            </div>
+            <div className="flex p-0 col-6">
+              <label
+                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
+                htmlFor="daysofsupply"
+              >
+                Days of Supply:
+              </label>
+              <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
+                {daysOfSupply}
+              </p>
+            </div>
+          </div>
+          <div className="flex col-12 justify-content-start p-1">
+            <div className="flex p-0 col-4">
+              <label
+                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
+                htmlFor="shelfspace"
+              >
+                Last Month Sales:
+              </label>
+              <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
+                {lastMonthSales}
+              </p>
+            </div>
+            <div className="flex p-0 col-4">
+              <label
+                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
+                htmlFor="daysofsupply"
+              >
+                Best Buyback Price:
+              </label>
+              <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
+                {priceBodyTemplate(bestBuybackPrice)}
+              </p>
+            </div>
+            <div className="col-4 p-0">
+              <label
+                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
+                htmlFor="retailprice"
+              >
+                Retail Price:
+              </label>
+              <InputNumber
+                id="retail_price"
+                className="w-4"
+                name="retail_price"
+                mode="currency"
+                currency="USD"
+                locale="en-US"
+                value={price}
+                maxFractionDigits={2}
+                disabled={!isModifiable}
+                onValueChange={(e: InputNumberValueChangeEvent) =>
+                  setPrice(e.value ?? 0)
+                }
+              />
+            </div>
+          </div>
+        </form>
+      </div>
+      <div className="flex justify-content-center col-10">{lineItemsTable}</div>
     </div>
   );
 }

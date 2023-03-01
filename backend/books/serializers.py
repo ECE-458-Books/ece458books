@@ -21,7 +21,7 @@ class BookListAddSerializer(serializers.ModelSerializer):
     """
     authors = serializers.SlugRelatedField(queryset=Author.objects.all(), many=True, slug_field='name')
     genres = serializers.SlugRelatedField(queryset=Genre.objects.all(), many=True, slug_field='name')
-    url = serializers.StringRelatedField()
+    image_url = serializers.StringRelatedField()
     best_buyback_price = serializers.SerializerMethodField()
     last_month_sales = serializers.SerializerMethodField()
     shelf_space = serializers.SerializerMethodField()
@@ -30,7 +30,7 @@ class BookListAddSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book
         fields = [
-            'id', 'title', 'authors', 'genres', 'isbn_13', 'isbn_10', 'publisher', 'publishedDate', 'pageCount', 'width', 'height', 'thickness', 'retail_price', 'isGhost', 'stock', 'url',
+            'id', 'title', 'authors', 'genres', 'isbn_13', 'isbn_10', 'publisher', 'publishedDate', 'pageCount', 'width', 'height', 'thickness', 'retail_price', 'isGhost', 'stock', 'image_url',
             'best_buyback_price', 'last_month_sales', 'shelf_space', 'days_of_supply'
         ]
 
@@ -77,14 +77,14 @@ class BookListAddSerializer(serializers.ModelSerializer):
 class BookSerializer(serializers.ModelSerializer):
     authors = serializers.SlugRelatedField(queryset=Author.objects.all(), many=True, slug_field='name')
     genres = serializers.SlugRelatedField(queryset=Genre.objects.all(), many=True, slug_field='name')
-    url = serializers.StringRelatedField()
+    image_url = serializers.StringRelatedField()
     best_buyback_price = serializers.SerializerMethodField()
     line_items = serializers.SerializerMethodField()
 
     class Meta:
         model = Book
         fields = '__all__'
-        read_only_fields = ['title', 'authors', 'isbn_13', 'isbn_10', 'publisher', 'publishedDate', 'url', 'best_buyback_price']
+        read_only_fields = ['title', 'authors', 'isbn_13', 'isbn_10', 'publisher', 'publishedDate', 'image_url', 'best_buyback_price']
 
     def to_representation(self, instance):
         result = super(BookSerializer, self).to_representation(instance)

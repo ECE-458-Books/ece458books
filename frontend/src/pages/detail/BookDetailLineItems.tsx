@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { createColumns, TableColumn } from "../../components/TableColumns";
 import { logger } from "../../util/Logger";
 import { dateBodyTemplate, priceBodyTemplate } from "../../util/TableCellEditFuncs";
+import { Book } from "../list/BookList";
 
 export interface BookDetailLineItemsProps {
   lineItems: BookDetailLineItem[];

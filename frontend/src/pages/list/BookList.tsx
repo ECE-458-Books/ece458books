@@ -542,7 +542,11 @@ export default function BookList() {
           filters={filterParams.filters}
         >
           {columns}
-          <Column body={editDeleteCellTemplate} style={{ minWidth: "9rem" }} />
+          <Column
+            body={editDeleteCellTemplate}
+            hidden
+            style={{ minWidth: "9rem" }}
+          />
         </DataTable>
         {deletePopupVisible && deletePopup}
       </div>

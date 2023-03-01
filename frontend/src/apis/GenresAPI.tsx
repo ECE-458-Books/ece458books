@@ -15,6 +15,12 @@ export interface GetGenresReq {
   ordering: string;
 }
 
+// getGenres
+export interface GetGenresNoPageReq {
+  no_pagination: boolean;
+  ordering: string;
+}
+
 export interface APIGenre {
   id: number;
   name: string;
@@ -63,6 +69,16 @@ export const GENRES_API = {
       params: {
         no_pagination: true,
       },
+    });
+  },
+
+  getGenresNoPaginationLISTVIEW: async function (
+    req: GetGenresNoPageReq
+  ): Promise<APIGenre[]> {
+    return await API.request({
+      url: GENRES_EXTENSION,
+      method: METHOD_GET,
+      params: req,
     });
   },
 

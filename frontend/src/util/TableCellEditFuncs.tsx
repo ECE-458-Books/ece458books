@@ -106,6 +106,9 @@ export function percentBodyTemplate(value: number) {
 }
 
 export function priceBodyTemplate(value: number | bigint) {
+  if (value == null) {
+    return "-";
+  }
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",

@@ -19,7 +19,7 @@ export default function DeleteColumn<T>(props: DeleteColumnProps<T>) {
       body={rowDeleteButton}
       header={"Delete"}
       exportable={false}
-      style={{ width: "10%" }}
+      style={{ width: "2rem" }}
       hidden={props.hidden}
     ></Column>
   );

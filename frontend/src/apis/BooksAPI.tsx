@@ -41,6 +41,8 @@ export interface APIBook {
   url: string;
   best_buyback_price: number;
   last_month_sales: number;
+  shelf_space: number;
+  days_of_supply: number | string;
   line_items?: APIBookLineItem[];
 }
 
@@ -123,6 +125,16 @@ export const BOOKS_API = {
         no_pagination: true,
         vendor: vendor,
       },
+    });
+  },
+
+  getBooksNoPaginationLISTVIEW: async function (
+    req: GetBooksReq
+  ): Promise<APIBook[]> {
+    return await API.request({
+      url: BOOKS_EXTENSION,
+      method: METHOD_GET,
+      params: req,
     });
   },
 

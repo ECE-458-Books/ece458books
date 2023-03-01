@@ -185,9 +185,10 @@ export default function SalesReconciliationList() {
         ordering: sortField,
       }).then((response) => onAPIResponse(response));
     } else {
-      SALES_API.getSalesReconciliationsNoPagination().then((response) =>
-        onAPIResponseNoPagination(response)
-      );
+      SALES_API.getSalesReconciliationsNoPagination({
+        no_pagination: true,
+        ordering: sortField,
+      }).then((response) => onAPIResponseNoPagination(response));
     }
   };
 

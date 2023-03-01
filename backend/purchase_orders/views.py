@@ -152,7 +152,7 @@ class RetrieveUpdateDestroyPurchaseOrderAPIView(RetrieveUpdateDestroyAPIView):
         purchase_book_quantities = Purchase.objects.filter(purchase_order=self.get_object().id).values('book').annotate(num_books=Sum('quantity')).values('book', 'num_books')
         for purchase_book_quantity in purchase_book_quantities:
             book_to_remove_purchase = Book.objects.filter(id=purchase_book_quantity['book']).get()
-            if (book_to_remove_purchase.stock < purchase_book_quantity['num_books']):
+            if (book_to_remove_purchase.stock < purchase_book_quantity['num_books']) or (book_to_remove_purchase.isGhost):
                 return Response(
                     {
                         "error": {

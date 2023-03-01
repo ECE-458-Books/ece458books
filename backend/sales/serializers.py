@@ -17,11 +17,21 @@ class SaleSerializer(TransactionBaseSerializer):
 class SalesReconciliationSerializer(TransactionGroupBaseSerializer):
     sales = SaleSerializer(many=True)
     total_revenue = serializers.SerializerMethodField()
+    is_deletable = serializers.SerializerMethodField()
 
     class Meta:
         model = SalesReconciliation
-        fields = ['id', 'date', 'sales', 'num_books', 'num_unique_books', 'total_revenue']
+        fields = ['id', 'date', 'sales', 'num_books', 'num_unique_books', 'total_revenue', 'is_deletable']
         read_only_fields = ['id']
+
+    def get_is_deletable(self, instance):
+        # only way you can't delete is a sale is if the book is ghost
+        sales_to_delete = Sale.objects.filter(sales_reconciliation=instance.id)
+        for sale in sales_to_delete:
+            book_to_remove_sale = Book.objects.filter(id=sale.book.id).get()
+            if (book_to_remove_sale.isGhost):
+                return False
+        return True
 
     def get_price_name(self):
         return "unit_retail_price"

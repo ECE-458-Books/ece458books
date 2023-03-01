@@ -2,6 +2,8 @@ from rest_framework import serializers
 from django.db import models
 from .models import Purchase, PurchaseOrder
 from helpers.base_serializers import TransactionBaseSerializer, TransactionGroupBaseSerializer
+from django.db.models import Sum
+from books.models import Book
 
 
 class PurchaseSerializer(TransactionBaseSerializer):
@@ -15,11 +17,20 @@ class PurchaseOrderSerializer(TransactionGroupBaseSerializer):
     purchases = PurchaseSerializer(many=True)
     total_cost = serializers.SerializerMethodField()
     vendor_name = serializers.SerializerMethodField()
+    is_deletable = serializers.SerializerMethodField()
 
     class Meta:
         model = PurchaseOrder
-        fields = ['id', 'date', 'purchases', 'vendor', 'vendor_name', 'num_books', 'num_unique_books', 'total_cost']
+        fields = ['id', 'date', 'purchases', 'vendor', 'vendor_name', 'num_books', 'num_unique_books', 'total_cost', 'is_deletable']
         read_only_fields = ['id']
+
+    def get_is_deletable(self, instance):
+        purchase_book_quantities = Purchase.objects.filter(purchase_order=instance.id).values('book').annotate(num_books=Sum('quantity')).values('book', 'num_books')
+        for purchase_book_quantity in purchase_book_quantities:
+            book_to_remove_purchase = Book.objects.filter(id=purchase_book_quantity['book']).get()
+            if (book_to_remove_purchase.stock < purchase_book_quantity['num_books']) or (book_to_remove_purchase.isGhost):
+                return False
+        return True
 
     def get_price_name(self) -> str:
         return "unit_wholesale_price"

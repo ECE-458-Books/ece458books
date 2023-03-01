@@ -18,11 +18,21 @@ class BuybackOrderSerializer(TransactionGroupBaseSerializer):
     buybacks = BuybackSerializer(many=True)
     total_revenue = serializers.SerializerMethodField()
     vendor_name = serializers.SerializerMethodField()
+    is_deletable = serializers.SerializerMethodField()
 
     class Meta:
         model = BuybackOrder
-        fields = ['id', 'date', 'buybacks', 'vendor', 'vendor_name', 'num_books', 'num_unique_books', 'total_revenue']
+        fields = ['id', 'date', 'buybacks', 'vendor', 'vendor_name', 'num_books', 'num_unique_books', 'total_revenue', 'is_deletable']
         read_only_fields = ['id']
+
+    def get_is_deletable(self, instance):
+        # only way you can't delete is a buyback is if the book is ghost
+        buybacks_to_delete = Buyback.objects.filter(buyback_order=instance.id)
+        for buyback in buybacks_to_delete:
+            book_to_remove_buyback = Book.objects.filter(id=buyback.book.id).get()
+            if (book_to_remove_buyback.isGhost):
+                return False
+        return True
 
     def get_price_name(self) -> str:
         return "unit_buyback_price"

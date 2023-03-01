@@ -65,13 +65,13 @@ export interface Book {
   height?: number;
   thickness?: number;
   retailPrice: number;
-  bestBuybackPrice: number;
+  bestBuybackPrice?: number;
   stock: number;
-  lastMonthSales: number;
-  thumbnailURL: string;
+  lastMonthSales?: number;
+  thumbnailURL?: string;
   newImageData?: NewImageUploadData;
-  shelfSpace: number;
-  daysOfSupply: string | number;
+  shelfSpace?: number;
+  daysOfSupply?: string | number;
   lineItems?: BookDetailLineItem[];
 }
 

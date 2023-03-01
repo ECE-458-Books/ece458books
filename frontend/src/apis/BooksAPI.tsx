@@ -39,10 +39,10 @@ export interface APIBook {
   retail_price: number;
   stock: number;
   url: string;
-  best_buyback_price: number;
-  last_month_sales: number;
-  shelf_space: number;
-  days_of_supply: number | string;
+  best_buyback_price?: number;
+  last_month_sales?: number;
+  shelf_space?: number;
+  days_of_supply?: number | string;
   line_items?: APIBookLineItem[];
 }
 

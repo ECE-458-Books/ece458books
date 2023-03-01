@@ -2,7 +2,7 @@ import { DataTable, DataTableRowClickEvent } from "primereact/datatable";
 import { useNavigate } from "react-router-dom";
 import { createColumns, TableColumn } from "../../components/TableColumns";
 import { logger } from "../../util/Logger";
-import { dateBodyTemplate } from "../../util/TableCellEditFuncs";
+import { dateBodyTemplate, priceBodyTemplate } from "../../util/TableCellEditFuncs";
 
 export interface BookDetailLineItemsProps {
   lineItems: BookDetailLineItem[];
@@ -40,22 +40,28 @@ export default function BookDetailLineItems(props: BookDetailLineItemsProps) {
       field: "date",
       customBody: (rowData: BookDetailLineItem) =>
         dateBodyTemplate(rowData.date),
+      style: { minWidth: "8rem", width: "10rem" },
     },
     {
       header: "Type",
       field: "type",
+      style: { minWidth: "8rem", width: "10rem" },
     },
     {
       header: "Vendor",
       field: "vendorName",
+      style: { minWidth: "8rem", width: "22rem" },
     },
     {
       header: "Price",
       field: "price",
+      customBody: (rowData: Book) => priceBodyTemplate(rowData.price),
+      style: { minWidth: "6rem", width: "10rem" },
     },
     {
       header: "Quantity",
       field: "quantity",
+      style: { minWidth: "6rem", width: "8rem" },
     },
   ];
 

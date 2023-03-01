@@ -3,6 +3,7 @@ import { ConfirmDialog } from "primereact/confirmdialog";
 
 export interface ConfirmButtonProps {
   className?: string;
+  classNameDiv?: string;
   id?: string;
   name?: string;
   isPopupVisible: boolean;
@@ -18,7 +19,7 @@ export interface ConfirmButtonProps {
 
 export default function ConfirmButton(props: ConfirmButtonProps) {
   return (
-    <div>
+    <div className={props.classNameDiv ?? ""}>
       <ConfirmDialog
         id={"confirmButtonPopup" + props.id}
         visible={props.isPopupVisible}

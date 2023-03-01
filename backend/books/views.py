@@ -240,7 +240,7 @@ class ListCreateBookAPIView(ListCreateAPIView):
         # Support Sorting by best_buyback_price, last_month_sales, shelf_space, days_of_supply
         # The rationale for replicating the filter in the serializer is that it is the most efficient way to support sorting is using DRF's sorting filter
         # default_query_set = self.annotate_best_buyback_price(default_query_set)
-        default_query_set = self.annotate_last_month_sales(default_query_set)
+        # default_query_set = self.annotate_last_month_sales(default_query_set)
         default_query_set = self.annotate_shelf_space(default_query_set)
         # default_query_set = self.annotate_days_of_supply(default_query_set)
         

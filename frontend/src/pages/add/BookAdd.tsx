@@ -225,7 +225,7 @@ export default function BookAdd() {
           onImageChange(e, rowData.id)
         }
         className=""
-        style={{ height: 10, width: 20 }}
+        style={{ height: 10, width: 10 }}
       />
     );
   };
@@ -237,7 +237,7 @@ export default function BookAdd() {
         icon="pi pi-trash"
         onClick={() => onImageDelete(rowData.id)}
         className=""
-        style={{ height: 10, width: 20 }}
+        style={{ height: 10, width: 10 }}
       />
     );
   };

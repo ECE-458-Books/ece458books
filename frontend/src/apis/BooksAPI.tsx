@@ -175,8 +175,6 @@ export const BOOKS_API = {
       formData.append("setDefaultImage", "true");
     }
 
-    console.log(req);
-
     return await API.request({
       url: BOOKS_EXTENSION.concat("/".concat(req.book.id!.toString())),
       headers: {
@@ -198,7 +196,6 @@ export const BOOKS_API = {
   },
 
   addBookFinal: async function (req: AddBookFinalReq) {
-    console.log(req);
     const formData = new FormData();
     formData.append("title", req.book.title);
     formData.append("isbn_13", req.book.isbn_13.toString());

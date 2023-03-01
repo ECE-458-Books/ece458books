@@ -71,10 +71,6 @@ export default function BookDetail() {
 
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
-  const [
-    isConfirmationPopupVisibleImageDelete,
-    setIsConfirmationPopupVisibleImageDelete,
-  ] = useState<boolean>(false);
   const [genreNamesList, setGenreNamesList] = useState<string[]>([]);
 
   // Load the book data on page load
@@ -242,6 +238,9 @@ export default function BookDetail() {
     />
   );
 
+  // Image handlers
+
+  // For the delete button
   const onImageDelete = () => {
     setImage({
       imageSrc: "http://books-db.colab.duke.edu/media/books/default.jpg",
@@ -252,7 +251,19 @@ export default function BookDetail() {
     setIsImageRemoved(true);
   };
 
-  const uploadImageFileHandler = (event: FileUploadHandlerEvent) => {
+  // For the cancel button (revert to original)
+  const onImageCancel = () => {
+    setImage({
+      imageSrc: originalBookData.thumbnailURL,
+      imageHash: Date.now().toString(),
+    });
+    setImageFile(new File([""], "filename"));
+    setIsImageUploaded(false);
+    setIsImageRemoved(false);
+  };
+
+  // For the upload button
+  const onImageUpload = (event: FileUploadHandlerEvent) => {
     const file = event.files[0];
     setImageFile(file);
     setImage({ imageSrc: URL.createObjectURL(file), imageHash: "" });
@@ -322,6 +333,40 @@ export default function BookDetail() {
     </div>
   );
 
+  // Image upploader buttons
+  const imageUploadButton = (
+    <ImageUploader disabled={!isModifiable} uploadHandler={onImageUpload} />
+  );
+
+  const imageCancelButton = (
+    <Button
+      type="button"
+      label="Cancel"
+      icon="pi pi-times"
+      onClick={onImageCancel}
+      className={"p-button-sm my-auto ml-2"}
+      disabled={!isImageUploaded && !isImageRemoved}
+      visible={isModifiable}
+    />
+  );
+
+  const imageDeleteButton = (
+    <DeleteButton
+      onClick={onImageDelete}
+      visible={isModifiable}
+      disabled={isImageRemoved}
+      className={"my-auto ml-2"}
+    />
+  );
+
+  const imageUploaderButtons = (
+    <div className="flex justify-content-center">
+      {isModifiable && imageUploadButton}
+      {imageCancelButton}
+      {imageDeleteButton}
+    </div>
+  );
+
   return (
     <div className="grid flex justify-content-center">
       <Toast ref={toast} />
@@ -357,32 +402,7 @@ export default function BookDetail() {
           className="col-12 align-items-center flex justify-content-center"
           imageClassName="shadow-2 border-round"
         />
-        {isModifiable && (
-          <ImageUploader
-            disabled={!isModifiable}
-            uploadHandler={uploadImageFileHandler}
-          />
-        )}
-        {isModifiable && (
-          <div className="card flex justify-content-center my-3">
-            <ConfirmPopup
-              id={"deleteImage"}
-              name={"deleteImage"}
-              className={"p-button-danger flex"}
-              isPopupVisible={isConfirmationPopupVisibleImageDelete}
-              hideFunc={() => setIsConfirmationPopupVisibleImageDelete(false)}
-              onFinalSubmission={onImageDelete}
-              onRejectFinalSubmission={() => {
-                console.log("reject2");
-              }}
-              onShowPopup={() => {
-                setIsConfirmationPopupVisibleImageDelete(true);
-              }}
-              disabled={!isModifiable}
-              label={"Delete Cover Image"}
-            />
-          </div>
-        )}
+        {imageUploaderButtons}
       </div>
 
       <div className="col-8">

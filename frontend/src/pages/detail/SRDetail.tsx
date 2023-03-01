@@ -354,7 +354,7 @@ export default function SRDetail() {
   const deleteButton = (
     <div className="flex col-1">
       <DeleteButton
-        isEnabled={!isSRAddPage}
+        visible={!isSRAddPage}
         onClick={deleteSalesReconciliationPopup}
       />
     </div>

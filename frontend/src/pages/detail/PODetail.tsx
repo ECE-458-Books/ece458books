@@ -364,10 +364,7 @@ export default function PODetail() {
 
   const deleteButton = (
     <div className="flex col-1">
-      <DeleteButton
-        isEnabled={!isPOAddPage}
-        onClick={deletePurchaseOrderPopup}
-      />
+      <DeleteButton visible={!isPOAddPage} onClick={deletePurchaseOrderPopup} />
     </div>
   );
 

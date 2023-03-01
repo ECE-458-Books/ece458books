@@ -27,6 +27,7 @@ import { createColumns, TableColumn } from "../../components/TableColumns";
 import {
   priceBodyTemplate,
   imageBodyTemplate,
+  alteredTextBodyTemplate,
 } from "../../util/TableCellEditFuncs";
 import EditDeleteTemplate from "../../util/EditDeleteTemplate";
 import GenreDropdown, {
@@ -254,6 +255,11 @@ export default function BookList() {
       field: "shelfSpace",
       header: "Shelf Space",
       sortable: true,
+      customBody: (rowData: Book) =>
+        alteredTextBodyTemplate(
+          rowData.thickness ? "" : "font-bold",
+          rowData.shelfSpace
+        ),
       style: { minWidth: "3rem" },
     },
   ];

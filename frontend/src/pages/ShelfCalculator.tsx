@@ -31,7 +31,6 @@ interface ShelfCalculatorRow {
   maxDisplayCount: number;
   displayMode: DisplayMode;
   shelfSpace: number; // This measures the horizontal distance on store shelves
-  hasUnknownDimensions: boolean;
 }
 
 const emptyRow: ShelfCalculatorRow = {
@@ -42,7 +41,6 @@ const emptyRow: ShelfCalculatorRow = {
   maxDisplayCount: 1,
   displayMode: DisplayMode.SPINE_OUT,
   shelfSpace: 0,
-  hasUnknownDimensions: false,
 };
 
 export default function ShelfCalculator() {

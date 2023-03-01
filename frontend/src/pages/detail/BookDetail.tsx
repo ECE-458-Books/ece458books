@@ -80,7 +80,6 @@ export default function BookDetail() {
     BOOKS_API.getBookDetail({ id: id! })
       .then((response) => {
         const book = APIToInternalBookConversion(response);
-        console.log(response);
         setOriginalBookData(book);
         setTitle(book.title);
         setAuthors(book.author);

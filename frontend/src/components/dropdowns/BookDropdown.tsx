@@ -41,7 +41,6 @@ export default function BooksDropdown(props: BookDropdownProps) {
       onChange={(e) => {
         props.setSelectedBook(e.value);
       }}
-      showClear
       style={{
         width: "30rem",
       }}

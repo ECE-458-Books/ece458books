@@ -80,6 +80,7 @@ export default function BookDetail() {
     BOOKS_API.getBookDetail({ id: id! })
       .then((response) => {
         const book = APIToInternalBookConversion(response);
+        console.log(response);
         setOriginalBookData(book);
         setTitle(book.title);
         setAuthors(book.author);
@@ -99,22 +100,14 @@ export default function BookDetail() {
         setLastMonthSales(book.lastMonthSales);
         setShelfSpace(book.shelfSpace);
         setDaysOfSupply(book.daysOfSupply);
-      })
-      .catch(() => showFailure(toast, "Could not fetch book data"));
-
-    IMAGES_API.getImage({ id: id! })
-      .then((response) => {
         setImage({
-          imageSrc: response.url,
+          imageSrc: response.image_url,
           imageHash: Date.now().toString(),
         });
       })
-      .catch(() =>
-        showFailure(toast, "Image Cannot be Retrieved to Update Display")
-      );
+      .catch(() => showFailure(toast, "Could not fetch book data"));
   }, []);
 
-  // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
 
   // Validation for the form
@@ -155,7 +148,7 @@ export default function BookDetail() {
         height: height,
         thickness: thickness,
         stock: 0,
-        url: "",
+        image_url: "",
       };
       logger.debug("Submitting Book Modify", book);
       BOOKS_API.modifyBook({
@@ -164,36 +157,37 @@ export default function BookDetail() {
         isImageUploaded: isImageUploaded,
         isImageRemoved: isImageRemoved,
       })
-        .then(() => {
+        .then((response) => {
+          const updatedBook = APIToInternalBookConversion(response);
+          setOriginalBookData({
+            id: updatedBook.id!,
+            title: updatedBook.title,
+            author: updatedBook.author,
+            isbn10: updatedBook.isbn10,
+            isbn13: updatedBook.isbn13,
+            publisher: updatedBook.publisher,
+            publishedYear: updatedBook.publishedYear,
+            genres: updatedBook.genres,
+            height: updatedBook.height,
+            width: updatedBook.width,
+            thickness: updatedBook.thickness,
+            pageCount: updatedBook.pageCount,
+            stock: updatedBook.stock,
+            retailPrice: updatedBook.retailPrice,
+            thumbnailURL: updatedBook.thumbnailURL,
+            lineItems: updatedBook.lineItems,
+            bestBuybackPrice: updatedBook.bestBuybackPrice,
+            lastMonthSales: updatedBook.lastMonthSales,
+            shelfSpace: updatedBook.shelfSpace,
+            daysOfSupply: updatedBook.daysOfSupply,
+          });
+          setIsModifiable(false);
+          setIsImageUploaded(false);
+          setIsImageRemoved(false);
           showSuccess(toast, "Book Edited");
         })
         .catch(() => showFailure(toast, "Could not modify book"));
       formik.resetForm();
-      setOriginalBookData({
-        id: id!,
-        title: title,
-        author: authors,
-        isbn10: isbn10,
-        isbn13: isbn13,
-        publisher: publisher,
-        publishedYear: pubYear,
-        genres: genre,
-        height: height,
-        width: width,
-        thickness: thickness,
-        pageCount: pageCount,
-        stock: stock,
-        retailPrice: price,
-        thumbnailURL: image.imageSrc,
-        lineItems: lineItems,
-        bestBuybackPrice: bestBuybackPrice,
-        lastMonthSales: lastMonthSales,
-        shelfSpace: shelfSpace,
-        daysOfSupply: daysOfSupply,
-      });
-      setIsModifiable(false);
-      setIsImageUploaded(false);
-      setIsImageRemoved(false);
     },
   });
 

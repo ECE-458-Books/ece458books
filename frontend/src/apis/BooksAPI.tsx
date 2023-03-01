@@ -38,7 +38,7 @@ export interface APIBook {
   thickness?: number;
   retail_price: number;
   stock: number;
-  url: string;
+  image_url: string;
   best_buyback_price?: number;
   last_month_sales?: number;
   shelf_space?: number;
@@ -92,7 +92,6 @@ export interface AddBookInitialLookupReq {
 
 export interface APIBookWithDBTag extends APIBook {
   fromDB: boolean;
-  image_url: string;
 }
 
 export interface AddBooksInitialLookupResp {
@@ -152,7 +151,7 @@ export const BOOKS_API = {
     });
   },
 
-  modifyBook: async function (req: ModifyBookReq) {
+  modifyBook: async function (req: ModifyBookReq): Promise<APIBook> {
     const formData = new FormData();
     formData.append("title", req.book.title);
     formData.append("isbn_13", req.book.isbn_13.toString());

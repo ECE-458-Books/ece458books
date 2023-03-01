@@ -57,7 +57,7 @@ function NavigationBar() {
   const start = (
     <img
       alt="logo"
-      src={require("../ImaginarySoftwareLogo.jpeg")}
+      src={require("../ImaginarySoftwareLogo.png")}
       height="50"
       className="mr-2 px-3 cursor-pointer"
       onClick={() => navigate("/books")}

@@ -49,38 +49,38 @@ export default function LoginPage() {
         rel="stylesheet"
         href="https://unpkg.com/primeflex@3.1.2/primeflex.css"
       ></link>
-      <div className="col-5">
-        <div className="py-5 col-12">
-          <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
-            Login Page
-          </h1>
-        </div>
-        <div className="col-6 col-offset-5">
-          <img
-            alt="logo"
-            src={require("../../ImaginarySoftwareLogo.jpeg")}
-            height="200"
-            className="mr-2"
-          ></img>
-        </div>
+      <div className="py-5 col-12">
+        <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800);">
+          Login Page
+        </h1>
+      </div>
+      <div className="flex col-12 justify-content-center">
+        <img
+          alt="logo"
+          src={require("../../ImaginarySoftwareLogo.png")}
+          height="200"
+          className="mr-2"
+        ></img>
+      </div>
+      <div className="col-12 justify-content-center">
         <h1 className="p-component p-text-secondary text-xl text-center text-900 color: var(--surface-800);">
           Imaginary Software
         </h1>
-        <form onSubmit={onSubmit}>
-          <div className="flex flex-row justify-content-center card-container col-12">
-            <Password
-              value={password}
-              onChange={onChange}
-              toggleMask
-              feedback={false}
-            />
-          </div>
-          <div className="flex flex-row justify-content-center card-container col-12">
-            <Button type="submit" label="Log In" aria-label="Submit" />
-          </div>
-          <Messages ref={wrongPasswordRef} />
-        </form>
       </div>
+      <form onSubmit={onSubmit}>
+        <div className="flex justify-content-center col-12">
+          <Password
+            value={password}
+            onChange={onChange}
+            toggleMask
+            feedback={false}
+          />
+        </div>
+        <div className="flex justify-content-center col-12">
+          <Button type="submit" label="Log In" aria-label="Submit" />
+        </div>
+        <Messages ref={wrongPasswordRef} />
+      </form>
     </div>
   );
 }

@@ -1,11 +1,13 @@
 import { FileUpload, FileUploadHandlerEvent } from "primereact/fileupload";
 
 export const DEFAULT_BOOK_IMAGE =
-  "http://books-db.colab.duke.edu/media/books/default.jpg";
+  "https://books-db.colab.duke.edu/media/books/default.jpeg";
 
 interface ImageUploaderProps {
   uploadHandler: (e: FileUploadHandlerEvent) => void;
   disabled?: boolean;
+  className?: string;
+  style?: any;
 }
 
 export default function ImageUploader(props: ImageUploaderProps) {
@@ -18,6 +20,11 @@ export default function ImageUploader(props: ImageUploaderProps) {
       customUpload
       uploadHandler={props.uploadHandler}
       chooseLabel={"Upload image"}
+      chooseOptions={{
+        icon: "pi pi-upload",
+        className: props.className,
+        style: props.style,
+      }}
     />
   );
 }

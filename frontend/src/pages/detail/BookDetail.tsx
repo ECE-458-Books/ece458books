@@ -15,7 +15,9 @@ import { Image } from "primereact/image";
 import { FileUploadHandlerEvent } from "primereact/fileupload";
 import { GenresDropdownData } from "../../components/dropdowns/GenreDropdown";
 import { IMAGES_API } from "../../apis/ImagesAPI";
-import ImageUploader from "../../components/uploaders/ImageFileUploader";
+import ImageUploader, {
+  DEFAULT_BOOK_IMAGE,
+} from "../../components/uploaders/ImageFileUploader";
 import { showFailure, showSuccess } from "../../components/Toast";
 import { APIToInternalBookConversion } from "../../apis/Conversions";
 import { Button } from "primereact/button";
@@ -164,17 +166,6 @@ export default function BookDetail() {
       })
         .then(() => {
           showSuccess(toast, "Book Edited");
-          IMAGES_API.getImage({ id: id! })
-            .then((response) => {
-              //setImage(response.url);
-              setImage({
-                imageSrc: response.url,
-                imageHash: Date.now().toString(),
-              });
-            })
-            .catch(() =>
-              showFailure(toast, "Image Cannot be Retrieved to Update Display")
-            );
         })
         .catch(() => showFailure(toast, "Could not modify book"));
       formik.resetForm();
@@ -243,7 +234,7 @@ export default function BookDetail() {
   // For the delete button
   const onImageDelete = () => {
     setImage({
-      imageSrc: "http://books-db.colab.duke.edu/media/books/default.jpg",
+      imageSrc: DEFAULT_BOOK_IMAGE,
       imageHash: Date.now().toString(),
     });
     setImageFile(new File([""], "filename"));
@@ -265,9 +256,10 @@ export default function BookDetail() {
   // For the upload button
   const onImageUpload = (event: FileUploadHandlerEvent) => {
     const file = event.files[0];
-    setImageFile(file);
     setImage({ imageSrc: URL.createObjectURL(file), imageHash: "" });
+    setImageFile(file);
     setIsImageUploaded(true);
+    setIsImageRemoved(false);
     event.options.clear();
   };
 
@@ -335,7 +327,11 @@ export default function BookDetail() {
 
   // Image upploader buttons
   const imageUploadButton = (
-    <ImageUploader disabled={!isModifiable} uploadHandler={onImageUpload} />
+    <ImageUploader
+      disabled={!isModifiable}
+      uploadHandler={onImageUpload}
+      className="p-button-sm my-auto"
+    />
   );
 
   const imageCancelButton = (

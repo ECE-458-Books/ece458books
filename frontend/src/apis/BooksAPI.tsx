@@ -176,6 +176,8 @@ export const BOOKS_API = {
       formData.append("setDefaultImage", "true");
     }
 
+    console.log(req);
+
     return await API.request({
       url: BOOKS_EXTENSION.concat("/".concat(req.book.id!.toString())),
       headers: {

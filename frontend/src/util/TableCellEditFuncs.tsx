@@ -149,8 +149,6 @@ export function imageBodyTemplateWithButtons(
   }
   return (
     <>
-      {uploadButton}
-      {deleteButton}
       <Image
         // Leaving this line in case of future image browser side caching workaround is needed
         src={`${thumbnailURL}${
@@ -164,8 +162,11 @@ export function imageBodyTemplateWithButtons(
           maxHeight: MAX_IMAGE_HEIGHT,
           maxWidth: MAX_IMAGE_WIDTH,
         }}
-        className="col-12 align-items-center flex justify-content-center"
       />
+      <div className="flex justify-content-center">
+        {uploadButton}
+        {deleteButton}
+      </div>
     </>
   );
 }

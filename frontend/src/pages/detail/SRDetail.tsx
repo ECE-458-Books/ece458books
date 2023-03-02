@@ -128,7 +128,7 @@ export default function SRDetail() {
   const COLUMNS: TableColumn[] = [
     {
       field: "errors",
-      header: "Errors",
+      header: "CSV Errors",
       hidden: !hasUploadedCSV,
       customBody: (rowData: SRSaleRow) => errorCellBody(rowData.errors),
       style: { minWidth: "8rem" },
@@ -306,7 +306,13 @@ export default function SRDetail() {
           ? navigate("/sales-reconciliations")
           : window.location.reload();
       })
-      .catch(() => showFailure(toast, "Could not add sales reconciliation"));
+      .catch((error) => {
+        console.log(error);
+        showFailure(
+          toast,
+          error.data.errors[0] ?? "Could not add sales reconciliation"
+        );
+      });
   };
 
   // Modify the sales reconciliation

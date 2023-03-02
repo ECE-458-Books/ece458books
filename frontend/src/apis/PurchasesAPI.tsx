@@ -75,6 +75,7 @@ export interface POCSVImportReq {
 }
 
 export interface APIPurchaseCSVImportRow extends APIPOPurchaseRow {
+  isbn_13: string;
   errors: { [key: string]: string };
 }
 

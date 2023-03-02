@@ -154,7 +154,7 @@ export default function BBDetail() {
   const COLUMNS: TableColumn[] = [
     {
       field: "errors",
-      header: "Errors",
+      header: "CSV Errors",
       hidden: !hasUploadedCSV,
       customBody: (rowData: BBSaleRow) => errorCellBody(rowData.errors),
       style: { minWidth: "8rem" },
@@ -344,7 +344,12 @@ export default function BBDetail() {
         showSuccess(toast, "Book Buyback added successfully");
         isGoBackActive ? navigate("/book-buybacks") : window.location.reload();
       })
-      .catch(() => showFailure(toast, "Could not add book buyback"));
+      .catch((error) =>
+        showFailure(
+          toast,
+          error.data.details[0] ?? "Could not add book buyback"
+        )
+      );
   };
 
   // Modify the sales reconciliation

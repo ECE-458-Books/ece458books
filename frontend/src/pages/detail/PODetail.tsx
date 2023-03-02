@@ -6,7 +6,6 @@ import { Toolbar } from "primereact/toolbar";
 import { v4 as uuid } from "uuid";
 import {
   integerEditor,
-  numberEditor,
   priceBodyTemplate,
   priceEditor,
 } from "../../util/TableCellEditFuncs";
@@ -133,7 +132,7 @@ export default function PODetail() {
   const COLUMNS: TableColumn[] = [
     {
       field: "errors",
-      header: "Errors",
+      header: "CSV Errors",
       hidden: !hasUploadedCSV,
       customBody: (rowData: POPurchaseRow) => errorCellBody(rowData.errors),
       style: { minWidth: "8rem" },
@@ -238,6 +237,7 @@ export default function PODetail() {
         }
       })
       .catch((error) => {
+        console.log(CSVImport400Errors.get(error.data.errors[0]));
         showFailuresMapper(toast, error.data.errors, CSVImport400Errors);
       });
     event.options.clear();

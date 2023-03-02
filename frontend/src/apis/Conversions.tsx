@@ -264,8 +264,8 @@ export function APIToInternalPurchasesCSVConversion(
       id: uuid(),
       subtotal: 0, // Temporary, subtotal will be deprecated
       bookId: purchase.book,
-      bookTitle: purchase.book_title,
-      bookISBN: purchase.book_isbn,
+      bookTitle: formatBookForDropdown(purchase.book_title, purchase.isbn_13),
+      bookISBN: purchase.isbn_13,
       quantity: purchase.quantity,
       price: purchase.unit_wholesale_price,
       errors: purchase.errors,
@@ -314,8 +314,8 @@ export function APIToInternalSalesCSVConversion(
       id: uuid(),
       subtotal: 0, // Temporary, subtotal will be deprecated
       bookId: sale.book,
-      bookTitle: sale.book_title,
-      bookISBN: sale.book_isbn,
+      bookTitle: formatBookForDropdown(sale.book_title, sale.isbn_13),
+      bookISBN: sale.isbn_13,
       quantity: sale.quantity,
       price: sale.unit_retail_price,
       errors: sale.errors,
@@ -366,8 +366,8 @@ export function APIToInternalBuybackCSVConversion(
       id: uuid(),
       subtotal: 0, // Temporary, subtotal will be deprecated
       bookId: buyback.book,
-      bookTitle: buyback.book_title,
-      bookISBN: buyback.book_isbn,
+      bookTitle: formatBookForDropdown(buyback.book_title, buyback.isbn_13),
+      bookISBN: buyback.isbn_13,
       quantity: buyback.quantity,
       price: buyback.unit_buyback_price,
       errors: buyback.errors,

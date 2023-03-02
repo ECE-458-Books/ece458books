@@ -38,6 +38,7 @@ export interface PurchaseOrder {
   uniqueBooks: number;
   totalBooks: number;
   totalCost: number;
+  isDeletable: boolean;
   purchases: POPurchaseRow[];
 }
 

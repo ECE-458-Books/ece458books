@@ -36,6 +36,7 @@ export interface APISR {
   num_books: number;
   num_unique_books: number;
   total_revenue: number;
+  is_deletable: boolean;
 }
 
 export interface GetSRsResp {

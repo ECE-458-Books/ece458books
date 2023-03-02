@@ -32,6 +32,7 @@ export interface APIPOPurchaseRow {
 
 export interface APIPO {
   vendor_name: string;
+  is_deletable: boolean;
   id: number;
   date: string;
   vendor_id: number;

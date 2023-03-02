@@ -96,6 +96,7 @@ export default function PODetail() {
   const [hasUploadedCSV, setHasUploadedCSV] = useState<boolean>(false);
   const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false); // Whether the delete popup is shown
   const [isGoBackActive, setIsGoBackActive] = useState<boolean>(false);
+  const [isPageDeleteable, setIsPageDeleteable] = useState<boolean>(true);
 
   // Load the PO data on page load
   useEffect(() => {
@@ -107,6 +108,7 @@ export default function PODetail() {
           setSelectedVendorName(purchaseOrder.vendorName);
           setPurchases(purchaseOrder.purchases);
           setTotalCost(purchaseOrder.totalCost);
+          setIsPageDeleteable(purchaseOrder.isDeletable);
         })
         .catch(() => console.log(id));
     }
@@ -364,7 +366,11 @@ export default function PODetail() {
 
   const deleteButton = (
     <div className="flex col-1">
-      <DeleteButton visible={!isPOAddPage} onClick={deletePurchaseOrderPopup} />
+      <DeleteButton
+        visible={!isPOAddPage}
+        disabled={!isPageDeleteable}
+        onClick={deletePurchaseOrderPopup}
+      />
     </div>
   );
 

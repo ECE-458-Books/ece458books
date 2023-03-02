@@ -247,6 +247,7 @@ export function APIToInternalPOConversion(po: APIPO): PurchaseOrder {
     uniqueBooks: po.num_unique_books,
     totalCost: po.total_cost,
     purchases: purchases,
+    isDeletable: po.is_deletable,
   };
 }
 
@@ -296,6 +297,7 @@ export function APIToInternalSRConversion(sr: APISR): SalesReconciliation {
     uniqueBooks: sr.num_unique_books,
     totalRevenue: sr.total_revenue,
     sales: sales,
+    isDeletable: sr.is_deletable,
   };
 }
 
@@ -347,6 +349,7 @@ export function APIToInternalBBConversion(bb: APIBB): BuyBack {
     vendorID: bb.vendor,
     vendorName: bb.vendor_name,
     sales: sales,
+    isDeletable: bb.is_deletable,
   };
 }
 

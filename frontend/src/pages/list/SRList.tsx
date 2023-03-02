@@ -37,6 +37,7 @@ export interface SalesReconciliation {
   uniqueBooks: number;
   totalBooks: number;
   totalRevenue: number;
+  isDeletable: boolean;
 }
 
 const COLUMNS: TableColumn[] = [

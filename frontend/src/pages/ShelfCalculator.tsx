@@ -8,7 +8,10 @@ import DisplayModeDropdown, {
 } from "../components/dropdowns/DisplayModeDropdown";
 import { createColumns, TableColumn } from "../components/TableColumns";
 import { filterById, findById } from "../util/IDOperations";
-import { numberEditor } from "../util/TableCellEditFuncs";
+import {
+  alteredTextBodyTemplate,
+  numberEditor,
+} from "../util/TableCellEditFuncs";
 import { Book } from "./list/BookList";
 import { DeleteTemplate } from "../util/EditDeleteTemplate";
 import AddRowButton from "../components/buttons/AddRowButton";
@@ -92,8 +95,13 @@ export default function ShelfCalculator() {
     },
     {
       field: "shelfSpace",
-      header: "Shelf Space",
+      header: "Shelf Space (Bold=Estimation)",
       style: { width: "10%" },
+      customBody: (rowData: Book) =>
+        alteredTextBodyTemplate(
+          rowData.thickness ? "" : "font-bold",
+          rowData.shelfSpace
+        ),
     },
   ];
 

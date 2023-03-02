@@ -253,7 +253,7 @@ export default function BookList() {
     },
     {
       field: "shelfSpace",
-      header: "Shelf Space",
+      header: "Shelf Space (Bold=Estimation)",
       sortable: true,
       customBody: (rowData: Book) =>
         alteredTextBodyTemplate(

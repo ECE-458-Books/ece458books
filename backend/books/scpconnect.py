@@ -1,8 +1,8 @@
-from paramiko import SSHClient, AutoAddPolicy
-from scp import SCPClient
 import environ, os, io
+import asyncio, asyncssh, sys
+from datetime import datetime
 
-from .utils import delete_all_files_in_file_location
+# from .utils import delete_all_files_in_file_location
 
 class SCPTools:
     def __init__(
@@ -27,38 +27,42 @@ class SCPTools:
     
     def get_host(self):
         return self.SCP_HOST
-
-
-    def connect_ssh(
-        self,
-    ):
-        self.ssh = SSHClient()
-        self.ssh.load_system_host_keys()
-        self.ssh.set_missing_host_key_policy(AutoAddPolicy())
-        self.ssh.connect(self.SCP_HOST, username=self.SCP_USER, password=self.SCP_PASSWORD)
-    
-    def connect_scp(
-        self,
-    ):
-        self.scp = SCPClient(self.ssh.get_transport())
-    
-    def close_scp_ssh(
-        self,
-    ):
-        self.scp.close()
-        self.ssh.close()
     
     def send_image_data(
         self,
         file_location: str,
     ):
-        self.connect_ssh()
-        self.connect_scp()
-        self.scp.put(file_location, remote_path=self.INTERNAL_BOOK_IMAGE_ABSOLUTE_PATH)
-        self.close_scp_ssh()
+        retry = 0
+        retry_limit = 5
+        while True:
+            try:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                asyncio.get_event_loop().run_until_complete(self.program(file_location))
+                break
+            except (OSError, asyncssh.Error) as exc:
+                if retry > retry_limit:
+                    sys.exit(f'SSH connection failed after retrying {retry_limit} times ' + str(exc))
+                    
+                retry = retry + 1
+                print(f'SSH connection failed.. retrying {retry}:{file_location}')
 
-        # Delete images
-        delete_all_files_in_file_location(file_location)
+        # Delete my sent image
+        os.remove(file_location)
 
         return self.SCP_HOST + self.INTERNAL_BOOK_IMAGE_REMOTE_PATH
     
+    async def run_client(self):
+        while True:
+            conn = await asyncio.wait_for(asyncssh.connect(self.SCP_HOST, username=self.SCP_USER, password=self.SCP_PASSWORD, known_hosts = None),20)
+            if conn != None:
+                break
+        return conn
+
+    async def program(self, file_location):
+        await asyncio.gather(self.run_command(file_location))
+
+    async def run_command(self, file_location):    
+        conn = await self.run_client()        
+        await asyncssh.scp(file_location, (conn, self.INTERNAL_BOOK_IMAGE_ABSOLUTE_PATH))
+        conn.close()

@@ -26,6 +26,7 @@ import BookDetailLineItems, { BookDetailLineItem } from "./BookDetailLineItems";
 import DeleteButton from "../../components/buttons/DeleteButton";
 import BackButton from "../../components/buttons/BackButton";
 import { priceBodyTemplate } from "../../util/TableCellEditFuncs";
+import DeletePopup from "../../components/popups/DeletePopup";
 
 interface ErrorDisplay {
   message: string;
@@ -74,6 +75,7 @@ export default function BookDetail() {
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
   const [genreNamesList, setGenreNamesList] = useState<string[]>([]);
+  const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false); // Whether the delete popup is visible
 
   // Load the book data on page load
   useEffect(() => {
@@ -219,6 +221,7 @@ export default function BookDetail() {
       setSelectedGenre={setGenre}
       genresList={genreNamesList}
       isDisabled={!isModifiable}
+      showClearButton={false}
     />
   );
 
@@ -256,6 +259,32 @@ export default function BookDetail() {
     event.options.clear();
   };
 
+  const deleteBookPopup = () => {
+    logger.debug("Delete Book Clicked");
+    setDeletePopupVisible(true);
+  };
+
+  const deleteBookFinal = () => {
+    logger.debug("Delete Book Finalized");
+    setDeletePopupVisible(false);
+    BOOKS_API.deleteBook({ id: id! })
+      .then(() => {
+        showSuccess(toast, "Book deleted");
+      })
+      .catch(() => {
+        showFailure(toast, "Book could not be deleted");
+        return;
+      });
+  };
+
+  const deletePopup = (
+    <DeletePopup
+      deleteItemIdentifier={title}
+      onConfirm={() => deleteBookFinal()}
+      setIsVisible={setDeletePopupVisible}
+    />
+  );
+
   // The navigator to switch pages
   const navigate = useNavigate();
 
@@ -269,7 +298,11 @@ export default function BookDetail() {
   );
 
   const deleteButton = (
-    <BackButton onClick={() => navigate("/books")} className="ml-1" />
+    <DeleteButton
+      onClick={deleteBookPopup}
+      disabled={stock > 0}
+      className={"ml-1 "}
+    />
   );
 
   // Right
@@ -498,7 +531,7 @@ export default function BookDetail() {
                   className="w-4"
                   name="height"
                   value={height}
-                  maxFractionDigits={5}
+                  maxFractionDigits={2}
                   disabled={!isModifiable}
                   onValueChange={(e: InputNumberValueChangeEvent) =>
                     setHeight(e.value ?? undefined)
@@ -520,7 +553,7 @@ export default function BookDetail() {
                   name="width"
                   value={width}
                   disabled={!isModifiable}
-                  maxFractionDigits={5}
+                  maxFractionDigits={2}
                   onValueChange={(e: InputNumberValueChangeEvent) =>
                     setWidth(e.value ?? undefined)
                   }
@@ -540,7 +573,7 @@ export default function BookDetail() {
                   className="w-4"
                   name="thickness"
                   value={thickness}
-                  maxFractionDigits={5}
+                  maxFractionDigits={2}
                   disabled={!isModifiable}
                   onValueChange={(e: InputNumberValueChangeEvent) =>
                     setThickness(e.value ?? undefined)
@@ -652,6 +685,7 @@ export default function BookDetail() {
           </div>
         </form>
       </div>
+      {deletePopupVisible && deletePopup}
       <div className="flex justify-content-center col-10">{lineItemsTable}</div>
     </div>
   );

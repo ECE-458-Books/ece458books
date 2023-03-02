@@ -4,6 +4,7 @@ import { Button } from "primereact/button";
 import { DataTable } from "primereact/datatable";
 import {
   imageBodyTemplateWithButtons,
+  integerEditor,
   numberEditor,
   priceEditor,
 } from "../../util/TableCellEditFuncs";
@@ -29,6 +30,7 @@ import { useImmer } from "use-immer";
 import { findById } from "../../util/IDOperations";
 import BackButton from "../../components/buttons/BackButton";
 import { useNavigate } from "react-router-dom";
+import "../../css/TableCell.css";
 import axios from "axios";
 
 export interface BookWithDBTag extends Book {
@@ -61,6 +63,8 @@ export default function BookAdd() {
       setSelectedGenre={onChange}
       genresList={genreNamesList}
       selectedGenre={value}
+      style={{ width: "10rem" }}
+      showClearButton={false}
     />
   );
 
@@ -81,7 +85,7 @@ export default function BookAdd() {
           imageUploadButton(rowData),
           rowData.thumbnailURL
         ),
-      style: { width: "15%" },
+      style: { width: "1rem" },
     },
 
     {
@@ -97,7 +101,7 @@ export default function BookAdd() {
     {
       field: "genres",
       header: "Genre",
-      style: { width: "20%" },
+      style: { width: "13%" },
       customBody: (rowData: BookWithDBTag) =>
         genresDropdownEditor(rowData.genres, (newValue) => {
           setBooks((draft) => {
@@ -109,12 +113,12 @@ export default function BookAdd() {
     {
       field: "isbn13",
       header: "ISBN 13",
-      style: { width: "10%" },
+      style: { width: "7%" },
     },
     {
       field: "isbn10",
       header: "ISBN 10",
-      style: { width: "10%" },
+      style: { width: "5%" },
     },
     {
       field: "publisher",
@@ -123,20 +127,22 @@ export default function BookAdd() {
     },
     {
       field: "publishedYear",
-      header: "Publication Year",
-      style: { width: "5%" },
+      header: "Publish Year",
+      style: { width: "2rem" },
     },
     {
       field: "pageCount",
       header: "Page Count",
       style: { width: "5%" },
       customBody: (rowData: BookWithDBTag) =>
-        numberEditor(rowData.pageCount, (newValue) => {
-          setBooks((draft) => {
-            const book = findById(draft, rowData.id)!;
-            book.pageCount = newValue;
-          });
-        }),
+        integerEditor(rowData.pageCount, (newValue) => {
+            setBooks((draft) => {
+              const book = findById(draft, rowData.id)!;
+              book.pageCount = newValue;
+            });
+          },
+          "integernumber"
+        ),
     },
     {
       field: "width",
@@ -144,11 +150,13 @@ export default function BookAdd() {
       style: { width: "5%" },
       customBody: (rowData: BookWithDBTag) =>
         numberEditor(rowData.width, (newValue) => {
-          setBooks((draft) => {
-            const book = findById(draft, rowData.id)!;
-            book.width = newValue;
-          });
-        }),
+            setBooks((draft) => {
+              const book = findById(draft, rowData.id)!;
+              book.width = newValue;
+            });
+          },
+          "decimalnumber"
+        ),
     },
     {
       field: "height",
@@ -156,11 +164,13 @@ export default function BookAdd() {
       style: { width: "5%" },
       customBody: (rowData: BookWithDBTag) =>
         numberEditor(rowData.height, (newValue) => {
-          setBooks((draft) => {
-            const book = findById(draft, rowData.id)!;
-            book.height = newValue;
-          });
-        }),
+            setBooks((draft) => {
+              const book = findById(draft, rowData.id)!;
+              book.height = newValue;
+            });
+          },
+          "decimalnumber"
+        ),
     },
     {
       field: "thickness",
@@ -168,11 +178,13 @@ export default function BookAdd() {
       style: { width: "5%" },
       customBody: (rowData: BookWithDBTag) =>
         numberEditor(rowData.thickness, (newValue) => {
-          setBooks((draft) => {
-            const book = findById(draft, rowData.id)!;
-            book.thickness = newValue;
-          });
-        }),
+            setBooks((draft) => {
+              const book = findById(draft, rowData.id)!;
+              book.thickness = newValue;
+            });
+          },
+          "decimalnumber"
+        ),
     },
     {
       field: "retailPrice",
@@ -180,11 +192,13 @@ export default function BookAdd() {
       style: { width: "5%" },
       customBody: (rowData: BookWithDBTag) =>
         priceEditor(rowData.retailPrice, (newValue) => {
-          setBooks((draft) => {
-            const book = findById(draft, rowData.id)!;
-            book.retailPrice = newValue;
-          });
-        }),
+            setBooks((draft) => {
+              const book = findById(draft, rowData.id)!;
+              book.retailPrice = newValue;
+            });
+          },
+          "retailnumber"
+        ),
     },
   ];
 
@@ -230,7 +244,7 @@ export default function BookAdd() {
           onImageChange(e, rowData.id)
         }
         className=""
-        style={{ height: 10, width: 10 }}
+        style={{ height: 10, width: 10, paddingLeft: 5 }}
       />
     );
   };
@@ -242,7 +256,7 @@ export default function BookAdd() {
         icon="pi pi-trash"
         onClick={() => onImageDelete(rowData.id)}
         className=""
-        style={{ height: 10, width: 10 }}
+        style={{ height: 10, width: 22 }}
       />
     );
   };
@@ -367,7 +381,7 @@ export default function BookAdd() {
           </h1>
         </div>
       </div>
-      <div className="col-11">
+      <div className="col-12">
         <form onSubmit={onISBNInitialSubmit}>
           <div className="justify content center col-6 col-offset-3">
             <div className="py-2">
@@ -421,10 +435,11 @@ export default function BookAdd() {
             editMode="cell"
             className="editable-cells-table py-5"
             responsiveLayout="scroll"
+            size="small"
           >
             {columns}
           </DataTable>
-          <div className="col-12 col-offset-5">
+          <div className="flex justify-content-center col-12">
             <Button
               id="confirmbooks"
               name="confirmbooks"

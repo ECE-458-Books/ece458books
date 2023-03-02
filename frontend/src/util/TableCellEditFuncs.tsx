@@ -28,6 +28,7 @@ export function isPositiveInteger(val: number) {
 export function textEditor(
   value: string,
   onChange: (newValue: string) => void,
+  className?: string,
   isDisabled?: boolean
 ) {
   return (
@@ -35,14 +36,16 @@ export function textEditor(
       type="text"
       value={value}
       disabled={isDisabled ?? false}
+      className={className}
       onChange={(e) => onChange(e.target.value ?? "")}
     />
   );
 }
 
-export function numberEditor(
+export function integerEditor(
   value: number | undefined,
   onChange: (newValue: number) => void,
+  className?: string,
   isDisabled?: boolean,
   min?: number,
   max?: number
@@ -53,6 +56,27 @@ export function numberEditor(
       max={max}
       value={value}
       disabled={isDisabled ?? false}
+      className={className}
+      onValueChange={(e) => onChange(e.target.value ?? 1)}
+    />
+  );
+}
+
+export function numberEditor(
+  value: number | undefined,
+  onChange: (newValue: number) => void,
+  className?: string,
+  isDisabled?: boolean,
+  min?: number,
+  max?: number
+) {
+  return (
+    <InputNumber
+      min={min ?? 1}
+      max={max}
+      value={value}
+      disabled={isDisabled ?? false}
+      className={className}
       onValueChange={(e) => onChange(e.target.value ?? 1)}
       mode="decimal"
       maxFractionDigits={2}
@@ -63,6 +87,7 @@ export function numberEditor(
 export function priceEditor(
   value: number,
   onChange: (newValue: number) => void,
+  className?: string,
   isDisabled?: boolean
 ) {
   return (
@@ -70,6 +95,8 @@ export function priceEditor(
       value={value}
       onValueChange={(e) => onChange(e.target.value ?? 0)}
       disabled={isDisabled ?? false}
+      maxFractionDigits={2}
+      className={className}
       mode="currency"
       currency="USD"
       locale="en-US"
@@ -81,6 +108,7 @@ export function priceEditor(
 export function percentEditor(
   value: number | undefined,
   onChange: (newValue: number) => void,
+  className?: string,
   disabled?: boolean
 ) {
   return (
@@ -91,6 +119,7 @@ export function percentEditor(
       mode="decimal"
       maxFractionDigits={2}
       minFractionDigits={2}
+      className={className}
       max={100}
       disabled={disabled ?? false}
     />
@@ -149,21 +178,23 @@ export function imageBodyTemplateWithButtons(
   }
   return (
     <>
-      <Image
-        // Leaving this line in case of future image browser side caching workaround is needed
-        src={`${thumbnailURL}${
-          thumbnailURL.startsWith("https://books") ? "?" + Date.now() : ""
-        }`}
-        // src={thumbnailURL}
-        id="imageONpage"
-        alt="Image"
-        imageStyle={{
-          objectFit: "contain",
-          maxHeight: MAX_IMAGE_HEIGHT,
-          maxWidth: MAX_IMAGE_WIDTH,
-        }}
-      />
       <div className="flex justify-content-center">
+        <Image
+          // Leaving this line in case of future image browser side caching workaround is needed
+          src={`${thumbnailURL}${
+            thumbnailURL.startsWith("https://books") ? "?" + Date.now() : ""
+          }`}
+          // src={thumbnailURL}
+          id="imageONpage"
+          alt="Image"
+          imageStyle={{
+            objectFit: "contain",
+            maxHeight: MAX_IMAGE_HEIGHT,
+            maxWidth: MAX_IMAGE_WIDTH,
+          }}
+        />
+      </div>
+      <div className="flex justify-content-between">
         {uploadButton}
         {deleteButton}
       </div>

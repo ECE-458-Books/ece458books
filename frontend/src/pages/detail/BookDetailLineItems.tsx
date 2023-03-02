@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { createColumns, TableColumn } from "../../components/TableColumns";
 import { logger } from "../../util/Logger";
 import { dateBodyTemplate, priceBodyTemplate } from "../../util/TableCellEditFuncs";
+import { Book } from "../list/BookList";
 
 export interface BookDetailLineItemsProps {
   lineItems: BookDetailLineItem[];
@@ -40,12 +41,12 @@ export default function BookDetailLineItems(props: BookDetailLineItemsProps) {
       field: "date",
       customBody: (rowData: BookDetailLineItem) =>
         dateBodyTemplate(rowData.date),
-      style: { minWidth: "8rem", width: "10rem" },
+      style: { minWidth: "8rem", width: "8rem" },
     },
     {
       header: "Type",
       field: "type",
-      style: { minWidth: "8rem", width: "10rem" },
+      style: { minWidth: "8rem", width: "12rem" },
     },
     {
       header: "Vendor",
@@ -74,7 +75,12 @@ export default function BookDetailLineItems(props: BookDetailLineItemsProps) {
 
   const columns = createColumns(COLUMNS);
   return (
-    <DataTable onRowClick={onRowClick} rowHover value={props.lineItems}>
+    <DataTable
+      onRowClick={onRowClick}
+      rowHover
+      size="small"
+      value={props.lineItems}
+    >
       {columns}
     </DataTable>
   );

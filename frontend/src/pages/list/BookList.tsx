@@ -180,6 +180,7 @@ export default function BookList() {
       setSelectedGenre={setSelectedGenre}
       genresList={genreNamesList}
       style={style}
+      showClearButton={true}
     />
   );
 
@@ -599,7 +600,11 @@ export default function BookList() {
           filters={filterParams.filters}
         >
           {columns}
-          <Column body={editDeleteCellTemplate} style={{ minWidth: "9rem" }} />
+          <Column
+            body={editDeleteCellTemplate}
+            hidden
+            style={{ minWidth: "9rem" }}
+          />
         </DataTable>
         {deletePopupVisible && deletePopup}
       </div>

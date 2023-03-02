@@ -53,6 +53,7 @@ export interface SRSaleRow {
   isNewRow: boolean;
   id: string;
   bookId: number;
+  bookISBN: string;
   bookTitle: string;
   quantity: number;
   price: number;
@@ -64,6 +65,7 @@ export default function SRDetail() {
     isNewRow: true,
     id: uuid(),
     bookId: 0,
+    bookISBN: "",
     bookTitle: "",
     quantity: 1,
     price: 0,

@@ -101,7 +101,7 @@ export default function ShelfCalculator() {
     },
     {
       field: "shelfSpace",
-      header: "Shelf Space (Bold=Estimation)",
+      header: "Shelf Space (inches) (Bold=Estimation)",
       style: { width: "10%" },
       customBody: (rowData: ShelfCalculatorRow) =>
         alteredTextBodyTemplate(
@@ -196,7 +196,7 @@ export default function ShelfCalculator() {
 
   const updateTotalShelfSpace = (rows: ShelfCalculatorRow[]) => {
     const total = rows.reduce((total, item) => total + item.shelfSpace, 0);
-    setTotalShelfSpace(total);
+    setTotalShelfSpace(Math.round(total * 100) / 100);
   };
 
   // Dropdowns
@@ -237,7 +237,10 @@ export default function ShelfCalculator() {
 
   // Delete icon for each row
   const rowDeleteButton = DeleteTemplate<ShelfCalculatorRow>({
-    onDelete: (rowData) => filterById(rows, rowData.id, setRows),
+    onDelete: (rowData) => {
+      const newRows = filterById(rows, rowData.id, setRows);
+      updateTotalShelfSpace(newRows);
+    },
   });
 
   // Button for adding a new row
@@ -272,7 +275,7 @@ export default function ShelfCalculator() {
         <Toolbar
           className="mb-4"
           left={rowAddButton}
-          right={`Total Shelf Space: ${totalShelfSpace}`}
+          right={`Total Shelf Space (inches): ${totalShelfSpace}`}
         />
         <DataTable
           showGridlines

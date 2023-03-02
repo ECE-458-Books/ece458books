@@ -144,7 +144,9 @@ export default function BookList() {
 
   const [genreNamesList, setGenreNamesList] = useState<string[]>([]); // List of all genre names
 
-  const [visibleColumns, setVisibleColumns] = useState<ColumnMeta[]>([]);
+  const [visibleColumns, setVisibleColumns] = useState<ColumnMeta[]>(
+    columnsMeta.slice(2, 6)
+  );
 
   // The current state of sorting.
   const [sortParams, setSortParams] = useState<DataTableSortEvent>({
@@ -205,6 +207,7 @@ export default function BookList() {
       filterPlaceholder: "Search by Authors",
       sortable: true,
       filterable: true,
+      style: { minWidth: "8rem" },
     },
     {
       field: "genres",
@@ -221,7 +224,7 @@ export default function BookList() {
       filterPlaceholder: "Search by ISBN",
       sortable: true,
       filterable: true,
-      style: { minWidth: "10rem" },
+      style: { minWidth: "8rem" },
     },
     {
       field: "isbn10",
@@ -229,7 +232,7 @@ export default function BookList() {
       filterPlaceholder: "Search by ISBN",
       sortable: true,
       filterable: false,
-      style: { minWidth: "8rem" },
+      style: { minWidth: "6rem" },
       hidden: !(
         visibleColumns.filter((item) => item.field == "isbn10").length > 0
       ),
@@ -254,7 +257,6 @@ export default function BookList() {
     {
       field: "bestBuybackPrice",
       header: "Best Buyback Price ($)",
-      sortable: true,
       customBody: (rowData: Book) =>
         priceBodyTemplate(rowData.bestBuybackPrice),
       style: { minWidth: "6rem" },
@@ -267,7 +269,7 @@ export default function BookList() {
       field: "stock",
       header: "Inventory Count",
       sortable: true,
-      style: { minWidth: "3rem" },
+      style: { minWidth: "4rem" },
     },
     {
       field: "daysOfSupply",
@@ -289,7 +291,7 @@ export default function BookList() {
     },
     {
       field: "shelfSpace",
-      header: "Shelf Space (Bold=Estimation)",
+      header: "Shelf Space (Bold = Estimation)",
       sortable: true,
       customBody: (rowData: Book) =>
         alteredTextBodyTemplate(

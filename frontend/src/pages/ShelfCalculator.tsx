@@ -83,6 +83,7 @@ export default function ShelfCalculator() {
           (newValue) => {
             handleDisplayCountChange(rowData, newValue);
           },
+          "",
           false,
           0, // min
           rowData.maxDisplayCount // max

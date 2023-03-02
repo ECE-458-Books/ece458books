@@ -5,6 +5,7 @@ import ConfirmPopup from "../../components/popups/ConfirmPopup";
 import { Toolbar } from "primereact/toolbar";
 import { v4 as uuid } from "uuid";
 import {
+  integerEditor,
   numberEditor,
   priceBodyTemplate,
   priceEditor,
@@ -49,6 +50,7 @@ import EditCancelButton from "../../components/buttons/EditCancelDetailButton";
 import TotalDollars from "../../components/text/TotalDollars";
 import OneDayCalendar from "../../components/OneDayCalendar";
 import DeleteColumn from "../../components/datatable/DeleteColumn";
+import "../../css/TableCell.css";
 
 export interface POPurchaseRow {
   isNewRow: boolean; // true if the user added this row, false if it already existed
@@ -128,7 +130,7 @@ export default function PODetail() {
       header: "Errors",
       hidden: !hasUploadedCSV,
       customBody: (rowData: POPurchaseRow) => errorCellBody(rowData.errors),
-      style: { minWidth: "2rem" },
+      style: { minWidth: "8rem" },
     },
     {
       field: "bookTitle",
@@ -149,7 +151,7 @@ export default function PODetail() {
       field: "quantity",
       header: "Quantity",
       customBody: (rowData: POPurchaseRow) =>
-        numberEditor(
+        integerEditor(
           rowData.quantity,
           (newValue) => {
             setPurchases((draft) => {
@@ -158,8 +160,10 @@ export default function PODetail() {
               setTotalCost(calculateTotal(draft));
             });
           },
+          "integernumberPODetail",
           !isModifiable
         ),
+      style: { minWidth: "8rem" },
     },
     {
       field: "unitWholesalePrice",
@@ -174,8 +178,10 @@ export default function PODetail() {
               setTotalCost(calculateTotal(draft));
             });
           },
+          "retailnumberPODetail",
           !isModifiable
         ),
+      style: { minWidth: "10rem" },
     },
     {
       field: "subtotal",
@@ -534,7 +540,6 @@ export default function PODetail() {
                 {vendorDropdown}
               </div>
             </div>
-
             <DataTable
               showGridlines
               value={purchases}

@@ -57,6 +57,7 @@ import { VENDORS_API } from "../../apis/VendorsAPI";
 import { FileUploadHandlerEvent } from "primereact/fileupload";
 import CSVUploader from "../../components/uploaders/CSVFileUploader";
 import "../../css/TableCell.css";
+import CSVEndUserDocButton from "../../components/buttons/CSVEndUserDocButton";
 
 export interface BBDetailState {
   id: number;
@@ -436,10 +437,15 @@ export default function BBDetail() {
     />
   );
 
+  const csvGuideButton = (
+    <CSVEndUserDocButton visible={isModifiable} toast={toast} />
+  );
+
   const leftToolbar = (
     <>
       {addRowButton}
       {csvImportButton}
+      {csvGuideButton}
     </>
   );
 

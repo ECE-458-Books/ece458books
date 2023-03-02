@@ -55,6 +55,7 @@ import TotalDollars from "../../components/text/TotalDollars";
 import OneDayCalendar from "../../components/OneDayCalendar";
 import DeleteColumn from "../../components/datatable/DeleteColumn";
 import "../../css/TableCell.css";
+import CSVEndUserDocButton from "../../components/buttons/CSVEndUserDocButton";
 
 export interface POPurchaseRow {
   isNewRow: boolean; // true if the user added this row, false if it already existed
@@ -403,6 +404,10 @@ export default function PODetail() {
     />
   );
 
+  const csvGuideButton = (
+    <CSVEndUserDocButton visible={isModifiable} toast={toast} />
+  );
+
   const csvImportButton = (
     <CSVUploader visible={isModifiable} uploadHandler={csvUploadHandler} />
   );
@@ -411,6 +416,7 @@ export default function PODetail() {
     <>
       {addRowButton}
       {csvImportButton}
+      {csvGuideButton}
     </>
   );
 

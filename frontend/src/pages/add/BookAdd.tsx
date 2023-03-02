@@ -21,7 +21,7 @@ import { createColumns, TableColumn } from "../../components/TableColumns";
 import GenresDropdown, {
   GenresDropdownData,
 } from "../../components/dropdowns/GenreDropdown";
-import { showFailure } from "../../components/Toast";
+import { showFailure, showSuccess } from "../../components/Toast";
 import ImageUploader, {
   DEFAULT_BOOK_IMAGE,
 } from "../../components/uploaders/ImageFileUploader";
@@ -41,6 +41,7 @@ export default function BookAdd() {
   const [textBox, setTextBox] = useState<string>("");
   const [books, setBooks] = useImmer<BookWithDBTag[]>([]);
   const [genreNamesList, setGenreNamesList] = useState<string[]>([]);
+  const [isLoadingButton, setIsLoadingButton] = useState<boolean>(false);
 
   const statusTemplate = (rowData: BookWithDBTag) => {
     if (rowData.fromDB && !rowData.isGhost!) {
@@ -266,8 +267,10 @@ export default function BookAdd() {
   const onISBNInitialSubmit = (event: FormEvent<HTMLFormElement>): void => {
     logger.debug("Submitting Initial Book Lookup", textBox);
     setBooks([]);
+    setIsLoadingButton(true);
     BOOKS_API.addBookInitialLookup({ isbns: textBox })
       .then((response) => {
+        setIsLoadingButton(false);
         for (const book of response.books) {
           downloadAndSetBook(book);
         }
@@ -281,7 +284,10 @@ export default function BookAdd() {
           );
         }
       })
-      .catch(() => showFailure(toast, "Could not add books"));
+      .catch(() => {
+        setIsLoadingButton(false);
+        showFailure(toast, "Could not add books");
+      });
 
     event.preventDefault();
   };
@@ -340,16 +346,20 @@ export default function BookAdd() {
           image: book.newImageData!.imageFile,
           isImageUploaded: book.newImageData!.isImageUpload!,
           isImageRemoved: book.newImageData!.isImageDelete!,
-        }).catch(() => showFailure(toast, "Could not add ".concat(book.title)));
+        })
+          .then(() => showSuccess(toast, "Book Added ".concat(book.title)))
+          .catch(() => showFailure(toast, "Could not add ".concat(book.title)));
       } else {
         BOOKS_API.modifyBook({
           book: InternalToAPIBookConversion(book),
           image: book.newImageData!.imageFile!,
           isImageUploaded: book.newImageData!.isImageUpload!,
           isImageRemoved: book.newImageData!.isImageDelete!,
-        }).catch(() => {
-          showFailure(toast, "Could not modify ".concat(book.title));
-        });
+        })
+          .then(() => showSuccess(toast, "Book Modified ".concat(book.title)))
+          .catch(() => {
+            showFailure(toast, "Could not modify ".concat(book.title));
+          });
       }
     }
     event.preventDefault();
@@ -410,13 +420,22 @@ export default function BookAdd() {
                 onClick={() => setTextBox("")}
                 className="p-button-info"
               />
-              <Button
-                id="addbooksubmission"
-                name="addbooksubmission"
-                label="Lookup"
-                type="submit"
-                className="p-button-success p-button-raised"
-              />
+              <div>
+                {isLoadingButton && (
+                  <i
+                    className="pi pi-spin pi-spinner mr-1"
+                    style={{ fontSize: "2rem" }}
+                  ></i>
+                )}
+                <Button
+                  id="addbooksubmission"
+                  name="addbooksubmission"
+                  label="Lookup"
+                  type="submit"
+                  icon
+                  className="p-button-success p-button-raised"
+                />
+              </div>
             </div>
           </div>
         </form>

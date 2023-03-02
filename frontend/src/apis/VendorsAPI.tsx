@@ -14,6 +14,11 @@ export interface GetVendorsReq {
   ordering: string;
 }
 
+export interface GetVendorNoPagesReq {
+  no_pagination: boolean;
+  ordering: string;
+}
+
 export interface APIVendor {
   id: number;
   name: string;
@@ -83,6 +88,16 @@ export const VENDORS_API = {
         no_pagination: true,
         has_buyback_policy: has_buyback_policy,
       },
+    });
+  },
+
+  getVendorsNoPaginationLISTVIEW: async function (
+    req: GetVendorNoPagesReq
+  ): Promise<GetVendorsResp> {
+    return await API.request({
+      url: VENDORS_EXTENSION,
+      method: METHOD_GET,
+      params: req,
     });
   },
 

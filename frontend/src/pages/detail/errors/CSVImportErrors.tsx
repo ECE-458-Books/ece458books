@@ -9,20 +9,13 @@ export const CSVImport400Errors = new Map<string, string>([
   ["quantity", "Quantity Column Missing from the CSV"],
   ["unit_buyback_price", "Unit Buyback Price Column Missing from the CSV"],
   ["unit_retail_price", "Unit Retail Price Column Missing from the CSV"],
-  ["unit_wholesale_price ", "Unit Wholesale Price Column Missing from the CSV"],
+  ["unit_wholesale_price", "Unit Wholesale Price Column Missing from the CSV"],
   ["duplicate_valid_headers", "Duplicate headers are present in the CSV"],
   ["empty_csv", "CSV file is empty"],
 ]);
 
 export function CSVImport200OverallErrors(error: string): string {
-  switch (true) {
-    case error.includes("Expected"):
-      // eslint-disable-next-line no-case-declarations
-      const row = error.split(" ")[5];
-      return `Row ${row} is invalid`;
-    default:
-      return error.concat(" is an extra column and was not used");
-  }
+  return error.concat(" is an extra column and was not used");
 }
 
 // These are the possible 200 (success) error keys at the row level, and will result

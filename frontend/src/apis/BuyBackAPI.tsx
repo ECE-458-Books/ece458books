@@ -75,6 +75,7 @@ export interface BBCSVImportReq {
 }
 
 export interface APIBBCSVImportRow extends APIBBSaleRow {
+  isbn_13: string;
   errors: { [key: string]: string };
 }
 

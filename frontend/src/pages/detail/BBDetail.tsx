@@ -344,12 +344,12 @@ export default function BBDetail() {
         showSuccess(toast, "Book Buyback added successfully");
         isGoBackActive ? navigate("/book-buybacks") : window.location.reload();
       })
-      .catch((error) =>
+      .catch((error) => {
         showFailure(
           toast,
-          error.data.details[0] ?? "Could not add book buyback"
-        )
-      );
+          error.data.errors[0] ?? "Failed to add book buyback"
+        );
+      });
   };
 
   // Modify the sales reconciliation

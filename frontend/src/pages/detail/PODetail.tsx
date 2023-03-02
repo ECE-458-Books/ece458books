@@ -237,7 +237,7 @@ export default function PODetail() {
         }
       })
       .catch((error) => {
-        console.log(CSVImport400Errors.get(error.data.errors[0]));
+        console.log(error.data.errors[0]);
         showFailuresMapper(toast, error.data.errors, CSVImport400Errors);
       });
     event.options.clear();

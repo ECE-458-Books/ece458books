@@ -65,6 +65,11 @@ export const APIGenreSortFieldMap = new Map<string, string>([
   ["bookCount", "book_cnt"],
 ]);
 
+export const APIVendorSortFieldMap = new Map<string, string>([
+  ["name", "name"],
+  ["buybackRate", "null_considered_buyback_rate"],
+]);
+
 // Internal data type -> ordering required for PO get API
 export const APIPOSortFieldMap = new Map<string, string>([
   ["vendorName", "vendor_name"],

@@ -9,7 +9,10 @@ import { Toast } from "primereact/toast";
 import React from "react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { APIToInternalVendorConversion } from "../../apis/Conversions";
+import {
+  APIToInternalVendorConversion,
+  APIVendorSortFieldMap,
+} from "../../apis/Conversions";
 import { APIVendor, GetVendorsResp, VENDORS_API } from "../../apis/VendorsAPI";
 import DeletePopup from "../../components/popups/DeletePopup";
 import { createColumns, TableColumn } from "../../components/TableColumns";
@@ -144,7 +147,7 @@ export default function VendorList() {
   // Calls the Vendors API
   const callAPI = () => {
     // Invert sort order
-    let sortField = sortParams.sortField;
+    let sortField = APIVendorSortFieldMap.get(sortParams.sortField) ?? "";
     if (sortParams.sortOrder == -1) {
       sortField = "-".concat(sortField);
     }
@@ -156,9 +159,10 @@ export default function VendorList() {
         ordering: sortField,
       }).then((response) => onAPIResponse(response));
     } else {
-      VENDORS_API.getVendorsNoPagination().then((response) =>
-        onAPIResponseNoPagination(response)
-      );
+      VENDORS_API.getVendorsNoPaginationLISTVIEW({
+        no_pagination: true,
+        ordering: sortField,
+      }).then((response) => onAPIResponseNoPagination(response));
     }
   };
 

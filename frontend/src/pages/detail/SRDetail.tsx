@@ -53,6 +53,7 @@ import TotalDollars from "../../components/text/TotalDollars";
 import OneDayCalendar from "../../components/OneDayCalendar";
 import DeleteColumn from "../../components/datatable/DeleteColumn";
 import "../../css/TableCell.css";
+import CSVEndUserDocButton from "../../components/buttons/CSVEndUserDocButton";
 
 export interface SRSaleRow {
   isNewRow: boolean;
@@ -403,10 +404,15 @@ export default function SRDetail() {
     <CSVUploader visible={isModifiable} uploadHandler={csvUploadHandler} />
   );
 
+  const csvGuideButton = (
+    <CSVEndUserDocButton visible={isModifiable} toast={toast} />
+  );
+
   const leftToolbar = (
     <>
       {addRowButton}
       {csvImportButton}
+      {csvGuideButton}
     </>
   );
 

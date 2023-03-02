@@ -54,6 +54,10 @@ export const APIBookSortFieldMap = new Map<string, string>([
   ["author", "author"],
   ["publisher", "publisher"],
   ["stock", "stock"],
+  ["bestBuybackPrice", "best_buyback_price"],
+  ["lastMonthSales", "last_month_sales"],
+  ["shelfSpace", "shelf_space"],
+  ["daysOfSupply", "days_of_supply"],
 ]);
 
 export const APIGenreSortFieldMap = new Map<string, string>([

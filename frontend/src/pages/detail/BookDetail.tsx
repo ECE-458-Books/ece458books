@@ -27,6 +27,7 @@ import DeleteButton from "../../components/buttons/DeleteButton";
 import BackButton from "../../components/buttons/BackButton";
 import { priceBodyTemplate } from "../../util/TableCellEditFuncs";
 import DeletePopup from "../../components/popups/DeletePopup";
+import { DEFAULT_THICKNESS } from "../ShelfCalculator";
 
 interface ErrorDisplay {
   message: string;
@@ -99,8 +100,8 @@ export default function BookDetail() {
         setLineItems(book.lineItems!);
         setBestBuybackPrice(book.bestBuybackPrice);
         setLastMonthSales(book.lastMonthSales);
-        setShelfSpace(book.shelfSpace);
-        setDaysOfSupply(book.daysOfSupply);
+        updateShelfSpace(book.thickness);
+        setDaysOfSupply(calculateDaysOfSupply(book));
         setImage({
           imageSrc: response.image_url,
           imageHash: Date.now().toString(),
@@ -108,6 +109,25 @@ export default function BookDetail() {
       })
       .catch(() => showFailure(toast, "Could not fetch book data"));
   }, []);
+
+  const calculateDaysOfSupply = (book: Book) => {
+    if (book.stock === 0) {
+      return "inf";
+    } else {
+      return Math.floor((book.stock / book.lastMonthSales!) * 30);
+    }
+  };
+
+  const updateShelfSpace = (thickness: number | undefined) => {
+    const calcThickness = thickness ? thickness : DEFAULT_THICKNESS;
+    setShelfSpace(calcThickness * stock);
+  };
+
+  // Update shelf space
+
+  useEffect(() => {
+    updateShelfSpace(thickness);
+  }, [thickness]);
 
   const toast = useRef<Toast>(null);
 
@@ -515,7 +535,7 @@ export default function BookDetail() {
             </div>
           </div>
           <h1 className="p-component p-text-secondary mb-1 mt-2 p-0 text-xl text-center text-900 color: var(--surface-800);">
-            Dimensions (cm)
+            Dimensions (in)
           </h1>
           <div className="flex col-12 justify-content-start p-1">
             <div className="p-0 col-4">
@@ -606,10 +626,12 @@ export default function BookDetail() {
                 className="p-component p-text-secondary text-teal-900 my-auto mr-2"
                 htmlFor="shelfspace"
               >
-                Shelf Space:
+                Shelf Space (in):
               </label>
               <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
-                {shelfSpace}
+                <label className={thickness ? "" : "font-bold"}>
+                  {shelfSpace}
+                </label>
               </p>
             </div>
           </div>

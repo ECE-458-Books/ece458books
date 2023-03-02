@@ -123,7 +123,6 @@ const columnsMeta: ColumnMeta[] = [
   { field: "shelfSpace", header: "Shelf Space" },
 ];
 
-
 export default function BookList() {
   // ----- STATE -----
   const location = useLocation(); // Utilized if coming from the genre list
@@ -284,7 +283,8 @@ export default function BookList() {
       sortable: true,
       style: { minWidth: "3rem" },
       hidden: !(
-        visibleColumns.filter((item) => item.field == "lastMonthSales").length > 0
+        visibleColumns.filter((item) => item.field == "lastMonthSales").length >
+        0
       ),
     },
     {

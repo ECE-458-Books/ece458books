@@ -135,7 +135,9 @@ export default function BookAdd() {
       header: "Page Count",
       style: { width: "5%" },
       customBody: (rowData: BookWithDBTag) =>
-        integerEditor(rowData.pageCount, (newValue) => {
+        integerEditor(
+          rowData.pageCount,
+          (newValue) => {
             setBooks((draft) => {
               const book = findById(draft, rowData.id)!;
               book.pageCount = newValue;
@@ -149,7 +151,9 @@ export default function BookAdd() {
       header: "Width",
       style: { width: "5%" },
       customBody: (rowData: BookWithDBTag) =>
-        numberEditor(rowData.width, (newValue) => {
+        numberEditor(
+          rowData.width,
+          (newValue) => {
             setBooks((draft) => {
               const book = findById(draft, rowData.id)!;
               book.width = newValue;
@@ -163,7 +167,9 @@ export default function BookAdd() {
       header: "Height",
       style: { width: "5%" },
       customBody: (rowData: BookWithDBTag) =>
-        numberEditor(rowData.height, (newValue) => {
+        numberEditor(
+          rowData.height,
+          (newValue) => {
             setBooks((draft) => {
               const book = findById(draft, rowData.id)!;
               book.height = newValue;
@@ -177,7 +183,9 @@ export default function BookAdd() {
       header: "Thickness",
       style: { width: "5%" },
       customBody: (rowData: BookWithDBTag) =>
-        numberEditor(rowData.thickness, (newValue) => {
+        numberEditor(
+          rowData.thickness,
+          (newValue) => {
             setBooks((draft) => {
               const book = findById(draft, rowData.id)!;
               book.thickness = newValue;
@@ -191,7 +199,9 @@ export default function BookAdd() {
       header: "Retail Price",
       style: { width: "5%" },
       customBody: (rowData: BookWithDBTag) =>
-        priceEditor(rowData.retailPrice, (newValue) => {
+        priceEditor(
+          rowData.retailPrice,
+          (newValue) => {
             setBooks((draft) => {
               const book = findById(draft, rowData.id)!;
               book.retailPrice = newValue;

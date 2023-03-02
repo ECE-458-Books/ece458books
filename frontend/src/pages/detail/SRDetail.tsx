@@ -48,11 +48,13 @@ import EditCancelButton from "../../components/buttons/EditCancelDetailButton";
 import TotalDollars from "../../components/text/TotalDollars";
 import OneDayCalendar from "../../components/OneDayCalendar";
 import DeleteColumn from "../../components/datatable/DeleteColumn";
+import "../../css/TableCell.css";
 
 export interface SRSaleRow {
   isNewRow: boolean;
   id: string;
   bookId: number;
+  bookISBN: string;
   bookTitle: string;
   quantity: number;
   price: number;
@@ -64,6 +66,7 @@ export default function SRDetail() {
     isNewRow: true,
     id: uuid(),
     bookId: 0,
+    bookISBN: "",
     bookTitle: "",
     quantity: 1,
     price: 0,
@@ -122,7 +125,7 @@ export default function SRDetail() {
       header: "Errors",
       hidden: !hasUploadedCSV,
       customBody: (rowData: SRSaleRow) => errorCellBody(rowData.errors),
-      style: { minWidth: "2rem" },
+      style: { minWidth: "8rem" },
     },
     {
       field: "bookTitle",
@@ -155,8 +158,10 @@ export default function SRDetail() {
               setTotalRevenue(calculateTotal(draft));
             });
           },
+          "integernumberPODetail",
           !isModifiable
         ),
+      style: { minWidth: "8rem" },
     },
     {
       field: "price",
@@ -171,8 +176,10 @@ export default function SRDetail() {
               setTotalRevenue(calculateTotal(draft));
             });
           },
+          "retailnumberPODetail",
           !isModifiable
         ),
+      style: { minWidth: "10rem" },
     },
     {
       field: "subtotal",

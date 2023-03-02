@@ -42,6 +42,7 @@ import {
 } from "../pages/detail/BookDetailLineItems";
 import { DEFAULT_BOOK_IMAGE } from "../components/uploaders/ImageFileUploader";
 import axios from "axios";
+import { formatBookForDropdown } from "../components/dropdowns/BookDropdown";
 
 // Internal data type -> ordering required for book get API
 export const APIBookSortFieldMap = new Map<string, string>([
@@ -53,6 +54,10 @@ export const APIBookSortFieldMap = new Map<string, string>([
   ["author", "author"],
   ["publisher", "publisher"],
   ["stock", "stock"],
+  ["bestBuybackPrice", "best_buyback_price"],
+  ["lastMonthSales", "last_month_sales"],
+  ["shelfSpace", "shelf_space"],
+  ["daysOfSupply", "days_of_supply"],
 ]);
 
 export const APIGenreSortFieldMap = new Map<string, string>([
@@ -225,7 +230,7 @@ export function APIToInternalPOPurchaseConversion(
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     id: purchase.id!.toString(),
     bookId: purchase.book,
-    bookTitle: purchase.book_title,
+    bookTitle: formatBookForDropdown(purchase.book_title, purchase.book_isbn),
     bookISBN: purchase.book_isbn,
     quantity: purchase.quantity,
     price: purchase.unit_wholesale_price,
@@ -276,7 +281,8 @@ function APIToInternalSRSaleConversion(sale: APISRSaleRow): SRSaleRow {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     id: sale.id!.toString(),
     bookId: sale.book,
-    bookTitle: sale.book_title,
+    bookISBN: sale.book_isbn,
+    bookTitle: formatBookForDropdown(sale.book_title, sale.book_isbn),
     quantity: sale.quantity,
     price: sale.unit_retail_price,
   };
@@ -324,7 +330,8 @@ function APIToInternalBBSaleConversion(sale: APIBBSaleRow): BBSaleRow {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     id: sale.id!.toString(),
     bookId: sale.book,
-    bookTitle: sale.book_title,
+    bookISBN: sale.book_isbn,
+    bookTitle: formatBookForDropdown(sale.book_title, sale.book_isbn),
     quantity: sale.quantity,
     price: sale.unit_buyback_price,
   };

@@ -141,7 +141,7 @@ export default function BookAdd() {
               book.pageCount = newValue;
             });
           },
-          "integernumber"
+          "integernumberBookAdd"
         ),
     },
     {
@@ -155,7 +155,7 @@ export default function BookAdd() {
               book.width = newValue;
             });
           },
-          "decimalnumber"
+          "decimalnumberBookAdd"
         ),
     },
     {
@@ -169,7 +169,7 @@ export default function BookAdd() {
               book.height = newValue;
             });
           },
-          "decimalnumber"
+          "decimalnumberBookAdd"
         ),
     },
     {
@@ -183,7 +183,7 @@ export default function BookAdd() {
               book.thickness = newValue;
             });
           },
-          "decimalnumber"
+          "decimalnumberBookAdd"
         ),
     },
     {
@@ -197,7 +197,7 @@ export default function BookAdd() {
               book.retailPrice = newValue;
             });
           },
-          "retailnumber"
+          "retailnumberBookAdd"
         ),
     },
   ];

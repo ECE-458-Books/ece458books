@@ -19,8 +19,9 @@ class CSVReader:
         response_data = {}
         csv_format_checker = CSVFormatChecker(self.csv_import_type)
         csv = request.FILES["file"]
+
         try:
-            csv_df = pd.read_csv(csv, dtype=str, keep_default_na=False, index_col=False)
+            csv_df = pd.read_csv(csv, dtype=str, keep_default_na=False, index_col=False, encoding='utf-8-sig')
             csv_df = csv_df.apply(lambda x: x.str.strip()).rename(columns=lambda x: x.strip())
             isbn_tools = ISBNTools()
             csv_df.loc[:, 'isbn'] = csv_df.loc[:, 'isbn'].apply(lambda x: isbn_tools.parse_isbn(x) if isbn_tools.is_valid_isbn(x) else x)

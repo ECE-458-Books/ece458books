@@ -52,6 +52,7 @@ import EditCancelButton from "../../components/buttons/EditCancelDetailButton";
 import { VENDORS_API } from "../../apis/VendorsAPI";
 import { FileUploadHandlerEvent } from "primereact/fileupload";
 import CSVUploader from "../../components/uploaders/CSVFileUploader";
+import "../../css/TableCell.css";
 
 export interface BBDetailState {
   id: number;
@@ -63,6 +64,7 @@ export interface BBSaleRow {
   isNewRow: boolean;
   id: string;
   bookId: number;
+  bookISBN: string;
   bookTitle: string;
   quantity: number;
   price: number;
@@ -75,6 +77,7 @@ export default function BBDetail() {
     isNewRow: true,
     id: uuid(),
     bookId: 0,
+    bookISBN: "",
     bookTitle: "",
     quantity: 1,
     price: 0,
@@ -148,7 +151,7 @@ export default function BBDetail() {
       header: "Errors",
       hidden: !hasUploadedCSV,
       customBody: (rowData: BBSaleRow) => errorCellBody(rowData.errors),
-      style: { minWidth: "2rem" },
+      style: { minWidth: "8rem" },
     },
     {
       field: "bookTitle",
@@ -175,9 +178,10 @@ export default function BBDetail() {
               setTotalRevenue(calculateTotal(draft));
             });
           },
+          "integernumberPODetail",
           !isModifiable
         ),
-      style: { width: "15%" },
+      style: { minWidth: "8rem" },
     },
     {
       field: "price",
@@ -192,8 +196,10 @@ export default function BBDetail() {
               setTotalRevenue(calculateTotal(draft));
             });
           },
+          "retailnumberPODetail",
           !isModifiable
         ),
+      style: { minWidth: "10rem" },
     },
     {
       field: "subtotal",

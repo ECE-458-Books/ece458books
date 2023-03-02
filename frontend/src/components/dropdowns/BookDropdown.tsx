@@ -17,15 +17,24 @@ export interface BookDropdownProps {
   isDisabled?: boolean; //Disable the editor or not
 }
 
+export function formatBookForDropdown(title: string, isbn: string | number) {
+  return `${title} (ISBN13 - ${isbn})`;
+}
+
 export function BooksDropdownData(props: BookDropdownDataProps) {
   BOOKS_API.getBooksNoPagination(props.vendor).then((response) => {
     const tempBookMap = new Map<string, Book>();
     for (const book of response) {
       const convertedBook = APIToInternalBookConversion(book);
-      tempBookMap.set(book.title, convertedBook);
+      tempBookMap.set(
+        formatBookForDropdown(book.title, book.isbn_13),
+        convertedBook
+      );
     }
     props.setBooksMap(tempBookMap);
-    props.setBookTitlesList(response.map((book) => book.title));
+    props.setBookTitlesList(
+      response.map((book) => formatBookForDropdown(book.title, book.isbn_13))
+    );
   });
 }
 

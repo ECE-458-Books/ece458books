@@ -101,6 +101,7 @@ export default function VendorDetail() {
   const buybackRateEditor = percentEditor(
     buybackRate,
     (newValue) => setBuybackRate(newValue),
+    "",
     !isModifiable
   );
 

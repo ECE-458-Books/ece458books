@@ -107,18 +107,18 @@ export function priceEditor(
 
 export function percentEditor(
   value: number | undefined,
-  onChange: (newValue: number) => void,
+  onChange: (newValue: number | undefined) => void,
   className?: string,
   disabled?: boolean
 ) {
   return (
     <InputNumber
       value={value}
-      onValueChange={(e) => onChange(e.target.value ?? 0)}
+      onValueChange={(e) => onChange(e.target.value ?? undefined)}
       suffix="%"
-      mode="decimal"
-      maxFractionDigits={2}
-      minFractionDigits={2}
+      // mode="decimal"
+      // maxFractionDigits={2}
+      // minFractionDigits={2}
       className={className}
       max={100}
       disabled={disabled ?? false}

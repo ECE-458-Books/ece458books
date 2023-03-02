@@ -41,7 +41,6 @@ import {
   BookDetailLineItemType,
 } from "../pages/detail/BookDetailLineItems";
 import { DEFAULT_BOOK_IMAGE } from "../components/uploaders/ImageFileUploader";
-import axios from "axios";
 
 // Internal data type -> ordering required for book get API
 export const APIBookSortFieldMap = new Map<string, string>([
@@ -52,7 +51,11 @@ export const APIBookSortFieldMap = new Map<string, string>([
   ["title", "title"],
   ["author", "author"],
   ["publisher", "publisher"],
-  ["stock", "stock"],
+  ["bestBuybackPrice", "best_buyback_price"],
+  ["lastMonthSales", "last_month_sales"],
+  ["lastMonthSales", "last_month_sales"],
+  ["shelfSpace", "shelf_space"],
+  ["daysOfSupply", "days_of_supply"],
 ]);
 
 export const APIGenreSortFieldMap = new Map<string, string>([

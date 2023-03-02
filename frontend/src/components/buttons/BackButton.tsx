@@ -9,7 +9,7 @@ export default function BackButton(props: BackButtonProps) {
   return (
     <Button
       type="button"
-      label="Back"
+      label="List"
       icon="pi pi-arrow-left"
       onClick={props.onClick}
       className={"p-button-sm my-auto " + props.className}

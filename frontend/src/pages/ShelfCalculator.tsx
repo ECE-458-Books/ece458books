@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useImmer } from "use-immer";
 import BooksDropdown, {
   BooksDropdownData,
+  formatBookForDropdown,
 } from "../components/dropdowns/BookDropdown";
 import DisplayModeDropdown, {
   DisplayMode,
@@ -148,7 +149,7 @@ export default function ShelfCalculator() {
       const row = findById(draft, rowData.id)!;
       const book = booksMap.get(newBookTitle)!;
 
-      row.bookTitle = book.title;
+      row.bookTitle = formatBookForDropdown(book.title, book.isbn13);
       row.stock = book.stock;
       row.maxDisplayCount = calculateMaxDisplayCount(row);
       row.displayCount = calculateMaxDisplayCount(row);

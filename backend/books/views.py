@@ -2,7 +2,8 @@ import re, datetime
 
 from django.conf import settings
 from django.db import models
-from django.db.models import OuterRef, Subquery, F, Case, When, Value, Sum, Func
+from django.db.models import OuterRef, Subquery, F, Case, When, Value, Sum, Func, Q, ExpressionWrapper, FloatField
+from django.db.models.functions import Coalesce, Cast, Round
 
 from rest_framework import status, filters
 from rest_framework.views import APIView
@@ -83,7 +84,7 @@ class ISBNSearchView(APIView):
 
         for field in book._meta.fields:
             if (v := getattr(book, field.name)) is not None:
-                ret[field.name] = v 
+                ret[field.name] = v
 
         # Deal with many-to-many fields
         # Get Authors
@@ -96,7 +97,7 @@ class ISBNSearchView(APIView):
 
         # At this point there should be a BookImage associated with the book
         images = BookImage.objects.filter(book=book)
-        
+
         if len(images) == 0:
             # This is the case where there is no default image associated with the book.
             local_url = self.isbn_toolbox.download_external_book_image_to_local(book.isbn_13, uri)
@@ -126,7 +127,7 @@ class ListCreateBookAPIView(ListCreateAPIView):
             return None
         else:
             return super().paginate_queryset(queryset)
-    
+
     def preprocess_multipart_form_data(self, request):
         data = request.data.dict()
 
@@ -140,7 +141,7 @@ class ListCreateBookAPIView(ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         data = request.data
         content_type = request.content_type.split(';')[0]
-        
+
         if content_type == 'multipart/form-data':
             # Preprocess Request when the content-type is not application/json but multipart/form-data
             data = self.preprocess_multipart_form_data(request)
@@ -154,7 +155,7 @@ class ListCreateBookAPIView(ListCreateAPIView):
             obj = Book.objects.get(isbn_13=data['isbn_13'])
         except Exception as e:
             obj = None
-        
+
         # If the object with the specific isbn_13 is found we do the following:
         # 1. add the isGhost field to the request data
         # 2. update the already existing row in DB
@@ -179,7 +180,7 @@ class ListCreateBookAPIView(ListCreateAPIView):
 
         headers = self.get_success_headers(serializer.data)
         return Response(res, status=status.HTTP_201_CREATED, headers=headers)
-    
+
     def bookimage_get_and_create(self, request, isbn_13, setDefaultImage):
         book = Book.objects.filter(isbn_13=isbn_13)
 
@@ -200,11 +201,11 @@ class ListCreateBookAPIView(ListCreateAPIView):
             obj.save()
 
         return url
-    
+
     def getOrCreateModel(self, item_list, model):
         if isinstance(item_list, str):
             item_list = item_list.split(',')
-        
+
         for item in item_list:
             obj, created = model.objects.get_or_create(name=item.strip(),)
 
@@ -238,48 +239,64 @@ class ListCreateBookAPIView(ListCreateAPIView):
         vendor = self.request.GET.get('vendor')
         if vendor is not None:
             default_query_set = default_query_set.filter(id__in=Purchase.objects.all().annotate(vendor_id=F('purchase_order__vendor')).filter(vendor_id=vendor).values('book')).distinct()
-        
+
         # Support Sorting by best_buyback_price, last_month_sales, shelf_space, days_of_supply
         # The rationale for replicating the filter in the serializer is that it is the most efficient way to support sorting is using DRF's sorting filter
-        # default_query_set = self.annotate_best_buyback_price(default_query_set)
-        # default_query_set = self.annotate_last_month_sales(default_query_set)
+        default_query_set = self.annotate_best_buyback_price(default_query_set)
+        default_query_set = self.annotate_last_month_sales(default_query_set)
         default_query_set = self.annotate_shelf_space(default_query_set)
-        # default_query_set = self.annotate_days_of_supply(default_query_set)
-        
+        default_query_set = self.annotate_days_of_supply(default_query_set)
+
         return default_query_set
-    
+
+    def annotate_best_buyback_price(self, query_set):
+        subquery = Purchase.objects.filter(book=OuterRef('pk')).annotate(vendor_id=F('purchase_order__vendor')).annotate(buyback_rate=F('purchase_order__vendor__buyback_rate')).order_by(
+            'vendor_id', '-purchase_order__date')
+        subquery = subquery.distinct('vendor_id').values('buyback_rate', 'unit_wholesale_price',
+                                                         'vendor_id').annotate(buyback_price=F('buyback_rate') * F('unit_wholesale_price') * .01).values('vendor_id', 'buyback_price')
+        query_set = query_set.annotate(best_buyback_price=Subquery(subquery))
+        print(query_set.values('best_buyback_price'))
+        return query_set
+        # print(query_set.values('best_buyback_price'))
+        # purchases_of_book = purchases_of_book.annotate(vendor_id=F('purchase_order__vendor'))
+        # purchases_of_book = purchases_of_book.annotate(date=F('purchase_order__date'))
+        # purchases_of_book = purchases_of_book.annotate(buyback_rate=F('purchase_order__vendor__buyback_rate'))
+        # purchases_of_book = purchases_of_book.order_by('vendor_id', '-purchase_order__date')
+        # most_recent_purchase_of_book_by_vendor = purchases_of_book.distinct('vendor_id')
+        # recent_purchases_info = most_recent_purchase_of_book_by_vendor.values('buyback_rate', 'unit_wholesale_price', 'vendor_id')
+        # recent_purchases_info = recent_purchases_info.annotate(buyback_price=F('buyback_rate') * F('unit_wholesale_price') * .01)
+        # recent_vendor_purchase_buyback_price = list(recent_purchases_info.values('vendor_id', 'buyback_price'))
+        # buyback_prices = [purchase['buyback_price'] for purchase in recent_vendor_purchase_buyback_price if purchase['buyback_price'] is not None]
+        # try:
+        #     return max(buyback_prices)
+        # except:
+        #     return None
+
+    def annotate_days_of_supply(self, query_set):
+        query_set = query_set.annotate(
+            days_of_supply=Case(When(last_month_sales=0, then=Value(float('inf'))),
+                                default=ExpressionWrapper(Round(Cast('stock', output_field=FloatField()) * Value(30) / F('last_month_sales'), precision=2), output_field=FloatField())))
+        return query_set
+
     def annotate_last_month_sales(self, query_set):
         end_date = datetime.datetime.now().strftime('%Y-%m-%d')
         start_date = (datetime.datetime.now() - datetime.timedelta(days=30)).strftime('%Y-%m-%d')
 
-        subquery = Sale.objects.filter(
-            book=OuterRef('pk'), 
-            sales_reconciliation__date__range=(start_date, end_date)
-        ).values_list(
-            Func(
-                'quantity', 
-                function='SUM',
-            ),
-        )
+        subquery = Sale.objects.filter(book=OuterRef('pk'), sales_reconciliation__date__range=(start_date, end_date)).values_list(Coalesce(Func(
+            'quantity',
+            function='SUM',
+        ), 0),)
 
-        query_set = query_set.annotate(
-            last_month_sales=subquery
-        )
-
+        query_set = query_set.annotate(last_month_sales=subquery)
         return query_set
-    
+
     def annotate_shelf_space(self, query_set):
         default_thickness = 0.8
 
-        query_set = query_set.annotate(
-            null_defaulted_thickness=Case(
-                When(thickness__isnull=False, then=F('thickness')), 
-                default=Value(default_thickness))
-        )
+        query_set = query_set.annotate(null_defaulted_thickness=Case(When(thickness__isnull=False, then=F('thickness')), default=Value(default_thickness)))
 
-        return query_set.annotate(
-            shelf_space=F('null_defaulted_thickness')*F('stock')
-        )
+        return query_set.annotate(shelf_space=F('null_defaulted_thickness') * F('stock'))
+
 
 class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = BookSerializer
@@ -332,14 +349,14 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
             res['image_url'] = url
 
         return Response(res)
-    
+
     def convert_zero_to_null(self, data):
         possible_zero_fields = ['pageCount', 'width', 'height', 'thickness']
         for possible_zero_field in possible_zero_fields:
             v = data.get(possible_zero_field, None)
             if v == '0' or v == 0:
                 data[possible_zero_field] = None
-        
+
         return data
 
     def bookimage_get_and_create(self, request, isbn_13, setDefaultImage):
@@ -393,6 +410,7 @@ class RetrieveExternalBookImageAPIView(RetrieveAPIView):
     permission_classes = [IsAuthenticated]
     lookup_field = 'book_id'  # looks up using the book_id field
     lookup_url_kwarg = 'book_id'
+
 
 class CSVExportBookAPIView(APIView):
     permission_classes = [IsAuthenticated]

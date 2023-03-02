@@ -202,6 +202,13 @@ export function imageBodyTemplateWithButtons(
   );
 }
 
+export function alteredTextBodyTemplate(
+  className: string,
+  text: string | number | undefined
+) {
+  return <label className={className}>{text}</label>;
+}
+
 export function dateBodyTemplate(date: Date) {
   return internalToExternalDate(date);
 }

@@ -62,6 +62,26 @@ export function integerEditor(
   );
 }
 
+export function nullableIntegerEditor(
+  value: number | undefined,
+  onChange: (newValue: number) => void,
+  className?: string,
+  isDisabled?: boolean,
+  min?: number,
+  max?: number
+) {
+  return (
+    <InputNumber
+      min={min ?? 1}
+      max={max}
+      value={value}
+      disabled={isDisabled ?? false}
+      className={className}
+      onValueChange={(e) => onChange(e.target.value ?? 1)}
+    />
+  );
+}
+
 export function numberEditor(
   value: number | undefined,
   onChange: (newValue: number) => void,
@@ -78,6 +98,28 @@ export function numberEditor(
       disabled={isDisabled ?? false}
       className={className}
       onValueChange={(e) => onChange(e.target.value ?? 1)}
+      mode="decimal"
+      maxFractionDigits={2}
+    />
+  );
+}
+
+export function nullableNumberEditor(
+  value: number | undefined,
+  onChange: (newValue: number | undefined) => void,
+  className?: string,
+  isDisabled?: boolean,
+  min?: number,
+  max?: number
+) {
+  return (
+    <InputNumber
+      min={min}
+      max={max}
+      value={value}
+      disabled={isDisabled ?? false}
+      className={className}
+      onValueChange={(e) => onChange(e.target.value ?? undefined)}
       mode="decimal"
       maxFractionDigits={2}
     />
@@ -129,8 +171,8 @@ export function percentEditor(
 export function percentBodyTemplate(value: number) {
   return new Intl.NumberFormat("en-US", {
     style: "percent",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   }).format(value / 100);
 }
 

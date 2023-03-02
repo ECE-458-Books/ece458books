@@ -120,7 +120,9 @@ export default function BookDetail() {
 
   const updateShelfSpace = (thickness: number | undefined) => {
     const calcThickness = thickness ? thickness : DEFAULT_THICKNESS;
-    setShelfSpace(calcThickness * stock);
+    setShelfSpace(
+      Math.round((calcThickness * stock + Number.EPSILON) * 100) / 100
+    );
   };
 
   // Update shelf space
@@ -290,6 +292,7 @@ export default function BookDetail() {
     BOOKS_API.deleteBook({ id: id! })
       .then(() => {
         showSuccess(toast, "Book deleted");
+        navigate("/books");
       })
       .catch(() => {
         showFailure(toast, "Book could not be deleted");

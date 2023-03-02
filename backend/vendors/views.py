@@ -1,4 +1,4 @@
-from django.db.models import Count, OuterRef, Subquery, Func
+from django.db.models import Count, OuterRef, Subquery, Func, Case, When, Value, F
 from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import filters, status
@@ -33,6 +33,9 @@ class ListCreateVendorAPIView(ListCreateAPIView):
 
     def get_queryset(self):
         default_query_set = Vendor.objects.all()
+
+        # buyback_null_query_set = Vendor.objects.filter(buyback_rate__isnull=True)
+        default_query_set = default_query_set.annotate(null_considered_buyback_rate=Case(When(buyback_rate__isnull=False, then=F('buyback_rate')), default=Value(0)))
 
         default_query_set = default_query_set.annotate(num_purchase_orders=Subquery(PurchaseOrder.objects.filter(vendor=OuterRef('id')).values_list(Func(
             'id',

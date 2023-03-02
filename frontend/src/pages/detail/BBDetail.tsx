@@ -59,6 +59,7 @@ import { VENDORS_API } from "../../apis/VendorsAPI";
 import { FileUploadHandlerEvent } from "primereact/fileupload";
 import CSVUploader from "../../components/uploaders/CSVFileUploader";
 import "../../css/TableCell.css";
+import CSVEndUserDocButton from "../../components/buttons/CSVEndUserDocButton";
 
 export interface BBDetailState {
   id: number;
@@ -156,7 +157,7 @@ export default function BBDetail() {
   const COLUMNS: TableColumn[] = [
     {
       field: "errors",
-      header: "Errors",
+      header: "CSV Errors",
       hidden: !hasUploadedCSV,
       customBody: (rowData: BBSaleRow) => errorCellBody(rowData.errors),
       style: { minWidth: "8rem" },
@@ -349,7 +350,12 @@ export default function BBDetail() {
         showSuccess(toast, "Book Buyback added successfully");
         isGoBackActive ? navigate("/book-buybacks") : window.location.reload();
       })
-      .catch(() => showFailure(toast, "Could not add book buyback"));
+      .catch((error) => {
+        showFailure(
+          toast,
+          error.data.errors[0] ?? "Failed to add book buyback"
+        );
+      });
   };
 
   // Modify the sales reconciliation
@@ -441,10 +447,15 @@ export default function BBDetail() {
     />
   );
 
+  const csvGuideButton = (
+    <CSVEndUserDocButton visible={isModifiable} toast={toast} />
+  );
+
   const leftToolbar = (
     <>
       {addRowButton}
       {csvImportButton}
+      {csvGuideButton}
     </>
   );
 

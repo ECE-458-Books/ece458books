@@ -6,7 +6,6 @@ import { Toolbar } from "primereact/toolbar";
 import { v4 as uuid } from "uuid";
 import {
   integerEditor,
-  numberEditor,
   priceBodyTemplate,
   priceEditor,
 } from "../../util/TableCellEditFuncs";
@@ -57,6 +56,7 @@ import TotalDollars from "../../components/text/TotalDollars";
 import OneDayCalendar from "../../components/OneDayCalendar";
 import DeleteColumn from "../../components/datatable/DeleteColumn";
 import "../../css/TableCell.css";
+import CSVEndUserDocButton from "../../components/buttons/CSVEndUserDocButton";
 
 export interface POPurchaseRow {
   isNewRow: boolean; // true if the user added this row, false if it already existed
@@ -135,7 +135,7 @@ export default function PODetail() {
   const COLUMNS: TableColumn[] = [
     {
       field: "errors",
-      header: "Errors",
+      header: "CSV Errors",
       hidden: !hasUploadedCSV,
       customBody: (rowData: POPurchaseRow) => errorCellBody(rowData.errors),
       style: { minWidth: "8rem" },
@@ -409,6 +409,10 @@ export default function PODetail() {
     />
   );
 
+  const csvGuideButton = (
+    <CSVEndUserDocButton visible={isModifiable} toast={toast} />
+  );
+
   const csvImportButton = (
     <CSVUploader visible={isModifiable} uploadHandler={csvUploadHandler} />
   );
@@ -417,6 +421,7 @@ export default function PODetail() {
     <>
       {addRowButton}
       {csvImportButton}
+      {csvGuideButton}
     </>
   );
 

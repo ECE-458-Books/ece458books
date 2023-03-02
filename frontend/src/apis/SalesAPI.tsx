@@ -71,6 +71,7 @@ export interface SRCSVImportReq {
 }
 
 export interface APISaleCSVImportRow extends APISRSaleRow {
+  isbn_13: string;
   errors: { [key: string]: string };
 }
 

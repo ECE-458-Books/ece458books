@@ -17,6 +17,7 @@ class CSVFormatChecker:
     def are_headers_correct(self, csv_file) -> None:
         csv_headers = []
         for line in csv_file:
+            line = line.replace(b'\xef\xbb\xbf', b'')
             csv_headers = [header.strip() for header in line.decode().split(',')]
             break
         actual_headers = [header.lower() for header in csv_headers]

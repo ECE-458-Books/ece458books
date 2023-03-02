@@ -146,6 +146,9 @@ class ListCreateBookAPIView(ListCreateAPIView):
             # Preprocess Request when the content-type is not application/json but multipart/form-data
             data = self.preprocess_multipart_form_data(request)
 
+        # if the dimension of a book is zero convert it to None
+        data = self.convert_zero_to_null(data)
+
         # Need to handle creating authors and genres if not present in DB
         self.getOrCreateModel(data['authors'], Author)
         self.getOrCreateModel(data['genres'], Genre)
@@ -208,6 +211,8 @@ class ListCreateBookAPIView(ListCreateAPIView):
 
         for item in item_list:
             obj, created = model.objects.get_or_create(name=item.strip(),)
+    
+
 
     def get_queryset(self):
         default_query_set = Book.objects.filter(isGhost=False)
@@ -248,6 +253,15 @@ class ListCreateBookAPIView(ListCreateAPIView):
         default_query_set = self.annotate_days_of_supply(default_query_set)
 
         return default_query_set
+
+    def convert_zero_to_null(self, data):
+        possible_zero_fields = ['pageCount', 'width', 'height', 'thickness']
+        for possible_zero_field in possible_zero_fields:
+            v = data.get(possible_zero_field, None)
+            if v == '0' or v == 0:
+                data[possible_zero_field] = None
+
+        return data
 
     def annotate_best_buyback_price(self, query_set):
         pass

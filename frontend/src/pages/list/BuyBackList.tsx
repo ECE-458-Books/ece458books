@@ -37,6 +37,7 @@ export interface BuyBack {
   vendorName: string;
   sales: BBSaleRow[];
   uniqueBooks: number;
+  isDeletable: boolean;
   totalBooks: number;
   totalRevenue: number;
 }

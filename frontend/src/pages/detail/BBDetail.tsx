@@ -114,6 +114,7 @@ export default function BBDetail() {
   const [hasUploadedCSV, setHasUploadedCSV] = useState<boolean>(false);
   const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false); // Whether the delete popup is shown
   const [isGoBackActive, setIsGoBackActive] = useState<boolean>(false);
+  const [isPageDeleteable, setIsPageDeleteable] = useState<boolean>(true);
 
   // Load the SR data on page load
   useEffect(() => {
@@ -125,6 +126,7 @@ export default function BBDetail() {
           setBuybacks(buyBack.sales);
           setTotalRevenue(buyBack.totalRevenue);
           setSelectedVendorName(buyBack.vendorName);
+          setIsPageDeleteable(buyBack.isDeletable);
         })
         .catch(() =>
           showFailure(toast, "Could not fetch book buyback sales data")
@@ -396,7 +398,11 @@ export default function BBDetail() {
 
   const deleteButton = (
     <div className="flex col-1">
-      <DeleteButton visible={!isBBAddPage} onClick={deleteBuyBackPopup} />
+      <DeleteButton
+        visible={!isBBAddPage}
+        disabled={!isPageDeleteable}
+        onClick={deleteBuyBackPopup}
+      />
     </div>
   );
 

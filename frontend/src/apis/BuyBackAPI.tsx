@@ -37,6 +37,7 @@ export interface APIBB {
   vendor_name: string;
   num_books: number;
   num_unique_books: number;
+  is_deletable: boolean;
   total_revenue: number;
 }
 

@@ -96,6 +96,7 @@ export default function SRDetail() {
   const [hasUploadedCSV, setHasUploadedCSV] = useState<boolean>(false);
   const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false); // Whether the delete popup is shown
   const [isGoBackActive, setIsGoBackActive] = useState<boolean>(false);
+  const [isPageDeleteable, setIsPageDeleteable] = useState<boolean>(true);
 
   // Load the SR data on page load
   useEffect(() => {
@@ -106,6 +107,7 @@ export default function SRDetail() {
           setDate(salesReconciliation.date);
           setSales(salesReconciliation.sales);
           setTotalRevenue(salesReconciliation.totalRevenue);
+          setIsPageDeleteable(salesReconciliation.isDeletable);
         })
         .catch(() =>
           showFailure(toast, "Could not fetch sales reconciliation data")
@@ -363,6 +365,7 @@ export default function SRDetail() {
     <div className="flex col-1">
       <DeleteButton
         visible={!isSRAddPage}
+        disabled={!isPageDeleteable}
         onClick={deleteSalesReconciliationPopup}
       />
     </div>

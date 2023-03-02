@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useImmer } from "use-immer";
 import BooksDropdown, {
   BooksDropdownData,
+  formatBookForDropdown,
 } from "../components/dropdowns/BookDropdown";
 import DisplayModeDropdown, {
   DisplayMode,
@@ -28,6 +29,7 @@ const SHELF_DEPTH = 8;
 
 interface ShelfCalculatorRow {
   id: string;
+  bookISBN: string;
   bookTitle: string;
   stock: number;
   displayCount: number;
@@ -39,6 +41,7 @@ interface ShelfCalculatorRow {
 
 const emptyRow: ShelfCalculatorRow = {
   id: "",
+  bookISBN: "",
   bookTitle: "",
   stock: 1,
   displayCount: 1,
@@ -154,7 +157,7 @@ export default function ShelfCalculator() {
       const row = findById(draft, rowData.id)!;
       const book = booksMap.get(newBookTitle)!;
 
-      row.bookTitle = book.title;
+      row.bookTitle = formatBookForDropdown(book.title, book.isbn13);
       row.stock = book.stock;
       row.hasUnknownDimensions = !book.thickness;
       row.maxDisplayCount = calculateMaxDisplayCount(row);

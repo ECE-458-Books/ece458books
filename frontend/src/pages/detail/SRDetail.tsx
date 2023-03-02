@@ -33,7 +33,11 @@ import {
   showFailuresMapper,
   showWarning,
 } from "../../components/Toast";
-import { CSVImport400Errors, errorCellBody } from "./errors/CSVImportErrors";
+import {
+  CSVImport200OverallErrors,
+  CSVImport400Errors,
+  errorCellBody,
+} from "./errors/CSVImportErrors";
 import { Book } from "../list/BookList";
 import { useImmer } from "use-immer";
 import { filterById, findById } from "../../util/IDOperations";
@@ -236,10 +240,7 @@ export default function SRDetail() {
         // Show nonblocking errors (warnings)
         const nonBlockingErrors = response.errors;
         for (const warning of nonBlockingErrors ?? []) {
-          showWarning(
-            toast,
-            warning.concat(" is an extra column and was not used")
-          );
+          showWarning(toast, CSVImport200OverallErrors(warning));
         }
       })
       .catch((error) => {

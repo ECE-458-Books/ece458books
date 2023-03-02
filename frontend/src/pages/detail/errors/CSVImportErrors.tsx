@@ -16,26 +16,12 @@ export const CSVImport400Errors = new Map<string, string>([
 
 export function CSVImport200OverallErrors(error: string): string {
   switch (true) {
-    case error === "isbn":
-      return "ISBN 13 Column Missing from the CSV";
-    case error === "quantity":
-      return "Quantity Column Missing from the CSV";
-    case error === "unit_buyback_price":
-      return "Unit Buyback Price Column Missing from the CSV";
-    case error === "unit_retail_price":
-      return "Unit Retail Price Column Missing from the CSV";
-    case error === "unit_wholesale_price":
-      return "Unit Wholesale Price Column Missing from the CSV";
-    case error === "duplicate_valid_headers":
-      return "Duplicate headers are present in the CSV";
-    case error === "empty_csv":
-      return "CSV file is empty";
     case error.includes("Expected"):
       // eslint-disable-next-line no-case-declarations
       const row = error.split(" ")[5];
       return `Row ${row} is invalid`;
     default:
-      return "Unknown Error";
+      return error.concat(" is an extra column and was not used");
   }
 }
 
@@ -113,7 +99,7 @@ export function CSVImport200RowErrors(
           key={field}
         />
       );
-    case error === "not_sold_by_vendor":
+    case error === "book_not_sold_by_vendor":
       return (
         <Tag
           severity="info"

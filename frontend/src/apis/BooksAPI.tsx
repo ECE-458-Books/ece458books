@@ -30,7 +30,7 @@ export interface APIBook {
   genres: string[];
   title: string;
   isbn_13: number;
-  isbn_10: number;
+  isbn_10: string;
   publisher: string;
   publishedDate: number;
   pageCount?: number;

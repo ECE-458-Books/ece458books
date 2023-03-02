@@ -32,10 +32,12 @@ import {
   showSuccess,
   showFailuresMapper,
   showWarning,
+  showFailuresFunctionCaller,
 } from "../../components/Toast";
 import {
   CSVImport200OverallErrors,
   CSVImport400Errors,
+  CSVImport400OverallErrors,
   errorCellBody,
 } from "./errors/CSVImportErrors";
 import { Book } from "../list/BookList";
@@ -247,7 +249,11 @@ export default function SRDetail() {
         }
       })
       .catch((error) => {
-        showFailuresMapper(toast, error.data.errors, CSVImport400Errors);
+        showFailuresFunctionCaller(
+          toast,
+          error.data.errors,
+          CSVImport400OverallErrors
+        );
       });
     event.options.clear();
   };

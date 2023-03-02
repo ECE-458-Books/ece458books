@@ -14,6 +14,32 @@ export const CSVImport400Errors = new Map<string, string>([
   ["empty_csv", "CSV file is empty"],
 ]);
 
+export function CSVImport400OverallErrors(error: string): string {
+  console.log(error.includes("Expected"));
+  switch (true) {
+    case error.includes("isbn"):
+      return "ISBN 13 Column Missing from the CSV";
+    case error.includes("quantity"):
+      return "Quantity Column Missing from the CSV";
+    case error.includes("unit_buyback_price"):
+      return "Unit Buyback Price Column Missing from the CSV";
+    case error.includes("unit_retail_price"):
+      return "Unit Retail Price Column Missing from the CSV";
+    case error.includes("unit_wholesale_price"):
+      return "Unit Wholesale Price Column Missing from the CSV";
+    case error.includes("duplicate_valid_headers"):
+      return "Duplicate headers are present in the CSV";
+    case error.includes("empty_csv"):
+      return "CSV file is empty";
+    case error.includes("Expected"):
+      // eslint-disable-next-line no-case-declarations
+      const lineNum = error.split(" ")[5];
+      return `Row ${lineNum} is invalid`;
+    default:
+      return "Unknown Error";
+  }
+}
+
 export function CSVImport200OverallErrors(error: string): string {
   return error.concat(" is an extra column and was not used");
 }

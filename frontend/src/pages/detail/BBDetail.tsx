@@ -13,12 +13,14 @@ import {
 import {
   CSVImport200OverallErrors,
   CSVImport400Errors,
+  CSVImport400OverallErrors,
   errorCellBody,
 } from "./errors/CSVImportErrors";
 import React from "react";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
 import {
   showFailure,
+  showFailuresFunctionCaller,
   showFailuresMapper,
   showSuccess,
   showWarning,
@@ -274,8 +276,11 @@ export default function BBDetail() {
         }
       })
       .catch((error) => {
-        console.log(error);
-        showFailuresMapper(toast, error.data.errors, CSVImport400Errors);
+        showFailuresFunctionCaller(
+          toast,
+          error.data.errors,
+          CSVImport400OverallErrors
+        );
       });
     event.options.clear();
   };

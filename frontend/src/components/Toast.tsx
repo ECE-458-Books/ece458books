@@ -81,3 +81,14 @@ export async function showFailuresMapper(
     await timer(100);
   }
 }
+
+export async function showFailuresFunctionCaller(
+  toast: React.RefObject<Toast>,
+  messages: string[],
+  func: (arg0: string) => string
+) {
+  for (const key of messages) {
+    showFailure(toast, func(key));
+    await timer(100);
+  }
+}

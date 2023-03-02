@@ -10,7 +10,11 @@ import {
   priceBodyTemplate,
   priceEditor,
 } from "../../util/TableCellEditFuncs";
-import { CSVImport400Errors, errorCellBody } from "./errors/CSVImportErrors";
+import {
+  CSVImport200OverallErrors,
+  CSVImport400Errors,
+  errorCellBody,
+} from "./errors/CSVImportErrors";
 import React from "react";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
 import {
@@ -263,10 +267,7 @@ export default function BBDetail() {
         // Show nonblocking errors (warnings)
         const nonBlockingErrors = response.errors;
         for (const warning of nonBlockingErrors ?? []) {
-          showWarning(
-            toast,
-            warning.concat(" is an extra column and was not used")
-          );
+          showWarning(toast, CSVImport200OverallErrors(warning));
         }
       })
       .catch((error) => {
@@ -301,7 +302,7 @@ export default function BBDetail() {
     }
 
     if (!date) {
-      showFailure(toast, "Date is a required field");
+      showFailure(toast, "Date and vendor are required fields");
       return false;
     }
 

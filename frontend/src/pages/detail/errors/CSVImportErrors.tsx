@@ -14,6 +14,17 @@ export const CSVImport400Errors = new Map<string, string>([
   ["empty_csv", "CSV file is empty"],
 ]);
 
+export function CSVImport200OverallErrors(error: string): string {
+  switch (true) {
+    case error.includes("Expected"):
+      // eslint-disable-next-line no-case-declarations
+      const row = error.split(" ")[5];
+      return `Row ${row} is invalid`;
+    default:
+      return error.concat(" is an extra column and was not used");
+  }
+}
+
 // These are the possible 200 (success) error keys at the row level, and will result
 // in tags being shown in the rows with the errors
 // Danger = Book issue
@@ -23,12 +34,12 @@ export function CSVImport200RowErrors(
   error: string
 ): ReactElement {
   switch (true) {
-    case error === "invalid_isbn_13_length":
+    case error === "invalid_isbn":
       return (
         <Tag
           severity="danger"
           icon="pi pi-book"
-          value={"ISBN 13 Invalid Length"}
+          value={"Invalid ISBN"}
           key={field}
         />
       );
@@ -88,7 +99,7 @@ export function CSVImport200RowErrors(
           key={field}
         />
       );
-    case error === "not_sold_by_vendor":
+    case error === "book_not_sold_by_vendor":
       return (
         <Tag
           severity="info"

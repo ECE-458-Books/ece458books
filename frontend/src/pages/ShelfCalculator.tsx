@@ -25,6 +25,7 @@ const SHELF_DEPTH = 8;
 
 interface ShelfCalculatorRow {
   id: string;
+  bookISBN: string;
   bookTitle: string;
   stock: number;
   displayCount: number;
@@ -36,6 +37,7 @@ interface ShelfCalculatorRow {
 
 const emptyRow: ShelfCalculatorRow = {
   id: "",
+  bookISBN: "",
   bookTitle: "",
   stock: 1,
   displayCount: 1,

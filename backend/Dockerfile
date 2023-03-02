@@ -27,4 +27,4 @@ RUN pip install -r requirements.txt
 EXPOSE 8000
 
 # start server  
-CMD python manage.py runserver 0.0.0.0:8000 --insecure
+CMD gunicorn --bind 0.0.0.0:8000 hypothetical_books_backend.wsgi --workers 4

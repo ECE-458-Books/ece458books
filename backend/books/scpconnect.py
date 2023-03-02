@@ -32,26 +32,37 @@ class SCPTools:
         self,
         file_location: str,
     ):
-        try:
-            asyncio.get_event_loop().run_until_complete(self.program(file_location))
-        except (OSError, asyncssh.Error) as exc:
-            sys.exit('SSH connection failed: ' + str(exc))
+        retry = 0
+        retry_limit = 5
+        while True:
+            try:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                asyncio.get_event_loop().run_until_complete(self.program(file_location))
+                break
+            except (OSError, asyncssh.Error) as exc:
+                if retry > retry_limit:
+                    sys.exit(f'SSH connection failed after retrying {retry_limit} times ' + str(exc))
+                    
+                retry = retry + 1
+                print(f'SSH connection failed.. retrying {retry}:{file_location}')
 
-        # Delete images
-        delete_all_files_in_file_location(file_location)
+        # Delete my sent image
+        os.remove(file_location)
 
         return self.SCP_HOST + self.INTERNAL_BOOK_IMAGE_REMOTE_PATH
     
     async def run_client(self):
-        conn = await asyncio.wait_for(asyncssh.connect(self.SCP_HOST, username=self.SCP_USER, password=self.SCP_PASSWORD, known_hosts = None),10)
+        while True:
+            conn = await asyncio.wait_for(asyncssh.connect(self.SCP_HOST, username=self.SCP_USER, password=self.SCP_PASSWORD, known_hosts = None),20)
+            if conn != None:
+                break
         return conn
 
     async def program(self, file_location):
         await asyncio.gather(self.run_command(file_location))
 
     async def run_command(self, file_location):    
-        try:
-            conn = await self.run_client()        
-            await asyncssh.scp(file_location, (conn, self.INTERNAL_BOOK_IMAGE_ABSOLUTE_PATH))
-        except Exception as ex:
-            print(ex)      
+        conn = await self.run_client()        
+        await asyncssh.scp(file_location, (conn, self.INTERNAL_BOOK_IMAGE_ABSOLUTE_PATH))
+        conn.close()

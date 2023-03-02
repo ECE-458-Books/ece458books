@@ -73,6 +73,7 @@ export interface Book {
   shelfSpace?: number;
   daysOfSupply?: string | number;
   lineItems?: BookDetailLineItem[];
+  isGhost?: boolean;
 }
 
 interface Filters {

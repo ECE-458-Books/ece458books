@@ -34,7 +34,7 @@ interface ShelfCalculatorRow {
   maxDisplayCount: number;
   displayMode: DisplayMode;
   shelfSpace: number; // This measures the horizontal distance on store shelves
-  isUnknownDimensions: boolean;
+  hasUnknownDimensions: boolean;
 }
 
 const emptyRow: ShelfCalculatorRow = {
@@ -45,7 +45,7 @@ const emptyRow: ShelfCalculatorRow = {
   maxDisplayCount: 1,
   displayMode: DisplayMode.SPINE_OUT,
   shelfSpace: 0,
-  isUnknownDimensions: false,
+  hasUnknownDimensions: false,
 };
 
 export default function ShelfCalculator() {
@@ -101,7 +101,7 @@ export default function ShelfCalculator() {
       style: { width: "10%" },
       customBody: (rowData: ShelfCalculatorRow) =>
         alteredTextBodyTemplate(
-          rowData.isUnknownDimensions ? "font-bold" : "",
+          rowData.hasUnknownDimensions ? "font-bold" : "",
           Math.round(rowData.shelfSpace * 100) / 100
         ),
     },
@@ -156,7 +156,7 @@ export default function ShelfCalculator() {
 
       row.bookTitle = book.title;
       row.stock = book.stock;
-      row.isUnknownDimensions = !book.thickness;
+      row.hasUnknownDimensions = !book.thickness;
       row.maxDisplayCount = calculateMaxDisplayCount(row);
       row.displayCount = calculateMaxDisplayCount(row);
       row.shelfSpace = calculateShelfSpace(row);

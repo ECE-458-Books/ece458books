@@ -64,7 +64,7 @@ export function integerEditor(
 
 export function nullableIntegerEditor(
   value: number | undefined,
-  onChange: (newValue: number) => void,
+  onChange: (newValue: number | undefined) => void,
   className?: string,
   isDisabled?: boolean,
   min?: number,
@@ -72,12 +72,12 @@ export function nullableIntegerEditor(
 ) {
   return (
     <InputNumber
-      min={min ?? 1}
+      min={min}
       max={max}
       value={value}
       disabled={isDisabled ?? false}
       className={className}
-      onValueChange={(e) => onChange(e.target.value ?? 1)}
+      onValueChange={(e) => onChange(e.target.value ?? undefined)}
     />
   );
 }

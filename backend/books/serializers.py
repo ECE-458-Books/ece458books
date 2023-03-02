@@ -57,7 +57,7 @@ class BookListAddSerializer(serializers.ModelSerializer):
         recent_vendor_purchase_buyback_price = list(recent_purchases_info.values('vendor_id', 'buyback_price'))
         buyback_prices = [purchase['buyback_price'] for purchase in recent_vendor_purchase_buyback_price if purchase['buyback_price'] is not None]
         try:
-            return max(buyback_prices)
+            return round(max(buyback_prices),2)
         except:
             return None
         

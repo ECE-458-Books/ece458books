@@ -242,7 +242,7 @@ class ListCreateBookAPIView(ListCreateAPIView):
 
         # Support Sorting by best_buyback_price, last_month_sales, shelf_space, days_of_supply
         # The rationale for replicating the filter in the serializer is that it is the most efficient way to support sorting is using DRF's sorting filter
-        default_query_set = self.annotate_best_buyback_price(default_query_set)
+        # default_query_set = self.annotate_best_buyback_price(default_query_set)
         default_query_set = self.annotate_last_month_sales(default_query_set)
         default_query_set = self.annotate_shelf_space(default_query_set)
         default_query_set = self.annotate_days_of_supply(default_query_set)
@@ -250,27 +250,29 @@ class ListCreateBookAPIView(ListCreateAPIView):
         return default_query_set
 
     def annotate_best_buyback_price(self, query_set):
-        subquery = Purchase.objects.filter(book=OuterRef('pk')).annotate(vendor_id=F('purchase_order__vendor')).annotate(buyback_rate=F('purchase_order__vendor__buyback_rate')).order_by(
-            'vendor_id', '-purchase_order__date')
-        subquery = subquery.distinct('vendor_id').values('buyback_rate', 'unit_wholesale_price',
-                                                         'vendor_id').annotate(buyback_price=F('buyback_rate') * F('unit_wholesale_price') * .01).values('vendor_id', 'buyback_price')
-        query_set = query_set.annotate(best_buyback_price=Subquery(subquery))
-        print(query_set.values('best_buyback_price'))
-        return query_set
-        # print(query_set.values('best_buyback_price'))
-        # purchases_of_book = purchases_of_book.annotate(vendor_id=F('purchase_order__vendor'))
-        # purchases_of_book = purchases_of_book.annotate(date=F('purchase_order__date'))
-        # purchases_of_book = purchases_of_book.annotate(buyback_rate=F('purchase_order__vendor__buyback_rate'))
-        # purchases_of_book = purchases_of_book.order_by('vendor_id', '-purchase_order__date')
-        # most_recent_purchase_of_book_by_vendor = purchases_of_book.distinct('vendor_id')
-        # recent_purchases_info = most_recent_purchase_of_book_by_vendor.values('buyback_rate', 'unit_wholesale_price', 'vendor_id')
-        # recent_purchases_info = recent_purchases_info.annotate(buyback_price=F('buyback_rate') * F('unit_wholesale_price') * .01)
-        # recent_vendor_purchase_buyback_price = list(recent_purchases_info.values('vendor_id', 'buyback_price'))
-        # buyback_prices = [purchase['buyback_price'] for purchase in recent_vendor_purchase_buyback_price if purchase['buyback_price'] is not None]
-        # try:
-        #     return max(buyback_prices)
-        # except:
-        #     return None
+        pass
+        # subquery = Purchase.objects.filter(book=107).annotate(vendor_id=F('purchase_order__vendor'))
+        # subquery = Purchase.objects.filter(book=OuterRef('pk')).annotate(vendor_id=F('purchase_order__vendor'))
+        
+        # subquery = subquery.annotate(buyback_rate=Case(When(purchase_order__vendor__buyback_rate__isnull=False, then=F('purchase_order__vendor__buyback_rate')), default=Value(0)))
+
+        # subquery = subquery.order_by('vendor_id', '-purchase_order__date').distinct('vendor_id')
+
+        # results_pk = list(subquery.values_list(flat=True))
+
+        # query_set = query_set.alias(
+        #     testing=subquery
+        # )
+
+        # subquery2 = Purchase.objects.filter(book=OuterRef('pk'), pk__in=results_pk)
+        # subquery = subquery.order_by('vendor_id', '-purchase_order__date')
+
+        # subquery = subquery.values('buyback_rate', 'unit_wholesale_price', 'vendor_id')
+
+        # subquery = subquery.annotate(buyback_price=ExpressionWrapper(Round(F('buyback_rate') * F('unit_wholesale_price') * .01, precision=2), output_field=FloatField())).order_by('-buyback_price').values('buyback_price')[:1]
+
+        # query_set = query_set.annotate(best_buyback_price=subquery2)
+        # return query_set
 
     def annotate_days_of_supply(self, query_set):
         query_set = query_set.annotate(

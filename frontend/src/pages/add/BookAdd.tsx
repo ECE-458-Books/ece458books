@@ -8,7 +8,7 @@ import {
   numberEditor,
   priceEditor,
 } from "../../util/TableCellEditFuncs";
-import { BOOKS_API } from "../../apis/BooksAPI";
+import { APIBookWithDBTag, BOOKS_API } from "../../apis/BooksAPI";
 import { Book, NewImageUploadData } from "../list/BookList";
 import { Badge } from "primereact/badge";
 import { logger } from "../../util/Logger";
@@ -31,6 +31,7 @@ import { findById } from "../../util/IDOperations";
 import BackButton from "../../components/buttons/BackButton";
 import { useNavigate } from "react-router-dom";
 import "../../css/TableCell.css";
+import axios from "axios";
 
 export interface BookWithDBTag extends Book {
   fromDB: boolean;
@@ -42,7 +43,7 @@ export default function BookAdd() {
   const [genreNamesList, setGenreNamesList] = useState<string[]>([]);
 
   const statusTemplate = (rowData: BookWithDBTag) => {
-    if (rowData.fromDB) {
+    if (rowData.fromDB && !rowData.isGhost!) {
       return <Badge value="Exists"></Badge>;
     } else {
       return <Badge value="New" severity="success"></Badge>;
@@ -201,6 +202,8 @@ export default function BookAdd() {
     },
   ];
 
+  // Image event handlers
+
   const onImageChange = (event: FileUploadHandlerEvent, bookId: string) => {
     const file = event.files[0];
     setBooks((draft) => {
@@ -232,6 +235,8 @@ export default function BookAdd() {
     });
   };
 
+  // Image template buttons
+
   const imageUploadButton = (rowData: BookWithDBTag) => {
     return (
       <ImageUploader
@@ -256,14 +261,17 @@ export default function BookAdd() {
     );
   };
 
+  // Initial add book
+
   const onISBNInitialSubmit = (event: FormEvent<HTMLFormElement>): void => {
     logger.debug("Submitting Initial Book Lookup", textBox);
+    setBooks([]);
     BOOKS_API.addBookInitialLookup({ isbns: textBox })
       .then((response) => {
-        console.log(response);
-        setBooks(
-          response.books.map((book) => APIToInternalBookConversionWithDB(book))
-        );
+        for (const book of response.books) {
+          downloadAndSetBook(book);
+        }
+
         if (response.invalid_isbns.length > 0) {
           showFailure(
             toast,
@@ -278,7 +286,29 @@ export default function BookAdd() {
     event.preventDefault();
   };
 
-  // Toast is used for showing success/error messages
+  const downloadAndSetBook = (book: APIBookWithDBTag) => {
+    axios
+      .get(book.image_url, {
+        responseType: "blob",
+      })
+      .then((r) => {
+        // This is really bad
+        const blob = new Blob([r.data]);
+        const file = new File([blob], "imageFile" + book.id);
+        setBooks((draft) => {
+          const newBook = APIToInternalBookConversionWithDB(book);
+          const newImageUploadData: NewImageUploadData = {
+            isImageDelete: false,
+            isImageUpload: true,
+            imageFile: file,
+          };
+          newBook.newImageData = newImageUploadData;
+          console.log(newBook);
+          draft.push(newBook);
+        });
+      });
+  };
+
   const toast = useRef<Toast>(null);
 
   const validateRow = (book: BookWithDBTag) => {
@@ -304,7 +334,7 @@ export default function BookAdd() {
     logger.debug("Submitting Final Book Add", books);
 
     for (const book of books) {
-      if (!book.fromDB) {
+      if (!book.fromDB || (book.isGhost && book.fromDB)) {
         BOOKS_API.addBookFinal({
           book: InternalToAPIBookConversion(book),
           image: book.newImageData!.imageFile,

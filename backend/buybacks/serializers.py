@@ -11,7 +11,7 @@ class BuybackSerializer(TransactionBaseSerializer):
 
     class Meta:
         model = Buyback
-        fields = ['id', 'book', 'book_title', 'quantity', 'unit_buyback_price']
+        fields = ['id', 'book', 'book_isbn', 'book_title', 'quantity', 'unit_buyback_price']
 
 
 class BuybackOrderSerializer(TransactionGroupBaseSerializer):

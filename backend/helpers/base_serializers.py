@@ -8,10 +8,14 @@ from abc import abstractmethod
 class TransactionBaseSerializer(serializers.ModelSerializer):
     book = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all())
     book_title = serializers.SerializerMethodField()
+    book_isbn = serializers.SerializerMethodField()
     id = serializers.IntegerField(required=False)
 
     def get_book_title(self, instance):
         return instance.book.title
+
+    def get_book_isbn(self, instance):
+        return instance.book.isbn_13
 
 
 class TransactionGroupBaseSerializer(serializers.ModelSerializer):

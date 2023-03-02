@@ -16,3 +16,11 @@ export function filterById<T extends IDer>(
   setArray(newData);
   return newData;
 }
+
+export interface ISBNer {
+  isbn13: number;
+}
+
+export function findByISBN<T extends ISBNer>(array: T[], isbn13: number) {
+  return array.find((element) => element.isbn13 === isbn13);
+}

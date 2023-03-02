@@ -9,7 +9,7 @@ interface LabeledSwitchProps {
 
 export default function LabeledSwitch(props: LabeledSwitchProps) {
   return (
-    <>
+    <div className="flex">
       <label
         className="p-component p-text-secondary text-teal-900 my-auto mr-2"
         htmlFor="retail_price"
@@ -23,6 +23,6 @@ export default function LabeledSwitch(props: LabeledSwitchProps) {
         onChange={props.onChange}
         className={"my-auto " + props.className}
       />
-    </>
+    </div>
   );
 }

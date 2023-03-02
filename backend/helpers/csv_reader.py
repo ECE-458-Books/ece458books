@@ -21,6 +21,13 @@ class CSVReader:
         csv = request.FILES["file"]
 
         try:
+            csv_format_checker.are_headers_correct(csv)
+        except DuplicateValidHeadersException as dvhe:
+            return Response({"errors": str(dvhe)}, status=status.HTTP_400_BAD_REQUEST)
+        except MissingHeadersException as mse:
+            return Response({"errors": mse.missing_headers}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
             csv_df = pd.read_csv(csv, dtype=str, keep_default_na=False, index_col=False, encoding='utf-8-sig')
             csv_df = csv_df.apply(lambda x: x.str.strip()).rename(columns=lambda x: x.strip())
             isbn_tools = ISBNTools()

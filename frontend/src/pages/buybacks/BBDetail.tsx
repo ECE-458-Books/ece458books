@@ -8,9 +8,9 @@ import {
   TableColumn,
   createColumns,
 } from "../../components/datatable/TableColumns";
-import { priceEditor } from "../../components/editors/TableCellEditFuncs";
+import { PriceEditor } from "../../components/editors/PriceEditor";
 import PriceTemplate from "../../components/templates/PriceTemplate";
-import { numberEditor } from "../../components/editors/NumberEditor";
+import { NumberEditor } from "../../components/editors/NumberEditor";
 import {
   CSVImport200OverallErrors,
   CSVImport400OverallErrors,
@@ -177,7 +177,7 @@ export default function BBDetail() {
       field: "quantity",
       header: "Quantity",
       customBody: (rowData: BBSaleRow) =>
-        numberEditor(
+        NumberEditor(
           rowData.quantity,
           (newValue) => {
             setBuybacks((draft) => {
@@ -195,7 +195,7 @@ export default function BBDetail() {
       field: "price",
       header: "Unit Buyback Price ($)",
       customBody: (rowData: BBSaleRow) =>
-        priceEditor(
+        PriceEditor(
           rowData.price,
           (newValue) => {
             setBuybacks((draft) => {

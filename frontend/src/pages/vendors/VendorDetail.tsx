@@ -5,7 +5,7 @@ import { ModifyVendorReq, VENDORS_API } from "../../apis/vendors/VendorsAPI";
 import { logger } from "../../util/Logger";
 import { Toast } from "primereact/toast";
 import { showFailure, showSuccess } from "../../components/Toast";
-import { percentEditor } from "../../components/editors/PercentEditor";
+import { PercentEditor } from "../../components/editors/PercentEditor";
 import { Button } from "primereact/button";
 import ConfirmButton from "../../components/popups/ConfirmPopup";
 import BackButton from "../../components/buttons/BackButton";
@@ -92,7 +92,7 @@ export default function VendorDetail() {
   };
 
   // The fields
-  const buybackRateEditor = percentEditor(
+  const buybackRateEditor = PercentEditor(
     buybackRate,
     (newValue) => setBuybackRate(newValue),
     "",

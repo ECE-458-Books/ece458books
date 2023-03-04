@@ -1,6 +1,6 @@
 import { InputText } from "primereact/inputtext";
 
-export function textEditor(
+export function TextEditor(
   value: string,
   onChange: (newValue: string) => void,
   className?: string,

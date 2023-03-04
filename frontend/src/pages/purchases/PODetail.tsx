@@ -7,9 +7,9 @@ import {
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
 import { Toolbar } from "primereact/toolbar";
 import { v4 as uuid } from "uuid";
-import { priceEditor } from "../../components/editors/TableCellEditFuncs";
+import { PriceEditor } from "../../components/editors/PriceEditor";
 import PriceTemplate from "../../components/templates/PriceTemplate";
-import { integerEditor } from "../../components/editors/IntegerEditor";
+import { IntegerEditor } from "../../components/editors/IntegerEditor";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   AddPOReq,
@@ -158,7 +158,7 @@ export default function PODetail() {
       field: "quantity",
       header: "Quantity",
       customBody: (rowData: POPurchaseRow) =>
-        integerEditor(
+        IntegerEditor(
           rowData.quantity,
           (newValue) => {
             setPurchases((draft) => {
@@ -176,7 +176,7 @@ export default function PODetail() {
       field: "unitWholesalePrice",
       header: "Unit Wholesale Price ($)",
       customBody: (rowData: POPurchaseRow) =>
-        priceEditor(
+        PriceEditor(
           rowData.price,
           (newValue) => {
             setPurchases((draft) => {

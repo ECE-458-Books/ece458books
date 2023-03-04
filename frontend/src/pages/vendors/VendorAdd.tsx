@@ -8,8 +8,8 @@ import {
   TableColumn,
   createColumns,
 } from "../../components/datatable/TableColumns";
-import { percentEditor } from "../../components/editors/PercentEditor";
-import { textEditor } from "../../components/editors/TextEditor";
+import { PercentEditor } from "../../components/editors/PercentEditor";
+import { TextEditor } from "../../components/editors/TextEditor";
 import { filterById, findById } from "../../util/IDOps";
 import { useImmer } from "use-immer";
 import React from "react";
@@ -45,7 +45,7 @@ export default function GenreAdd() {
       field: "vendorName",
       header: "Vendor Name",
       customBody: (rowData: VendorRow) =>
-        textEditor(rowData.vendorName, (newValue) => {
+        TextEditor(rowData.vendorName, (newValue) => {
           setVendors((draft) => {
             const vendor = findById(draft, rowData.id);
             vendor!.vendorName = newValue;
@@ -56,7 +56,7 @@ export default function GenreAdd() {
       field: "buybackRate",
       header: "Buyback Rate (%)",
       customBody: (rowData: VendorRow) =>
-        percentEditor(rowData.buybackRate, (newValue) => {
+        PercentEditor(rowData.buybackRate, (newValue) => {
           setVendors((draft) => {
             const vendor = findById(draft, rowData.id);
             vendor!.buybackRate = newValue;

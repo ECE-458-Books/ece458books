@@ -1,6 +1,6 @@
 import { InputNumber } from "primereact/inputnumber";
 
-export function percentEditor(
+export function PercentEditor(
   value: number | undefined,
   onChange: (newValue: number | undefined) => void,
   className?: string,

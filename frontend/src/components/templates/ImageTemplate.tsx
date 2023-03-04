@@ -1,9 +1,6 @@
 import { Image } from "primereact/image";
 import { DEFAULT_BOOK_IMAGE } from "../uploaders/ImageFileUploader";
-import {
-  MAX_IMAGE_HEIGHT,
-  MAX_IMAGE_WIDTH,
-} from "../editors/TableCellEditFuncs";
+import { MAX_IMAGE_HEIGHT, MAX_IMAGE_WIDTH } from "../editors/PriceEditor";
 
 export function imageBodyTemplate(thumbnailURL: string) {
   if (!thumbnailURL) {

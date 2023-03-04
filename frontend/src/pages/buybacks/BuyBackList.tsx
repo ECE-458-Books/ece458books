@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { dateBodyTemplate } from "../../components/editors/TableCellEditFuncs";
+import { DateBodyTemplate } from "../../components/templates/DateBodyTemplate";
 import PriceTemplate from "../../components/templates/PriceTemplate";
 import { BBSaleRow } from "./BBDetail";
 import {
@@ -44,7 +44,7 @@ const COLUMNS: TableColumn[] = [
     field: "date",
     header: "Date (YYYY-MM-DD)",
     sortable: true,
-    customBody: (rowData: BuyBack) => dateBodyTemplate(rowData.date),
+    customBody: (rowData: BuyBack) => DateBodyTemplate(rowData.date),
     style: { minWidth: "8rem", width: "10rem" },
   },
   {

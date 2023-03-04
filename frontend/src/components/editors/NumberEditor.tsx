@@ -1,6 +1,6 @@
 import { InputNumber } from "primereact/inputnumber";
 
-export function numberEditor(
+export function NumberEditor(
   value: number | undefined,
   onChange: (newValue: number) => void,
   className?: string,
@@ -22,7 +22,7 @@ export function numberEditor(
   );
 }
 
-export function nullableNumberEditor(
+export function NullableNumberEditor(
   value: number | undefined,
   onChange: (newValue: number | undefined) => void,
   className?: string,

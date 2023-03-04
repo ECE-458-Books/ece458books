@@ -1,6 +1,6 @@
 import { InputNumber } from "primereact/inputnumber";
 
-export function integerEditor(
+export function IntegerEditor(
   value: number | undefined,
   onChange: (newValue: number) => void,
   className?: string,
@@ -20,7 +20,7 @@ export function integerEditor(
   );
 }
 
-export function nullableIntegerEditor(
+export function NullableIntegerEditor(
   value: number | undefined,
   onChange: (newValue: number | undefined) => void,
   className?: string,

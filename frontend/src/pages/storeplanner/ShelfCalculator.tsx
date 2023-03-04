@@ -13,7 +13,7 @@ import {
 } from "../../components/datatable/TableColumns";
 import { filterById, findById } from "../../util/IDOps";
 import AlteredTextTemplate from "../../components/templates/AlteredTextTemplate";
-import { numberEditor } from "../../components/editors/NumberEditor";
+import { NumberEditor } from "../../components/editors/NumberEditor";
 import { Book } from "../books/BookList";
 import DeleteTemplate from "../../components/templates/DeleteButton";
 import AddRowButton from "../../components/buttons/AddRowButton";
@@ -79,7 +79,7 @@ export default function ShelfCalculator() {
       field: "displayCount",
       header: "Display Count",
       customBody: (rowData: ShelfCalculatorRow) =>
-        numberEditor(
+        NumberEditor(
           rowData.displayCount,
           (newValue) => {
             handleDisplayCountChange(rowData, newValue);

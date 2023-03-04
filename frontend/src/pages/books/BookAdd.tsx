@@ -2,9 +2,9 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Button } from "primereact/button";
 import { DataTable } from "primereact/datatable";
-import { priceEditor } from "../../components/editors/TableCellEditFuncs";
-import { nullableNumberEditor } from "../../components/editors/NumberEditor";
-import { nullableIntegerEditor } from "../../components/editors/IntegerEditor";
+import { PriceEditor } from "../../components/editors/PriceEditor";
+import { NullableNumberEditor } from "../../components/editors/NumberEditor";
+import { NullableIntegerEditor } from "../../components/editors/IntegerEditor";
 import ImageTemplateWithButtons from "../../components/templates/ImageTemplate";
 import { APIBookWithDBTag, BOOKS_API } from "../../apis/books/BooksAPI";
 import { Book, NewImageUploadData } from "./BookList";
@@ -137,7 +137,7 @@ export default function BookAdd() {
       header: "Page Count",
       style: { width: "5%" },
       customBody: (rowData: BookWithDBTag) =>
-        nullableIntegerEditor(
+        NullableIntegerEditor(
           rowData.pageCount,
           (newValue) => {
             setBooks((draft) => {
@@ -153,7 +153,7 @@ export default function BookAdd() {
       header: "Width",
       style: { width: "5%" },
       customBody: (rowData: BookWithDBTag) =>
-        nullableNumberEditor(
+        NullableNumberEditor(
           rowData.width,
           (newValue) => {
             setBooks((draft) => {
@@ -169,7 +169,7 @@ export default function BookAdd() {
       header: "Height",
       style: { width: "5%" },
       customBody: (rowData: BookWithDBTag) =>
-        nullableNumberEditor(
+        NullableNumberEditor(
           rowData.height,
           (newValue) => {
             setBooks((draft) => {
@@ -185,7 +185,7 @@ export default function BookAdd() {
       header: "Thickness",
       style: { width: "5%" },
       customBody: (rowData: BookWithDBTag) =>
-        nullableNumberEditor(
+        NullableNumberEditor(
           rowData.thickness,
           (newValue) => {
             setBooks((draft) => {
@@ -201,7 +201,7 @@ export default function BookAdd() {
       header: "Retail Price",
       style: { width: "5%" },
       customBody: (rowData: BookWithDBTag) =>
-        priceEditor(
+        PriceEditor(
           rowData.retailPrice,
           (newValue) => {
             setBooks((draft) => {

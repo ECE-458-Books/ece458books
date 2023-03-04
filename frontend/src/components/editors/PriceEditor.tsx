@@ -1,10 +1,9 @@
 import { InputNumber } from "primereact/inputnumber";
-import { internalToExternalDate } from "../../util/DateOps";
 
 export const MAX_IMAGE_HEIGHT = 50;
 export const MAX_IMAGE_WIDTH = 50;
 
-export function priceEditor(
+export function PriceEditor(
   value: number,
   onChange: (newValue: number) => void,
   className?: string,
@@ -23,8 +22,4 @@ export function priceEditor(
       autoFocus={true}
     />
   );
-}
-
-export function dateBodyTemplate(date: Date) {
-  return internalToExternalDate(date);
 }

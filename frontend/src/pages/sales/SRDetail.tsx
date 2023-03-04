@@ -6,9 +6,9 @@ import {
 } from "../../components/datatable/TableColumns";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
 import { v4 as uuid } from "uuid";
-import { priceEditor } from "../../components/editors/TableCellEditFuncs";
+import { PriceEditor } from "../../components/editors/PriceEditor";
 import PriceTemplate from "../../components/templates/PriceTemplate";
-import { numberEditor } from "../../components/editors/NumberEditor";
+import { NumberEditor } from "../../components/editors/NumberEditor";
 import { useNavigate, useParams } from "react-router-dom";
 import { Toolbar } from "primereact/toolbar";
 import {
@@ -157,7 +157,7 @@ export default function SRDetail() {
       field: "quantity",
       header: "Quantity",
       customBody: (rowData: SRSaleRow) =>
-        numberEditor(
+        NumberEditor(
           rowData.quantity,
           (newValue) => {
             setSales((draft) => {
@@ -175,7 +175,7 @@ export default function SRDetail() {
       field: "price",
       header: "Unit Retail Price ($)",
       customBody: (rowData: SRSaleRow) =>
-        priceEditor(
+        PriceEditor(
           rowData.price,
           (newValue) => {
             setSales((draft) => {

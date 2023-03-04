@@ -93,7 +93,7 @@ export const VENDORS_API = {
 
   getVendorsNoPaginationLISTVIEW: async function (
     req: GetVendorNoPagesReq
-  ): Promise<GetVendorsResp> {
+  ): Promise<APIVendor[]> {
     return await API.request({
       url: VENDORS_EXTENSION,
       method: METHOD_GET,

@@ -1,5 +1,5 @@
 import { Column } from "primereact/column";
-import { DeleteTemplate } from "../../util/EditDeleteTemplate";
+import DeleteTemplate from "../templates/DeleteButton";
 
 interface DeleteColumnProps<T> {
   onDelete: (arg0: T) => void;

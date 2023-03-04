@@ -10,7 +10,7 @@ import {
   containsLowercase,
   containsNumber,
   containsUppercase,
-} from "../../util/PasswordChecks";
+} from "../../util/PWCheck";
 
 export default function PasswordChangePage() {
   const wrongPasswordRef = createRef<Messages>();

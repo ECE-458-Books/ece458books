@@ -1,23 +1,23 @@
 import { v4 as uuid } from "uuid";
-import { BookWithDBTag } from "../pages/add/BookAdd";
-import { POPurchaseRow } from "../pages/detail/PODetail";
-import { SRSaleRow } from "../pages/detail/SRDetail";
-import { Book } from "../pages/list/BookList";
-import { Genre } from "../pages/list/GenreList";
-import { PurchaseOrder } from "../pages/list/POList";
+import { BookWithDBTag } from "../pages/books/BookAdd";
+import { POPurchaseRow } from "../pages/purchases/PODetail";
+import { SRSaleRow } from "../pages/sales/SRDetail";
+import { Book } from "../pages/books/BookList";
+import { Genre } from "../pages/genres/GenreList";
+import { PurchaseOrder } from "../pages/purchases/POList";
 import {
   SalesReport,
   SalesReportDailyRow,
   SalesReportTopBooksRow,
   SalesReportTotalRow,
-} from "../pages/list/SalesReport";
-import { SalesReconciliation } from "../pages/list/SRList";
-import { Vendor } from "../pages/list/VendorList";
-import { externalToInternalDate } from "../util/DateOperations";
+} from "../pages/sales/SalesReport";
+import { SalesReconciliation } from "../pages/sales/SRList";
+import { Vendor } from "../pages/vendors/VendorList";
+import { externalToInternalDate } from "../util/DateOps";
 import {
   ArrayToCommaSeparatedString,
   CommaSeparatedStringToArray,
-} from "../util/StringOperations";
+} from "../util/StringOps";
 import {
   APIBook,
   APIBookLineItem,
@@ -33,13 +33,13 @@ import {
 import { APISaleCSVImportRow, APISR, APISRSaleRow } from "./SalesAPI";
 import { GetSalesReportResp } from "./SalesRepAPI";
 import { APIVendor } from "./VendorsAPI";
-import { BuyBack } from "../pages/list/BuyBackList";
+import { BuyBack } from "../pages/buybacks/BuyBackList";
 import { APIBB, APIBBCSVImportRow, APIBBSaleRow } from "./BuyBackAPI";
-import { BBSaleRow } from "../pages/detail/BBDetail";
+import { BBSaleRow } from "../pages/buybacks/BBDetail";
 import {
   BookDetailLineItem,
   BookDetailLineItemType,
-} from "../pages/detail/BookDetailLineItems";
+} from "../pages/books/BookDetailLineItems";
 import { DEFAULT_BOOK_IMAGE } from "../components/uploaders/ImageFileUploader";
 import axios from "axios";
 import { formatBookForDropdown } from "../components/dropdowns/BookDropdown";

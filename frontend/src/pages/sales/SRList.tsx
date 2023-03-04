@@ -17,7 +17,7 @@ import {
   TableColumn,
 } from "../../components/datatable/TableColumns";
 import { logger } from "../../util/Logger";
-import { DateBodyTemplate } from "../../components/templates/DateBodyTemplate";
+import { DateTemplate } from "../../components/templates/DateTemplate";
 import PriceTemplate from "../../components/templates/PriceTemplate";
 import { SRSaleRow } from "./SRDetail";
 import { NUM_ROWS } from "../books/BookList";
@@ -43,8 +43,7 @@ const COLUMNS: TableColumn[] = [
     field: "date",
     header: "Date (YYYY-MM-DD)",
     sortable: true,
-    customBody: (rowData: SalesReconciliation) =>
-      DateBodyTemplate(rowData.date),
+    customBody: (rowData: SalesReconciliation) => DateTemplate(rowData.date),
     style: { minWidth: "8rem", width: "10rem" },
   },
   {

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { DateBodyTemplate } from "../../components/templates/DateBodyTemplate";
+import { DateTemplate } from "../../components/templates/DateTemplate";
 import PriceTemplate from "../../components/templates/PriceTemplate";
 import { BBSaleRow } from "./BBDetail";
 import {
@@ -44,7 +44,7 @@ const COLUMNS: TableColumn[] = [
     field: "date",
     header: "Date (YYYY-MM-DD)",
     sortable: true,
-    customBody: (rowData: BuyBack) => DateBodyTemplate(rowData.date),
+    customBody: (rowData: BuyBack) => DateTemplate(rowData.date),
     style: { minWidth: "8rem", width: "10rem" },
   },
   {

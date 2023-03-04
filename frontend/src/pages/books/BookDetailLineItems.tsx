@@ -5,7 +5,7 @@ import {
   TableColumn,
 } from "../../components/datatable/TableColumns";
 import { logger } from "../../util/Logger";
-import { DateBodyTemplate } from "../../components/templates/DateBodyTemplate";
+import { DateTemplate } from "../../components/templates/DateTemplate";
 import PriceTemplate from "../../components/templates/PriceTemplate";
 
 export interface BookDetailLineItemsProps {
@@ -42,8 +42,7 @@ export default function BookDetailLineItems(props: BookDetailLineItemsProps) {
     {
       header: "Date",
       field: "date",
-      customBody: (rowData: BookDetailLineItem) =>
-        DateBodyTemplate(rowData.date),
+      customBody: (rowData: BookDetailLineItem) => DateTemplate(rowData.date),
       style: { minWidth: "8rem", width: "8rem" },
     },
     {

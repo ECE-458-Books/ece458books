@@ -1,4 +1,4 @@
-import { API, METHOD_POST, METHOD_PUT } from "./Config";
+import { API, METHOD_POST, METHOD_PUT } from "../Config";
 
 const AUTH_EXTENSION = "auth";
 

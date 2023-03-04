@@ -2,7 +2,7 @@ import React, { FormEvent, useEffect, useRef, useState } from "react";
 import { InputText } from "primereact/inputtext";
 import ConfirmButton from "../../components/popups/ConfirmPopup";
 import { useNavigate, useParams } from "react-router-dom";
-import { GENRES_API } from "../../apis/GenresAPI";
+import { GENRES_API } from "../../apis/genres/GenresAPI";
 import { Genre } from "./GenreList";
 import { logger } from "../../util/Logger";
 import { Toast } from "primereact/toast";

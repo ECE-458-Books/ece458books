@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { useNavigate, useParams } from "react-router-dom";
-import { ModifyVendorReq, VENDORS_API } from "../../apis/VendorsAPI";
+import { ModifyVendorReq, VENDORS_API } from "../../apis/vendors/VendorsAPI";
 import { logger } from "../../util/Logger";
 import { Toast } from "primereact/toast";
 import { showFailure, showSuccess } from "../../components/Toast";

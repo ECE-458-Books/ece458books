@@ -6,7 +6,7 @@ import { priceEditor } from "../../components/editors/TableCellEditFuncs";
 import { nullableNumberEditor } from "../../components/editors/NumberEditor";
 import { nullableIntegerEditor } from "../../components/editors/IntegerEditor";
 import ImageTemplateWithButtons from "../../components/templates/ImageTemplate";
-import { APIBookWithDBTag, BOOKS_API } from "../../apis/BooksAPI";
+import { APIBookWithDBTag, BOOKS_API } from "../../apis/books/BooksAPI";
 import { Book, NewImageUploadData } from "./BookList";
 import { Badge } from "primereact/badge";
 import { logger } from "../../util/Logger";
@@ -14,7 +14,7 @@ import { Toast } from "primereact/toast";
 import {
   APIToInternalBookConversionWithDB,
   InternalToAPIBookConversion,
-} from "../../apis/Conversions";
+} from "../../apis/books/BooksConversions";
 import {
   createColumns,
   TableColumn,

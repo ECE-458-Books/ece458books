@@ -1,6 +1,6 @@
 import { Dropdown } from "primereact/dropdown";
-import { BOOKS_API } from "../../apis/BooksAPI";
-import { APIToInternalBookConversion } from "../../apis/Conversions";
+import { BOOKS_API } from "../../apis/books/BooksAPI";
+import { APIToInternalBookConversion } from "../../apis/books/BooksConversions";
 import { Book } from "../../pages/books/BookList";
 
 export interface BookDropdownDataProps {

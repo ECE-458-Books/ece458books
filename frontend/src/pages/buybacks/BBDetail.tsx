@@ -29,7 +29,7 @@ import {
   AddBBReq,
   BUYBACK_API,
   ModifyBBReq,
-} from "../../apis/BuyBackAPI";
+} from "../../apis/buybacks/BuyBackAPI";
 import { internalToExternalDate } from "../../util/DateOps";
 import { filterById, findById } from "../../util/IDOps";
 import { calculateTotal } from "../../util/LineItemOps";
@@ -39,7 +39,7 @@ import { useImmer } from "use-immer";
 import {
   APIToInternalBBConversion,
   APIToInternalBuybackCSVConversion,
-} from "../../apis/Conversions";
+} from "../../apis/buybacks/BuybacksConversions";
 import BooksDropdown, {
   BooksDropdownData,
 } from "../../components/dropdowns/BookDropdown";
@@ -54,7 +54,7 @@ import VendorDropdown from "../../components/dropdowns/VendorDropdown";
 import DeleteColumn from "../../components/datatable/DeleteColumn";
 import AddRowButton from "../../components/buttons/AddRowButton";
 import EditCancelButton from "../../components/buttons/EditCancelDetailButton";
-import { VENDORS_API } from "../../apis/VendorsAPI";
+import { VENDORS_API } from "../../apis/vendors/VendorsAPI";
 import { FileUploadHandlerEvent } from "primereact/fileupload";
 import CSVUploader from "../../components/uploaders/CSVFileUploader";
 import "../../css/TableCell.css";

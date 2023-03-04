@@ -2,10 +2,13 @@ import { DataTable } from "primereact/datatable";
 import { FormEvent, useRef, useState } from "react";
 import { Calendar } from "primereact/calendar";
 import moment from "moment";
-import { GetSalesReportResp, SALES_REPORT_API } from "../../apis/SalesRepAPI";
+import {
+  GetSalesReportResp,
+  SALES_REPORT_API,
+} from "../../apis/salesreport/SalesRepAPI";
 import { Toast } from "primereact/toast";
 import { logger } from "../../util/Logger";
-import { APIToInternalSalesReportConversion } from "../../apis/Conversions";
+import { APIToInternalSalesReportConversion } from "../../apis/salesreport/SalesReportConversions";
 import {
   createColumns,
   TableColumn,

@@ -16,7 +16,7 @@ import React from "react";
 import { v4 as uuid } from "uuid";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
 import { Toolbar } from "primereact/toolbar";
-import { VENDORS_API, AddVendorReq } from "../../apis/VendorsAPI";
+import { VENDORS_API, AddVendorReq } from "../../apis/vendors/VendorsAPI";
 import axios from "axios";
 import AddRowButton from "../../components/buttons/AddRowButton";
 import BackButton from "../../components/buttons/BackButton";

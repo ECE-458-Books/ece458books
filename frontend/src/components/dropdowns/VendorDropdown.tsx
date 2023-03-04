@@ -1,6 +1,6 @@
 import { Dropdown } from "primereact/dropdown";
 import { useEffect, useState } from "react";
-import { VENDORS_API } from "../../apis/VendorsAPI";
+import { VENDORS_API } from "../../apis/vendors/VendorsAPI";
 
 export interface VendorDropdownProps {
   setVendorMap: (arg0: Map<string, number>) => void; // Setter for vendor map

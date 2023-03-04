@@ -10,8 +10,8 @@ import { useNavigate } from "react-router-dom";
 import {
   APISRSortFieldMap,
   APIToInternalSRConversion,
-} from "../../apis/Conversions";
-import { APISR, GetSRsResp, SALES_API } from "../../apis/SalesAPI";
+} from "../../apis/sales/SalesConversions";
+import { APISR, GetSRsResp, SALES_API } from "../../apis/sales/SalesAPI";
 import {
   createColumns,
   TableColumn,

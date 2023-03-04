@@ -16,7 +16,7 @@ import {
   APISRSaleRow,
   ModifySRReq,
   SALES_API,
-} from "../../apis/SalesAPI";
+} from "../../apis/sales/SalesAPI";
 import { Toast } from "primereact/toast";
 import { internalToExternalDate } from "../../util/DateOps";
 import BooksDropdown, {
@@ -27,7 +27,7 @@ import { FileUploadHandlerEvent } from "primereact/fileupload";
 import {
   APIToInternalSalesCSVConversion,
   APIToInternalSRConversion,
-} from "../../apis/Conversions";
+} from "../../apis/sales/SalesConversions";
 import {
   showFailure,
   showSuccess,

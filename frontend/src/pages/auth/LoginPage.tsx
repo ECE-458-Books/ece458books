@@ -2,7 +2,7 @@ import { createRef, FormEvent, useState } from "react";
 import { Button } from "primereact/button";
 import { Messages } from "primereact/messages";
 import { useNavigate } from "react-router-dom";
-import { AUTH_API, LoginReq } from "../../apis/AuthAPI";
+import { AUTH_API, LoginReq } from "../../apis/auth/AuthAPI";
 import { Password } from "primereact/password";
 
 export default function LoginPage() {

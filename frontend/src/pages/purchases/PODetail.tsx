@@ -16,14 +16,14 @@ import {
   APIPOPurchaseRow,
   ModifyPOReq,
   PURCHASES_API,
-} from "../../apis/PurchasesAPI";
+} from "../../apis/purchases/PurchasesAPI";
 import { internalToExternalDate } from "../../util/DateOps";
 import { Toast } from "primereact/toast";
 import { FileUploadHandlerEvent } from "primereact/fileupload";
 import {
   APIToInternalPOConversion,
   APIToInternalPurchasesCSVConversion,
-} from "../../apis/Conversions";
+} from "../../apis/purchases/PurchasesConversions";
 import CSVUploader from "../../components/uploaders/CSVFileUploader";
 import VendorDropdown from "../../components/dropdowns/VendorDropdown";
 import BooksDropdown, {

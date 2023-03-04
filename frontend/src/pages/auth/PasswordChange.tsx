@@ -1,7 +1,7 @@
 import { createRef, FormEvent, useRef, useState } from "react";
 import { Button } from "primereact/button";
 import { Messages } from "primereact/messages";
-import { AUTH_API } from "../../apis/AuthAPI";
+import { AUTH_API } from "../../apis/auth/AuthAPI";
 import { Toast } from "primereact/toast";
 import { logger } from "../../util/Logger";
 import { Password } from "primereact/password";

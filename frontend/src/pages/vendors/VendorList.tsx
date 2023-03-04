@@ -11,8 +11,12 @@ import { useNavigate } from "react-router-dom";
 import {
   APIToInternalVendorConversion,
   APIVendorSortFieldMap,
-} from "../../apis/Conversions";
-import { APIVendor, GetVendorsResp, VENDORS_API } from "../../apis/VendorsAPI";
+} from "../../apis/vendors/VendorsConversions";
+import {
+  APIVendor,
+  GetVendorsResp,
+  VENDORS_API,
+} from "../../apis/vendors/VendorsAPI";
 import {
   createColumns,
   TableColumn,

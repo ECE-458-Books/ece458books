@@ -3,7 +3,7 @@ import {
   BOOKS_API,
   GetBooksReq,
   GetBooksResp,
-} from "../../apis/BooksAPI";
+} from "../../apis/books/BooksAPI";
 import {
   DataTable,
   DataTableFilterEvent,
@@ -17,10 +17,8 @@ import { DataTableFilterMetaData } from "primereact/datatable";
 import { logger } from "../../util/Logger";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Toast } from "primereact/toast";
-import {
-  APIBookSortFieldMap,
-  APIToInternalBookConversion,
-} from "../../apis/Conversions";
+import { APIBookSortFieldMap } from "../../apis/books/BooksConversions";
+import { APIToInternalBookConversion } from "../../apis/books/BooksConversions";
 import {
   createColumns,
   TableColumn,

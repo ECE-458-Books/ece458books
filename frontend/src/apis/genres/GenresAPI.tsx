@@ -4,7 +4,7 @@ import {
   METHOD_GET,
   METHOD_PATCH,
   METHOD_POST,
-} from "./Config";
+} from "../Config";
 
 const GENRES_EXTENSION = "genres";
 

@@ -1,4 +1,4 @@
-import { API, METHOD_GET } from "./Config";
+import { API, METHOD_GET } from "../Config";
 
 const SALES_REPORT_EXTENTSION = "sales/sales_report/";
 

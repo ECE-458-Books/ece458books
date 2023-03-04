@@ -13,11 +13,11 @@ import {
   DataTableRowClickEvent,
   DataTableSortEvent,
 } from "primereact/datatable";
-import { APIBB, BUYBACK_API, GetBBsResp } from "../../apis/BuyBackAPI";
+import { APIBB, BUYBACK_API, GetBBsResp } from "../../apis/buybacks/BuyBackAPI";
 import {
   APIBBSortFieldMap,
   APIToInternalBBConversion,
-} from "../../apis/Conversions";
+} from "../../apis/buybacks/BuybacksConversions";
 import { NUM_ROWS } from "../books/BookList";
 import { logger } from "../../util/Logger";
 import { useNavigate } from "react-router-dom";

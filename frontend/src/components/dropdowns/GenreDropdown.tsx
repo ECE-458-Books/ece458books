@@ -1,5 +1,5 @@
 import { Dropdown } from "primereact/dropdown";
-import { GENRES_API } from "../../apis/GenresAPI";
+import { GENRES_API } from "../../apis/genres/GenresAPI";
 import { CSSProperties } from "react";
 
 export interface GenreDropdownDataProps {

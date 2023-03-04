@@ -5,7 +5,7 @@ import {
   METHOD_GET,
   METHOD_PATCH,
   METHOD_POST,
-} from "./Config";
+} from "../Config";
 
 const BOOKS_EXTENSION = "books";
 

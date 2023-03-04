@@ -10,8 +10,12 @@ import { useNavigate } from "react-router-dom";
 import {
   APIPOSortFieldMap,
   APIToInternalPOConversion,
-} from "../../apis/Conversions";
-import { APIPO, GetPOsResp, PURCHASES_API } from "../../apis/PurchasesAPI";
+} from "../../apis/purchases/PurchasesConversions";
+import {
+  APIPO,
+  GetPOsResp,
+  PURCHASES_API,
+} from "../../apis/purchases/PurchasesAPI";
 import {
   createColumns,
   TableColumn,

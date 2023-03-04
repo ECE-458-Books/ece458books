@@ -12,8 +12,12 @@ import { useNavigate } from "react-router-dom";
 import {
   APIGenreSortFieldMap,
   APIToInternalGenreConversion,
-} from "../../apis/Conversions";
-import { APIGenre, GENRES_API, GetGenresResp } from "../../apis/GenresAPI";
+} from "../../apis/genres/GenresConversions";
+import {
+  APIGenre,
+  GENRES_API,
+  GetGenresResp,
+} from "../../apis/genres/GenresAPI";
 import {
   createColumns,
   TableColumn,

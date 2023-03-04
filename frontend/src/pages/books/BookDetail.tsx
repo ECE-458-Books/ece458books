@@ -6,7 +6,7 @@ import {
   InputNumber,
   InputNumberValueChangeEvent,
 } from "primereact/inputnumber";
-import { APIBook, BOOKS_API } from "../../apis/BooksAPI";
+import { APIBook, BOOKS_API } from "../../apis/books/BooksAPI";
 import { FormikErrors, useFormik } from "formik";
 import { Toast } from "primereact/toast";
 import { logger } from "../../util/Logger";
@@ -18,7 +18,7 @@ import ImageUploader, {
   DEFAULT_BOOK_IMAGE,
 } from "../../components/uploaders/ImageFileUploader";
 import { showFailure, showSuccess } from "../../components/Toast";
-import { APIToInternalBookConversion } from "../../apis/Conversions";
+import { APIToInternalBookConversion } from "../../apis/books/BooksConversions";
 import { Button } from "primereact/button";
 import GenreDropdown from "../../components/dropdowns/GenreDropdown";
 import BookDetailLineItems, { BookDetailLineItem } from "./BookDetailLineItems";

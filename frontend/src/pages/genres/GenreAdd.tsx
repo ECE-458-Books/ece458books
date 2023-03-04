@@ -1,13 +1,13 @@
 import { FormEvent, useRef, useState } from "react";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Button } from "primereact/button";
-import { GENRES_API } from "../../apis/GenresAPI";
+import { GENRES_API } from "../../apis/genres/GenresAPI";
 import { logger } from "../../util/Logger";
 import { Toast } from "primereact/toast";
 import BackButton from "../../components/buttons/BackButton";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { AddGenreReq } from "../../apis/GenresAPI";
+import { AddGenreReq } from "../../apis/genres/GenresAPI";
 import { showFailure } from "../../components/Toast";
 
 export default function GenreAdd() {

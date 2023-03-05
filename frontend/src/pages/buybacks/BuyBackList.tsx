@@ -152,7 +152,7 @@ export default function BuyBackList() {
       isLoading={isLoading}
       setIsLoading={setIsLoading}
       totalNumberOfEntries={numberOfBuyBacks}
-      setNumberOfRows={setNumberOfBuyBacks}
+      setTotalNumberOfEntries={setNumberOfBuyBacks}
       rows={buybacks}
       setRows={setBuybacks}
       APISortFieldMap={APIBBSortFieldMap}

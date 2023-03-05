@@ -23,7 +23,7 @@ interface ListTemplateProps<T extends IDer> {
   isLoading: boolean; // Whether the table is currently loading data
   setIsLoading: (isLoading: boolean) => void;
   totalNumberOfEntries: number; // Number of total entries that can be in the table
-  setNumberOfRows: (numberOfRows: number) => void;
+  setTotalNumberOfEntries: (numberOfRows: number) => void;
   rows: T[]; // The actual data in the rows of the table
   setRows: (rows: T[]) => void;
   APISortFieldMap: Map<string, string>; // Mapping for the sort field for API calls

@@ -26,8 +26,6 @@ export function APIToInternalPOPurchaseConversion(
 ): POPurchaseRow {
   return {
     isNewRow: false,
-    // (id is always defined from API)
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     id: purchase.id!.toString(),
     bookId: purchase.book,
     bookTitle: formatBookForDropdown(purchase.book_title, purchase.book_isbn),

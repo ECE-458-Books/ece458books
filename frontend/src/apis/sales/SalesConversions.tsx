@@ -17,8 +17,6 @@ export const APISRSortFieldMap = new Map<string, string>([
 function APIToInternalSRSaleConversion(sale: APISRSaleRow): SRSaleRow {
   return {
     isNewRow: false,
-    // (id is always defined from API)
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     id: sale.id!.toString(),
     bookId: sale.book,
     bookISBN: sale.book_isbn,

@@ -505,8 +505,6 @@ export default function PODetail() {
     isDisabled?: boolean
   ) => (
     <BooksDropdown
-      // This will always be used in a table cell, so we can disable the warning
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       setSelectedBook={onChange}
       selectedBook={value}
       isDisabled={isDisabled}

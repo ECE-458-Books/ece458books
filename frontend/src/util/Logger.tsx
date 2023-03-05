@@ -1,7 +1,4 @@
-import { Logger } from "tslog";
-
-// The logger to be used globally
-//export const logger = new Logger();
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 class CustLogger {
   debug(...args: any[]) {

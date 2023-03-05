@@ -1,4 +1,4 @@
-import { priceBodyTemplate } from "../../util/TableCellEditFuncs";
+import PriceTemplate from "../templates/PriceTemplate";
 
 interface TotalDollarsProps {
   label: string;
@@ -15,7 +15,7 @@ export default function TotalDollars(props: TotalDollarsProps) {
         {props.label}
       </label>
       <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
-        {priceBodyTemplate(props.totalDollars ?? 0)}
+        {PriceTemplate(props.totalDollars ?? 0)}
       </p>
     </>
   );

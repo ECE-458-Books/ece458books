@@ -1,7 +1,7 @@
 import { Dropdown } from "primereact/dropdown";
-import { BOOKS_API } from "../../apis/BooksAPI";
-import { APIToInternalBookConversion } from "../../apis/Conversions";
-import { Book } from "../../pages/list/BookList";
+import { BOOKS_API } from "../../apis/books/BooksAPI";
+import { APIToInternalBookConversion } from "../../apis/books/BooksConversions";
+import { Book } from "../../pages/books/BookList";
 
 export interface BookDropdownDataProps {
   setBooksMap: (arg0: Map<string, Book>) => void; // Setter for book map

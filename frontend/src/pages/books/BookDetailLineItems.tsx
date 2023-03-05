@@ -14,7 +14,7 @@ export interface BookDetailLineItemsProps {
 
 export interface BookDetailLineItem {
   id: string;
-  date: Date;
+  date: weqfpiojqpweoij
   type: BookDetailLineItemType;
   vendor?: number;
   vendorName?: string;

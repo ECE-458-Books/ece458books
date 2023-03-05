@@ -63,7 +63,7 @@ export default function VendorList() {
   const callAPI = (page: number, pageSize: number, sortField: string) => {
     if (!isNoPagination) {
       VENDORS_API.getVendors({
-        page: (page ?? 0) + 1,
+        page: page,
         page_size: pageSize,
         ordering: sortField,
       }).then((response) => onAPIResponse(response));

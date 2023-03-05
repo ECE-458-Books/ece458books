@@ -13,7 +13,6 @@ import {
   createColumns,
   TableColumn,
 } from "../../components/datatable/TableColumns";
-import { NUM_ROWS } from "../../pages/books/BookList";
 import { IDer } from "../../util/IDOps";
 import { logger } from "../../util/Logger";
 
@@ -43,7 +42,7 @@ export const STARTING_SORT_PARAMS: DataTableSortEvent = {
 
 export const STARTING_PAGE_PARAMS: DataTablePageEvent = {
   first: 0,
-  rows: NUM_ROWS,
+  rows: 10,
   page: 0,
 };
 
@@ -63,7 +62,7 @@ export default function ListTemplate<T extends IDer>(
   // ----------------- STATE -----------------
   const navigate = useNavigate();
   const [numCurrentlyDisplayedRows, setNumCurrentlyDisplayedRows] =
-    useState<number>(NUM_ROWS);
+    useState<number>(10);
   const [sortParams, setSortParams] =
     useState<DataTableSortEvent>(STARTING_SORT_PARAMS);
   const [pageParams, setPageParams] =
@@ -84,6 +83,15 @@ export default function ListTemplate<T extends IDer>(
     setNumCurrentlyDisplayedRows(event.rows);
     props.setIsLoading(true);
     setPageParams(event);
+  };
+
+  const onFilter = (event: DataTableFilterEvent) => {
+    setPageParams({
+      first: 0,
+      rows: numCurrentlyDisplayedRows,
+      page: 0,
+    });
+    props.onFilter?.(event);
   };
 
   const onRowClick = (event: DataTableRowClickEvent) => {
@@ -136,7 +144,7 @@ export default function ListTemplate<T extends IDer>(
       sortField={sortParams.sortField}
       sortOrder={sortParams.sortOrder}
       // Filtering
-      onFilter={props.onFilter}
+      onFilter={onFilter}
       filters={props.filters}
     >
       {columns}

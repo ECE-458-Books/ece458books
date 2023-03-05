@@ -69,14 +69,10 @@ export default function GenreList() {
   };
 
   // Calls the Genres API
-  const callAPI = (
-    page: number | undefined,
-    pageSize: number,
-    sortField: string
-  ) => {
+  const callAPI = (page: number, pageSize: number, sortField: string) => {
     if (!isNoPagination) {
       GENRES_API.getGenres({
-        page: (page ?? 0) + 1,
+        page: page,
         page_size: pageSize,
         ordering: sortField,
       }).then((response) => onAPIResponse(response));
@@ -162,7 +158,6 @@ export default function GenreList() {
       totalNumberOfEntries={numberOfGenres}
       setTotalNumberOfEntries={setNumberOfGenres}
       rows={genres}
-      setRows={setGenres}
       APISortFieldMap={APIGenreSortFieldMap}
       callGetAPI={callAPI}
     />

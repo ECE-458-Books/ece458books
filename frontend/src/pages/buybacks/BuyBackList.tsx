@@ -77,14 +77,10 @@ export default function BuyBackList() {
   const [tableWhitespaceSize, setTableWhitespaceSize] =
     useState<SelectSizeButtonOptions>(SelectSizeButtonOptions.Small);
 
-  const callAPI = (
-    page: number | undefined,
-    pageSize: number,
-    sortField: string
-  ) => {
+  const callAPI = (page: number, pageSize: number, sortField: string) => {
     if (!isNoPagination) {
       BUYBACK_API.getBuyBacks({
-        page: (page ?? 0) + 1,
+        page: page,
         page_size: pageSize,
         ordering: sortField,
       }).then((response) => onAPIResponse(response));
@@ -154,7 +150,6 @@ export default function BuyBackList() {
       totalNumberOfEntries={numberOfBuyBacks}
       setTotalNumberOfEntries={setNumberOfBuyBacks}
       rows={buybacks}
-      setRows={setBuybacks}
       APISortFieldMap={APIBBSortFieldMap}
       callGetAPI={callAPI}
     />

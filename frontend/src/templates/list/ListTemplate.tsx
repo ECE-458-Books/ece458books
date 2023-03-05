@@ -1,5 +1,7 @@
 import {
   DataTable,
+  DataTableFilterEvent,
+  DataTableFilterMeta,
   DataTablePageEvent,
   DataTableRowClickEvent,
   DataTableSortEvent,
@@ -25,13 +27,10 @@ interface ListTemplateProps<T extends IDer> {
   totalNumberOfEntries: number; // Number of total entries that can be in the table
   setTotalNumberOfEntries: (numberOfRows: number) => void;
   rows: T[]; // The actual data in the rows of the table
-  setRows: (rows: T[]) => void;
   APISortFieldMap: Map<string, string>; // Mapping for the sort field for API calls
-  callGetAPI: (
-    page: number | undefined,
-    pageSize: number,
-    sortField: string
-  ) => void; // The API to call when table params are altered
+  callGetAPI: (page: number, pageSize: number, sortField: string) => void; // The API to call when table params are altered
+  onFilter?: (event: DataTableFilterEvent) => void; // The function to call when a filter is applied
+  filters?: DataTableFilterMeta;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   additionalAPITriggers?: any[]; // Any other variables that should trigger the API call
 }
@@ -97,7 +96,7 @@ export default function ListTemplate<T extends IDer>(
   useEffect(() => {
     let sortField = props.APISortFieldMap.get(sortParams.sortField) ?? "";
     sortField = invertSortFieldIfNecessary(sortParams, sortField);
-    props.callGetAPI(pageParams.page, pageParams.rows, sortField);
+    props.callGetAPI((pageParams.page ?? 0) + 1, pageParams.rows, sortField);
   }, [
     sortParams,
     pageParams,
@@ -116,6 +115,7 @@ export default function ListTemplate<T extends IDer>(
       value={props.rows}
       lazy
       responsiveLayout="scroll"
+      filterDisplay={"row"}
       loading={props.isLoading}
       size={props.whitespaceSize}
       // Row clicking
@@ -135,6 +135,9 @@ export default function ListTemplate<T extends IDer>(
       onSort={onSort}
       sortField={sortParams.sortField}
       sortOrder={sortParams.sortOrder}
+      // Filtering
+      onFilter={props.onFilter}
+      filters={props.filters}
     >
       {columns}
     </DataTable>

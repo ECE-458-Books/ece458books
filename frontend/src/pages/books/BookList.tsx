@@ -446,7 +446,7 @@ export default function BookList() {
   const dataTable = (
     <ListTemplate
       columns={COLUMNS}
-      detailPageURL="/book-buybacks/detail/"
+      detailPageURL="/books/detail/"
       whitespaceSize={tableWhitespaceSize}
       isNoPagination={isNoPagination}
       isLoading={isLoading}
@@ -458,7 +458,7 @@ export default function BookList() {
       callGetAPI={callAPI}
       onFilter={onFilter}
       filters={filterParams.filters}
-      additionalAPITriggers={[filterParams, selectedGenre]}
+      additionalAPITriggers={[selectedGenre, filterParams]}
     />
   );
 

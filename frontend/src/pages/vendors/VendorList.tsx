@@ -126,7 +126,7 @@ export default function VendorList() {
   const dataTable = (
     <ListTemplate
       columns={COLUMNS}
-      detailPageURL="/vendors/detail"
+      detailPageURL="/vendors/detail/"
       whitespaceSize={tableWhitespaceSize}
       isNoPagination={isNoPagination}
       isLoading={isLoading}

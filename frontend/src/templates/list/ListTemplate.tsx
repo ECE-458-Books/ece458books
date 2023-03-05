@@ -105,12 +105,7 @@ export default function ListTemplate<T extends IDer>(
     let sortField = props.APISortFieldMap.get(sortParams.sortField) ?? "";
     sortField = invertSortFieldIfNecessary(sortParams, sortField);
     props.callGetAPI((pageParams.page ?? 0) + 1, pageParams.rows, sortField);
-  }, [
-    sortParams,
-    pageParams,
-    props.isNoPagination,
-    props.additionalAPITriggers,
-  ]);
+  }, [sortParams, pageParams, props.isNoPagination].concat(props.additionalAPITriggers ?? []));
 
   // ----------------- VISUAL ELEMENTS -----------------
 

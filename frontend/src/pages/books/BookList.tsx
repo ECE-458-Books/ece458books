@@ -40,7 +40,6 @@ import { showFailure } from "../../components/Toast";
 import { saveAs } from "file-saver";
 import { MultiSelect, MultiSelectChangeEvent } from "primereact/multiselect";
 import { isHighlightingText } from "../../util/ClickCheck";
-import { Style } from "../../css/Style";
 
 export const NUM_ROWS = 10;
 

@@ -249,7 +249,8 @@ export default function BookAdd() {
 
   // Image template buttons
 
-  const imageUploadButton = (rowData: BookWithDBTag) => { return (
+  const imageUploadButton = (rowData: BookWithDBTag) => {
+    return (
       <ImageUploader
         uploadHandler={(e: FileUploadHandlerEvent) =>
           onImageChange(e, rowData.id)

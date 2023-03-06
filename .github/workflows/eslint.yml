@@ -24,11 +24,6 @@ jobs:
         working-directory: ./frontend
         run: npm install
       
-      - name: Run ESLint and print to console
-        working-directory: ./frontend
-        run: npm run lint
-        continue-on-error: true
-      
       - name: Run ESLint and put in file
         working-directory: ./frontend
         run: npm run lint:file

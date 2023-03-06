@@ -40,6 +40,7 @@ import { showFailure } from "../../components/Toast";
 import { saveAs } from "file-saver";
 import { MultiSelect, MultiSelectChangeEvent } from "primereact/multiselect";
 import { isHighlightingText } from "../../util/ClickCheck";
+import { Style } from "../../css/Style";
 
 export const NUM_ROWS = 10;
 
@@ -60,7 +61,7 @@ export interface Book {
   publishedYear: number;
   pageCount?: number;
   width?: number;
-  height?: number;
+  height?: numbe;
   thickness?: number;
   retailPrice: number;
   bestBuybackPrice?: number;
@@ -172,7 +173,6 @@ export default function BookList() {
 
   const genreFilter = (style: CSSProperties) => (
     <GenreDropdown
-      selectedGenre={selectedGenre}
       setSelectedGenre={setSelectedGenre}
       genresList={genreNamesList}
       style={style}

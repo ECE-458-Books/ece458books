@@ -157,7 +157,7 @@ export default function GenreList() {
 
   const bookFilteredList = (rowData: Genre) => {
     return (
-      <React.Fragment>
+      <>
         <div className="flex justify-content-center">
           <Button
             icon="pi pi-align-justify"
@@ -166,7 +166,7 @@ export default function GenreList() {
             onClick={() => goToFilteredBookList(rowData)}
           />
         </div>
-      </React.Fragment>
+      </>
     );
   };
 

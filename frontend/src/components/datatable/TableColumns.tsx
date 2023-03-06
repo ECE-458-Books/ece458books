@@ -1,14 +1,6 @@
 import { Column, ColumnEvent } from "primereact/column";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
-
-export interface ColumnStyle {
-  minWidth?: string;
-  width?: string;
-  padding?: string;
-  margin?: string;
-  minHeight?: string;
-  height?: string;
-}
+import { Style } from "../../css/Style";
 
 // The base column interface, all columns should implement this interface
 export interface TableColumn<T> {
@@ -16,7 +8,7 @@ export interface TableColumn<T> {
   field: string; // The key of the field. If the column is hidden, this is the only required field
   header?: string; // Displayed header on table
   hidden?: boolean; // Set to true if hiding column
-  style?: ColumnStyle; // Used for setting width
+  style?: Style; // Used for setting width
 
   // Filter Information
   filterable?: boolean; // Set to true to enabling filter

@@ -256,7 +256,7 @@ export default function BookAdd() {
           onImageChange(e, rowData.id)
         }
         className=""
-        style={{ height: 10, width: 10, paddingLeft: 5 }}
+        style={{ height: "10", width: "10", paddingLeft: "5" }}
       />
     );
   };

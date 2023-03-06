@@ -23,10 +23,14 @@ jobs:
       - name: Install ESLint
         working-directory: ./frontend
         run: npm install
-
-      - name: Run ESLint
+      
+      - name: Run ESLint and print to console
         working-directory: ./frontend
         run: npm run lint
+
+      - name: Run ESLint and put in file
+        working-directory: ./frontend
+        run: npm run lint:file
 
       - name: Annotate Code Linting Results
         uses: ataylorme/eslint-annotate-action@v2

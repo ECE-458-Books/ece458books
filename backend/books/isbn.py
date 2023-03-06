@@ -46,7 +46,7 @@ class ISBNTools:
         metadata = self.parse_response(json_resp, parsed_isbn)
 
         # get book url from openlibrary
-        external_image_url = self.get_external_book_image_url(parsed_isbn, )
+        external_image_url = self.get_external_book_image_url(parsed_isbn)
         
         metadata['image_url'] = external_image_url
 
@@ -210,18 +210,34 @@ class ISBNTools:
         try:
             image = Image.open(io.BytesIO(image_bytes))
             filename = f'{filename_without_extension}.{image.format.lower()}'
-            absolute_location = f'{settings.STATICFILES_DIRS[0]}/{filename}'
+            absolute_location = f'{self._internal_book_image_absolute_path}/{filename}'
             image.save(absolute_location)
-        except:
+        except Exception as e:
+            print(e)
             # This means that the image_bytes is corrupted revert to default image in this case
             filename = self._default_image_name
             absolute_location = ''
 
         return absolute_location, filename # Absolute location is used to send the static file to image server
+
+    def commit_image_url(self, request, book_id, isbn_13):
+        # Get the image url
+        end_url = request.data.get('image_url')
+
+        # If the url is the default iamge url no need to download
+        if end_url == self.get_default_image_url():
+            return self.get_default_image_url()
+        
+        image_bytes = self.get_image_raw_bytes(end_url)
+        filename_without_extension = f'{book_id}'
+        abs_location, filename = self.create_local_image(filename_without_extension, image_bytes)
+
+        return f"{self._internal_image_base_url}/{filename}"
+
     
     def commit_image_raw_bytes(self, request, book_id, isbn_13):
         # Get the image raw_bytes
-        file_uploaded = request.data.get('image')
+        file_uploaded = request.data.get('image_bytes')
         content_type = file_uploaded.content_type
         extension = content_type.split('/')[-1].strip()
         file_bytes = file_uploaded.read()
@@ -229,9 +245,7 @@ class ISBNTools:
         filename_without_extension = f'{book_id}'
         absolute_location, filename = self.create_local_image(filename_without_extension, file_bytes)
 
-        HOST = self._scp_toolbox.send_image_data(absolute_location)
-
-        return f"https://{HOST}/{filename}"
+        return f"{self._internal_image_base_url}/{filename}"
         
     def get_default_image_url(self,):
         return f'{self._internal_image_base_url}/{self._default_image_name}'

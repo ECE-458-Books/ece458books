@@ -38,7 +38,7 @@ export const LineItemURLMapper = new Map<BookDetailLineItemType, string>([
 export default function BookDetailLineItems(props: BookDetailLineItemsProps) {
   const navigate = useNavigate();
 
-  const COLUMNS: TableColumn[] = [
+  const COLUMNS: TableColumn<BookDetailLineItem>[] = [
     {
       header: "Date",
       field: "date",

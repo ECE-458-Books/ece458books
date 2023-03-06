@@ -39,7 +39,7 @@ export interface BuyBack {
   totalRevenue: number;
 }
 
-const COLUMNS: TableColumn[] = [
+const COLUMNS: TableColumn<BuyBack>[] = [
   {
     field: "date",
     header: "Date (YYYY-MM-DD)",

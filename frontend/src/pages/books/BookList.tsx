@@ -180,7 +180,7 @@ export default function BookList() {
     />
   );
 
-  const COLUMNS: TableColumn[] = [
+  const COLUMNS: TableColumn<Book>[] = [
     {
       field: "thumbnailURL",
       header: "Cover Art",

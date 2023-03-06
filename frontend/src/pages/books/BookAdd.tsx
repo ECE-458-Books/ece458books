@@ -71,7 +71,7 @@ export default function BookAdd() {
   );
 
   // Properties of each column that change, the rest are set below when creating the actual Columns to be rendered
-  const COLUMNS: TableColumn[] = [
+  const COLUMNS: TableColumn<BookWithDBTag>[] = [
     {
       field: "fromDB",
       header: "Book Status",

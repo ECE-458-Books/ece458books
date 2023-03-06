@@ -44,7 +44,7 @@ export interface PurchaseOrder {
   purchases: POPurchaseRow[];
 }
 
-const COLUMNS: TableColumn[] = [
+const COLUMNS: TableColumn<PurchaseOrder>[] = [
   {
     field: "date",
     header: "Date (YYYY-MM-DD)",

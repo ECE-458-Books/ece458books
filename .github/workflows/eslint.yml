@@ -24,13 +24,15 @@ jobs:
         working-directory: ./frontend
         run: npm install
       
-      - name: Run ESLint and put in file
-        working-directory: ./frontend
-        run: npm run lint:file
-      
       - name: Run ESLint and print to console
         working-directory: ./frontend
         run: npm run lint
+        continue-on-error: true
+      
+      - name: Run ESLint and put in file
+        working-directory: ./frontend
+        run: npm run lint:file
+        continue-on-error: true
 
       - name: Annotate Code Linting Results
         uses: ataylorme/eslint-annotate-action@v2

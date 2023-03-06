@@ -138,7 +138,6 @@ export const PURCHASES_API = {
   ): Promise<POCSVImportResp> {
     const formData = new FormData();
     formData.append("file", req.file);
-    console.log(formData);
     const request = {
       url: PURCHASES_EXTENSION.concat("/csv/import"),
       method: METHOD_POST,

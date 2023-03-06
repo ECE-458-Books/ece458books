@@ -157,7 +157,6 @@ export default function SalesReport() {
 
   const onAPIResponse = (response: GetSalesReportResp) => {
     const salesReport = APIToInternalSalesReportConversion(response);
-    //console.log(salesReport);
     setTotalsData([salesReport.totalRow]);
     setDailyData(salesReport.dailySummaryRows);
     setTopBooksData(salesReport.topBooksRows.slice(0, 10));

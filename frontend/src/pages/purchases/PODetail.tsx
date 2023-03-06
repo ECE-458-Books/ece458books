@@ -117,7 +117,7 @@ export default function PODetail() {
           setTotalCost(purchaseOrder.totalCost);
           setIsPageDeleteable(purchaseOrder.isDeletable);
         })
-        .catch(() => console.log(id));
+        .catch(() => showFailure(toast, "Could not fetch puchase order data"));
     }
   }, []);
 

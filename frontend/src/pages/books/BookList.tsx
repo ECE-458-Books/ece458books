@@ -415,7 +415,6 @@ export default function BookList() {
     logger.debug("Sort Applied", event);
     setLoading(true);
     setSortParams(event);
-    console.log(sortParams.sortOrder);
   };
 
   // Called when the paginator page is switched

@@ -56,7 +56,6 @@ export default function PasswordChangePage() {
             containsLowercase(newPassword2)
           ) {
             if (containsNumber(newPassword1) && containsNumber(newPassword2)) {
-              console.log("Password Changed");
               AUTH_API.passwordChange({
                 old_password: oldPassword,
                 password: newPassword1,

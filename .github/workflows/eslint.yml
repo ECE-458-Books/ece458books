@@ -23,15 +23,13 @@ jobs:
       - name: Install ESLint
         working-directory: ./frontend
         run: npm install
-      
-      - name: Run ESLint and put in file
-        working-directory: ./frontend
-        run: npm run lint:file
-        continue-on-error: true
 
-      - name: Annotate Code Linting Results
-        uses: ataylorme/eslint-annotate-action@v2
-        if: always()
+      
+      - name: Run linters
+        working-directory: ./frontend
+        uses: wearerequired/lint-action@v2
         with:
-          repo-token: "${{ secrets.GITHUB_TOKEN }}"
-          report-json: "./frontend/eslint_report.json"
+          eslint: true
+          prettier: true
+
+

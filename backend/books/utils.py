@@ -2,8 +2,6 @@ import os, fnmatch
 from django.conf import settings
 import environ
 
-STATIC_FILE_LOCATION = '/static/'
-
 def delete_all_files_in_folder_location(folder):
     for filename in os.listdir(folder):
         if filename == '.gitkeep':
@@ -53,9 +51,9 @@ def get_port_number(url):
     return url.split(":")[2].split("/")[0]
 
 def url_to_static_image_service(url):
-    return '/'.join(url.split('/')[:5])
+    return '/'.join(url.split('/')[:3])
 
-def uri_to_local_image_location(uri):
+def uri_to_local_image_location(uri, STATIC_FILE_LOCATION):
     url = url_to_static_image_service(reformat_url(uri))
     local_image_location = url + STATIC_FILE_LOCATION
 

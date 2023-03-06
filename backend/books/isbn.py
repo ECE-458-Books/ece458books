@@ -4,9 +4,6 @@ from isbnlib import *
 from dateutil import parser
 import PIL.Image as Image
 
-from django.conf import settings
-
-from .scpconnect import SCPTools
 from .utils import uri_to_local_image_location
 
 class ISBNTools:
@@ -19,9 +16,12 @@ class ISBNTools:
 
         self._base_url = env('EXTERNAL_BOOK_METADATA_API_ENDPOINT')
         self._image_base_url = env('EXTERNAL_BOOK_IMAGE_API_ENDPOINT')
-        self._internal_image_base_url = env('INTERNAL_BOOK_IMAGE_API_ENDPOINT')
+        self._internal_book_image_absolute_path = env('INTERNAL_BOOK_IMAGE_ABSOLUTE_PATH')
+        self._internal_book_image_url_path = env('INTERNAL_BOOK_IMAGE_URL_PATH')
         self._default_image_name = env('DEFAULT_IMAGE_NAME')
-        self._scp_toolbox = SCPTools()
+    
+    def set_internal_image_base_url(self, uri):
+        self._internal_image_base_url = uri_to_local_image_location(uri, self._internal_book_image_url_path)
 
     def is_valid_isbn(
         self,
@@ -45,10 +45,10 @@ class ISBNTools:
         json_resp = json.load(resp)
         metadata = self.parse_response(json_resp, parsed_isbn)
 
-        # get book image from openlibrary
-        local_image_url = self.download_external_book_image_to_local(parsed_isbn, uri)
+        # get book url from openlibrary
+        external_image_url = self.get_external_book_image_url(parsed_isbn, )
         
-        metadata['image_url'] = local_image_url
+        metadata['image_url'] = external_image_url
 
         return metadata
     
@@ -159,6 +159,14 @@ class ISBNTools:
 
         return end_url
         # return self.get_book_local_image_url(end_url, isbn_13, uri)
+
+    def get_external_book_image_url(self, isbn_13):
+        end_url = self._image_base_url + f'/{isbn_13}-L.jpg?default=false'
+
+        if self.get_image_raw_bytes(end_url) is None:
+            return self.get_default_image_url()
+
+        return end_url
     
     def get_book_local_image_url(self, end_url, isbn_13, uri):
         """Return URL for local book image

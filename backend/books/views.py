@@ -35,22 +35,19 @@ class ISBNSearchView(APIView):
     permission_classes = [IsAuthenticated]
     isbn_toolbox = ISBNTools()
 
-    def preprocess(self, uri):
-        # Clear the static image files in /static
-        delete_all_files_in_folder_location(settings.STATICFILES_DIRS[0])
-
-        # Get default image from image server
-        self.isbn_toolbox.download_default_book_image_to_local(uri)
-
     def post(self, request):
         serializer = ISBNSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         uri = request.build_absolute_uri()
 
-        self.preprocess(uri)
+        # Set the internal image base url using the request
+        self.isbn_toolbox.set_internal_image_base_url(uri)
 
         # Split ISBN with spaces and/or commas
         raw_isbn_list = re.split("\s?[, ]\s?", serializer.data['isbns'].strip())
+
+        # Delete all empty strings
+        raw_isbn_list = [raw_isbn for raw_isbn in raw_isbn_list if raw_isbn != '']
 
         # Convert all ISBN to ISBN-13
         parsed_isbn_list = self.isbn_toolbox.parse_raw_isbn_list(raw_isbn_list)
@@ -100,11 +97,9 @@ class ISBNSearchView(APIView):
 
         if len(images) == 0:
             # This is the case where there is no default image associated with the book.
-            local_url = self.isbn_toolbox.download_external_book_image_to_local(book.isbn_13, uri)
+            local_url = self.isbn_toolbox.get_default_image_url()
         else:
-            # Send the image server url not the static image
             local_url = images[0].image_url
-            # self.isbn_toolbox.download_existing_image_to_local(images[0].image_url, book.isbn_13, uri)
 
         ret["image_url"] = local_url
         ret["fromDB"] = True
@@ -139,6 +134,10 @@ class ListCreateBookAPIView(ListCreateAPIView):
 
     # Override default create method
     def create(self, request, *args, **kwargs):
+        # Set the internal image base url using the request
+        uri = request.build_absolute_uri()
+        self.isbn_toolbox.set_internal_image_base_url(uri)
+
         data = request.data
         content_type = request.content_type.split(';')[0]
 
@@ -320,6 +319,10 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
         return data
 
     def update(self, request, *args, **kwargs):
+        # Set the internal image base url using the request
+        uri = request.build_absolute_uri()
+        self.isbn_toolbox.set_internal_image_base_url(uri)
+
         data = request.data
         content_type = request.content_type.split(';')[0]
 

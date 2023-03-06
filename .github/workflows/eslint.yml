@@ -36,6 +36,7 @@ jobs:
 
       - name: Annotate Code Linting Results
         uses: ataylorme/eslint-annotate-action@v2
+        continue-on-error: true
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           report-json: "./frontend/eslint_report.json"

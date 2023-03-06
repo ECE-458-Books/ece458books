@@ -29,8 +29,10 @@ jobs:
         uses: wearerequired/lint-action@v2
         with:
           eslint_dir: ./frontend
+          eslint_extensions: tsx
           eslint: true
           prettier_dir: ./frontend
+          prettier_extensions: tsx
           prettier: true
         
 

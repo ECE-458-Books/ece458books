@@ -31,9 +31,11 @@ jobs:
           eslint_dir: ./frontend
           eslint_extensions: tsx
           eslint: true
+          eslint_args: "--max-warnings 0"
           prettier_dir: ./frontend
           prettier_extensions: tsx
           prettier: true
+          prettier_args: "--max-warnings 0"
           tsc_dir: ./frontend
           tsc: true
         

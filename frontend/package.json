@@ -2,6 +2,9 @@
   "name": "react-frontend",
   "version": "0.1.0",
   "private": true,
+  "browser": {
+    "fs": false
+  },
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
@@ -13,12 +16,14 @@
     "axios": "^1.2.5",
     "file-saver": "^2.0.5",
     "formik": "^2.2.9",
-    "fs": "^0.0.1-security",
     "immer": "^9.0.19",
     "moment": "^2.29.4",
+    "pino": "^8.11.0",
+    "pino-pretty": "^9.4.0",
     "primeflex": "^3.3.0",
     "primeicons": "^6.0.1",
     "primereact": "^9.0.0-beta.1",
+    "process": "^0.11.10",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.7.0",
@@ -59,6 +64,7 @@
   },
   "devDependencies": {
     "@types/axios": "^0.14.0",
+    "@types/pino-pretty": "^5.0.0",
     "@types/react-router-bootstrap": "^0.24.5",
     "@typescript-eslint/eslint-plugin": "^5.49.0",
     "@typescript-eslint/parser": "^5.49.0",
@@ -66,6 +72,7 @@
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-react": "^7.32.1",
-    "prettier": "2.8.3"
+    "prettier": "2.8.3",
+    "react-error-overlay": "^6.0.9"
   }
 }

@@ -28,8 +28,9 @@ jobs:
       - name: Run linters
         uses: wearerequired/lint-action@v2
         with:
-          working-directory: ./frontend
+          eslint_dir: ./frontend
           eslint: true
+          prettier_dir: ./frontend
           prettier: true
         
 

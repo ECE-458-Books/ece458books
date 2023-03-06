@@ -253,7 +253,11 @@ export default function BookAdd() {
     return (
       <ImageUploader
         uploadHandler={(e: FileUploadHandlerEvent) =>
-          onImageCha
+          onImageChange(e, rowData.id)
+        }
+        className=""
+        style={{ height: "10", width: "10", paddingLeft: "5" }}
+      />
     );
   };
 

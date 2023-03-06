@@ -53,9 +53,9 @@ def get_port_number(url):
 def url_to_static_image_service(url):
     return '/'.join(url.split('/')[:3])
 
-def uri_to_local_image_location(uri, STATIC_FILE_LOCATION):
+def uri_to_local_image_location(uri, static_file_location):
     url = url_to_static_image_service(reformat_url(uri))
-    local_image_location = url + STATIC_FILE_LOCATION
+    local_image_location = url + static_file_location
 
     return local_image_location
 

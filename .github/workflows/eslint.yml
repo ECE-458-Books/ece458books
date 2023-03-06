@@ -35,7 +35,6 @@ jobs:
           prettier_extensions: tsx
           prettier: true
           tsc_dir: ./frontend
-          tsc_extensions: tsx
           tsc: true
         
 

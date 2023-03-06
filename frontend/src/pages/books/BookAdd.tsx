@@ -252,7 +252,7 @@ export default function BookAdd() {
   const imageUploadButton = (rowData: BookWithDBTag) => {
     return (
       <ImageUploader
-        uploadHandler={(e: FileUploadHandlerEven) =>
+        uploadHandler={(e: FileUploadHandlerEvent) =>
           onImageChange(e, rowData.id)
         }
         className=""

@@ -16,7 +16,6 @@ import LabeledSwitch from "../../components/buttons/LabeledSwitch";
 import SelectSizeButton, {
   SelectSizeButtonOptions,
 } from "../../components/buttons/SelectSizeButton";
-import { IDer } from "../../util/IDOps";
 import ListTemplate from "../../templates/list/ListTemplate";
 
 export interface BuyBack {
@@ -70,7 +69,7 @@ export default function BuyBackList() {
   // ----------------- STATE -----------------
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState<boolean>(false); // Whether we show that the table is loading or not
-  const [buybacks, setBuybacks] = useState<IDer[]>([]); // The rows of the table
+  const [buybacks, setBuybacks] = useState<BuyBack[]>([]); // The rows of the table
   const [numberOfBuyBacks, setNumberOfBuyBacks] = useState<number>(0); // The total number of rows in the table
 
   const [isNoPagination, setIsNoPagination] = useState<boolean>(false);

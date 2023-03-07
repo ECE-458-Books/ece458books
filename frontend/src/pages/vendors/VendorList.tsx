@@ -12,7 +12,6 @@ import {
   VENDORS_API,
 } from "../../apis/vendors/VendorsAPI";
 import { TableColumn } from "../../components/datatable/TableColumns";
-import { logger } from "../../util/Logger";
 import PercentTemplate from "../../components/templates/PercentTemplate";
 import AddPageButton from "../../components/buttons/AddPageButton";
 import LabeledSwitch from "../../components/buttons/LabeledSwitch";

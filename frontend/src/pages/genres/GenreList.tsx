@@ -20,7 +20,6 @@ import SelectSizeButton, {
 } from "../../components/buttons/SelectSizeButton";
 import { Button } from "primereact/button";
 import ListTemplate from "../../templates/list/ListTemplate";
-import { IDer } from "../../util/IDOps";
 
 export interface Genre {
   id: string;
@@ -53,7 +52,7 @@ export default function GenreList() {
   // ----------------- STATE -----------------
   const [isLoading, setIsLoading] = useState<boolean>(false); // Whether we show that the table is loading or not
   const [numberOfGenres, setNumberOfGenres] = useState<number>(0); // The number of elements that match the query
-  const [genres, setGenres] = useState<IDer[]>([]); // The data displayed in the table
+  const [genres, setGenres] = useState<Genre[]>([]); // The data displayed in the table
   const [isNoPagination, setIsNoPagination] = useState<boolean>(false);
   const [tableWhitespaceSize, setTableWhitespaceSize] =
     useState<SelectSizeButtonOptions>(SelectSizeButtonOptions.Small);

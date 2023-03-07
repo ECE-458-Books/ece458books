@@ -7,14 +7,17 @@ import "primereact/resources/themes/lara-light-indigo/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 import "primeflex/primeflex.css";
+import { PermissionsProvider } from "./util/Permissions";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
 root.render(
-  <BrowserRouter>
-    <Router />
-  </BrowserRouter>
+  <PermissionsProvider permissions={["list"]}>
+    <BrowserRouter>
+      <Router />
+    </BrowserRouter>
+  </PermissionsProvider>
 );
 
 // If you want to start measuring performance in your app, pass a function

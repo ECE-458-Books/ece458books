@@ -37,7 +37,7 @@ DEBUG = env('DEBUG').lower() == 'true'
 # The reason why we don't let ALLOWED_HOSTS as a wildcard asterisk
 # https://www.djangoproject.com/weblog/2013/feb/19/security/#s-issue-host-header-poisoning
 ALLOWED_HOSTS = [
-    'books.colab.duke.edu', 'books-dev.colab.duke.edu', 'books-front.colab.duke.edu', 'books-test.colab.duke.edu'
+    'localhost', '127.0.0.1', 'books.colab.duke.edu', 'books-dev.colab.duke.edu', 'books-front.colab.duke.edu', 'books-test.colab.duke.edu'
 ]
 # ALLOWED_HOSTS = ['*']
 

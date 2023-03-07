@@ -1,6 +1,6 @@
 # gunicorn.conf.py
 # Non logging stuff
-bind = "0.0.0.0:8000"
+bind = "127.0.0.1:8000"
 workers = 2
 # Access log - records incoming HTTP requests
 accesslog = "/var/log/gunicorn.access.log"

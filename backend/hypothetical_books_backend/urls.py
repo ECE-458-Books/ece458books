@@ -15,7 +15,6 @@ Including another URLconf
 """
 from django.urls import include, path
 from django.conf import settings
-from django.conf.urls.static import static
 from .version import API_PREFIX
 
 urlpatterns = [
@@ -26,4 +25,4 @@ urlpatterns = [
     path(f'{API_PREFIX}purchase_orders', include('purchase_orders.urls')),
     path(f'{API_PREFIX}auth', include('authapp.urls', namespace='authentication')),
     path(f'{API_PREFIX}buybacks', include('buybacks.urls')),
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+]

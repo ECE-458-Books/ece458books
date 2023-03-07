@@ -11,7 +11,7 @@ interface DeletePopupProps {
 export default function DeletePopup(props: DeletePopupProps) {
   // Buttons that are shown on the bottom of the pop-up
   const deleteProductDialogFooter = (
-    <React.Fragment>
+    <>
       <Button
         label="No"
         icon="pi pi-times"
@@ -24,7 +24,7 @@ export default function DeletePopup(props: DeletePopupProps) {
         className="p-button-text"
         onClick={props.onConfirm}
       />
-    </React.Fragment>
+    </>
   );
   return (
     <Dialog

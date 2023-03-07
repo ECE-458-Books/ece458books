@@ -213,7 +213,6 @@ class ISBNTools:
             absolute_location = f'{self._internal_book_image_absolute_path}/{filename}'
             image.save(absolute_location)
         except Exception as e:
-            print(e)
             # This means that the image_bytes is corrupted revert to default image in this case
             filename = self._default_image_name
             absolute_location = ''

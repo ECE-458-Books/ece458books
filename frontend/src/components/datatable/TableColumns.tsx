@@ -1,4 +1,4 @@
-import { Column, ColumnEvent } from "primereact/column";
+import { Column } from "primereact/column";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import { Style } from "../../css/Style";
 
@@ -25,10 +25,6 @@ export interface TableColumn<T> {
 }
 
 export function createColumns<T>(columns: TableColumn<T>[]) {
-  const onCellEditComplete = (event: ColumnEvent) => {
-    event.rowData[event.field] = event.newValue;
-  };
-
   return columns.map((col) => {
     return (
       <Column
@@ -53,7 +49,6 @@ export function createColumns<T>(columns: TableColumn<T>[]) {
         showFilterMatchModes={false}
         showFilterOperator={false}
         // Editing/Body customization
-        onCellEditComplete={onCellEditComplete}
         body={col.customBody}
       />
     );

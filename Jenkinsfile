@@ -4,7 +4,9 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                echo 'Building...'
+                echo 'Move Environment Files to Correct Locations'
+                sh 'sudo netstat -tulpn'
+                sh 'pwd'
             }
         }
         stage('Deploy') {

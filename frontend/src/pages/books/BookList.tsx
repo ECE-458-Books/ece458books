@@ -4,13 +4,7 @@ import {
   GetBooksReq,
   GetBooksResp,
 } from "../../apis/books/BooksAPI";
-import {
-  DataTable,
-  DataTableFilterEvent,
-  DataTablePageEvent,
-  DataTableRowClickEvent,
-  DataTableSortEvent,
-} from "primereact/datatable";
+import { DataTableFilterEvent } from "primereact/datatable";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { DataTableFilterMetaData } from "primereact/datatable";
@@ -19,10 +13,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Toast } from "primereact/toast";
 import { APIBookSortFieldMap } from "../../apis/books/BooksConversions";
 import { APIToInternalBookConversion } from "../../apis/books/BooksConversions";
-import {
-  createColumns,
-  TableColumn,
-} from "../../components/datatable/TableColumns";
+import { TableColumn } from "../../components/datatable/TableColumns";
 import PriceTemplate from "../../components/templates/PriceTemplate";
 import AlteredTextTemplate from "../../components/templates/AlteredTextTemplate";
 import { imageBodyTemplate } from "../../components/templates/ImageTemplate";
@@ -39,9 +30,7 @@ import { Button } from "primereact/button";
 import { showFailure } from "../../components/Toast";
 import { saveAs } from "file-saver";
 import { MultiSelect, MultiSelectChangeEvent } from "primereact/multiselect";
-import { isHighlightingText } from "../../util/ClickCheck";
-
-export const NUM_ROWS = 10;
+import ListTemplate from "../../templates/list/ListTemplate";
 
 export interface NewImageUploadData {
   imageFile: File;
@@ -121,51 +110,24 @@ const columnsMeta: ColumnMeta[] = [
 
 export default function BookList() {
   // ----- STATE -----
+  const navigate = useNavigate();
   const location = useLocation(); // Utilized if coming from the genre list
-  const [loading, setLoading] = useState<boolean>(false); // Whether we show that the table is loading or not
+  const [isLoading, setIsLoading] = useState<boolean>(false); // Whether we show that the table is loading or not
   const [numberOfBooks, setNumberOfBooks] = useState<number>(0); // The number of books that match the query
   const [books, setBooks] = useState<Book[]>([]); // The book data itself (rows of the table)
   const [selectedGenre, setSelectedGenre] = useState<string>(
     location.state?.genre ?? ""
   ); // Initialize genre to the genre passed, if coming from genre list
-
-  const [rows, setRows] = useState<number>(NUM_ROWS);
   const [isNoPagination, setIsNoPagination] = useState<boolean>(false);
-  const [size, setSize] = useState<SelectSizeButtonOptions>(
-    SelectSizeButtonOptions.Small
-  );
-
+  const [tableWhitespaceSize, setTableWhitespaceSize] =
+    useState<SelectSizeButtonOptions>(SelectSizeButtonOptions.Small);
   const [genreNamesList, setGenreNamesList] = useState<string[]>([]); // List of all genre names
-
   const [visibleColumns, setVisibleColumns] = useState<ColumnMeta[]>(
     columnsMeta.slice(2, 6)
   );
 
-  // The current state of sorting.
-  const [sortParams, setSortParams] = useState<DataTableSortEvent>({
-    sortField: "",
-    sortOrder: null,
-    multiSortMeta: null, // Not used
-  });
+  // Genres dropdown custom filter
 
-  // The current state of the paginator
-  const [pageParams, setPageParams] = useState<DataTablePageEvent>({
-    first: 0,
-    rows: NUM_ROWS,
-    page: 0,
-  });
-
-  // The current state of the filters
-  const [filterParams, setFilterParams] = useState<DataTableFilterEvent>({
-    filters: {
-      title: { value: "", matchMode: "contains" },
-      author: { value: "", matchMode: "contains" },
-      isbn13: { value: "", matchMode: "contains" },
-      publisher: { value: "", matchMode: "contains" },
-    } as Filters,
-  });
-
-  // Genre dropdown
   useEffect(() => {
     GenresDropdownData({ setGenreNamesList });
   }, []);
@@ -180,6 +142,7 @@ export default function BookList() {
     />
   );
 
+  // Filtering
   const COLUMNS: TableColumn<Book>[] = [
     {
       field: "thumbnailURL",
@@ -298,16 +261,26 @@ export default function BookList() {
     },
   ];
 
-  // The navigator to switch pages
-  const navigate = useNavigate();
+  const [filterParams, setFilterParams] = useState<DataTableFilterEvent>({
+    filters: {
+      title: { value: "", matchMode: "contains" },
+      author: { value: "", matchMode: "contains" },
+      isbn13: { value: "", matchMode: "contains" },
+      publisher: { value: "", matchMode: "contains" },
+    } as Filters,
+  });
 
-  // Callback functions for edit/delete buttons
-  const toDetailsPage = (book: Book) => {
-    logger.debug("Edit Book Clicked", book);
-    navigate(`/books/detail/${book.id}`);
+  const onFilter = (event: DataTableFilterEvent) => {
+    logger.debug("Filter Applied", event);
+    setIsLoading(true);
+    setFilterParams(event);
   };
 
-  const createAPIRequest = (): GetBooksReq => {
+  const createAPIRequest = (
+    page: number,
+    pageSize: number,
+    sortField: string
+  ): GetBooksReq => {
     // Only search by one of the search boxes
     let search_string = "";
     let title_only = false;
@@ -340,15 +313,10 @@ export default function BookList() {
       isbn_only = true;
     }
 
-    // Invert sort order
-    let sortField = APIBookSortFieldMap.get(sortParams.sortField) ?? "";
-    if (sortParams.sortOrder == -1) {
-      sortField = "-".concat(sortField);
-    }
     return {
       no_pagination: isNoPagination ? true : undefined,
-      page: isNoPagination ? undefined : (pageParams.page ?? 0) + 1,
-      page_size: isNoPagination ? undefined : pageParams.rows,
+      page: isNoPagination ? undefined : page,
+      page_size: isNoPagination ? undefined : pageSize,
       ordering: sortField,
       genre: selectedGenre,
       search: search_string,
@@ -360,20 +328,33 @@ export default function BookList() {
   };
 
   // Calls the Books API
-  const callAPI = () => {
+  const callAPI = (page: number, pageSize: number, sortField: string) => {
     if (!isNoPagination) {
-      BOOKS_API.getBooks(createAPIRequest()).then((response) =>
-        onAPIResponse(response)
+      BOOKS_API.getBooks(createAPIRequest(page, pageSize, sortField)).then(
+        (response) => onAPIResponse(response)
       );
     } else {
-      BOOKS_API.getBooksNoPaginationLISTVIEW(createAPIRequest()).then(
-        (response) => onAPIResponseNoPagination(response)
-      );
+      BOOKS_API.getBooksNoPaginationLISTVIEW(
+        createAPIRequest(page, pageSize, sortField)
+      ).then((response) => onAPIResponseNoPagination(response));
     }
   };
 
+  const onAPIResponseNoPagination = (response: APIBook[]) => {
+    setBooks(response.map((book) => APIToInternalBookConversion(book)));
+    setNumberOfBooks(response.length);
+    setIsLoading(false);
+  };
+
+  // Set state when response to API call is received
+  const onAPIResponse = (response: GetBooksResp) => {
+    setBooks(response.results.map((book) => APIToInternalBookConversion(book)));
+    setNumberOfBooks(response.count);
+    setIsLoading(false);
+  };
+
   const callCSVExportAPI = () => {
-    BOOKS_API.exportAsCSV(createAPIRequest())
+    BOOKS_API.exportAsCSV(createAPIRequest(0, 0, ""))
       .then((response) => {
         const blob = new Blob([response], {
           type: "text/csv;charset=utf-8",
@@ -385,63 +366,7 @@ export default function BookList() {
       });
   };
 
-  const onAPIResponseNoPagination = (response: APIBook[]) => {
-    setBooks(response.map((book) => APIToInternalBookConversion(book)));
-    setNumberOfBooks(response.length);
-    setLoading(false);
-  };
-
-  // Set state when response to API call is received
-  const onAPIResponse = (response: GetBooksResp) => {
-    setBooks(response.results.map((book) => APIToInternalBookConversion(book)));
-    setNumberOfBooks(response.count);
-    setLoading(false);
-  };
-
-  // Called when any of the filters (search boxes) are typed into
-  const onFilter = (event: DataTableFilterEvent) => {
-    logger.debug("Filter Applied", event);
-    setLoading(true);
-    setPageParams({
-      first: 0,
-      rows: rows,
-      page: 0,
-    });
-    setFilterParams(event);
-  };
-
-  // Called when any of the columns are selected to be sorted
-  const onSort = (event: DataTableSortEvent) => {
-    logger.debug("Sort Applied", event);
-    setLoading(true);
-    setSortParams(event);
-    console.log(sortParams.sortOrder);
-  };
-
-  // Called when the paginator page is switched
-  const onPage = (event: DataTablePageEvent) => {
-    logger.debug("Page Applied", event);
-    setRows(event.rows);
-    setLoading(true);
-    setPageParams(event);
-  };
-
-  const onRowClick = (event: DataTableRowClickEvent) => {
-    if (isHighlightingText()) return;
-    const book = event.data as Book;
-    logger.debug("Book Row Clicked", book);
-    toDetailsPage(book);
-  };
-
-  // Call endpoint on page load whenever any of these variables change
-  useEffect(() => {
-    callAPI();
-  }, [sortParams, pageParams, filterParams, selectedGenre, isNoPagination]);
-
-  // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
-
-  const columns = createColumns(COLUMNS);
 
   const csvExportButton = (
     <Button
@@ -489,8 +414,8 @@ export default function BookList() {
 
   const selectSizeButton = (
     <SelectSizeButton
-      value={size}
-      onChange={(e) => setSize(e.value)}
+      value={tableWhitespaceSize}
+      onChange={(e) => setTableWhitespaceSize(e.value)}
       className="sm"
     />
   );
@@ -517,6 +442,25 @@ export default function BookList() {
     />
   );
 
+  const dataTable = (
+    <ListTemplate
+      columns={COLUMNS}
+      detailPageURL="/books/detail/"
+      whitespaceSize={tableWhitespaceSize}
+      isNoPagination={isNoPagination}
+      isLoading={isLoading}
+      setIsLoading={setIsLoading}
+      totalNumberOfEntries={numberOfBooks}
+      setTotalNumberOfEntries={setNumberOfBooks}
+      rows={books}
+      APISortFieldMap={APIBookSortFieldMap}
+      callGetAPI={callAPI}
+      onFilter={onFilter}
+      filters={filterParams.filters}
+      additionalAPITriggers={[selectedGenre, filterParams]}
+    />
+  );
+
   return (
     <div>
       <div className="grid justify-content-evenly flex m-1">
@@ -527,38 +471,7 @@ export default function BookList() {
       </div>
       <div className="card pt-0 px-3">
         <Toast ref={toast} />
-        <DataTable
-          // General Settings
-          showGridlines
-          value={books}
-          lazy
-          responsiveLayout="scroll"
-          filterDisplay="row"
-          loading={loading}
-          size={size}
-          // Row clicking
-          rowHover
-          selectionMode={"single"}
-          onRowClick={(event) => onRowClick(event)}
-          // Paginator
-          paginator={!isNoPagination}
-          first={pageParams.first}
-          rows={rows}
-          totalRecords={numberOfBooks}
-          paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-          onPage={onPage}
-          rowsPerPageOptions={[5, 10, 15, 25, 50]}
-          paginatorPosition="both"
-          // Sorting
-          onSort={onSort}
-          sortField={sortParams.sortField}
-          sortOrder={sortParams.sortOrder}
-          // Filtering
-          onFilter={onFilter}
-          filters={filterParams.filters}
-        >
-          {columns}
-        </DataTable>
+        {dataTable}
       </div>
     </div>
   );

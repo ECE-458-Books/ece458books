@@ -2,8 +2,6 @@ import os, fnmatch
 from django.conf import settings
 import environ
 
-STATIC_FILE_LOCATION = '/static/'
-
 def delete_all_files_in_folder_location(folder):
     for filename in os.listdir(folder):
         if filename == '.gitkeep':
@@ -53,11 +51,14 @@ def get_port_number(url):
     return url.split(":")[2].split("/")[0]
 
 def url_to_static_image_service(url):
-    return '/'.join(url.split('/')[:5])
+    # This gets rid of the /api/v1 format of the url
+    # e.g. https://books.colab.duke.edu/api/v1 => https://books.colab.duke.edu
+    # In this case, static images are served in https://books.colab.duke.edu/media/books
+    return '/'.join(url.split('/')[:3])
 
-def uri_to_local_image_location(uri):
+def uri_to_local_image_location(uri, static_file_location):
     url = url_to_static_image_service(reformat_url(uri))
-    local_image_location = url + STATIC_FILE_LOCATION
+    local_image_location = url + static_file_location
 
     return local_image_location
 

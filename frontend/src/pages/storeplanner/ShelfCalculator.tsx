@@ -25,7 +25,7 @@ import BackButton from "../../components/buttons/BackButton";
 
 const DEFAULT_WIDTH = 5;
 // const DEFAULT_HEIGHT = 8 Unused for now, but if needed later, uncomment
-export const DEFAULT_THICKNESS = 0.5;
+export const DEFAULT_THICKNESS = 0.8;
 const SHELF_DEPTH = 8;
 
 interface ShelfCalculatorRow {

@@ -1,32 +1,21 @@
-import {
-  DataTable,
-  DataTablePageEvent,
-  DataTableRowClickEvent,
-  DataTableSortEvent,
-} from "primereact/datatable";
 import { Toast } from "primereact/toast";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   APISRSortFieldMap,
   APIToInternalSRConversion,
 } from "../../apis/sales/SalesConversions";
 import { APISR, GetSRsResp, SALES_API } from "../../apis/sales/SalesAPI";
-import {
-  createColumns,
-  TableColumn,
-} from "../../components/datatable/TableColumns";
-import { logger } from "../../util/Logger";
+import { TableColumn } from "../../components/datatable/TableColumns";
 import { DateTemplate } from "../../components/templates/DateTemplate";
 import PriceTemplate from "../../components/templates/PriceTemplate";
 import { SRSaleRow } from "./SRDetail";
-import { NUM_ROWS } from "../books/BookList";
 import AddPageButton from "../../components/buttons/AddPageButton";
 import LabeledSwitch from "../../components/buttons/LabeledSwitch";
 import SelectSizeButton, {
   SelectSizeButtonOptions,
 } from "../../components/buttons/SelectSizeButton";
-import { isHighlightingText } from "../../util/ClickCheck";
+import ListTemplate from "../../templates/list/ListTemplate";
 
 export interface SalesReconciliation {
   id: string;
@@ -70,80 +59,24 @@ const COLUMNS: TableColumn<SalesReconciliation>[] = [
 
 export default function SalesReconciliationList() {
   // ----------------- STATE -----------------
-  const [loading, setLoading] = useState<boolean>(false); // Whether we show that the table is loading or not
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState<boolean>(false); // Whether we show that the table is loading or not
   const [numberOfSalesReconciliations, setNumberOfSalesReconciliations] =
     useState(0); // The number of elements that match the query
   const [salesReconciliations, setSalesReconciliations] = useState<
     SalesReconciliation[]
   >([]); // The data displayed in the table
-
-  const [rows, setRows] = useState<number>(NUM_ROWS);
   const [isNoPagination, setIsNoPagination] = useState<boolean>(false);
-  const [size, setSize] = useState<SelectSizeButtonOptions>(
-    SelectSizeButtonOptions.Small
-  );
-
-  // The current state of sorting.
-  const [sortParams, setSortParams] = useState<DataTableSortEvent>({
-    sortField: "",
-    sortOrder: null,
-    multiSortMeta: null, // Not used
-  });
-
-  // The current state of the paginator
-  const [pageParams, setPageParams] = useState<DataTablePageEvent>({
-    first: 0,
-    rows: rows,
-    page: 0,
-  });
+  const [tableWhitespaceSize, setTableWhitespaceSize] =
+    useState<SelectSizeButtonOptions>(SelectSizeButtonOptions.Small);
 
   // ----------------- METHODS -----------------
 
-  // The navigator to switch pages
-  const navigate = useNavigate();
-
-  // Callback functions for edit/delete buttons
-  const toDetailPage = (sr: SalesReconciliation) => {
-    logger.debug("Edit Sales Reconciliation Clicked", sr);
-    navigate(`/sales-reconciliations/detail/${sr.id}`);
-  };
-
-  // Called when any of the columns are selected to be sorted
-  const onSort = (event: DataTableSortEvent) => {
-    logger.debug("Sort Applied", event);
-    setLoading(true);
-    setSortParams(event);
-  };
-
-  // Called when the paginator page is switched
-  const onPage = (event: DataTablePageEvent) => {
-    logger.debug("Page Applied", event);
-    setRows(event.rows);
-    setLoading(true);
-    setPageParams(event);
-  };
-
-  const onRowClick = (event: DataTableRowClickEvent) => {
-    if (isHighlightingText()) return;
-    const salesReconciliation = event.data as SalesReconciliation;
-    logger.debug("Sales Reconciliation Row Clicked", salesReconciliation);
-    toDetailPage(salesReconciliation);
-  };
-
-  // When any of the list of params are changed, useEffect is called to hit the API endpoint
-  useEffect(() => callAPI(), [sortParams, pageParams, isNoPagination]);
-
-  const callAPI = () => {
-    // Invert sort order
-    let sortField = APISRSortFieldMap.get(sortParams.sortField) ?? "";
-    if (sortParams.sortOrder == -1) {
-      sortField = "-".concat(sortField);
-    }
-
+  const callAPI = (page: number, pageSize: number, sortField: string) => {
     if (!isNoPagination) {
       SALES_API.getSalesReconciliations({
-        page: (pageParams.page ?? 0) + 1,
-        page_size: pageParams.rows,
+        page: page,
+        page_size: pageSize,
         ordering: sortField,
       }).then((response) => onAPIResponse(response));
     } else {
@@ -160,7 +93,7 @@ export default function SalesReconciliationList() {
       response.map((sr) => APIToInternalSRConversion(sr))
     );
     setNumberOfSalesReconciliations(response.length);
-    setLoading(false);
+    setIsLoading(false);
   };
 
   // Set state when response to API call is received
@@ -169,15 +102,11 @@ export default function SalesReconciliationList() {
       response.results.map((sr) => APIToInternalSRConversion(sr))
     );
     setNumberOfSalesReconciliations(response.count);
-    setLoading(false);
+    setIsLoading(false);
   };
 
   // ----------------- TEMPLATES/VISIBLE COMPONENTS -----------------
-
-  // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
-
-  const columns = createColumns(COLUMNS);
 
   const addSRButton = (
     <div className="flex justify-content-end col-3">
@@ -201,8 +130,27 @@ export default function SalesReconciliationList() {
 
   const selectSizeButton = (
     <div className="flex col-6 justify-content-center my-1 p-0">
-      <SelectSizeButton value={size} onChange={(e) => setSize(e.value)} />
+      <SelectSizeButton
+        value={tableWhitespaceSize}
+        onChange={(e) => setTableWhitespaceSize(e.value)}
+      />
     </div>
+  );
+
+  const dataTable = (
+    <ListTemplate
+      columns={COLUMNS}
+      detailPageURL="/sales-reconciliations/detail/"
+      whitespaceSize={tableWhitespaceSize}
+      isNoPagination={isNoPagination}
+      isLoading={isLoading}
+      setIsLoading={setIsLoading}
+      totalNumberOfEntries={numberOfSalesReconciliations}
+      setTotalNumberOfEntries={setNumberOfSalesReconciliations}
+      rows={salesReconciliations}
+      APISortFieldMap={APISRSortFieldMap}
+      callGetAPI={callAPI}
+    />
   );
 
   return (
@@ -215,34 +163,7 @@ export default function SalesReconciliationList() {
       <div className="flex justify-content-center">
         <div className="card col-11 pt-0 px-3 justify-content-center">
           <Toast ref={toast} />
-          <DataTable
-            // General Settings
-            showGridlines
-            value={salesReconciliations}
-            lazy
-            responsiveLayout="scroll"
-            loading={loading}
-            size={size}
-            // Row clicking
-            rowHover
-            selectionMode={"single"}
-            onRowClick={(event) => onRowClick(event)}
-            // Paginator
-            paginator={!isNoPagination}
-            first={pageParams.first}
-            rows={rows}
-            totalRecords={numberOfSalesReconciliations}
-            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-            onPage={onPage}
-            rowsPerPageOptions={[5, 10, 15, 25, 50]}
-            paginatorPosition="both"
-            // Sorting
-            onSort={onSort}
-            sortField={sortParams.sortField}
-            sortOrder={sortParams.sortOrder}
-          >
-            {columns}
-          </DataTable>
+          {dataTable}
         </div>
       </div>
     </div>

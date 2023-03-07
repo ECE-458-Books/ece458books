@@ -17,7 +17,7 @@ import { IDer } from "../../util/IDOps";
 import { logger } from "../../util/Logger";
 
 interface ListTemplateProps<T extends IDer> {
-  columns: TableColumn[]; // The columns of the table
+  columns: TableColumn<T>[]; // The columns of the table
   detailPageURL: string; // The URL of the detail page
   whitespaceSize: SelectSizeButtonOptions; // Whitespace size between table rows
   isNoPagination: boolean; // Whether pagination is currently enabled

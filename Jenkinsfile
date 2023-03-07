@@ -8,12 +8,18 @@ pipeline {
                 echo 'Move Environment Files to Correct Locations'
                 sh 'cp ../../env/.env.production frontend'
                 sh 'cp ../../env/.env backend'
+
+                echo 'Build Frontend'
                 sh 'cd frontend; npm install; npm run build'
+                sh 'tar -czvf frontend-production-build.tar.gz build'
             }
         }
         stage('Deploy') {
             steps {
-                echo 'Deploying...'                
+                sshagent(['books-test']){
+                    sh 'ssh -o StrictHostKeyChecking=no root@$books-test.colab.duke.edu uptime'
+                    sh 'netstat -tulpn'
+                }
             }
         }
     }

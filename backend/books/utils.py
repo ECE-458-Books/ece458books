@@ -51,6 +51,9 @@ def get_port_number(url):
     return url.split(":")[2].split("/")[0]
 
 def url_to_static_image_service(url):
+    # This gets rid of the /api/v1 format of the url
+    # e.g. https://books.colab.duke.edu/api/v1 => https://books.colab.duke.edu
+    # In this case, static images are served in https://books.colab.duke.edu/media/books
     return '/'.join(url.split('/')[:3])
 
 def uri_to_local_image_location(uri, static_file_location):

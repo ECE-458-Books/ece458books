@@ -5,8 +5,10 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Move Environment Files to Correct Locations'
-                sh 'sudo netstat -tulpn'
-                sh 'pwd'
+                sh 'cp ../../env/.env.production frontend'
+                sh 'cp ../../env/.env backend'
+                sh 'cd backend'
+                sh 'npm run build'
             }
         }
         stage('Deploy') {

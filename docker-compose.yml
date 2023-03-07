@@ -22,3 +22,5 @@ services:
     build: ./backend
     restart: always
     network_mode: "host"
+    volumes:
+      - /srv/media/:/srv/media/

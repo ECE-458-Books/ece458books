@@ -9,7 +9,7 @@ interface DeleteTemplateProps<T> {
 export default function DeleteTemplate<T>(props: DeleteTemplateProps<T>) {
   return (rowData: T) => {
     return (
-      <React.Fragment>
+      <>
         <Button
           type="button"
           icon="pi pi-trash"
@@ -17,7 +17,7 @@ export default function DeleteTemplate<T>(props: DeleteTemplateProps<T>) {
           onClick={() => props.onDelete(rowData)}
           disabled={props.deleteDisabled?.(rowData) ?? false}
         />
-      </React.Fragment>
+      </>
     );
   };
 }

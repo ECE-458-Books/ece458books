@@ -107,7 +107,7 @@ export default function BookDetail() {
         });
       })
       .catch(() => showFailure(toast, "Could not fetch book data"));
-  }, []);
+  }, [id, updateShelfSpace]);
 
   const calculateDaysOfSupply = (book: Book) => {
     if (book.stock === 0) {
@@ -128,7 +128,7 @@ export default function BookDetail() {
 
   useEffect(() => {
     updateShelfSpace(thickness);
-  }, [thickness]);
+  }, [thickness, updateShelfSpace]);
 
   const toast = useRef<Toast>(null);
 

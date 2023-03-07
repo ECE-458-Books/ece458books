@@ -436,7 +436,14 @@ export default function BookList() {
   // Call endpoint on page load whenever any of these variables change
   useEffect(() => {
     callAPI();
-  }, [sortParams, pageParams, filterParams, selectedGenre, isNoPagination]);
+  }, [
+    sortParams,
+    pageParams,
+    filterParams,
+    selectedGenre,
+    isNoPagination,
+    callAPI,
+  ]);
 
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);

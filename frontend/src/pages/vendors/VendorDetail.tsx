@@ -67,7 +67,7 @@ export default function VendorDetail() {
         setBuybackRate(response.buyback_rate);
       })
       .catch(() => showFailure(toast, "Could not fetch vendor data"));
-  }, []);
+  }, [id]);
 
   // When the user submits
   const onSubmit = (): void => {

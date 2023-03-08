@@ -20,7 +20,14 @@ class ISBNTools:
         self._internal_book_image_url_path = env('INTERNAL_BOOK_IMAGE_URL_PATH')
         self._default_image_name = env('DEFAULT_IMAGE_NAME')
     
-    def set_internal_image_base_url(self, uri):
+    def set_internal_image_base_url(self, request):
+        # Case 1. Request from Browser
+        uri = request.META.get('HTTP_ORIGIN', None)
+        
+        # Case 2. Request from Postman
+        if uri is None:
+            uri = request.build_absolute_uri()
+
         self._internal_image_base_url = uri_to_local_image_location(uri, self._internal_book_image_url_path)
 
     def is_valid_isbn(
@@ -32,7 +39,6 @@ class ISBNTools:
     def fetch_isbn_data(
         self,
         isbn: str = None,
-        uri: str = None,
     ):
         if not self.is_valid_isbn(isbn):
             return {"Invalid ISBN": isbn}

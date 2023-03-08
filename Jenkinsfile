@@ -11,7 +11,7 @@ pipeline {
 
                 echo 'Build Frontend'
                 sh 'cd frontend; npm install; npm run build'
-                sh 'tar -czvf frontend-production-build.tar.gz ./fontend/build'
+                tar file: 'frontend-production-build.tar.gz', dir: './frontend/build'
             }
         }
         stage('Deploy') {

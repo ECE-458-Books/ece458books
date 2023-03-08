@@ -31,7 +31,7 @@ export default function ImageTemplateWithButtons(
   uploadButton: JSX.Element,
   thumbnailURL: string
 ) {
-  if (!thumbnailURL) {
+  if (!thumbnailURL || thumbnailURL.includes("https://127.0.0.1")) {
     thumbnailURL = DEFAULT_BOOK_IMAGE;
   }
   return (
@@ -39,9 +39,10 @@ export default function ImageTemplateWithButtons(
       <div className="flex justify-content-center">
         <Image
           // Leaving this line in case of future image browser side caching workaround is needed
-          src={`${thumbnailURL}${
-            thumbnailURL.startsWith("https://books") ? "?" + Date.now() : ""
-          }`}
+          src={`${thumbnailURL}
+            ${
+              thumbnailURL.startsWith("https://books") ? "?" + Date.now() : ""
+            }`}
           // src={thumbnailURL}
           id="imageONpage"
           alt="Image"

@@ -1,6 +1,6 @@
 from rest_framework import status
 from rest_framework.generics import RetrieveAPIView, CreateAPIView, UpdateAPIView
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 
 from .serializers import RegistrationSerializer, UserSerializer, ChangePasswordSerializer
@@ -8,19 +8,19 @@ from .models import User
 
 
 class RegistrationAPIView(CreateAPIView):
-    permission_classes = (AllowAny,)
+    permission_classes = [IsAdminUser]
     serializer_class = RegistrationSerializer
 
 class UserRetrieveUpdateAPIView(RetrieveAPIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = [IsAdminUser]
     serializer_class = UserSerializer
-    lookup_field = 'email'
+    lookup_field = 'username'
 
     def get_queryset(self):
         return User.objects.all()
 
 class ChangePasswordView(UpdateAPIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = [IsAuthenticated]
     serializer_class = ChangePasswordSerializer
     queryset = User.objects.all()
     lookup_field = 'username'

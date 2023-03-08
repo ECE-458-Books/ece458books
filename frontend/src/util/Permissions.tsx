@@ -1,4 +1,4 @@
-// PERMISSIONS CONTEXT
+// The permissions context, which provides global state for permissions
 
 import { createContext } from "react";
 import React, { useContext } from "react";
@@ -14,7 +14,8 @@ const defaultBehavior: PermissionContextType = {
 export const PermissionContext =
   createContext<PermissionContextType>(defaultBehavior);
 
-// PERMISSIONS PROVIDER
+// Provide this context to the top level of the app (currently in index.tsx, will need
+// to figure out how to do this properly)
 
 type ProviderProps = {
   permissions: string[];
@@ -32,24 +33,20 @@ export function PermissionsProvider(props: ProviderProps) {
   );
 }
 
-// PERMISSIONS CONSUMER
+// Permissions Consumer - Surround any component with this to restrict access,
+// if access is not provided, null will be returned
 
 interface ConsumerProps {
   to: string;
   children: React.ReactNode;
 }
 
-// This component is meant to be used everywhere a restriction based on user permission is needed
 function Restricted(props: ConsumerProps) {
-  // We "connect" to the provider thanks to the PermissionContext
   const { isAllowedTo } = useContext(PermissionContext);
 
-  // If the user has that permission, render the children
   if (isAllowedTo(props.to)) {
     return <>{props.children}</>;
   }
-
-  // Otherwise, do not render anything
   return null;
 }
 

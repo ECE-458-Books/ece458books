@@ -9,8 +9,8 @@
 JENKINS_DEPLOY_HOME="/var/lib/hypothetical_books"
 
 cd $JENKINS_DEPLOY_HOME
-tar -xzvf frontend-production0-build.tar.gz
-tar -xzvf backend-production0-build.tar.gz
+tar -xzvf frontend-production-build.tar.gz
+tar -xzvf backend-production-build.tar.gz
 
 mv build /var/www/html
 make deploy

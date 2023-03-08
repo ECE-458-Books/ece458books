@@ -9,7 +9,7 @@ interface AddPageButtonProps {
 
 export default function AddPageButton(props: AddPageButtonProps) {
   return (
-    <Restricted to={"list"}>
+    <Restricted to={"add"}>
       <Button
         type="button"
         label={props.label}

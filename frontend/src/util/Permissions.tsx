@@ -22,7 +22,8 @@ type ProviderProps = {
 };
 
 export function PermissionsProvider(props: ProviderProps) {
-  const isAllowedTo = (permission: string) => permission.includes(permission);
+  const isAllowedTo = (permission: string) =>
+    props.permissions.includes(permission);
 
   return (
     <PermissionContext.Provider value={{ isAllowedTo }}>

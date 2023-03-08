@@ -1,3 +1,6 @@
+deploy:
+	docker compose up -d --build backend
+
 local:
 	docker context use default
 	docker compose up -d --build backend

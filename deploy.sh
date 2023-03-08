@@ -6,12 +6,11 @@
 # All rights reserved
 # ----------------------------------------------------------------------
 
-JENKINS_DEPLOY_HOME="/home/hk196/jenkins_auto_deploy"
+JENKINS_DEPLOY_HOME="/var/lib/hypothetical_books"
 
-echo "Copy FrondEnd Environment File"
-cp /home/hk196/.env.development "${JENKINS_DEPLOY_HOME}/frontend"
+cd $JENKINS_DEPLOY_HOME
+tar -xzvf frontend-production-build.tar.gz
+tar -xzvf backend-production-build.tar.gz
 
-echo "Copy BackEnd Environment File"
-cp /home/hk196/.env "${JENKINS_DEPLOY_HOME}/backend"
-
-(cd $JENKINS_DEPLOY_HOME && make local)
+mv ./frontend/build/* /var/www/html
+make deploy

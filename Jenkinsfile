@@ -24,9 +24,10 @@ pipeline {
                     sh 'scp backend-production-build.tar.gz root@books-test.colab.duke.edu:/var/lib/hypothetical_books'
                     sh 'scp deploy.sh root@books-test.colab.duke.edu:/var/lib/hypothetical_books'
                     sh """
-                    ssh -v root@books-test.colab.duke.edu
+                    ssh root@books-test.colab.duke.edu
                     chmod a+x /var/lib/hypothetical_books/deploy.sh; /usr/bin/bash /var/lib/hypothetical_books/deploy.sh'
-                    """
+                    EOF
+                    """.stripIndent()
                 }
             }
         }

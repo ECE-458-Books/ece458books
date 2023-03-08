@@ -6,8 +6,8 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Move Environment Files to Correct Locations'
-                sh 'cp ../../env/.env.production frontend'
-                sh 'cp ../../env/.env backend'
+                sh 'cp ../../env/.env.frontend.test ./frontend/.env.production'
+                sh 'cp ../../env/.env.backend.test ./backend/.env'
 
                 echo 'Build Frontend'
                 sh 'cd frontend; npm install; npm run build'
@@ -28,5 +28,4 @@ pipeline {
             }
         }
     }
-
 }

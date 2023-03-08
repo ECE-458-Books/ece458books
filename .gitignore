@@ -134,6 +134,7 @@ node_modules
 .DS_Store
 test.http
 /frontend/.env.development
+/frontend/.env.production
 
 # VSCODE
 *.vscode

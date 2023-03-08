@@ -313,7 +313,6 @@ export default function SRDetail() {
           : window.location.reload();
       })
       .catch((error) => {
-        console.log(error);
         showFailure(
           toast,
           error.data.errors[0] ?? "Could not add sales reconciliation"

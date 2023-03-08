@@ -320,7 +320,6 @@ export default function BookAdd() {
             imageFile: file,
           };
           newBook.newImageData = newImageUploadData;
-          console.log(newBook);
           draft.push(newBook);
         });
       });
@@ -335,7 +334,6 @@ export default function BookAdd() {
   const onFinalSubmit = (event: FormEvent<HTMLFormElement>): void => {
     // Validate before submitting any additions
     for (const book of books) {
-      console.log(!validateRow(book));
       if (!validateRow(book)) {
         showFailure(
           toast,

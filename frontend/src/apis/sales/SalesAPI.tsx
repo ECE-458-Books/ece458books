@@ -138,7 +138,6 @@ export const SALES_API = {
   ): Promise<SRCSVImportResp> {
     const formData = new FormData();
     formData.append("file", req.file);
-    console.log(formData);
     const request = {
       url: SALES_EXTENSION.concat("/csv/import"), // TODO: This will eventually go back to sales/sales_reconciliation/...
       method: METHOD_POST,

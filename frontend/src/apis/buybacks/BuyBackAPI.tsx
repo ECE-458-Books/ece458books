@@ -139,7 +139,6 @@ export const BUYBACK_API = {
     const formData = new FormData();
     formData.append("file", req.file);
     formData.append("vendor", req.vendor);
-    console.log(formData);
     const request = {
       url: BUYBACK_EXTENSION.concat("/csv/import"),
       method: METHOD_POST,

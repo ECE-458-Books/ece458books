@@ -15,7 +15,6 @@ export const CSVImport400Errors = new Map<string, string>([
 ]);
 
 export function CSVImport400OverallErrors(error: string): string {
-  console.log(error.includes("Expected"));
   switch (true) {
     case error.includes("isbn"):
       return "ISBN 13 Column Missing from the CSV";

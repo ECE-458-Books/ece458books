@@ -17,7 +17,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 sshagent(['books-test']){
-                    sh 'ssh -o StrictHostKeyChecking=no root@$books-test.colab.duke.edu uptime'
+                    sh 'ssh -o StrictHostKeyChecking=no root@books-test.colab.duke.edu uptime'
                     sh 'netstat -tulpn'
                 }
             }

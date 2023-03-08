@@ -6,13 +6,13 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Move Environment Files to Correct Locations'
-                sh 'cp ../../env/.env.production frontend'
-                sh 'cp ../../env/.env backend'
+                // sh 'cp ../../env/.env.production frontend'
+                // sh 'cp ../../env/.env backend'
 
-                echo 'Build Frontend'
-                sh 'cd frontend; npm install; npm run build'
-                sh 'tar -czvf frontend-production-build.tar.gz ./frontend/build'
-                sh 'tar -czvf backend-production-build.tar.gz ./backend docker-compose.yml Makefile'
+                // echo 'Build Frontend'
+                // sh 'cd frontend; npm install; npm run build'
+                // sh 'tar -czvf frontend-production-build.tar.gz ./frontend/build'
+                // sh 'tar -czvf backend-production-build.tar.gz ./backend docker-compose.yml Makefile'
             }
         }
         stage('Deploy') {
@@ -23,11 +23,7 @@ pipeline {
                     sh 'scp frontend-production-build.tar.gz root@books-test.colab.duke.edu:/var/lib/hypothetical_books'
                     sh 'scp backend-production-build.tar.gz root@books-test.colab.duke.edu:/var/lib/hypothetical_books'
                     sh 'scp deploy.sh root@books-test.colab.duke.edu:/var/lib/hypothetical_books'
-                    sh """
-                    ssh root@books-test.colab.duke.edu
-                    chmod a+x /var/lib/hypothetical_books/deploy.sh; /usr/bin/bash /var/lib/hypothetical_books/deploy.sh'
-                    EOF
-                    """.stripIndent()
+                    sh 'ssh root@books-test.colab.duke.edu chmod a+x /var/lib/hypothetical_books/deploy.sh; /usr/bin/bash /var/lib/hypothetical_books/deploy.sh'
                 }
             }
         }

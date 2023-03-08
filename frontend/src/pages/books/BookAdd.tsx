@@ -32,7 +32,6 @@ import { findById } from "../../util/IDOps";
 import BackButton from "../../components/buttons/BackButton";
 import { useNavigate } from "react-router-dom";
 import "../../css/TableCell.css";
-import axios from "axios";
 
 export interface BookWithDBTag extends Book {
   fromDB: boolean;
@@ -304,25 +303,16 @@ export default function BookAdd() {
   };
 
   const downloadAndSetBook = (book: APIBookWithDBTag) => {
-    axios
-      .get(book.image_url, {
-        responseType: "blob",
-      })
-      .then((r) => {
-        // This is really bad
-        const blob = new Blob([r.data]);
-        const file = new File([blob], "imageFile" + book.id);
-        setBooks((draft) => {
-          const newBook = APIToInternalBookConversionWithDB(book);
-          const newImageUploadData: NewImageUploadData = {
-            isImageDelete: false,
-            isImageUpload: true,
-            imageFile: file,
-          };
-          newBook.newImageData = newImageUploadData;
-          draft.push(newBook);
-        });
-      });
+    setBooks((draft) => {
+      const newBook = APIToInternalBookConversionWithDB(book);
+      const newImageUploadData: NewImageUploadData = {
+        isImageDelete: false,
+        isImageUpload: false,
+        imageFile: new File([], "blank"),
+      };
+      newBook.newImageData = newImageUploadData;
+      draft.push(newBook);
+    });
   };
 
   const toast = useRef<Toast>(null);

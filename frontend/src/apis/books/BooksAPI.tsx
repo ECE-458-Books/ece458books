@@ -169,11 +169,14 @@ export const BOOKS_API = {
     formData.append("thickness", req.book.thickness?.toString() ?? "0");
     formData.append("pageCount", req.book.pageCount?.toString() ?? "0");
 
-    if (req.isImageUploaded) {
-      formData.append("image", req.image);
-    }
     if (req.isImageRemoved) {
       formData.append("setDefaultImage", "true");
+    } else {
+      if (req.isImageUploaded) {
+        formData.append("image_bytes", req.image);
+      } else {
+        formData.append("image_url", req.book.image_url);
+      }
     }
 
     return await API.request({
@@ -220,12 +223,14 @@ export const BOOKS_API = {
     if (req.book.pageCount) {
       formData.append("pageCount", req.book.pageCount.toString());
     }
-
-    if (req.isImageUploaded) {
-      formData.append("image", req.image);
-    }
     if (req.isImageRemoved) {
       formData.append("setDefaultImage", "true");
+    } else {
+      if (req.isImageUploaded) {
+        formData.append("image_bytes", req.image);
+      } else {
+        formData.append("image_url", req.book.image_url);
+      }
     }
 
     return await API.request({

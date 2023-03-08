@@ -1,9 +1,9 @@
-import { SelectButton } from "primereact/selectbutton";
+import { SelectButton, SelectButtonChangeEvent } from "primereact/selectbutton";
 import { useState } from "react";
 
 interface SelectSizeButtonProps {
   value: SelectSizeButtonOptions;
-  onChange: (e: any) => void;
+  onChange: (e: SelectButtonChangeEvent) => void;
   className?: string;
 }
 

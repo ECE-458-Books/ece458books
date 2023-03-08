@@ -134,8 +134,8 @@ export function CSVImport200RowErrors(
 
 export const errorCellBody = (
   errors: { [key: string]: string } | undefined
-): ReactElement[] => {
-  const errorTags: ReactElement[] = [];
+): JSX.Element[] => {
+  const errorTags: JSX.Element[] = [];
   for (const key in errors) {
     const tag = CSVImport200RowErrors(key, errors[key]);
     errorTags.push(tag);

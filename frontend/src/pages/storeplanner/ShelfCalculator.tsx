@@ -60,7 +60,7 @@ export default function ShelfCalculator() {
   const [booksMap, setBooksMap] = useState<Map<string, Book>>(new Map());
   const [booksDropdownTitles, setBooksDropdownTitles] = useState<string[]>([]);
 
-  const COLUMNS: TableColumn[] = [
+  const COLUMNS: TableColumn<ShelfCalculatorRow>[] = [
     {
       field: "bookTitle",
       header: "Book",

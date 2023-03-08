@@ -127,7 +127,7 @@ export default function SRDetail() {
     []
   );
 
-  const COLUMNS: TableColumn[] = [
+  const COLUMNS: TableColumn<SRSaleRow>[] = [
     {
       field: "errors",
       header: "CSV Errors",

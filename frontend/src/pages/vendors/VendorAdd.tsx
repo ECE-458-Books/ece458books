@@ -40,7 +40,7 @@ export default function GenreAdd() {
     useState<boolean>(false);
   const [isGoBackActive, setIsGoBackActive] = useState<boolean>(false);
 
-  const COLUMNS: TableColumn[] = [
+  const COLUMNS: TableColumn<VendorRow>[] = [
     {
       field: "vendorName",
       header: "Vendor Name",

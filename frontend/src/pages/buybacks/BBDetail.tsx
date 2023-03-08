@@ -153,7 +153,7 @@ export default function BBDetail() {
     setIsBooksBuyBackSold(buybacks.length > 0);
   }, [buybacks]);
 
-  const COLUMNS: TableColumn[] = [
+  const COLUMNS: TableColumn<BBSaleRow>[] = [
     {
       field: "errors",
       header: "CSV Errors",

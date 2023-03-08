@@ -143,23 +143,7 @@ export default function BookList() {
   );
 
   // Filtering
-
-  const [filterParams, setFilterParams] = useState<DataTableFilterEvent>({
-    filters: {
-      title: { value: "", matchMode: "contains" },
-      author: { value: "", matchMode: "contains" },
-      isbn13: { value: "", matchMode: "contains" },
-      publisher: { value: "", matchMode: "contains" },
-    } as Filters,
-  });
-
-  const onFilter = (event: DataTableFilterEvent) => {
-    logger.debug("Filter Applied", event);
-    setIsLoading(true);
-    setFilterParams(event);
-  };
-
-  const COLUMNS: TableColumn[] = [
+  const COLUMNS: TableColumn<Book>[] = [
     {
       field: "thumbnailURL",
       header: "Cover Art",
@@ -276,6 +260,21 @@ export default function BookList() {
       ),
     },
   ];
+
+  const [filterParams, setFilterParams] = useState<DataTableFilterEvent>({
+    filters: {
+      title: { value: "", matchMode: "contains" },
+      author: { value: "", matchMode: "contains" },
+      isbn13: { value: "", matchMode: "contains" },
+      publisher: { value: "", matchMode: "contains" },
+    } as Filters,
+  });
+
+  const onFilter = (event: DataTableFilterEvent) => {
+    logger.debug("Filter Applied", event);
+    setIsLoading(true);
+    setFilterParams(event);
+  };
 
   const createAPIRequest = (
     page: number,

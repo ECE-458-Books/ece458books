@@ -12,7 +12,6 @@ import {
   VENDORS_API,
 } from "../../apis/vendors/VendorsAPI";
 import { TableColumn } from "../../components/datatable/TableColumns";
-import { logger } from "../../util/Logger";
 import PercentTemplate from "../../components/templates/PercentTemplate";
 import AddPageButton from "../../components/buttons/AddPageButton";
 import LabeledSwitch from "../../components/buttons/LabeledSwitch";
@@ -30,7 +29,7 @@ export interface Vendor {
 }
 
 // Properties of each column that change, the rest are set below when creating the actual Columns to be rendered
-const COLUMNS: TableColumn[] = [
+const COLUMNS: TableColumn<Vendor>[] = [
   {
     field: "name",
     header: "Vendor Name",

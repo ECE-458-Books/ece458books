@@ -27,7 +27,7 @@ export interface SalesReconciliation {
   isDeletable: boolean;
 }
 
-const COLUMNS: TableColumn[] = [
+const COLUMNS: TableColumn<SalesReconciliation>[] = [
   {
     field: "date",
     header: "Date (YYYY-MM-DD)",

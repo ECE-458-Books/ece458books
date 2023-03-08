@@ -131,7 +131,7 @@ export default function PODetail() {
     []
   );
 
-  const COLUMNS: TableColumn[] = [
+  const COLUMNS: TableColumn<POPurchaseRow>[] = [
     {
       field: "errors",
       header: "CSV Errors",

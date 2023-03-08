@@ -47,7 +47,7 @@ export interface SalesReportTopBooksRow {
   bookProfit: number;
 }
 
-const COLUMNS_TOTAL: TableColumn[] = [
+const COLUMNS_TOTAL: TableColumn<SalesReportTotalRow>[] = [
   {
     field: "salesRevenue",
     header: "Sales Revenue",
@@ -83,20 +83,20 @@ const COLUMNS_TOTAL: TableColumn[] = [
   },
 ];
 
-const COLUMNS_DAILY: TableColumn[] = [
+const COLUMNS_DAILY: TableColumn<SalesReportDailyRow>[] = [
   { field: "date", header: "Date (YYYY-MM-DD)" },
   {
     field: "salesRevenue",
     header: "Sales Revenue",
     style: { width: "25%" },
-    customBody: (rowData: SalesReportTotalRow) =>
+    customBody: (rowData: SalesReportDailyRow) =>
       PriceTemplate(rowData.salesRevenue),
   },
   {
     field: "buybacksRevenue",
     header: "Buyback Revenue",
     style: { width: "25%" },
-    customBody: (rowData: SalesReportTotalRow) =>
+    customBody: (rowData: SalesReportDailyRow) =>
       PriceTemplate(rowData.buybacksRevenue),
   },
   {
@@ -113,7 +113,7 @@ const COLUMNS_DAILY: TableColumn[] = [
   },
 ];
 
-const COLUMNS_TOP_BOOKS: TableColumn[] = [
+const COLUMNS_TOP_BOOKS: TableColumn<SalesReportTopBooksRow>[] = [
   { field: "bookTitle", header: "Book", style: { width: "25%" } },
   {
     field: "numBooksSold",
@@ -153,11 +153,10 @@ export default function SalesReport() {
   const [topBooksData, setTopBooksData] = useState<SalesReportTopBooksRow[]>(
     []
   );
-  const [dates, setDates] = useState<any>(null);
+  const [dates, setDates] = useState<Date[] | Date | string | null>();
 
   const onAPIResponse = (response: GetSalesReportResp) => {
     const salesReport = APIToInternalSalesReportConversion(response);
-    //console.log(salesReport);
     setTotalsData([salesReport.totalRow]);
     setDailyData(salesReport.dailySummaryRows);
     setTopBooksData(salesReport.topBooksRows.slice(0, 10));
@@ -176,7 +175,10 @@ export default function SalesReport() {
   const onSubmit = (event: FormEvent<HTMLFormElement>): void => {
     try {
       if (dates != null) {
-        if (moment(dates[1]).format("YYYY-MM-DD") !== "Invalid date") {
+        if (
+          Array.isArray(dates) &&
+          moment(dates[1]).format("YYYY-MM-DD") !== "Invalid date"
+        ) {
           logger.debug("Sales Report Requested");
           SALES_REPORT_API.getSalesReport({
             start: moment(dates[0]).format("YYYY-MM-DD"),

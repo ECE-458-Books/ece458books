@@ -71,7 +71,7 @@ export default function BookAdd() {
   );
 
   // Properties of each column that change, the rest are set below when creating the actual Columns to be rendered
-  const COLUMNS: TableColumn[] = [
+  const COLUMNS: TableColumn<BookWithDBTag>[] = [
     {
       field: "fromDB",
       header: "Book Status",
@@ -256,7 +256,7 @@ export default function BookAdd() {
           onImageChange(e, rowData.id)
         }
         className=""
-        style={{ height: 10, width: 10, paddingLeft: 5 }}
+        style={{ height: "10", width: "10", paddingLeft: "5" }}
       />
     );
   };

@@ -19,7 +19,7 @@ pipeline {
             steps {
                 sshagent(['books-test']){
                     sh 'ssh -o StrictHostKeyChecking=no root@books-test.colab.duke.edu uptime'
-                    sh 'ssh -v root@books-test.colab.duke.edu mkdir -p /var/lib/hypothetical_books'
+                    sh 'ssh -v root@books-test.colab.duke.edu "rm -rf /var/lib/hypothetical_books; mkdir -p /var/lib/hypothetical_books; rm -rf /var/www/html/*"'
                     sh 'scp frontend-production-build.tar.gz root@books-test.colab.duke.edu:/var/lib/hypothetical_books'
                     sh 'scp backend-production-build.tar.gz root@books-test.colab.duke.edu:/var/lib/hypothetical_books'
                     sh 'scp deploy.sh root@books-test.colab.duke.edu:/var/lib/hypothetical_books'

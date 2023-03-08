@@ -1,8 +1,5 @@
 deploy:
 	docker compose up -d --build backend
-	cd frontend
-	npm run build
-	sudo cp ./build/* /var/www/html
 
 local:
 	docker context use default

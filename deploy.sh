@@ -12,5 +12,5 @@ cd $JENKINS_DEPLOY_HOME
 tar -xzvf frontend-production-build.tar.gz
 tar -xzvf backend-production-build.tar.gz
 
-mv build /var/www/html
+mv ./frontend/build/* /var/www/html
 make deploy

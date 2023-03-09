@@ -4,8 +4,8 @@ import { APIToInternalBookConversion } from "../../apis/books/BooksConversions";
 import { Book } from "../../pages/books/BookList";
 
 export interface BookDropdownDataProps {
-  setBooksMap: (arg0: Map<string, Book>) => void; // Setter for book map
-  setBookTitlesList: (arg0: string[]) => void; // Setter for book title list
+  setBooksMap?: (arg0: Map<string, Book>) => void; // Setter for book map
+  setBookTitlesList?: (arg0: string[]) => void; // Setter for book title list
   vendor?: number; // set vendor who books were bought from
 }
 
@@ -31,8 +31,8 @@ export function BooksDropdownData(props: BookDropdownDataProps) {
         convertedBook
       );
     }
-    props.setBooksMap(tempBookMap);
-    props.setBookTitlesList(
+    props.setBooksMap?.(tempBookMap);
+    props.setBookTitlesList?.(
       response.map((book) => formatBookForDropdown(book.title, book.isbn_13))
     );
   });

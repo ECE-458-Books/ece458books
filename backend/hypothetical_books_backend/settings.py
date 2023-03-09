@@ -183,7 +183,7 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
 ]
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     "UPDATE_LAST_LOGIN": True,
     'ROTATE_REFRESH_TOKENS': True,

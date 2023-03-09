@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import ISBNSearchView, ListCreateBookAPIView, CreateBookAPIView, RetrieveUpdateDestroyBookAPIView, RetrieveExternalBookImageAPIView, CSVExportBookAPIView
+from .views import ISBNSearchView, ListCreateBookAPIView, RetrieveUpdateDestroyBookAPIView, RetrieveExternalBookImageAPIView, CSVExportBookAPIView
 
 app_name='books'
 

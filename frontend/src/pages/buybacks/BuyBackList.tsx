@@ -1,7 +1,6 @@
 import { useRef, useState } from "react";
 import { DateTemplate } from "../../components/templates/DateTemplate";
 import PriceTemplate from "../../components/templates/PriceTemplate";
-import { BBSaleRow } from "./BBDetail";
 import { TableColumn } from "../../components/datatable/TableColumns";
 import { Toast } from "primereact/toast";
 import { APIBB, BUYBACK_API, GetBBsResp } from "../../apis/buybacks/BuyBackAPI";
@@ -17,13 +16,14 @@ import SelectSizeButton, {
   SelectSizeButtonOptions,
 } from "../../components/buttons/SelectSizeButton";
 import ListTemplate from "../../templates/list/ListTemplate";
+import { LineItem } from "../../templates/inventorydetail/LineItemTableTemplate";
 
 export interface BuyBack {
   id: string;
   date: Date;
   vendorID: number;
   vendorName: string;
-  sales: BBSaleRow[];
+  sales: LineItem[];
   uniqueBooks: number;
   isDeletable: boolean;
   totalBooks: number;

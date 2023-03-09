@@ -1,4 +1,5 @@
 from django.db import models
+from authapp.models import User
 from vendors.models import Vendor
 from books.models import Book
 from django.core.validators import MinValueValidator
@@ -7,6 +8,7 @@ from django.core.validators import MinValueValidator
 class BuybackOrder(models.Model):
     date = models.DateField()
     vendor = models.ForeignKey(Vendor, related_name='bb_vendors', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name='bb_users', on_delete=models.CASCADE)
 
 
 class Buyback(models.Model):

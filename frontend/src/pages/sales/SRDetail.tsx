@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import { DataTableRowClickEvent } from "primereact/datatable";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
 import { useNavigate, useParams } from "react-router-dom";
 import { Toolbar } from "primereact/toolbar";
@@ -54,7 +53,6 @@ export default function SRDetail() {
 
   // For dropdown menus
   const [booksMap, setBooksMap] = useState<Map<string, Book>>(new Map());
-  const [booksDropdownTitles, setBooksDropdownTitles] = useState<string[]>([]);
 
   // The rest of the data
   const [date, setDate] = useState<Date>(new Date());
@@ -91,7 +89,6 @@ export default function SRDetail() {
     () =>
       BooksDropdownData({
         setBooksMap: setBooksMap,
-        setBookTitlesList: setBooksDropdownTitles,
       }),
     []
   );
@@ -381,6 +378,9 @@ export default function SRDetail() {
       setTotalDollars={setTotalRevenue}
       isAddPage={isSRAddPage}
       isModifiable={isModifiable}
+      getPriceForNewlySelectedBook={(title) =>
+        Promise.resolve(booksMap.get(title)!.retailPrice)
+      }
     />
   );
 

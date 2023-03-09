@@ -13,7 +13,6 @@ import BooksDropdown, {
 import { NumberEditor } from "../../components/editors/NumberEditor";
 import { PriceEditor } from "../../components/editors/PriceEditor";
 import PriceTemplate from "../../components/templates/PriceTemplate";
-import { Book } from "../../pages/books/BookList";
 import { filterById, findById } from "../../util/IDOps";
 import { calculateTotal } from "../../util/LineItemOps";
 import { errorCellBody } from "../errors/CSVImportErrors";
@@ -45,6 +44,7 @@ interface InventoryDetailTemplateProps {
   priceColumnHeader: string; // The header of the price column (retail, wholesale, buyback)
   isCSVErrorsColumnShowing: boolean; // If the CSV errors column is showing
   setTotalDollars: (totalDollars: number) => void; // Update the calculated total
+  getPriceForNewlySelectedBook: (title: string) => Promise<number>; // Update the price for a newly selected book
   isAddPage: boolean; // True if this is an add page
   isModifiable: boolean; // True if this page is modifiable
 }
@@ -56,7 +56,6 @@ export default function LineItemTableTemplate(
   // The line item data
   const [lineItems, setLineItems] = useImmer<LineItem[]>(props.lineItems);
   // For books dropdown
-  const [booksMap, setBooksMap] = useState<Map<string, Book>>(new Map());
   const [booksDropdownTitles, setBooksDropdownTitles] = useState<string[]>([]);
 
   const COLUMNS: TableColumn<LineItem>[] = [
@@ -74,10 +73,12 @@ export default function LineItemTableTemplate(
         booksDropDownEditor(
           rowData.bookTitle,
           (newValue) => {
-            setLineItems((draft) => {
+            setLineItems(async (draft) => {
               const lineItem = findById(draft, rowData.id)!;
               lineItem.bookTitle = newValue;
-              lineItem.price = booksMap.get(newValue)!.retailPrice;
+              lineItem.price = await props.getPriceForNewlySelectedBook(
+                newValue
+              );
               props.setTotalDollars(calculateTotal(draft));
             });
           },
@@ -156,7 +157,6 @@ export default function LineItemTableTemplate(
   useEffect(
     () =>
       BooksDropdownData({
-        setBooksMap: setBooksMap,
         setBookTitlesList: setBooksDropdownTitles,
       }),
     []

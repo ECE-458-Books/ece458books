@@ -1,10 +1,9 @@
 import { v4 as uuid } from "uuid";
-import { POPurchaseRow } from "../../pages/purchases/PODetail";
 import { externalToInternalDate } from "../../util/DateOps";
 import { BuyBack } from "../../pages/buybacks/BuyBackList";
 import { APIBB, APIBBCSVImportRow, APIBBSaleRow } from "./BuyBackAPI";
-import { BBSaleRow } from "../../pages/buybacks/BBDetail";
 import { formatBookForDropdown } from "../../components/dropdowns/BookDropdown";
+import { LineItem } from "../../templates/inventorydetail/LineItemTableTemplate";
 
 // Buy Backs
 // Internal data type -> ordering required for book get API
@@ -17,7 +16,7 @@ export const APIBBSortFieldMap = new Map<string, string>([
   ["totalRevenue", "total_revenue"],
   ["date", "date"],
 ]);
-function APIToInternalBBSaleConversion(sale: APIBBSaleRow): BBSaleRow {
+function APIToInternalBBSaleConversion(sale: APIBBSaleRow): LineItem {
   return {
     isNewRow: false,
     // (id is always defined from API)
@@ -32,7 +31,7 @@ function APIToInternalBBSaleConversion(sale: APIBBSaleRow): BBSaleRow {
 }
 
 export function APIToInternalBBConversion(bb: APIBB): BuyBack {
-  const sales: BBSaleRow[] = bb.buybacks.map((sale) =>
+  const sales: LineItem[] = bb.buybacks.map((sale) =>
     APIToInternalBBSaleConversion(sale)
   );
 
@@ -51,7 +50,7 @@ export function APIToInternalBBConversion(bb: APIBB): BuyBack {
 
 export function APIToInternalBuybackCSVConversion(
   buybacks: APIBBCSVImportRow[]
-): BBSaleRow[] {
+): LineItem[] {
   return buybacks.map((buyback) => {
     return {
       isNewRow: true,
@@ -63,6 +62,6 @@ export function APIToInternalBuybackCSVConversion(
       quantity: buyback.quantity,
       price: buyback.unit_buyback_price,
       errors: buyback.errors,
-    } as POPurchaseRow;
+    } as LineItem;
   });
 }

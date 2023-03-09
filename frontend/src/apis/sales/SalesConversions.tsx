@@ -1,9 +1,9 @@
 import { v4 as uuid } from "uuid";
-import { SRSaleRow } from "../../pages/sales/SRDetail";
 import { SalesReconciliation } from "../../pages/sales/SRList";
 import { externalToInternalDate } from "../../util/DateOps";
 import { APISaleCSVImportRow, APISR, APISRSaleRow } from "./SalesAPI";
 import { formatBookForDropdown } from "../../components/dropdowns/BookDropdown";
+import { LineItem } from "../../templates/inventorydetail/LineItemTableTemplate";
 
 // Sales Reconciliations
 // Internal data type -> ordering required for book get API
@@ -14,7 +14,7 @@ export const APISRSortFieldMap = new Map<string, string>([
   ["totalRevenue", "total_revenue"],
   ["date", "date"],
 ]);
-function APIToInternalSRSaleConversion(sale: APISRSaleRow): SRSaleRow {
+function APIToInternalSRSaleConversion(sale: APISRSaleRow): LineItem {
   return {
     isNewRow: false,
     // (id is always defined from API)
@@ -29,7 +29,7 @@ function APIToInternalSRSaleConversion(sale: APISRSaleRow): SRSaleRow {
 }
 
 export function APIToInternalSRConversion(sr: APISR): SalesReconciliation {
-  const sales: SRSaleRow[] = sr.sales.map((sale) =>
+  const sales: LineItem[] = sr.sales.map((sale) =>
     APIToInternalSRSaleConversion(sale)
   );
 
@@ -46,7 +46,7 @@ export function APIToInternalSRConversion(sr: APISR): SalesReconciliation {
 
 export function APIToInternalSalesCSVConversion(
   sales: APISaleCSVImportRow[]
-): SRSaleRow[] {
+): LineItem[] {
   return sales.map((sale) => {
     return {
       isNewRow: true,
@@ -58,6 +58,6 @@ export function APIToInternalSalesCSVConversion(
       quantity: sale.quantity,
       price: sale.unit_retail_price,
       errors: sale.errors,
-    } as SRSaleRow;
+    } as LineItem;
   });
 }

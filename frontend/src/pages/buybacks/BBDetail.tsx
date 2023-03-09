@@ -1,20 +1,10 @@
-import { DataTable, DataTableRowClickEvent } from "primereact/datatable";
 import { Toast } from "primereact/toast";
 import { Toolbar } from "primereact/toolbar";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { v4 as uuid } from "uuid";
-import {
-  TableColumn,
-  createColumns,
-} from "../../components/datatable/TableColumns";
-import { PriceEditor } from "../../components/editors/PriceEditor";
-import PriceTemplate from "../../components/templates/PriceTemplate";
-import { NumberEditor } from "../../components/editors/NumberEditor";
 import {
   CSVImport200OverallErrors,
   CSVImport400OverallErrors,
-  errorCellBody,
 } from "../../templates/errors/CSVImportErrors";
 import React from "react";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
@@ -31,8 +21,6 @@ import {
   ModifyBBReq,
 } from "../../apis/buybacks/BuyBackAPI";
 import { internalToExternalDate } from "../../util/DateOps";
-import { filterById, findById } from "../../util/IDOps";
-import { calculateTotal } from "../../util/LineItemOps";
 import { Book } from "../books/BookList";
 
 import { useImmer } from "use-immer";
@@ -40,9 +28,7 @@ import {
   APIToInternalBBConversion,
   APIToInternalBuybackCSVConversion,
 } from "../../apis/buybacks/BuybacksConversions";
-import BooksDropdown, {
-  BooksDropdownData,
-} from "../../components/dropdowns/BookDropdown";
+import { BooksDropdownData } from "../../components/dropdowns/BookDropdown";
 import { logger } from "../../util/Logger";
 import DeletePopup from "../../components/popups/DeletePopup";
 import AddDetailModifyTitle from "../../components/text/AddDetailModifyTitle";
@@ -51,7 +37,6 @@ import TotalDollars from "../../components/text/TotalDollars";
 import BackButton from "../../components/buttons/BackButton";
 import DeleteButton from "../../components/buttons/DeleteButton";
 import VendorDropdown from "../../components/dropdowns/VendorDropdown";
-import DeleteColumn from "../../components/datatable/DeleteColumn";
 import AddRowButton from "../../components/buttons/AddRowButton";
 import EditCancelButton from "../../components/buttons/EditCancelDetailButton";
 import { VENDORS_API } from "../../apis/vendors/VendorsAPI";
@@ -59,36 +44,12 @@ import { FileUploadHandlerEvent } from "primereact/fileupload";
 import CSVUploader from "../../components/uploaders/CSVFileUploader";
 import "../../css/TableCell.css";
 import CSVEndUserDocButton from "../../components/buttons/CSVEndUserDocButton";
-
-export interface BBDetailState {
-  id: number;
-  isAddPage: boolean;
-  isModifiable: boolean;
-}
-
-export interface BBSaleRow {
-  isNewRow: boolean;
-  id: string;
-  bookId: number;
-  bookISBN: string;
-  bookTitle: string;
-  quantity: number;
-  price: number;
-  errors?: { [key: string]: string };
-}
+import LineItemTableTemplate, {
+  emptyLineItem,
+  LineItem,
+} from "../../templates/inventorydetail/LineItemTableTemplate";
 
 export default function BBDetail() {
-  // Used for setting initial state
-  const emptySale: BBSaleRow = {
-    isNewRow: true,
-    id: uuid(),
-    bookId: 0,
-    bookISBN: "",
-    bookTitle: "",
-    quantity: 1,
-    price: 0,
-  };
-
   // -------- STATE --------
   // From URL
   const { id } = useParams();
@@ -101,14 +62,13 @@ export default function BBDetail() {
   // For dropdown menus
   const [booksMap, setBooksMap] = useState<Map<string, Book>>(new Map());
   const [vendorMap, setVendorMap] = useState<Map<string, number>>(new Map());
-  const [booksDropdownTitles, setBooksDropdownTitles] = useState<string[]>([]);
 
   // The rest of the data
   const [date, setDate] = useState<Date>(new Date());
   const [selectedVendorName, setSelectedVendorName] = useState<string>("");
 
   // useImmer is used to set state for nested data in a simplified format
-  const [buybacks, setBuybacks] = useImmer<BBSaleRow[]>([]);
+  const [buybacks, setBuybacks] = useImmer<LineItem[]>([]);
   const [totalRevenue, setTotalRevenue] = useState<number>(0);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
@@ -143,7 +103,6 @@ export default function BBDetail() {
     () =>
       BooksDropdownData({
         setBooksMap: setBooksMap,
-        setBookTitlesList: setBooksDropdownTitles,
         vendor: vendorMap.get(selectedVendorName)!,
       }),
     [selectedVendorName]
@@ -153,86 +112,16 @@ export default function BBDetail() {
     setIsBooksBuyBackSold(buybacks.length > 0);
   }, [buybacks]);
 
-  const COLUMNS: TableColumn<BBSaleRow>[] = [
-    {
-      field: "errors",
-      header: "CSV Errors",
-      hidden: !hasUploadedCSV,
-      customBody: (rowData: BBSaleRow) => errorCellBody(rowData.errors),
-      style: { minWidth: "8rem" },
-    },
-    {
-      field: "bookTitle",
-      header: "Book",
-      customBody: (rowData: BBSaleRow) =>
-        booksDropDownEditor(
-          rowData.bookTitle,
-          (newValue) => {
-            updateRowOnTitleChange(rowData, newValue);
-          },
-          !isModifiable
-        ),
-    },
-    {
-      field: "quantity",
-      header: "Quantity",
-      customBody: (rowData: BBSaleRow) =>
-        NumberEditor(
-          rowData.quantity,
-          (newValue) => {
-            setBuybacks((draft) => {
-              const sale = findById(draft, rowData.id);
-              sale!.quantity = newValue;
-              setTotalRevenue(calculateTotal(draft));
-            });
-          },
-          "integernumberPODetail",
-          !isModifiable
-        ),
-      style: { minWidth: "8rem" },
-    },
-    {
-      field: "price",
-      header: "Unit Buyback Price ($)",
-      customBody: (rowData: BBSaleRow) =>
-        PriceEditor(
-          rowData.price,
-          (newValue) => {
-            setBuybacks((draft) => {
-              const sale = findById(draft, rowData.id);
-              sale!.price = newValue;
-              setTotalRevenue(calculateTotal(draft));
-            });
-          },
-          "retailnumberPODetail",
-          !isModifiable
-        ),
-      style: { minWidth: "10rem" },
-    },
-    {
-      field: "subtotal",
-      header: "Subtotal ($)",
-      customBody: (rowData: BBSaleRow) =>
-        PriceTemplate(rowData.price * rowData.quantity),
-      style: { minWidth: "8rem" },
-    },
-  ];
-
-  const updateRowOnTitleChange = (rowData: BBSaleRow, newBookTitle: string) => {
-    VENDORS_API.bestBuybackPrice({
+  const getBestBuybackPrice = (newBookTitle: string) => {
+    return VENDORS_API.bestBuybackPrice({
       bookid: booksMap.get(newBookTitle)!.id,
       vendor_id: vendorMap.get(selectedVendorName)!.toString(),
     })
       .then((response) => {
-        setBuybacks((draft) => {
-          const sale = findById(draft, rowData.id)!;
-          sale.bookTitle = newBookTitle;
-          sale.price = response;
-          setTotalRevenue(calculateTotal(draft));
-        });
+        return response;
       })
       .catch(() => {
-        showFailure(toast, "Could not fetch best buyback price");
+        return 0;
       });
   };
 
@@ -282,18 +171,6 @@ export default function BBDetail() {
         );
       });
     event.options.clear();
-  };
-
-  const onRowClick = (event: DataTableRowClickEvent) => {
-    const sale = event.data as BBSaleRow;
-    logger.debug("Purchase Order Row Clicked", sale);
-    toBookDetailsPage(sale);
-  };
-
-  // Callback functions for edit/delete buttons
-  const toBookDetailsPage = (sale: BBSaleRow) => {
-    logger.debug("Edit Book Clicked", sale);
-    navigate(`/books/detail/${sale.bookId}`);
   };
 
   // Validate submission before making API req
@@ -429,7 +306,7 @@ export default function BBDetail() {
   // Left
   const addRowButton = (
     <AddRowButton
-      emptyItem={emptySale}
+      emptyItem={emptyLineItem}
       rows={buybacks}
       setRows={setBuybacks}
       isDisabled={!isModifiable || selectedVendorName == ""}
@@ -461,14 +338,7 @@ export default function BBDetail() {
   // Center
   const editCancelButton = (
     <EditCancelButton
-      onClickEdit={() => {
-        setIsModifiable(!isModifiable);
-        BooksDropdownData({
-          setBooksMap: setBooksMap,
-          setBookTitlesList: setBooksDropdownTitles,
-          vendor: vendorMap.get(selectedVendorName)!,
-        });
-      }}
+      onClickEdit={() => setIsModifiable(!isModifiable)}
       onClickCancel={() => {
         setIsModifiable(!isModifiable);
         window.location.reload();
@@ -539,32 +409,19 @@ export default function BBDetail() {
     />
   );
 
-  // Datatable Items
+  // Datatable
 
-  const columns = createColumns(COLUMNS);
-
-  const booksDropDownEditor = (
-    value: string,
-    onChange: (newValue: string) => void,
-    isDisabled?: boolean
-  ) => (
-    <BooksDropdown
-      setSelectedBook={onChange}
-      selectedBook={value}
-      bookTitlesList={booksDropdownTitles}
-      isDisabled={isDisabled}
-      placeholder={value}
+  const dataTable = (
+    <LineItemTableTemplate
+      lineItems={buybacks}
+      priceColumnHeader={"Unit Buyback Price"}
+      isCSVErrorsColumnShowing={hasUploadedCSV}
+      setTotalDollars={setTotalRevenue}
+      isAddPage={isBBAddPage}
+      isModifiable={isModifiable}
+      getPriceForNewlySelectedBook={(title) => getBestBuybackPrice(title)}
     />
   );
-
-  // Delete icon for each row
-  const deleteColumn = DeleteColumn<BBSaleRow>({
-    onDelete: (rowData) => {
-      const newSales = filterById(buybacks, rowData.id, setBuybacks);
-      setTotalRevenue(calculateTotal(newSales));
-    },
-    hidden: !isModifiable,
-  });
 
   return (
     <div>
@@ -597,24 +454,7 @@ export default function BBDetail() {
                 {vendorDropdown}
               </div>
             </div>
-
-            <DataTable
-              showGridlines
-              value={buybacks}
-              className="editable-cells-table"
-              responsiveLayout="scroll"
-              editMode="cell"
-              rowHover={!isBBAddPage}
-              selectionMode={"single"}
-              onRowClick={(event) => {
-                if (!isBBAddPage && !isModifiable) {
-                  onRowClick(event);
-                }
-              }}
-            >
-              {columns}
-              {deleteColumn}
-            </DataTable>
+            {dataTable}
           </form>
         </div>
         {deletePopupVisible && deletePopup}

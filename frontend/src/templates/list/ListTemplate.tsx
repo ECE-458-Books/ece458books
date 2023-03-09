@@ -118,7 +118,7 @@ export default function ListTemplate<T extends IDer>(
       value={props.rows}
       lazy
       responsiveLayout="scroll"
-      filterDisplay={"row"}
+      filterDisplay={props.filters ? "row" : undefined}
       loading={props.isLoading}
       size={props.whitespaceSize}
       // Row clicking
@@ -140,7 +140,7 @@ export default function ListTemplate<T extends IDer>(
       sortOrder={sortParams.sortOrder}
       // Filtering
       onFilter={onFilter}
-      filters={props.filters}
+      filters={props.filters ?? undefined}
     >
       {columns}
     </DataTable>

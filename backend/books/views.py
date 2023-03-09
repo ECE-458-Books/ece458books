@@ -9,7 +9,7 @@ from rest_framework import status, filters
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
 from .serializers import BookListAddSerializer, BookSerializer, ISBNSerializer, BookImageSerializer
 from .isbn import ISBNTools
@@ -17,6 +17,7 @@ from .models import Book, Author, BookImage
 from .paginations import BookPagination
 from .search_filters import *
 from .utils import str2bool
+from utils.permissions import CustomBasePermission
 
 from genres.models import Genre
 from purchase_orders.models import Purchase
@@ -30,7 +31,7 @@ class ISBNSearchView(APIView):
 
     * Input data is a string of ISBNs separated by spaces and/or commas
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
     isbn_toolbox = ISBNTools()
 
     def post(self, request):
@@ -107,22 +108,15 @@ class ISBNSearchView(APIView):
 
         return ret
 
-
 class ListCreateBookAPIView(ListCreateAPIView):
     serializer_class = BookListAddSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CustomBasePermission]
     pagination_class = BookPagination
     filter_backends = [filters.OrderingFilter, CustomSearchFilter]
     ordering_fields = '__all__'
     ordering = ['id']
     search_fields = ['authors__name', 'title', '=publisher', '=isbn_10', '=isbn_13']
     isbn_toolbox = ISBNTools()
-
-    def paginate_queryset(self, queryset):
-        if 'no_pagination' in self.request.query_params:
-            return None
-        else:
-            return super().paginate_queryset(queryset)
 
     def preprocess_multipart_form_data(self, request):
         data = request.data.dict()
@@ -227,6 +221,12 @@ class ListCreateBookAPIView(ListCreateAPIView):
         for item in item_list:
             obj, created = model.objects.get_or_create(name=item.strip(),)
 
+    def paginate_queryset(self, queryset):
+        if 'no_pagination' in self.request.query_params:
+            return None
+        else:
+            return super().paginate_queryset(queryset)
+
     def get_queryset(self):
         default_query_set = Book.objects.filter(isGhost=False)
         # Books have a ManyToMany relationship with Author & Genre
@@ -321,7 +321,7 @@ class ListCreateBookAPIView(ListCreateAPIView):
 class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = BookSerializer
     queryset = Book.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CustomBasePermission]
     lookup_url_kwarg = 'id'
     isbn_toolbox = ISBNTools()
 
@@ -436,7 +436,7 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
 class RetrieveExternalBookImageAPIView(RetrieveAPIView):
     serializer_class = BookImageSerializer
     queryset = BookImage.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CustomBasePermission]
     lookup_field = 'book_id'  # looks up using the book_id field
     lookup_url_kwarg = 'book_id'
 
@@ -447,3 +447,4 @@ class CSVExportBookAPIView(APIView):
     def get(self, request, *args, **kwargs):
         csv_writer = CSVWriter("books")
         return csv_writer.write_csv(request)
+        

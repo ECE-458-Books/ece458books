@@ -14,10 +14,11 @@ from books.models import Book
 from helpers.csv_format_checker import CSVFormatChecker
 from rest_framework.request import Request
 from helpers.csv_exceptions import ExtraHeadersException, MissingHeadersException
+from utils.permissions import CustomBasePermission
 
 
 class ListCreatePurchaseOrderAPIView(ListCreateAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CustomBasePermission]
     serializer_class = PurchaseOrderSerializer
     queryset = PurchaseOrder.objects.all()
     pagination_class = PurchaseOrderPagination
@@ -121,7 +122,7 @@ class ListCreatePurchaseOrderAPIView(ListCreateAPIView):
 
 
 class RetrieveUpdateDestroyPurchaseOrderAPIView(RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CustomBasePermission]
     serializer_class = PurchaseOrderSerializer
     lookup_field = 'id'
     pagination_class = PurchaseOrderPagination
@@ -180,7 +181,7 @@ class RetrieveUpdateDestroyPurchaseOrderAPIView(RetrieveUpdateDestroyAPIView):
 
 
 class CSVPurchasesAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CustomBasePermission]
 
     def post(self, request: Request):
         csv_reader = CSVReader("purchases")

@@ -39,9 +39,6 @@ class ISBNSearchView(APIView):
         serializer = ISBNSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        # Set the internal image base url using the request
-        self.isbn_toolbox.set_internal_image_base_url(request)
-
         # Split ISBN with spaces and/or commas
         raw_isbn_list = re.split("\s?[, ]\s?", serializer.data['isbns'].strip())
 
@@ -140,9 +137,6 @@ class ListCreateBookAPIView(ListCreateAPIView):
 
     # Override default create method
     def create(self, request, *args, **kwargs):
-        # Set the internal image base url using the request
-        self.isbn_toolbox.set_internal_image_base_url(request)
-
         data = request.data
         content_type = request.content_type.split(';')[0]
 
@@ -346,9 +340,6 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
         return data
 
     def update(self, request, *args, **kwargs):
-        # Set the internal image base url using the request
-        self.isbn_toolbox.set_internal_image_base_url(request)
-
         data = request.data
         content_type = request.content_type.split(';')[0]
 

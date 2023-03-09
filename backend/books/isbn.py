@@ -4,8 +4,6 @@ from isbnlib import *
 from dateutil import parser
 import PIL.Image as Image
 
-from .utils import uri_to_local_image_location
-
 class ISBNTools:
     def __init__(
         self,
@@ -19,17 +17,9 @@ class ISBNTools:
         self._internal_book_image_absolute_path = env('INTERNAL_BOOK_IMAGE_ABSOLUTE_PATH')
         self._internal_book_image_url_path = env('INTERNAL_BOOK_IMAGE_URL_PATH')
         self._default_image_name = env('DEFAULT_IMAGE_NAME')
+        self._host_name = env('HOST_NAME')
+        self._internal_image_base_url = f'https://{self._host_name}{self._internal_book_image_url_path}'
     
-    def set_internal_image_base_url(self, request):
-        # Case 1. Request from Browser
-        uri = request.META.get('HOST_NAME', None)
-        
-        # Case 2. Request from Postman
-        if uri is None:
-            uri = request.build_absolute_uri()
-
-        self._internal_image_base_url = uri_to_local_image_location(uri, self._internal_book_image_url_path)
-
     def is_valid_isbn(
         self,
         isbn: str,
@@ -144,28 +134,6 @@ class ISBNTools:
         """
         return [self.parse_isbn(raw_isbn) if self.is_valid_isbn(raw_isbn) else raw_isbn for raw_isbn in isbn_list]
     
-    def download_default_book_image_to_local(self, uri):
-        end_url = self._internal_image_base_url + '/' + self._default_image_name
-        return self.get_book_local_image_url(end_url, 'default', uri)
-    
-    def download_existing_image_to_local(self, end_url, isbn_13, uri):
-        local_image_location = uri_to_local_image_location(uri)
-
-        # Do not fetch default.png from server
-        if self._default_image_name in end_url:
-            return local_image_location + self._default_image_name
-
-        return self.get_book_local_image_url(end_url, isbn_13, uri)
-
-    def download_external_book_image_to_local(self, isbn_13, uri):
-        end_url = self._image_base_url + f'/{isbn_13}-L.jpg?default=false'
-
-        if self.get_image_raw_bytes(end_url) is None:
-            return self.get_default_image_url()
-
-        return end_url
-        # return self.get_book_local_image_url(end_url, isbn_13, uri)
-
     def get_external_book_image_url(self, isbn_13):
         end_url = self._image_base_url + f'/{isbn_13}-L.jpg?default=false'
 
@@ -174,22 +142,6 @@ class ISBNTools:
 
         return end_url
     
-    def get_book_local_image_url(self, end_url, isbn_13, uri):
-        """Return URL for local book image
-
-        Args:
-            isbn_13:
-
-        Returns:
-            str: Static URL to get book image
-        """
-        local_image_location = uri_to_local_image_location(uri)
-        
-        image_raw_bytes = self.get_image_raw_bytes(end_url)
-        _, filename = self.create_local_image(isbn_13, image_raw_bytes)
-
-        return local_image_location + filename
-
     def get_image_raw_bytes(self, end_url):
         """Return raw bytes of book image
 

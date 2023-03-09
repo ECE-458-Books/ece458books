@@ -1,23 +1,56 @@
-from rest_framework import status
-from rest_framework.generics import RetrieveAPIView, CreateAPIView, UpdateAPIView
+from rest_framework import status, filters
+from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView, CreateAPIView, UpdateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
 
-from .serializers import RegistrationSerializer, UserSerializer, ChangePasswordSerializer
+from .exceptions import NoRefreshTokenWhenLoggingOut, ModifyUserError
+
+from .serializers import AdminUserModifySerializer, UserListSerializer, RegistrationSerializer, ChangePasswordSerializer
 from .models import User
+from .paginations import UsersPagination
+from books.utils import str2bool
+from .utils import can_modify
 
+class UserListAPIView(ListAPIView):
+    serializer_class = UserListSerializer
+    permission_classes = [IsAdminUser]
+    pagination_class = UsersPagination
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = '__all__'
+    ordering = ['id']
+
+    def get_queryset(self):
+        default_queryset = User.objects.filter(is_active=True)
+    
+        if str2bool(self.request.query_params.get('is_staff')):
+            default_queryset = User.objects.filter(is_staff=True)
+        
+        return default_queryset
 
 class RegistrationAPIView(CreateAPIView):
     permission_classes = [IsAdminUser]
     serializer_class = RegistrationSerializer
 
-class UserRetrieveUpdateAPIView(RetrieveAPIView):
+class UserRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAdminUser]
-    serializer_class = UserSerializer
+    serializer_class = AdminUserModifySerializer
     lookup_field = 'username'
+    queryset = User.objects.filter(is_active=True)
 
-    def get_queryset(self):
-        return User.objects.all()
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        is_modifiable, error_msg = can_modify(request, instance)
+
+        if not is_modifiable:
+            raise ModifyUserError(error_msg)
+        
+        # Deleting a User means setting is_active to False
+        instance.is_active = False
+        instance.save()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class ChangePasswordView(UpdateAPIView):
     permission_classes = [IsAuthenticated]
@@ -46,3 +79,18 @@ class ChangePasswordView(UpdateAPIView):
     def partial_update(self, request, *args, **kwargs):
         kwargs['partial'] = True
         return self.update(request, *args, **kwargs)
+
+class LogOutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            refresh_token = request.data["refresh_token"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+
+            return Response(status=status.HTTP_205_RESET_CONTENT)
+        except KeyError as ke:
+            raise NoRefreshTokenWhenLoggingOut(str(ke))
+        except Exception as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST)

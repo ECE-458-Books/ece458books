@@ -48,7 +48,7 @@ class RegistrationAPIView(CreateAPIView):
 class UserRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAdminUser]
     serializer_class = AdminUserModifySerializer
-    lookup_field = 'username'
+    lookup_field = 'id'
     queryset = User.objects.filter(is_active=True)
 
     def destroy(self, request, *args, **kwargs):

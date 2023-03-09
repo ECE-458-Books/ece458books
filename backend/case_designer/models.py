@@ -11,12 +11,15 @@ class Bookcase(models.Model):
     last_editor=models.ForeignKey('auth.User')
     last_edit_date=models.DateTimeField()
     width=models.FloatField()
+    number_of_shelves=models.PositiveIntegerField()
 
 class Shelf(models.Model):
     bookcase=models.ForeignKey(Bookcase)
+    ordering=models.PositiveIntegerField()
 
 class DisplayedBook(models.Model):
     book=models.ForeignKey('books.Book')
     shelf=models.ForeignKey(Shelf)
     display_mode=models.CharField(max_length=50, choices=DISPLAY_MODE_CHOICES)
     display_count=models.PositiveIntegerField()
+    ordering=models.PositiveIntegerField()

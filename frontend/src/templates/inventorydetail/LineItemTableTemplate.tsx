@@ -1,7 +1,7 @@
 import { DataTable, DataTableRowClickEvent } from "primereact/datatable";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useImmer } from "use-immer";
+import { Updater } from "use-immer";
 import DeleteColumn from "../../components/datatable/DeleteColumn";
 import {
   createColumns,
@@ -41,6 +41,7 @@ export const emptyLineItem: LineItem = {
 
 interface InventoryDetailTemplateProps {
   lineItems: LineItem[]; // The array of purchases/sales
+  setLineItems: Updater<LineItem[]>; // Update the array of purchases/sales
   priceColumnHeader: string; // The header of the price column (retail, wholesale, buyback)
   isCSVErrorsColumnShowing: boolean; // If the CSV errors column is showing
   setTotalDollars: (totalDollars: number) => void; // Update the calculated total
@@ -53,9 +54,6 @@ export default function LineItemTableTemplate(
   props: InventoryDetailTemplateProps
 ) {
   const navigate = useNavigate();
-  // The line item data
-  const [lineItems, setLineItems] = useImmer<LineItem[]>(props.lineItems);
-  // For books dropdown
   const [booksDropdownTitles, setBooksDropdownTitles] = useState<string[]>([]);
 
   const COLUMNS: TableColumn<LineItem>[] = [
@@ -73,7 +71,7 @@ export default function LineItemTableTemplate(
         booksDropDownEditor(
           rowData.bookTitle,
           (newValue) => {
-            setLineItems(async (draft) => {
+            props.setLineItems(async (draft) => {
               const lineItem = findById(draft, rowData.id)!;
               lineItem.bookTitle = newValue;
               lineItem.price = await props.getPriceForNewlySelectedBook(
@@ -93,8 +91,8 @@ export default function LineItemTableTemplate(
         NumberEditor(
           rowData.quantity,
           (newValue) => {
-            setLineItems((draft) => {
-              const lineItem = findById(lineItems, rowData.id)!;
+            props.setLineItems((draft) => {
+              const lineItem = findById(draft, rowData.id)!;
               lineItem.quantity = newValue;
               props.setTotalDollars(calculateTotal(draft));
             });
@@ -111,8 +109,8 @@ export default function LineItemTableTemplate(
         PriceEditor(
           rowData.price,
           (newValue) => {
-            setLineItems((draft) => {
-              const lineItem = findById(lineItems, rowData.id)!;
+            props.setLineItems((draft) => {
+              const lineItem = findById(draft, rowData.id)!;
               lineItem.price = newValue;
               props.setTotalDollars(calculateTotal(draft));
             });
@@ -134,7 +132,11 @@ export default function LineItemTableTemplate(
   // Delete icon for each row
   const deleteColumn = DeleteColumn<LineItem>({
     onDelete: (rowData) => {
-      const newSales = filterById(lineItems, rowData.id, setLineItems);
+      const newSales = filterById(
+        props.lineItems,
+        rowData.id,
+        props.setLineItems
+      );
       props.setTotalDollars(calculateTotal(newSales));
     },
     hidden: !props.isModifiable,
@@ -181,7 +183,7 @@ export default function LineItemTableTemplate(
   return (
     <DataTable
       showGridlines
-      value={lineItems}
+      value={props.lineItems}
       className="editable-cells-table"
       responsiveLayout="scroll"
       editMode="cell"

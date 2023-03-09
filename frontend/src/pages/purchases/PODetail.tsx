@@ -386,6 +386,7 @@ export default function PODetail() {
   const dataTable = (
     <LineItemTableTemplate
       lineItems={purchases}
+      setLineItems={setPurchases}
       priceColumnHeader={"Unit Wholesale Price"}
       isCSVErrorsColumnShowing={hasUploadedCSV}
       setTotalDollars={setTotalCost}

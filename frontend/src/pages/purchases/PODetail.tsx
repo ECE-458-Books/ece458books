@@ -1,15 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import { DataTable, DataTableRowClickEvent } from "primereact/datatable";
-import {
-  createColumns,
-  TableColumn,
-} from "../../components/datatable/TableColumns";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
 import { Toolbar } from "primereact/toolbar";
-import { v4 as uuid } from "uuid";
-import { PriceEditor } from "../../components/editors/PriceEditor";
-import PriceTemplate from "../../components/templates/PriceTemplate";
-import { IntegerEditor } from "../../components/editors/IntegerEditor";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   AddPOReq,
@@ -26,9 +17,7 @@ import {
 } from "../../apis/purchases/PurchasesConversions";
 import CSVUploader from "../../components/uploaders/CSVFileUploader";
 import VendorDropdown from "../../components/dropdowns/VendorDropdown";
-import BooksDropdown, {
-  BooksDropdownData,
-} from "../../components/dropdowns/BookDropdown";
+import { BooksDropdownData } from "../../components/dropdowns/BookDropdown";
 import {
   showFailure,
   showFailuresFunctionCaller,
@@ -38,12 +27,9 @@ import {
 import {
   CSVImport200OverallErrors,
   CSVImport400OverallErrors,
-  errorCellBody,
 } from "../../templates/errors/CSVImportErrors";
 import { Book } from "../books/BookList";
 import { useImmer } from "use-immer";
-import { filterById, findById } from "../../util/IDOps";
-import { calculateTotal } from "../../util/LineItemOps";
 import { logger } from "../../util/Logger";
 import DeletePopup from "../../components/popups/DeletePopup";
 import AddDetailModifyTitle from "../../components/text/AddDetailModifyTitle";
@@ -53,31 +39,12 @@ import AddRowButton from "../../components/buttons/AddRowButton";
 import EditCancelButton from "../../components/buttons/EditCancelDetailButton";
 import TotalDollars from "../../components/text/TotalDollars";
 import OneDayCalendar from "../../components/OneDayCalendar";
-import DeleteColumn from "../../components/datatable/DeleteColumn";
 import "../../css/TableCell.css";
 import CSVEndUserDocButton from "../../components/buttons/CSVEndUserDocButton";
-
-export interface POPurchaseRow {
-  isNewRow: boolean; // true if the user added this row, false if it already existed
-  id: string;
-  bookId: number;
-  bookISBN: string;
-  bookTitle: string;
-  quantity: number;
-  price: number;
-  errors?: { [key: string]: string }; // Only present on CSV import
-}
-
-// Used for setting initial state
-const emptyPurchase: POPurchaseRow = {
-  isNewRow: true,
-  id: uuid(),
-  bookId: 0,
-  bookISBN: "",
-  bookTitle: "",
-  quantity: 1,
-  price: 0,
-};
+import LineItemTableTemplate, {
+  emptyLineItem,
+  LineItem,
+} from "../../templates/inventorydetail/LineItemTableTemplate";
 
 export default function PODetail() {
   // -------- STATE --------
@@ -88,15 +55,14 @@ export default function PODetail() {
   const [isModifiable, setIsModifiable] = useState<boolean>(id === undefined);
 
   // For Dropdown Menus
-  const [bookMap, setBooksMap] = useState<Map<string, Book>>(new Map());
+  const [booksMap, setBooksMap] = useState<Map<string, Book>>(new Map());
   const [vendorMap, setVendorMap] = useState<Map<string, number>>(new Map());
-  const [booksDropdownTitles, setBooksDropdownTitles] = useState<string[]>([]);
 
   // The rest of the data
   const [date, setDate] = useState<Date>(new Date());
   const [selectedVendorName, setSelectedVendorName] = useState<string>("");
   // useImmer is used to set state for nested data in a simplified format
-  const [purchases, setPurchases] = useImmer<POPurchaseRow[]>([]);
+  const [purchases, setPurchases] = useImmer<LineItem[]>([]);
   const [totalCost, setTotalCost] = useState<number>(0);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
@@ -126,78 +92,9 @@ export default function PODetail() {
     () =>
       BooksDropdownData({
         setBooksMap: setBooksMap,
-        setBookTitlesList: setBooksDropdownTitles,
       }),
     []
   );
-
-  const COLUMNS: TableColumn<POPurchaseRow>[] = [
-    {
-      field: "errors",
-      header: "CSV Errors",
-      hidden: !hasUploadedCSV,
-      customBody: (rowData: POPurchaseRow) => errorCellBody(rowData.errors),
-      style: { minWidth: "8rem" },
-    },
-    {
-      field: "bookTitle",
-      header: "Book",
-      customBody: (rowData: POPurchaseRow) =>
-        booksDropDownEditor(
-          rowData.bookTitle,
-          (newValue) => {
-            setPurchases((draft) => {
-              const purchase = findById(draft, rowData.id);
-              purchase!.bookTitle = newValue;
-            });
-          },
-          !isModifiable
-        ),
-    },
-    {
-      field: "quantity",
-      header: "Quantity",
-      customBody: (rowData: POPurchaseRow) =>
-        IntegerEditor(
-          rowData.quantity,
-          (newValue) => {
-            setPurchases((draft) => {
-              const purchase = findById(draft, rowData.id);
-              purchase!.quantity = newValue;
-              setTotalCost(calculateTotal(draft));
-            });
-          },
-          "integernumberPODetail",
-          !isModifiable
-        ),
-      style: { minWidth: "8rem" },
-    },
-    {
-      field: "unitWholesalePrice",
-      header: "Unit Wholesale Price ($)",
-      customBody: (rowData: POPurchaseRow) =>
-        PriceEditor(
-          rowData.price,
-          (newValue) => {
-            setPurchases((draft) => {
-              const purchase = findById(draft, rowData.id);
-              purchase!.price = newValue;
-              setTotalCost(calculateTotal(draft));
-            });
-          },
-          "retailnumberPODetail",
-          !isModifiable
-        ),
-      style: { minWidth: "10rem" },
-    },
-    {
-      field: "subtotal",
-      header: "Subtotal ($)",
-      customBody: (rowData: POPurchaseRow) =>
-        PriceTemplate(rowData.price * rowData.quantity),
-      style: { minWidth: "8rem" },
-    },
-  ];
 
   // -------- METHODS --------
 
@@ -251,18 +148,6 @@ export default function PODetail() {
   // The navigator to switch pages
   const navigate = useNavigate();
 
-  const onRowClick = (event: DataTableRowClickEvent) => {
-    const purchase = event.data as POPurchaseRow;
-    logger.debug("Purchase Order Row Clicked", purchase);
-    toBookDetailsPage(purchase);
-  };
-
-  // Callback functions for edit/delete buttons
-  const toBookDetailsPage = (purcahse: POPurchaseRow) => {
-    logger.debug("Edit Book Clicked", purcahse);
-    navigate(`/books/detail/${purcahse.bookId}`);
-  };
-
   const validateSubmission = () => {
     for (const purchase of purchases) {
       if (!purchase.bookTitle || !(purchase.price >= 0) || !purchase.quantity) {
@@ -299,7 +184,7 @@ export default function PODetail() {
   function callAddPOAPI() {
     const apiPurchases = purchases.map((purchase) => {
       return {
-        book: Number(bookMap.get(purchase.bookTitle)?.id),
+        book: Number(booksMap.get(purchase.bookTitle)?.id),
         quantity: purchase.quantity,
         unit_wholesale_price: purchase.price,
       } as APIPOPurchaseRow;
@@ -328,7 +213,7 @@ export default function PODetail() {
         id: purchase.isNewRow ? undefined : purchase.id,
         quantity: purchase.quantity,
         // If the book has been deleted, will have to use the id that is already present in the row
-        book: bookMap.get(purchase.bookTitle)?.id ?? purchase.bookId,
+        book: booksMap.get(purchase.bookTitle)?.id ?? purchase.bookId,
         unit_wholesale_price: purchase.price,
       } as APIPOPurchaseRow;
     });
@@ -399,7 +284,7 @@ export default function PODetail() {
   // Left
   const addRowButton = (
     <AddRowButton
-      emptyItem={emptyPurchase}
+      emptyItem={emptyLineItem}
       rows={purchases}
       setRows={setPurchases}
       isDisabled={!isModifiable}
@@ -497,34 +382,19 @@ export default function PODetail() {
     />
   );
 
-  // Datatable Items
-
-  const booksDropDownEditor = (
-    value: string,
-    onChange: (newValue: string) => void,
-    isDisabled?: boolean
-  ) => (
-    <BooksDropdown
-      // This will always be used in a table cell, so we can disable the warning
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      setSelectedBook={onChange}
-      selectedBook={value}
-      isDisabled={isDisabled}
-      bookTitlesList={booksDropdownTitles}
-      placeholder={value}
+  // Datatable
+  const dataTable = (
+    <LineItemTableTemplate
+      lineItems={purchases}
+      setLineItems={setPurchases}
+      priceColumnHeader={"Unit Wholesale Price"}
+      isCSVErrorsColumnShowing={hasUploadedCSV}
+      setTotalDollars={setTotalCost}
+      isAddPage={isPOAddPage}
+      isModifiable={isModifiable}
+      getPriceForNewlySelectedBook={() => Promise.resolve(0)}
     />
   );
-
-  // Delete icon for each row
-  const deleteColumn = DeleteColumn<POPurchaseRow>({
-    onDelete: (rowData) => {
-      const newPurchases = filterById(purchases, rowData.id, setPurchases);
-      setTotalCost(calculateTotal(newPurchases));
-    },
-    hidden: !isModifiable,
-  });
-
-  const columns = createColumns(COLUMNS);
 
   return (
     <div>
@@ -557,23 +427,7 @@ export default function PODetail() {
                 {vendorDropdown}
               </div>
             </div>
-            <DataTable
-              showGridlines
-              value={purchases}
-              className="editable-cells-table"
-              responsiveLayout="scroll"
-              editMode="cell"
-              rowHover={!isPOAddPage}
-              selectionMode={"single"}
-              onRowClick={(event) => {
-                if (!isPOAddPage && !isModifiable) {
-                  onRowClick(event);
-                }
-              }}
-            >
-              {columns}
-              {deleteColumn}
-            </DataTable>
+            {dataTable}
           </form>
         </div>
         {deletePopupVisible && deletePopup}

@@ -9,18 +9,18 @@ import { APISR, GetSRsResp, SALES_API } from "../../apis/sales/SalesAPI";
 import { TableColumn } from "../../components/datatable/TableColumns";
 import { DateTemplate } from "../../components/templates/DateTemplate";
 import PriceTemplate from "../../components/templates/PriceTemplate";
-import { SRSaleRow } from "./SRDetail";
 import AddPageButton from "../../components/buttons/AddPageButton";
 import LabeledSwitch from "../../components/buttons/LabeledSwitch";
 import SelectSizeButton, {
   SelectSizeButtonOptions,
 } from "../../components/buttons/SelectSizeButton";
 import ListTemplate from "../../templates/list/ListTemplate";
+import { LineItem } from "../../templates/inventorydetail/LineItemTableTemplate";
 
 export interface SalesReconciliation {
   id: string;
   date: Date;
-  sales: SRSaleRow[];
+  sales: LineItem[];
   uniqueBooks: number;
   totalBooks: number;
   totalRevenue: number;

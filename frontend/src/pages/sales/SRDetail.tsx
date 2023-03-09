@@ -1,14 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { DataTable, DataTableRowClickEvent } from "primereact/datatable";
-import {
-  createColumns,
-  TableColumn,
-} from "../../components/datatable/TableColumns";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
-import { v4 as uuid } from "uuid";
-import { PriceEditor } from "../../components/editors/PriceEditor";
-import PriceTemplate from "../../components/templates/PriceTemplate";
-import { NumberEditor } from "../../components/editors/NumberEditor";
 import { useNavigate, useParams } from "react-router-dom";
 import { Toolbar } from "primereact/toolbar";
 import {
@@ -19,9 +10,7 @@ import {
 } from "../../apis/sales/SalesAPI";
 import { Toast } from "primereact/toast";
 import { internalToExternalDate } from "../../util/DateOps";
-import BooksDropdown, {
-  BooksDropdownData,
-} from "../../components/dropdowns/BookDropdown";
+import { BooksDropdownData } from "../../components/dropdowns/BookDropdown";
 import CSVUploader from "../../components/uploaders/CSVFileUploader";
 import { FileUploadHandlerEvent } from "primereact/fileupload";
 import {
@@ -37,12 +26,9 @@ import {
 import {
   CSVImport200OverallErrors,
   CSVImport400OverallErrors,
-  errorCellBody,
 } from "../../templates/errors/CSVImportErrors";
 import { Book } from "../books/BookList";
 import { useImmer } from "use-immer";
-import { filterById, findById } from "../../util/IDOps";
-import { calculateTotal } from "../../util/LineItemOps";
 import { logger } from "../../util/Logger";
 import DeletePopup from "../../components/popups/DeletePopup";
 import AddDetailModifyTitle from "../../components/text/AddDetailModifyTitle";
@@ -52,32 +38,14 @@ import AddRowButton from "../../components/buttons/AddRowButton";
 import EditCancelButton from "../../components/buttons/EditCancelDetailButton";
 import TotalDollars from "../../components/text/TotalDollars";
 import OneDayCalendar from "../../components/OneDayCalendar";
-import DeleteColumn from "../../components/datatable/DeleteColumn";
 import "../../css/TableCell.css";
 import CSVEndUserDocButton from "../../components/buttons/CSVEndUserDocButton";
-
-export interface SRSaleRow {
-  isNewRow: boolean;
-  id: string;
-  bookId: number;
-  bookISBN: string;
-  bookTitle: string;
-  quantity: number;
-  price: number;
-  errors?: { [key: string]: string };
-}
+import LineItemTableTemplate, {
+  emptyLineItem,
+  LineItem,
+} from "../../templates/inventorydetail/LineItemTableTemplate";
 
 export default function SRDetail() {
-  const emptySale: SRSaleRow = {
-    isNewRow: true,
-    id: uuid(),
-    bookId: 0,
-    bookISBN: "",
-    bookTitle: "",
-    quantity: 1,
-    price: 0,
-  };
-
   // From URL
   const { id } = useParams();
   const isSRAddPage = id === undefined;
@@ -85,12 +53,11 @@ export default function SRDetail() {
 
   // For dropdown menus
   const [booksMap, setBooksMap] = useState<Map<string, Book>>(new Map());
-  const [booksDropdownTitles, setBooksDropdownTitles] = useState<string[]>([]);
 
   // The rest of the data
   const [date, setDate] = useState<Date>(new Date());
   // useImmer is used to set state for nested data in a simplified format
-  const [sales, setSales] = useImmer<SRSaleRow[]>([]);
+  const [sales, setSales] = useImmer<LineItem[]>([]);
 
   const [totalRevenue, setTotalRevenue] = useState<number>(0);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
@@ -122,81 +89,9 @@ export default function SRDetail() {
     () =>
       BooksDropdownData({
         setBooksMap: setBooksMap,
-        setBookTitlesList: setBooksDropdownTitles,
       }),
     []
   );
-
-  const COLUMNS: TableColumn<SRSaleRow>[] = [
-    {
-      field: "errors",
-      header: "CSV Errors",
-      hidden: !hasUploadedCSV,
-      customBody: (rowData: SRSaleRow) => errorCellBody(rowData.errors),
-      style: { minWidth: "8rem" },
-    },
-    {
-      field: "bookTitle",
-      header: "Book",
-      customBody: (rowData: SRSaleRow) =>
-        booksDropDownEditor(
-          rowData.bookTitle,
-          (newValue) => {
-            setSales((draft) => {
-              const sale = findById(draft, rowData.id);
-              sale!.bookTitle = newValue;
-              sale!.price = booksMap.get(newValue)!.retailPrice;
-              setTotalRevenue(calculateTotal(draft));
-            });
-          },
-          !isModifiable
-        ),
-    },
-
-    {
-      field: "quantity",
-      header: "Quantity",
-      customBody: (rowData: SRSaleRow) =>
-        NumberEditor(
-          rowData.quantity,
-          (newValue) => {
-            setSales((draft) => {
-              const sale = findById(draft, rowData.id);
-              sale!.quantity = newValue;
-              setTotalRevenue(calculateTotal(draft));
-            });
-          },
-          "integernumberPODetail",
-          !isModifiable
-        ),
-      style: { minWidth: "8rem" },
-    },
-    {
-      field: "price",
-      header: "Unit Retail Price ($)",
-      customBody: (rowData: SRSaleRow) =>
-        PriceEditor(
-          rowData.price,
-          (newValue) => {
-            setSales((draft) => {
-              const sale = findById(draft, rowData.id);
-              sale!.price = newValue;
-              setTotalRevenue(calculateTotal(draft));
-            });
-          },
-          "retailnumberPODetail",
-          !isModifiable
-        ),
-      style: { minWidth: "10rem" },
-    },
-    {
-      field: "subtotal",
-      header: "Subtotal ($)",
-      customBody: (rowData: SRSaleRow) =>
-        PriceTemplate(rowData.price * rowData.quantity),
-      style: { minWidth: "8rem" },
-    },
-  ];
 
   // Called to make delete pop up show
   const deleteSalesReconciliationPopup = () => {
@@ -220,18 +115,6 @@ export default function SRDetail() {
 
   // The navigator to switch pages
   const navigate = useNavigate();
-
-  const onRowClick = (event: DataTableRowClickEvent) => {
-    const sale = event.data as SRSaleRow;
-    logger.debug("Purchase Order Row Clicked", sale);
-    toBookDetailsPage(sale);
-  };
-
-  // Callback functions for edit/delete buttons
-  const toBookDetailsPage = (sale: SRSaleRow) => {
-    logger.debug("Edit Book Clicked", sale);
-    navigate(`/books/detail/${sale.bookId}`);
-  };
 
   const csvUploadHandler = (event: FileUploadHandlerEvent) => {
     const csv = event.files[0];
@@ -395,7 +278,7 @@ export default function SRDetail() {
   // Left
   const addRowButton = (
     <AddRowButton
-      emptyItem={emptySale}
+      emptyItem={emptyLineItem}
       rows={sales}
       setRows={setSales}
       isDisabled={!isModifiable}
@@ -487,32 +370,20 @@ export default function SRDetail() {
 
   // Datatable
 
-  const booksDropDownEditor = (
-    value: string,
-    onChange: (newValue: string) => void,
-    isDisabled?: boolean
-  ) => (
-    <BooksDropdown
-      // This will always be used in a table cell, so we can disable the warning
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      setSelectedBook={onChange}
-      selectedBook={value}
-      isDisabled={isDisabled}
-      bookTitlesList={booksDropdownTitles}
-      placeholder={value}
+  const dataTable = (
+    <LineItemTableTemplate
+      lineItems={sales}
+      setLineItems={setSales}
+      priceColumnHeader={"Unit Retail Price"}
+      isCSVErrorsColumnShowing={hasUploadedCSV}
+      setTotalDollars={setTotalRevenue}
+      isAddPage={isSRAddPage}
+      isModifiable={isModifiable}
+      getPriceForNewlySelectedBook={(title) =>
+        Promise.resolve(booksMap.get(title)!.retailPrice)
+      }
     />
   );
-
-  // Delete icon for each row
-  const deleteColumn = DeleteColumn<SRSaleRow>({
-    onDelete: (rowData) => {
-      const newSales = filterById(sales, rowData.id, setSales);
-      setTotalRevenue(calculateTotal(newSales));
-    },
-    hidden: !isModifiable,
-  });
-
-  const columns = createColumns(COLUMNS);
 
   return (
     <div>
@@ -538,27 +409,7 @@ export default function SRDetail() {
               {totalDollars}
               {calendar}
             </div>
-
-            <DataTable
-              showGridlines
-              value={sales}
-              className="editable-cells-table"
-              responsiveLayout="scroll"
-              editMode="cell"
-              rowHover={!isSRAddPage}
-              selectionMode={"single"}
-              onRowClick={(event) => {
-                if (!isSRAddPage && !isModifiable) {
-                  onRowClick(event);
-                }
-              }}
-            >
-              {columns}
-              {deleteColumn}
-            </DataTable>
-
-            {/* Maybe be needed in case the confrim button using the popup breaks */}
-            {/* <Button type="submit" onClick={this.onSubmit} /> */}
+            {dataTable}
           </form>
         </div>
         {deletePopupVisible && deletePopup}

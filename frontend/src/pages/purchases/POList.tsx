@@ -13,13 +13,13 @@ import {
 import { TableColumn } from "../../components/datatable/TableColumns";
 import { DateTemplate } from "../../components/templates/DateTemplate";
 import PriceTemplate from "../../components/templates/PriceTemplate";
-import { POPurchaseRow } from "./PODetail";
 import AddPageButton from "../../components/buttons/AddPageButton";
 import LabeledSwitch from "../../components/buttons/LabeledSwitch";
 import SelectSizeButton, {
   SelectSizeButtonOptions,
 } from "../../components/buttons/SelectSizeButton";
 import ListTemplate from "../../templates/list/ListTemplate";
+import { LineItem } from "../../templates/inventorydetail/LineItemTableTemplate";
 
 export interface PurchaseOrder {
   id: string;
@@ -30,7 +30,7 @@ export interface PurchaseOrder {
   totalBooks: number;
   totalCost: number;
   isDeletable: boolean;
-  purchases: POPurchaseRow[];
+  purchases: LineItem[];
 }
 
 const COLUMNS: TableColumn<PurchaseOrder>[] = [

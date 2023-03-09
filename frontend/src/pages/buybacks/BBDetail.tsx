@@ -414,6 +414,7 @@ export default function BBDetail() {
   const dataTable = (
     <LineItemTableTemplate
       lineItems={buybacks}
+      setLineItems={setBuybacks}
       priceColumnHeader={"Unit Buyback Price"}
       isCSVErrorsColumnShowing={hasUploadedCSV}
       setTotalDollars={setTotalRevenue}

@@ -373,6 +373,7 @@ export default function SRDetail() {
   const dataTable = (
     <LineItemTableTemplate
       lineItems={sales}
+      setLineItems={setSales}
       priceColumnHeader={"Unit Retail Price"}
       isCSVErrorsColumnShowing={hasUploadedCSV}
       setTotalDollars={setTotalRevenue}

@@ -140,7 +140,7 @@ export default function ListTemplate<T extends IDer>(
       sortOrder={sortParams.sortOrder}
       // Filtering
       onFilter={onFilter}
-      filters={props.filters ?? undefined}
+      filters={props.filters}
     >
       {columns}
     </DataTable>

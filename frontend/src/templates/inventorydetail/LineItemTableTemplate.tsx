@@ -127,12 +127,12 @@ export default function LineItemTableTemplate(
   // Delete icon for each row
   const deleteColumn = DeleteColumn<LineItem>({
     onDelete: (rowData) => {
-      const newSales = filterById(
+      const newLineItems = filterById(
         props.lineItems,
         rowData.id,
         props.setLineItems
       );
-      props.setTotalDollars(calculateTotal(newSales));
+      props.setTotalDollars(calculateTotal(newLineItems));
     },
     hidden: !props.isModifiable,
   });
@@ -165,8 +165,6 @@ export default function LineItemTableTemplate(
     isDisabled?: boolean
   ) => (
     <BooksDropdown
-      // This will always be used in a table cell, so we can disable the warning
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       setSelectedBook={onChange}
       selectedBook={value}
       isDisabled={isDisabled}

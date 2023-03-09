@@ -31,6 +31,7 @@ export default function VendorAdd() {
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
   const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false); // Whether the delete popup is visible
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isPageDeleteable, setIsPageDeleteable] = useState<boolean>(true);
 
   // Toast is used for showing success/error messages

@@ -38,10 +38,9 @@ class ISBNSearchView(APIView):
     def post(self, request):
         serializer = ISBNSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        uri = request.build_absolute_uri()
 
         # Set the internal image base url using the request
-        self.isbn_toolbox.set_internal_image_base_url(uri)
+        self.isbn_toolbox.set_internal_image_base_url(request)
 
         # Split ISBN with spaces and/or commas
         raw_isbn_list = re.split("\s?[, ]\s?", serializer.data['isbns'].strip())
@@ -64,25 +63,25 @@ class ISBNSearchView(APIView):
             # If ISBN exist in DB get from DB
             if (len(query_set) == 0):
                 # Get book data from external source
-                external_data = self.isbn_toolbox.fetch_isbn_data(isbn, uri)
+                external_data = self.isbn_toolbox.fetch_isbn_data(isbn)
                 if "Invalid ISBN" in external_data:
                     data_populated_isbns['invalid_isbns'].append(isbn)
                 else:
                     data_populated_isbns['books'].append(external_data)
             else:
                 if query_set[0].isGhost:
-                    external_data = self.isbn_toolbox.fetch_isbn_data(isbn, uri)
+                    external_data = self.isbn_toolbox.fetch_isbn_data(isbn)
                     if "Invalid ISBN" in external_data:
                         data_populated_isbns['invalid_isbns'].append(isbn)
                     else:
                         data_populated_isbns['books'].append(external_data)
                 else:
                     # get book data from DB
-                    data_populated_isbns['books'].append(self.parseDBBookModel(query_set[0], uri))
+                    data_populated_isbns['books'].append(self.parseDBBookModel(query_set[0]))
 
         return Response(data_populated_isbns)
     
-    def parseDBBookModel(self, book, uri):
+    def parseDBBookModel(self, book):
         # Returns a parsed Book json from Book Model
         ret = dict()
 
@@ -142,8 +141,7 @@ class ListCreateBookAPIView(ListCreateAPIView):
     # Override default create method
     def create(self, request, *args, **kwargs):
         # Set the internal image base url using the request
-        uri = request.build_absolute_uri()
-        self.isbn_toolbox.set_internal_image_base_url(uri)
+        self.isbn_toolbox.set_internal_image_base_url(request)
 
         data = request.data
         content_type = request.content_type.split(';')[0]
@@ -183,9 +181,8 @@ class ListCreateBookAPIView(ListCreateAPIView):
         setDefaultImage = str2bool(data.get('setDefaultImage'))
 
         # Get and Create the Image
-        if self.handle_image(request, setDefaultImage):
-            url = self.bookimage_get_and_create(request, res.get('isbn_13'), setDefaultImage)
-            res['image_url'] = url
+        url = self.bookimage_get_and_create(request, res.get('isbn_13'), setDefaultImage)
+        res['image_url'] = url
 
         headers = self.get_success_headers(serializer.data)
         return Response(res, status=status.HTTP_201_CREATED, headers=headers)
@@ -198,11 +195,6 @@ class ListCreateBookAPIView(ListCreateAPIView):
                 data[possible_zero_field] = None
 
         return data
-    
-    def handle_image(self, request, setDefaultImage):
-        has_image_bytes = self.has_image_bytes(request)
-        has_image_url = self.has_image_url(request)
-        return has_image_bytes or has_image_url or setDefaultImage
     
     def has_image_bytes(self, request):
         return request.FILES.get('image_bytes', None) is not None
@@ -220,6 +212,9 @@ class ListCreateBookAPIView(ListCreateAPIView):
             url = self.isbn_toolbox.commit_image_raw_bytes(request, book[0].id, isbn_13)
         elif self.has_image_url(request):
             url = self.isbn_toolbox.commit_image_url(request, book[0].id, isbn_13)
+        else:
+            url = self.isbn_toolbox.get_default_image_url()
+
 
         obj, created = BookImage.objects.get_or_create(
             book_id=book[0].id,
@@ -352,8 +347,7 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
 
     def update(self, request, *args, **kwargs):
         # Set the internal image base url using the request
-        uri = request.build_absolute_uri()
-        self.isbn_toolbox.set_internal_image_base_url(uri)
+        self.isbn_toolbox.set_internal_image_base_url(request)
 
         data = request.data
         content_type = request.content_type.split(';')[0]
@@ -381,9 +375,8 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
         setDefaultImage = str2bool(request.data.get('setDefaultImage'))
 
         # Get and Create the Image
-        if self.handle_image(request, setDefaultImage):
-            url = self.bookimage_get_and_create(request, res.get('isbn_13'), setDefaultImage)
-            res['image_url'] = url
+        url = self.bookimage_get_and_create(request, res.get('isbn_13'), setDefaultImage)
+        res['image_url'] = url
 
         return Response(res)
 
@@ -396,11 +389,6 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
 
         return data
 
-    def handle_image(self, request, setDefaultImage):
-        has_image_bytes = self.has_image_bytes(request)
-        has_image_url = self.has_image_url(request)
-        return has_image_bytes or has_image_url or setDefaultImage
-    
     def has_image_bytes(self, request):
         return request.FILES.get('image_bytes', None) is not None
 
@@ -417,6 +405,8 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
             url = self.isbn_toolbox.commit_image_raw_bytes(request, book[0].id, isbn_13)
         elif self.has_image_url(request):
             url = self.isbn_toolbox.commit_image_url(request, book[0].id, isbn_13)
+        else:
+            url = self.isbn_toolbox.get_default_image_url()
 
         obj, created = BookImage.objects.get_or_create(
             book_id=book[0].id,

@@ -315,7 +315,7 @@ export default function BookDetail() {
 
   const backButton = (
     <div className="flex col-4">
-      <BackButton onClick={() => navigate("/books")} className="ml-1" />
+      <BackButton className="ml-1" />
     </div>
   );
 

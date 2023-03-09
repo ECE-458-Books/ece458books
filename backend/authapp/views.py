@@ -4,6 +4,8 @@ from rest_framework.generics import ListAPIView, CreateAPIView, UpdateAPIView, R
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 
 from .exceptions import NoRefreshTokenWhenLoggingOut, ModifyUserError
 
@@ -68,12 +70,17 @@ class ChangePasswordView(UpdateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ChangePasswordSerializer
     queryset = User.objects.all()
-    lookup_field = 'username'
+    lookup_field = 'id'
 
     # Override Update for default behavior
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
+
+        if request.user != instance:
+            # This means a user is trying to change another user's pw
+            raise ModifyUserError("Not allowed to change another user's password")
+
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
@@ -106,3 +113,19 @@ class LogOutView(APIView):
             raise NoRefreshTokenWhenLoggingOut(str(ke))
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+
+        try:
+            serializer.is_valid(raise_exception=True)
+        except TokenError as e:
+            raise InvalidToken(e.args[0])
+        
+        data = serializer.validated_data
+        user = User.objects.filter(username=request.data.get('username'))[0]
+        data['id'] = user.id
+        data['is_staff'] = user.is_staff
+    
+        return Response(data, status=status.HTTP_200_OK)

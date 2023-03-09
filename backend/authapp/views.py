@@ -13,6 +13,18 @@ from .paginations import UsersPagination
 from books.utils import str2bool
 from .utils import can_modify
 
+class UserAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        username = request.user.username
+        queryset = User.objects.filter(is_active=True, username=username)
+        is_staff = queryset[0].is_staff
+        return Response({
+            "is_staff": is_staff
+        }, status=status.HTTP_200_OK)
+
+
 class UserListAPIView(ListAPIView):
     serializer_class = UserListSerializer
     permission_classes = [IsAdminUser]

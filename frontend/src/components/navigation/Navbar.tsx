@@ -50,6 +50,14 @@ function NavigationBar() {
           icon: "pi pi-fw pi-database",
           command: () => navigate("/change-password"),
         },
+        {
+          label: "Log Out",
+          icon: "pi pi-fw pi-sign-out",
+          command: () => {
+            localStorage.removeItem("accessToken");
+            navigate("/");
+          },
+        },
       ],
     },
   ];

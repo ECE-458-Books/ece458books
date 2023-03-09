@@ -37,7 +37,7 @@ export const AUTH_API = {
       url: AUTH_EXTENSION.concat("/users/login"),
       method: METHOD_POST,
       data: {
-        username: req.username,
+        email: req.username,
         password: req.password,
       },
     });

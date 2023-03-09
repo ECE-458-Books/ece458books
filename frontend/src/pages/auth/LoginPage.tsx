@@ -83,7 +83,6 @@ export default function LoginPage() {
           <div className="col-7">
             <InputText
               value={userName}
-              className="w-7"
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setUserName(e.target.value)
               }
@@ -103,7 +102,6 @@ export default function LoginPage() {
           <div className="col-7">
             <Password
               value={password}
-              className="w-7"
               onChange={onChange}
               toggleMask
               feedback={false}

@@ -123,9 +123,11 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         except TokenError as e:
             raise InvalidToken(e.args[0])
         
-        data = serializer.validated_data
+        data = dict()
         user = User.objects.filter(username=request.data.get('username'))[0]
         data['id'] = user.id
         data['is_staff'] = user.is_staff
+
+        data.update(serializer.validated_data)
     
         return Response(data, status=status.HTTP_200_OK)

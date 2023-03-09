@@ -5,12 +5,12 @@ import { AUTH_API } from "../../apis/auth/AuthAPI";
 import { Toast } from "primereact/toast";
 import { logger } from "../../util/Logger";
 import { Password } from "primereact/password";
-import { Divider } from "primereact/divider";
 import {
-  containsLowercase,
-  containsNumber,
-  containsUppercase,
-} from "../../util/PWCheck";
+  passwordValueCheck,
+  pwCheckFooter,
+  pwCheckHeader,
+} from "../../util/PWValueCheck";
+import { showFailure, showSuccess } from "../../components/Toast";
 
 export default function PasswordChangePage() {
   const wrongPasswordRef = createRef<Messages>();
@@ -21,67 +21,24 @@ export default function PasswordChangePage() {
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
 
-  const showSuccess = () => {
-    toast.current?.show({ severity: "success", summary: "Password Changed" });
-  };
-
-  const showFailure = (message: string) => {
-    toast.current?.show({ severity: "error", summary: message });
-  };
-
-  const header = <div className="font-bold mb-3">Pick a password</div>;
-  const footer = (
-    <>
-      <Divider />
-      <p className="mt-2">Suggestions</p>
-      <ul className="pl-2 ml-2 mt-0 line-height-3">
-        <li>At least one lowercase</li>
-        <li>At least one uppercase</li>
-        <li>At least one numeric</li>
-        <li>Minimum 8 characters</li>
-      </ul>
-    </>
-  );
-
   const onSubmit = (event: FormEvent<HTMLFormElement>): void => {
     logger.debug("Password Change Clicked");
-    if (newPassword1 === newPassword2) {
-      if (newPassword1.length > 7 && newPassword2.length > 7) {
-        if (
-          containsUppercase(newPassword1) &&
-          containsUppercase(newPassword2)
-        ) {
-          if (
-            containsLowercase(newPassword1) &&
-            containsLowercase(newPassword2)
-          ) {
-            if (containsNumber(newPassword1) && containsNumber(newPassword2)) {
-              AUTH_API.passwordChange({
-                old_password: oldPassword,
-                password: newPassword1,
-                password2: newPassword2,
-              }).then((response) => {
-                // TODO: Refactor this
-                if (response.data?.status) {
-                  showSuccess();
-                } else {
-                  showFailure("Error");
-                }
-              });
-            } else {
-              showFailure("New Password does not contain number");
-            }
-          } else {
-            showFailure("New Password does not contain lowercase letter");
-          }
+    const pwCheckRet = passwordValueCheck(newPassword1, newPassword2);
+    if (pwCheckRet[0]) {
+      AUTH_API.passwordChange({
+        old_password: oldPassword,
+        password: newPassword1,
+        password2: newPassword2,
+      }).then((response) => {
+        // TODO: Refactor this
+        if (response.data?.status) {
+          showSuccess(toast, "Password Changed");
         } else {
-          showFailure("New Password does not contain uppercase letter");
+          showFailure(toast, "Error");
         }
-      } else {
-        showFailure("New Password is incorrect length");
-      }
+      });
     } else {
-      showFailure("New Password fields do not the match");
+      showFailure(toast, pwCheckRet[1]);
     }
     event.preventDefault();
   };
@@ -132,8 +89,8 @@ export default function PasswordChangePage() {
                 setNewPassword1(event.currentTarget.value)
               }
               toggleMask
-              header={header}
-              footer={footer}
+              header={pwCheckHeader}
+              footer={pwCheckFooter}
               promptLabel="Choose a password"
               weakLabel="Too simple"
               mediumLabel="Average complexity"
@@ -167,7 +124,7 @@ export default function PasswordChangePage() {
             type="submit"
             label="Submit"
             aria-label="Submit"
-            className="p-button-raised"
+            className="p-button-raised p-button-success"
           />
         </div>
 

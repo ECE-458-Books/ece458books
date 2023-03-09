@@ -363,7 +363,7 @@ export default function PODetail() {
         detailTitle={"Purchase Order Details"}
         addTitle={"Add Purchase Order"}
         modifyTitle={"Modify Purchase Order"}
-      />{" "}
+      />
     </div>
   );
 

@@ -17,6 +17,7 @@ import { filterById, findById } from "../../util/IDOps";
 import { calculateTotal } from "../../util/LineItemOps";
 import { errorCellBody } from "../errors/CSVImportErrors";
 import { v4 as uuid } from "uuid";
+import { createDraft } from "immer";
 
 export interface LineItem {
   isNewRow: boolean;
@@ -71,14 +72,12 @@ export default function LineItemTableTemplate(
         booksDropDownEditor(
           rowData.bookTitle,
           (newValue) => {
-            props.setLineItems(async (draft) => {
-              const lineItem = findById(draft, rowData.id)!;
-              lineItem.bookTitle = newValue;
-              lineItem.price = await props.getPriceForNewlySelectedBook(
-                newValue
-              );
-              props.setTotalDollars(calculateTotal(draft));
-            });
+            const draft = createDraft(props.lineItems);
+
+            const lineItem = findById(draft, rowData.id)!;
+            lineItem.bookTitle = newValue;
+            lineItem.price = await(await props.getPriceForNewlySelectedBook(newValue));
+            props.setTotalDollars(calculateTotal(draft));
           },
           !props.isModifiable
         ),

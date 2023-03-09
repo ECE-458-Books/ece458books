@@ -442,9 +442,8 @@ class RetrieveExternalBookImageAPIView(RetrieveAPIView):
 
 
 class CSVExportBookAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CustomBasePermission]
 
     def get(self, request, *args, **kwargs):
         csv_writer = CSVWriter("books")
         return csv_writer.write_csv(request)
-        

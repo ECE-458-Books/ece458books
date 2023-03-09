@@ -22,7 +22,7 @@ class ISBNTools:
     
     def set_internal_image_base_url(self, request):
         # Case 1. Request from Browser
-        uri = request.META.get('HTTP_ORIGIN', None)
+        uri = request.META.get('HOST_NAME', None)
         
         # Case 2. Request from Postman
         if uri is None:

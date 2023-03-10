@@ -29,14 +29,13 @@ export default function PasswordChangePage() {
         old_password: oldPassword,
         password: newPassword1,
         password2: newPassword2,
-      }).then((response) => {
-        // TODO: Refactor this
-        if (response.data?.status) {
+      })
+        .then(() => {
           showSuccess(toast, "Password Changed");
-        } else {
-          showFailure(toast, "Error");
-        }
-      });
+        })
+        .catch(() => {
+          showFailure(toast, "Password Could Not Be Changed");
+        });
     } else {
       showFailure(toast, pwCheckRet[1]);
     }

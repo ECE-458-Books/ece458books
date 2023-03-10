@@ -8,7 +8,7 @@ export const APIUserSortFieldMap = new Map<string, string>([
   ["isAdmin", "is_staff"],
 ]);
 
-export function APIToInternalGenreConversion(user: APIUser): User {
+export function APIToInternalUserConversion(user: APIUser): User {
   return {
     id: user.id.toString(),
     userName: user.username,

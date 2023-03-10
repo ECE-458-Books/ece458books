@@ -34,10 +34,9 @@ export default function VendorAdd() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isPageDeleteable, setIsPageDeleteable] = useState<boolean>(true);
 
-  // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
 
-  // Load the Genre data on page load
+  // Load the user data on page load
   useEffect(() => {
     USER_API.getUserDetail({ id: id! })
       .then((response) => {
@@ -67,6 +66,38 @@ export default function VendorAdd() {
       .catch(() => showFailure(toast, "User Failed to Delete"));
   };
 
+  const tryToModifyUser = () => {
+    const pwCheckReturnValidandError = passwordValueCheck(password1, password2);
+    if (password1 === "" && password2 === "") {
+      pwCheckReturnValidandError[0] = true;
+    }
+
+    if (pwCheckReturnValidandError[0]) {
+      USER_API.modifyUser({
+        id: id!,
+        password_1: password1,
+        password_2: password2,
+        is_staff: isAdmin,
+      });
+    } else {
+      showFailure(toast, pwCheckReturnValidandError[1]);
+    }
+  };
+
+  const tryToAddUser = () => {
+    const pwCheckReturnValidandError = passwordValueCheck(password1, password2);
+    if (pwCheckReturnValidandError[0]) {
+      USER_API.addUser({
+        username: userName,
+        password_1: password1,
+        password_2: password2,
+        is_staff: isAdmin,
+      });
+    } else {
+      showFailure(toast, pwCheckReturnValidandError[1]);
+    }
+  };
+
   const onSubmit = (): void => {
     logger.debug(
       "Add User Submitted:",
@@ -77,38 +108,9 @@ export default function VendorAdd() {
     );
 
     if (!isUserAddPage) {
-      if (password1 === "" && password2 === "") {
-        const pwCheckRet = passwordValueCheck(password1, password2);
-        if (pwCheckRet[0]) {
-          USER_API.modifyUser({
-            id: id,
-            password_1: password1,
-            password_2: password2,
-            is_staff: isAdmin,
-          });
-        } else {
-          showFailure(toast, pwCheckRet[1]);
-        }
-      } else {
-        USER_API.modifyUser({
-          id: id,
-          password_1: password1,
-          password_2: password2,
-          is_staff: isAdmin,
-        });
-      }
+      tryToModifyUser();
     } else {
-      const pwCheckRet = passwordValueCheck(password1, password2);
-      if (pwCheckRet[0]) {
-        USER_API.addUser({
-          username: userName,
-          password_1: password1,
-          password_2: password2,
-          is_staff: isAdmin,
-        });
-      } else {
-        showFailure(toast, pwCheckRet[1]);
-      }
+      tryToAddUser();
     }
   };
 
@@ -174,9 +176,9 @@ export default function VendorAdd() {
           <div className="flex pr-2 col-5 justify-content-end my-auto">
             <label
               className="text-xl p-component text-teal-900 p-text-secondary"
-              htmlFor="genre"
+              htmlFor="user"
             >
-              User Name:
+              Username:
             </label>
           </div>
           <div className="col-7 justify-content-left flex">
@@ -199,7 +201,7 @@ export default function VendorAdd() {
           <div className="flex pr-2 col-5 justify-content-end my-auto">
             <label
               className="text-xl p-component text-teal-900 p-text-secondary"
-              htmlFor="genre"
+              htmlFor="user"
             >
               {isUserAddPage ? "Password:" : "Change Password:"}
             </label>
@@ -226,7 +228,7 @@ export default function VendorAdd() {
           <div className="flex pr-2 col-5 justify-content-end text-right my-auto">
             <label
               className="text-xl p-component text-teal-900 p-text-secondary"
-              htmlFor="genre"
+              htmlFor="user"
             >
               {isUserAddPage
                 ? "Password Confirm:"
@@ -250,7 +252,7 @@ export default function VendorAdd() {
           <div className="flex pr-2 col-6 justify-content-end text-right my-auto">
             <label
               className="text-xl p-component text-teal-900 p-text-secondary"
-              htmlFor="genre"
+              htmlFor="user"
             >
               Is Administrator:
             </label>

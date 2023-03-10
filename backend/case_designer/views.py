@@ -18,7 +18,6 @@ class ListCreateBookcaseAPIView(ListCreateAPIView):
         serializer.is_valid(raise_exception=True)
         saved_bookcase = serializer.save()
 
-
         response_data = serializer.data
         response_data['id'] = saved_bookcase.id
         return Response(response_data, status=status.HTTP_201_CREATED)

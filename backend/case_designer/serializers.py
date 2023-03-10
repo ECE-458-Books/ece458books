@@ -17,19 +17,20 @@ class DisplayedBookSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DisplayedBook
-        fields = ['id', 'book',
+        fields = ['book',
                    'display_mode', 'display_count']
+        read_only_fields = ['id']
 
 class ShelfSerializer(serializers.ModelSerializer):
     books = DisplayedBookSerializer(many=True)
 
     class Meta:
         model = Shelf
-        fields = ['id', 'books']
+        fields = ["books"]
+        read_only_fields = ['id']
 
     def create(self, data):
         books = data.pop('books')
-        data.pop('books')
         shelf = Shelf.objects.create(**data)
         for idx, book in enumerate(books):
             DisplayedBook.objects.create(shelf=shelf, ordering=idx, **book)
@@ -43,15 +44,15 @@ class BookcaseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Bookcase
-        fields = ['id', 'name', 
-                  'last_edit_date', 'width', 'shelves'
+        fields = ['name', 'width', "shelves"
                   # To be completed when users are implemented
                   #'creator', 'last_editor', 
                   ]
-        
+        read_only_fields = ['id', 'last_edit_date']
+
     def create(self, data):
         shelves = data.pop('shelves')
         bookcase = Bookcase.objects.create(**data)
         for idx, shelf in enumerate(shelves):
-            Shelf.objects.create(bookcase=bookcase, ordering=idx, **shelf)
+            Shelf.objects.create(**{"bookcase":bookcase}, **{"ordering":idx}, **shelf)
         return bookcase

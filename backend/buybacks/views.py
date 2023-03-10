@@ -12,10 +12,11 @@ from datetime import datetime
 from rest_framework.views import APIView
 from rest_framework.request import Request
 from helpers.csv_reader import CSVReader
+from utils.permissions import CustomBasePermission
 
 
 class ListCreateBuybackAPIView(ListCreateAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CustomBasePermission]
     serializer_class = BuybackOrderSerializer
     queryset = BuybackOrder.objects.all()
     pagination_class = BuybackPagination
@@ -125,7 +126,7 @@ class ListCreateBuybackAPIView(ListCreateAPIView):
 
 
 class RetrieveUpdateDestroyBuybackAPIView(RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CustomBasePermission]
     serializer_class = BuybackOrderSerializer
     lookup_field = 'id'
     pagination_class = BuybackPagination
@@ -167,7 +168,7 @@ class RetrieveUpdateDestroyBuybackAPIView(RetrieveUpdateDestroyAPIView):
 
 
 class CSVBuybackAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CustomBasePermission]
 
     def post(self, request: Request):
         csv_reader = CSVReader("buybacks")

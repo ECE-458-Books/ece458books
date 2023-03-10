@@ -75,8 +75,8 @@ export default function VendorAdd() {
     if (pwCheckReturnValidandError[0]) {
       USER_API.modifyUser({
         id: id!,
-        password_1: password1,
-        password_2: password2,
+        password: password1,
+        password2: password2,
         is_staff: isAdmin,
       });
     } else {
@@ -89,8 +89,8 @@ export default function VendorAdd() {
     if (pwCheckReturnValidandError[0]) {
       USER_API.addUser({
         username: userName,
-        password_1: password1,
-        password_2: password2,
+        password: password1,
+        password2: password2,
         is_staff: isAdmin,
       });
     } else {

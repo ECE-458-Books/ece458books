@@ -6,7 +6,8 @@ import {
   METHOD_POST,
 } from "../Config";
 
-const USER_EXTENSION = "auth/users";
+const USERS_EXTENSION = "auth/users";
+const USER_EXTENSION = "auth/user";
 
 export interface APIUser {
   id: number;
@@ -27,16 +28,16 @@ export interface DeleteUserReq {
 // modifyGenre
 export interface ModifyUserReq {
   id: string;
-  password_1: string;
-  password_2: string;
+  password: string;
+  password2: string;
   is_staff: boolean;
 }
 
 // addGenre
 export interface AddUserReq {
   username: string;
-  password_1: string;
-  password_2: string;
+  password: string;
+  password2: string;
   is_staff: boolean;
 }
 
@@ -65,7 +66,7 @@ export const USER_API = {
 
   addUser: async function (req: AddUserReq) {
     return await API.request({
-      url: USER_EXTENSION,
+      url: USERS_EXTENSION.concat("/".concat("register")),
       method: METHOD_POST,
       data: req,
     });

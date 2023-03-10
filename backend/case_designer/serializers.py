@@ -54,5 +54,8 @@ class BookcaseSerializer(serializers.ModelSerializer):
         shelves = data.pop('shelves')
         bookcase = Bookcase.objects.create(**data)
         for idx, shelf in enumerate(shelves):
-            Shelf.objects.create(**{"bookcase":bookcase}, **{"ordering":idx}, **shelf)
+            serializer = ShelfSerializer(data=shelf)
+            serializer.is_valid(raise_exception=True)
+            saved_shelf = serializer.save()
+            #shelves.create(**{"bookcase":bookcase}, **{"ordering":idx}, **shelf)
         return bookcase

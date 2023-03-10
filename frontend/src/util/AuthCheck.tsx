@@ -6,10 +6,15 @@ export default function GoToLoginPageIfNotLoggedIn() {
   const now = new Date();
   const navigate = useNavigate();
 
-  if (!loginTime || AddOneDay(loginTime!) < now) {
-    navigate("/");
-    return <LoginPage />;
-  }
+  // if (localStorage.getItem("accessToken") == null) {
+  //   navigate("/");
+  //   return <LoginPage />;
+  // }
+
+  // if (!loginTime || AddOneDay(loginTime!) < now) {
+  //   navigate("/");
+  //   return <LoginPage />;
+  // }
 }
 
 function AddOneDay(dateStr: string) {

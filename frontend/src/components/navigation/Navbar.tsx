@@ -46,6 +46,11 @@ function NavigationBar() {
       icon: "pi pi-fw pi-wrench",
       items: [
         {
+          label: "Users",
+          icon: "pi pi-fw pi-users",
+          command: () => navigate("/users"),
+        },
+        {
           label: "Change Password",
           icon: "pi pi-fw pi-database",
           command: () => navigate("/change-password"),

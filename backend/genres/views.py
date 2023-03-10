@@ -10,11 +10,12 @@ from .models import Genre
 from .paginations import GenrePagination
 
 from books.models import Book
+from utils.permissions import CustomBasePermission
 
 class ListCreateGenreAPIView(ListCreateAPIView):
     serializer_class = GenreSerializer
     queryset = Genre.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CustomBasePermission]
     pagination_class = GenrePagination
     filter_backends = [filters.OrderingFilter]
     ordering_fields = '__all__'
@@ -69,7 +70,7 @@ class ListCreateGenreAPIView(ListCreateAPIView):
 class RetrieveUpdateDestroyGenreAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = GenreSerializer
     queryset = Genre.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CustomBasePermission]
     lookup_url_kwarg = 'id'
 
     def destroy(self, request, *args, **kwargs):

@@ -21,6 +21,8 @@ import BuyBackList from "../../pages/buybacks/BuyBackList";
 import GoToLoginPageIfNotLoggedIn from "../../util/AuthCheck";
 import ShelfCalculator from "../../pages/storeplanner/ShelfCalculator";
 import VendorAdd from "../../pages/vendors/VendorAdd";
+import UserAdd from "../../pages/users/UserAdd";
+import UserList from "../../pages/users/UserList";
 
 const WithNavBar = () => {
   return (
@@ -73,6 +75,9 @@ export default function Router() {
         <Route path="vendors/detail/:id" element={<VendorDetail />} />
         <Route path="change-password" element={<PasswordChangePage />} />
         <Route path="sales-report" element={<SalesReportPage />} />
+        <Route path="users" element={<UserList />} />
+        <Route path="users/add" element={<UserAdd />} />
+        <Route path="users/detail/:id" element={<UserAdd />} />
       </Route>
     </Routes>
   );

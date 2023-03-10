@@ -37,6 +37,11 @@ def find_pattern(pattern, path):
                 })
     return result
 
+def reformat_uri_to_hostname(uri, host_name):
+    protocol_hostname=f"https://{host_name}"
+    query_params = "/".join(uri.split("/")[3:])
+    return f"{protocol_hostname}/{query_params}"
+
 def reformat_url(url):
     reformat_url = url.replace("http://", "https://")
     port = get_port_number(reformat_url)
@@ -61,7 +66,6 @@ def uri_to_local_image_location(uri, static_file_location):
     local_image_location = url + static_file_location
 
     return local_image_location
-
 
 def str2bool(v):
     if v: return v.lower() in ("true", "1")

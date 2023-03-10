@@ -4,16 +4,22 @@ from django.db import models
 
 class UserManager(BaseUserManager):
 
-    def create_user(self, username, email, password=None):
+    def create_user(self, username, password=None, is_staff=False):
         """Create and return a `User` with an email, username and password."""
         if username is None:
             raise TypeError('Users must have a username.')
 
+        
+        """
+        These lines are enabled when we need support for emails
         if email is None:
             raise TypeError('Users must have an email address.')
 
         user = self.model(username=username, email=self.normalize_email(email))
+        """
+        user = self.model(username=username)
         user.set_password(password)  # from super class
+        user.is_staff = is_staff
         user.save()  # from super class
 
         return user
@@ -36,7 +42,7 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     # We want to index columns in the database to improve lookup performance.
     username = models.CharField(db_index=True, max_length=255, unique=True)
-    email = models.EmailField(db_index=True, unique=True)
+    email = models.EmailField(default=None, null=True, blank=True)
 
     # When a user no longer wishes to use our platform, they may try to delete
     # their account. That's a problem for us because the data we collect is
@@ -49,7 +55,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     # The `is_staff` flag is expected by Django to determine who can and cannot
     # log into the Django admin site. For most users this flag will always be
     # false.
-    is_staff = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=False, null=True, blank=True)
 
     # A timestamp representing when this object was created.
     created_at = models.DateTimeField(auto_now_add=True)
@@ -61,8 +67,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     # The `USERNAME_FIELD` property tells us which field we will use to log in.
     # In this case we want it to be the email field.
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['is_staff']
 
     # Tells Django that the UserManager class defined above should manage
     # objects of this type.
@@ -74,4 +80,4 @@ class User(AbstractBaseUser, PermissionsMixin):
 
         This string is used when a `User` is printed in the console.
         """
-        return self.email
+        return self.username

@@ -28,7 +28,7 @@ export interface VendorRow {
   buybackRate: number | undefined;
 }
 
-export default function GenreAdd() {
+export default function VendorAdd() {
   const emptyVendor: VendorRow = {
     id: uuid(),
     vendorName: "",

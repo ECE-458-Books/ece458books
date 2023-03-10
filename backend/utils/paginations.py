@@ -1,6 +1,10 @@
 from rest_framework.pagination import PageNumberPagination 
 from rest_framework.utils.urls import remove_query_param, replace_query_param
 
+from books.utils import reformat_uri_to_hostname
+
+import os, environ
+
 class HTTPSNoPortPagination(PageNumberPagination):
     """Custom Pagination Class that overrides the django PageNumberPagination
        
@@ -10,6 +14,10 @@ class HTTPSNoPortPagination(PageNumberPagination):
     """
     page_size = 10
     page_size_query_param = 'page_size'
+    env = environ.Env()
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+    host_name = env('HOST_NAME')
 
     def get_next_link(self):
         """Override get_next_link to support HTTPS and remove explicit port numbering
@@ -20,8 +28,8 @@ class HTTPSNoPortPagination(PageNumberPagination):
         """
         if not self.page.has_next():
             return None
-        url = self.request.build_absolute_uri()
-        reformat_url = self.reformat_url(url)
+        uri = self.request.build_absolute_uri()
+        reformat_url = reformat_uri_to_hostname(uri, self.host_name)
         page_number = self.page.next_page_number()
         return replace_query_param(reformat_url, self.page_query_param, page_number)
     
@@ -34,22 +42,10 @@ class HTTPSNoPortPagination(PageNumberPagination):
         """
         if not self.page.has_previous():
             return None
-        url = self.request.build_absolute_uri()
-        reformat_url = self.reformat_url(url)
+        uri = self.request.build_absolute_uri()
+        reformat_url = reformat_uri_to_hostname(uri, self.host_name)
         page_number = self.page.previous_page_number()
         if page_number == 1:
             return remove_query_param(reformat_url, self.page_query_param)
         return replace_query_param(reformat_url, self.page_query_param, page_number)
     
-    def reformat_url(self, url):
-        reformat_url = url.replace("http://", "https://")
-        port = self.get_port_number(reformat_url)
-
-        reformat_url = reformat_url.replace(f":{port}", "")
-
-        return reformat_url
-    
-    def get_port_number(self, url):
-        if(len(url.split(":"))<2):
-            return None
-        return url.split(":")[2].split("/")[0]

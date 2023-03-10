@@ -4,6 +4,7 @@ import { Messages } from "primereact/messages";
 import { useNavigate } from "react-router-dom";
 import { AUTH_API, LoginReq } from "../../apis/auth/AuthAPI";
 import { Password } from "primereact/password";
+import { InputText } from "primereact/inputtext";
 
 export interface AccessType {
   userType: string;
@@ -37,6 +38,7 @@ interface LoginPageProps {
 export default function LoginPage(props: LoginPageProps) {
   const navigate = useNavigate();
   const wrongPasswordRef = createRef<Messages>();
+  const [userName, setUserName] = useState<string>("");
   const [password, setPassword] = useState<string>("");
 
   // On password change
@@ -48,6 +50,7 @@ export default function LoginPage(props: LoginPageProps) {
   const onSubmit = (event: FormEvent<HTMLFormElement>): void => {
     // Make the request, and show error message if password is wrong
     const req: LoginReq = {
+      username: userName,
       password: password,
     };
 
@@ -97,15 +100,45 @@ export default function LoginPage(props: LoginPageProps) {
           Imaginary Software
         </h1>
       </div>
-      <form onSubmit={onSubmit}>
+      <form onSubmit={onSubmit} className="col-8">
         <div className="flex justify-content-center col-12">
-          <Password
-            value={password}
-            onChange={onChange}
-            toggleMask
-            feedback={false}
-          />
+          <div className="flex pr-2 col-5 justify-content-end my-auto">
+            <label
+              className="text-xl p-component text-teal-900 p-text-secondary"
+              htmlFor="genre"
+            >
+              User Name:
+            </label>
+          </div>
+          <div className="col-7">
+            <InputText
+              value={userName}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setUserName(e.target.value)
+              }
+            />
+          </div>
         </div>
+
+        <div className="flex justify-content-center col-12">
+          <div className="flex pr-2 col-5 justify-content-end my-auto">
+            <label
+              className="text-xl p-component text-teal-900 p-text-secondary"
+              htmlFor="genre"
+            >
+              Password:
+            </label>
+          </div>
+          <div className="col-7">
+            <Password
+              value={password}
+              onChange={onChange}
+              toggleMask
+              feedback={false}
+            />
+          </div>
+        </div>
+
         <div className="flex justify-content-center col-12">
           <Button type="submit" label="Log In" aria-label="Submit" />
         </div>

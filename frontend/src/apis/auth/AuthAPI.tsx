@@ -4,10 +4,13 @@ const AUTH_EXTENSION = "auth";
 
 // login
 export interface LoginReq {
+  username: string;
   password: string;
 }
 
 export interface LoginResp {
+  id: number;
+  is_staff: boolean;
   refresh: string;
   access: string;
 }
@@ -34,7 +37,7 @@ export const AUTH_API = {
       url: AUTH_EXTENSION.concat("/users/login"),
       method: METHOD_POST,
       data: {
-        email: "hosung.kim@duke.edu",
+        username: req.username,
         password: req.password,
       },
     });

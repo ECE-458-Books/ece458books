@@ -17,7 +17,10 @@ from .models import Book, Author, BookImage
 from .paginations import BookPagination
 from .search_filters import *
 from .utils import str2bool
+<<<<<<< HEAD
 from utils.permissions import CustomBasePermission
+=======
+>>>>>>> 8cd0db442f0fd3538df3827f6000e7ffd074161f
 from .book_images import BookImageCreator
 
 from genres.models import Genre

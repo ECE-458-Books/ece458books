@@ -38,8 +38,8 @@ class ISBNSearchView(APIView):
         serializer = ISBNSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        # Split ISBN with spaces and/or commas
-        raw_isbn_list = re.split("\s?[, ]\s?", serializer.data['isbns'].strip())
+        # Split ISBN with newlines, tabs, spaces and/or commas
+        raw_isbn_list = re.split("\s?[, \t\n]\s?", serializer.data['isbns'].strip())
 
         # Delete all empty strings
         raw_isbn_list = [raw_isbn for raw_isbn in raw_isbn_list if raw_isbn != '']

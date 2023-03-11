@@ -8,6 +8,8 @@ class DisplayedBookSerializer(serializers.ModelSerializer):
     book = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all())
     #book_isbn: serializers.SerializerMethodField()
     #book_title: serializers.SerializerMethodField()
+    display_order = serializers.IntegerField(required=False, write_only=True)
+    shelf = serializers.PrimaryKeyRelatedField(queryset=Shelf.objects.all(), required=False, write_only=True)
 
     def get_book_isbn(self, instance):
         return instance.book.isbn_13
@@ -17,37 +19,44 @@ class DisplayedBookSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DisplayedBook
-        fields = ['book',
-                   'display_mode', 'display_count']
+        fields = ['book', 'display_mode', 'display_count', 'display_order', 'shelf']
         read_only_fields = ['id']
 
 class ShelfSerializer(serializers.ModelSerializer):
-    books = DisplayedBookSerializer(many=True)
-    ordering = serializers.IntegerField(required=False)
-    bookcase = serializers.PrimaryKeyRelatedField(queryset=Bookcase.objects.all(), required=False)
+    displayed_books = DisplayedBookSerializer(many=True)
+    shelf_order = serializers.IntegerField(required=False, write_only=True)
+    bookcase = serializers.PrimaryKeyRelatedField(queryset=Bookcase.objects.all(), required=False, write_only=True)
 
     class Meta:
         model = Shelf
-        fields = ['books', "ordering", "bookcase"]
-        
+        fields = ['displayed_books', 'shelf_order', 'bookcase']
     
     def create(self, data):
-        books = data.pop('books')
+        books = data.pop('displayed_books')
         shelf = Shelf.objects.create(**data)
+        self.create_display_books(books, shelf)
         return shelf
+    
+    def create_display_books(self, books, shelf):
+        self.preprocess_display_books(books, shelf)
+        serializer = DisplayedBookSerializer(data=books, many=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+    
+    def preprocess_display_books(self, books, shelf):
+        for idx, book in enumerate(books):
+            book['book'] = book['book'].id
+            book['shelf'] = shelf.id
+            book['display_order'] = idx
+
+    
 
 class BookcaseSerializer(serializers.ModelSerializer):
-    # To be completed when users are implemented
-    #creator = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    #last_editor = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     shelves = ShelfSerializer(many=True)
 
     class Meta:
         model = Bookcase
-        fields = ['name', 'width', "shelves"
-                  # To be completed when users are implemented
-                  #'creator', 'last_editor', 
-                  ]
+        fields = ['name', 'width', 'shelves']
         read_only_fields = ['id', 'last_edit_date']
 
     def create(self, data):
@@ -56,27 +65,17 @@ class BookcaseSerializer(serializers.ModelSerializer):
         self.create_shelves(shelves, bookcase)
         return bookcase
     
-    def preprocess_shelves(self, shelves, bookcase):
-        for idx, shelf in enumerate(shelves):
-            shelf["ordering"] = idx
-            shelf["bookcase"] = bookcase.id
-            for book in shelf["books"]:
-                book["book"] = book["book"].id
-        return shelves
-
     def create_shelves(self, shelves, bookcase):
-        breakpoint()
-        shelves = self.preprocess_shelves(shelves, bookcase)
+        self.preprocess_shelves(shelves, bookcase)
         serializer = ShelfSerializer(data=shelves, many=True)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        #for idx, shelf in enumerate(shelves):
-        #    books = shelf.pop("books")
-        #    shelf = Shelf.objects.create(**shelf)
-        #    self.create_display_books(books, shelf)
-        
-    def create_display_books(self, books, shelf):
-        for idx, book in enumerate(books):
-            book["ordering"] = idx
-            book["shelf"] = shelf
-            DisplayedBook.objects.create(**book)
+        saved_shelves = serializer.save()
+    
+    def preprocess_shelves(self, shelves, bookcase):
+        for idx, shelf in enumerate(shelves):
+            shelf['bookcase'] = bookcase.id
+            shelf['shelf_order'] = idx
+            for idx, book in enumerate(shelf["displayed_books"]):
+                book['book'] = book['book'].id
+
+    

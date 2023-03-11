@@ -21,7 +21,7 @@ export default function VendorAdd() {
   // From URL
   const { id } = useParams();
   const isUserAddPage = id === undefined;
-  const [isModifiable] = useState<boolean>(true);
+  const [isModifiable, setIsModifiable] = useState<boolean>(true);
 
   const [userName, setUserName] = useState<string>("");
   const [password1, setPassword1] = useState<string>("");
@@ -36,14 +36,21 @@ export default function VendorAdd() {
 
   const toast = useRef<Toast>(null);
 
+  const checkForSelfEditandAdminEdit = (username: string) => {
+    return id === localStorage.getItem("userID") || username === "admin";
+  };
+
   // Load the user data on page load
   useEffect(() => {
-    USER_API.getUserDetail({ id: id! })
-      .then((response) => {
-        setUserName(response.username);
-        setIsAdmin(response.is_staff);
-      })
-      .catch(() => showFailure(toast, "Could not fetch user data"));
+    if (!isUserAddPage) {
+      USER_API.getUserDetail({ id: id! })
+        .then((response) => {
+          setIsModifiable(!checkForSelfEditandAdminEdit(response.username));
+          setUserName(response.username);
+          setIsAdmin(response.is_staff);
+        })
+        .catch(() => showFailure(toast, "Could not fetch user data"));
+    }
   }, []);
 
   // Called to make delete pop up show
@@ -78,7 +85,13 @@ export default function VendorAdd() {
         password: password1,
         password2: password2,
         is_staff: isAdmin,
-      });
+      })
+        .then(() => {
+          showSuccess(toast, "Successfully Modified User");
+        })
+        .catch(() => {
+          showFailure(toast, "Failed to Modify User");
+        });
     } else {
       showFailure(toast, pwCheckReturnValidandError[1]);
     }
@@ -92,7 +105,13 @@ export default function VendorAdd() {
         password: password1,
         password2: password2,
         is_staff: isAdmin,
-      });
+      })
+        .then(() => {
+          showSuccess(toast, "Successfully Added User");
+        })
+        .catch(() => {
+          showFailure(toast, "Failed to Add User");
+        });
     } else {
       showFailure(toast, pwCheckReturnValidandError[1]);
     }

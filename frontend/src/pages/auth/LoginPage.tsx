@@ -5,9 +5,13 @@ import { useNavigate } from "react-router-dom";
 import { AUTH_API, LoginReq } from "../../apis/auth/AuthAPI";
 import { Password } from "primereact/password";
 import { InputText } from "primereact/inputtext";
+import { AccessType, administrator, user } from "../../util/UserTypes";
 
-export default function LoginPage() {
-  const navigate = useNavigate();
+interface LoginPageProps {
+  onLogin: (user: AccessType | undefined) => void;
+}
+
+export default function LoginPage(props: LoginPageProps) {
   const wrongPasswordRef = createRef<Messages>();
   const [userName, setUserName] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -16,6 +20,8 @@ export default function LoginPage() {
   const onChange = (event: FormEvent<HTMLInputElement>): void => {
     setPassword(event.currentTarget.value);
   };
+
+  const navigate = useNavigate();
 
   // Hits the token endpoint, and stores the token in local storage. Displays incorrect password text if error returned from endpoint
   const onSubmit = (event: FormEvent<HTMLFormElement>): void => {
@@ -27,8 +33,14 @@ export default function LoginPage() {
 
     AUTH_API.login(req)
       .then((response) => {
+        if (response.is_staff) {
+          props.onLogin(administrator);
+        } else {
+          props.onLogin(user);
+        }
         localStorage.setItem("accessToken", response.access);
         localStorage.setItem("loginTime", new Date().toString());
+        localStorage.setItem("userID", response.id.toString());
         navigate("/books");
       })
       .catch(() => {
@@ -77,7 +89,7 @@ export default function LoginPage() {
               className="text-xl p-component text-teal-900 p-text-secondary"
               htmlFor="genre"
             >
-              User Name:
+              Username:
             </label>
           </div>
           <div className="col-7">

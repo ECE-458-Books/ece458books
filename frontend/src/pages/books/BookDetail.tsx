@@ -27,6 +27,7 @@ import BackButton from "../../components/buttons/BackButton";
 import PriceTemplate from "../../components/templates/PriceTemplate";
 import DeletePopup from "../../components/popups/DeletePopup";
 import { DEFAULT_THICKNESS } from "../storeplanner/ShelfCalculator";
+import Restricted from "../../permissions/Restricted";
 
 interface ErrorDisplay {
   message: string;
@@ -343,14 +344,16 @@ export default function BookDetail() {
   );
 
   const editButton = (
-    <Button
-      type="button"
-      visible={!isModifiable}
-      label="Edit"
-      icon="pi pi-pencil"
-      className="p-button-sm my-auto"
-      onClick={() => setIsModifiable(true)}
-    />
+    <Restricted to={"modify"}>
+      <Button
+        type="button"
+        visible={!isModifiable}
+        label="Edit"
+        icon="pi pi-pencil"
+        className="p-button-sm my-auto"
+        onClick={() => setIsModifiable(true)}
+      />
+    </Restricted>
   );
 
   const cancelButton = (

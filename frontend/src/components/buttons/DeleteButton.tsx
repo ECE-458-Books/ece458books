@@ -1,4 +1,5 @@
 import { Button } from "primereact/button";
+import Restricted from "../../permissions/Restricted";
 
 interface DeleteButtonProps {
   className?: string;
@@ -9,7 +10,7 @@ interface DeleteButtonProps {
 
 export default function DeleteButton(props: DeleteButtonProps) {
   return (
-    <>
+    <Restricted to={"delete"}>
       <Button
         type="button"
         label="Delete"
@@ -19,6 +20,6 @@ export default function DeleteButton(props: DeleteButtonProps) {
         onClick={props.onClick}
         className={"p-button-sm my-auto p-button-danger " + props.className}
       />
-    </>
+    </Restricted>
   );
 }

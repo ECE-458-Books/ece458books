@@ -17,16 +17,18 @@ from books.models import Book
 from helpers.csv_reader import CSVReader
 from buybacks.models import BuybackOrder
 from utils.permissions import CustomBasePermission
+from .parsers import XMLParser
 
 
 class ListCreateSalesReconciliationAPIView(ListCreateAPIView):
-    permission_classes = [CustomBasePermission]
+    # permission_classes = [CustomBasePermission]
     serializer_class = SalesReconciliationSerializer
     queryset = SalesReconciliation.objects.all()
     pagination_class = SalesReconciliationPagination
     filter_backends = [filters.OrderingFilter, filters.SearchFilter]
     ordering_fields = '__all__'
     ordering = ['id']
+    parser_classes = [XMLParser]
 
     def paginate_queryset(self, queryset):
         if 'no_pagination' in self.request.query_params:

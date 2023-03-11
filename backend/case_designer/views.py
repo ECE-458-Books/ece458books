@@ -2,7 +2,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Bookcase, DisplayedBook
+from .models import Bookcase
 from .paginations import BookcasePagination
 from .serializers import BookcaseSerializer
 
@@ -20,3 +20,6 @@ class ListCreateBookcaseAPIView(ListCreateAPIView):
         response_data = serializer.data
         response_data['id'] = saved_bookcase.id
         return Response(response_data, status=status.HTTP_201_CREATED)
+    
+    def get_queryset(self):
+        return super().get_queryset()

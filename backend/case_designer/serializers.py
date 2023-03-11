@@ -6,8 +6,8 @@ from .models import Bookcase, Shelf, DisplayedBook
 
 class DisplayedBookSerializer(serializers.ModelSerializer):
     book = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all())
-    book_isbn: serializers.SerializerMethodField()
-    book_title: serializers.SerializerMethodField()
+    book_isbn = serializers.SerializerMethodField()
+    book_title = serializers.SerializerMethodField()
     display_order = serializers.IntegerField(required=False, write_only=True)
     shelf = serializers.PrimaryKeyRelatedField(queryset=Shelf.objects.all(), required=False, write_only=True)
 
@@ -19,8 +19,8 @@ class DisplayedBookSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DisplayedBook
-        fields = ['book', 'display_mode', 'display_count', 'display_order', 'shelf']
-        read_only_fields = ['id', 'book_isbn', 'book_title']
+        fields = ['book', 'display_mode', 'display_count', 'display_order', 'shelf', 'book_isbn', 'book_title']
+        read_only_fields = ['id']
 
 class ShelfSerializer(serializers.ModelSerializer):
     displayed_books = DisplayedBookSerializer(many=True)
@@ -55,7 +55,7 @@ class BookcaseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Bookcase
-        fields = ['name', 'width', 'shelves']
+        fields = ['name', 'width', 'shelves','last_edit_date']
         read_only_fields = ['id', 'last_edit_date']
 
     def create(self, data):

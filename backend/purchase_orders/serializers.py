@@ -7,7 +7,6 @@ from books.models import Book
 
 
 class PurchaseSerializer(TransactionBaseSerializer):
-
     class Meta:
         model = Purchase
         fields = ['id', 'book', 'book_isbn', 'book_title', 'quantity', 'unit_wholesale_price']
@@ -15,13 +14,14 @@ class PurchaseSerializer(TransactionBaseSerializer):
 
 class PurchaseOrderSerializer(TransactionGroupBaseSerializer):
     purchases = PurchaseSerializer(many=True)
+    username = serializers.SerializerMethodField()
     total_cost = serializers.SerializerMethodField()
     vendor_name = serializers.SerializerMethodField()
     is_deletable = serializers.SerializerMethodField()
 
     class Meta:
         model = PurchaseOrder
-        fields = ['id', 'date', 'purchases', 'vendor', 'vendor_name', 'num_books', 'num_unique_books', 'total_cost', 'is_deletable']
+        fields = ['id', 'date', 'user', 'username', 'purchases', 'vendor', 'vendor_name', 'num_books', 'num_unique_books', 'total_cost', 'is_deletable']
         read_only_fields = ['id']
 
     def get_is_deletable(self, instance):
@@ -62,6 +62,9 @@ class PurchaseOrderSerializer(TransactionGroupBaseSerializer):
 
     def get_vendor_name(self, instance):
         return instance.vendor.name
+    
+    def get_username(self, instance):
+        return instance.user.username
 
     def update_non_nested_fields(self, instance, validated_data):
         instance.date = validated_data.get('date', instance.date)

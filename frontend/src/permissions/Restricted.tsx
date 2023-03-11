@@ -11,12 +11,12 @@ interface ConsumerProps {
 
 export default function Restricted(props: ConsumerProps) {
   // We "connect" to the provider thanks to the PermissionContext
-  const allowed = usePermission(props.to);
+  //const allowed = usePermission(props.to);
 
   // If the user has that permission, render the children
-  if (allowed) {
-    return <>{props.children}</>;
-  }
+  // if (allowed) {
+  //   return <>{props.children}</>;
+  // }
 
   return null;
 }

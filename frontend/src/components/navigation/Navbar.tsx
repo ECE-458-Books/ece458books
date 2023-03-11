@@ -1,8 +1,13 @@
 import { Menubar } from "primereact/menubar";
 import { MenuItem } from "primereact/menuitem";
 import { useNavigate } from "react-router-dom";
+import { AccessType } from "../../pages/auth/LoginPage";
 
-function NavigationBar() {
+interface NavigationBarProps {
+  onLogout: (user: AccessType | undefined) => void;
+}
+
+function NavigationBar(props: NavigationBarProps) {
   const navigate = useNavigate();
 
   const items: MenuItem[] = [
@@ -59,8 +64,8 @@ function NavigationBar() {
           label: "Log Out",
           icon: "pi pi-fw pi-sign-out",
           command: () => {
+            props.onLogout(undefined);
             localStorage.removeItem("accessToken");
-            navigate("/");
           },
         },
       ],

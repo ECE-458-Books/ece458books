@@ -11,17 +11,17 @@ export interface AccessType {
   permissions: string[];
 }
 
-const noRights: AccessType = {
+export const noRights: AccessType = {
   userType: "No Rights",
   permissions: [],
 };
 
-const user: AccessType = {
+export const user: AccessType = {
   userType: "User",
   permissions: [],
 };
 
-const administrator: AccessType = {
+export const administrator: AccessType = {
   userType: "Administrator",
   permissions: [
     "list.elements",
@@ -32,11 +32,10 @@ const administrator: AccessType = {
 };
 
 interface LoginPageProps {
-  onLogin: (user: AccessType) => void;
+  onLogin: (user: AccessType | undefined) => void;
 }
 
 export default function LoginPage(props: LoginPageProps) {
-  const navigate = useNavigate();
   const wrongPasswordRef = createRef<Messages>();
   const [userName, setUserName] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -45,6 +44,8 @@ export default function LoginPage(props: LoginPageProps) {
   const onChange = (event: FormEvent<HTMLInputElement>): void => {
     setPassword(event.currentTarget.value);
   };
+
+  const navigate = useNavigate();
 
   // Hits the token endpoint, and stores the token in local storage. Displays incorrect password text if error returned from endpoint
   const onSubmit = (event: FormEvent<HTMLFormElement>): void => {
@@ -56,9 +57,10 @@ export default function LoginPage(props: LoginPageProps) {
 
     AUTH_API.login(req)
       .then((response) => {
+        props.onLogin(administrator);
+        console.log(administrator);
         localStorage.setItem("accessToken", response.access);
         localStorage.setItem("loginTime", new Date().toString());
-        props.onLogin(administrator);
         navigate("/books");
       })
       .catch(() => {

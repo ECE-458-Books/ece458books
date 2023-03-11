@@ -41,6 +41,10 @@ export interface AddUserReq {
   is_staff: boolean;
 }
 
+export interface UserTypeResp {
+  is_staff: boolean;
+}
+
 export const USER_API = {
   getUserDetail: async function (req: GetUserDetailReq): Promise<APIUser> {
     return await API.request({
@@ -69,6 +73,13 @@ export const USER_API = {
       url: USERS_EXTENSION.concat("/".concat("register")),
       method: METHOD_POST,
       data: req,
+    });
+  },
+
+  getUserType: async function (): Promise<UserTypeResp> {
+    return await API.request({
+      url: USER_EXTENSION,
+      method: METHOD_GET,
     });
   },
 };

@@ -1,19 +1,21 @@
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework import status, filters
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from .paginations import BuybackPagination
-from .models import Buyback, BuybackOrder
-from .serializers import BuybackOrderSerializer
-from django.db.models import Sum, OuterRef, Subquery, Func, Count, F
-from books.models import Book
 import datetime, pytz
 from datetime import datetime
+from django.db.models import Sum, OuterRef, Subquery, Func, Count, F
+
+from rest_framework import status, filters
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+
+from books.models import Book
 from helpers.csv_reader import CSVReader
 from utils.permissions import CustomBasePermission
 
+from .paginations import BuybackPagination
+from .models import Buyback, BuybackOrder
+from .serializers import BuybackOrderSerializer
 
 class ListCreateBuybackAPIView(ListCreateAPIView):
     permission_classes = [CustomBasePermission]
@@ -31,6 +33,9 @@ class ListCreateBuybackAPIView(ListCreateAPIView):
             return super().paginate_queryset(queryset)
 
     def create(self, request, *args, **kwargs):
+        # Add User to BuybackOrder 
+        request.data['user'] = request.user.id
+
         serializer = BuybackOrderSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         saved_buyback_order = serializer.save()

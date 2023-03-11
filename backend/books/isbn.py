@@ -36,7 +36,6 @@ class ISBNTools:
             return {"Invalid ISBN": isbn}
 
         parsed_isbn = self.parse_isbn(isbn)
-    
 
         threads = list()
         metadata = dict()
@@ -49,13 +48,14 @@ class ISBNTools:
         # get book metadata from Google Books API
         book_metadata_thread = threading.Thread(target=self.get_external_book_metadata, kwargs=kwargs, daemon=True)
         threads.append(book_metadata_thread)
+        book_metadata_thread.start()
 
         # get book url from openlibrary
         image_metadata_thread = threading.Thread(target=self.get_external_book_image_url, kwargs=kwargs, daemon=True)
         threads.append(image_metadata_thread)
+        image_metadata_thread.start()
 
         for thread in threads:
-            thread.start()
             thread.join()
         
         return metadata
@@ -66,7 +66,14 @@ class ISBNTools:
         shared_dict,
     ):
         end_url = self._base_url + isbn 
-        resp = urlopen(end_url)
+        try:
+            resp = urlopen(end_url)
+        except:
+            # This is to catch the below error from GoogleBooks
+            # urllib.error.HTTPError: HTTP Error 429: Too Many Requests
+            # urllib will automatically retry the failed request
+            pass
+
         json_resp = json.load(resp)
         data = self.parse_response(json_resp, isbn)
         shared_dict.update(data)

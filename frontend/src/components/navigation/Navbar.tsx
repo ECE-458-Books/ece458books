@@ -2,6 +2,7 @@ import { Menubar } from "primereact/menubar";
 import { MenuItem } from "primereact/menuitem";
 import { useNavigate } from "react-router-dom";
 import { AccessType } from "../../util/UserTypes";
+import { LogoutUser } from "../../util/NavbarFunctions";
 
 interface NavigationBarProps {
   onLogout: (user: AccessType | undefined) => void;
@@ -66,9 +67,7 @@ function NavigationBar(props: NavigationBarProps) {
           label: "Log Out",
           icon: "pi pi-fw pi-sign-out",
           command: () => {
-            props.onLogout(undefined);
-            localStorage.removeItem("accessToken");
-            localStorage.removeItem("userID");
+            LogoutUser(props.onLogout);
           },
         },
       ],

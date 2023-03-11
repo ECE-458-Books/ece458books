@@ -13,6 +13,8 @@ export const user: AccessType = {
   permissions: [],
 };
 
+//list is not used by any component as a restriction.
+//Placed for restricing of list components
 export const administrator: AccessType = {
   userType: "Administrator",
   permissions: ["list", "add", "delete", "modify"],

@@ -36,17 +36,16 @@ export default function VendorAdd() {
 
   const toast = useRef<Toast>(null);
 
+  const checkForSelfEditandAdminEdit = (username: string) => {
+    return id === localStorage.getItem("userID") || username === "admin";
+  };
+
   // Load the user data on page load
   useEffect(() => {
     if (!isUserAddPage) {
       USER_API.getUserDetail({ id: id! })
         .then((response) => {
-          if (
-            id === localStorage.getItem("userID") ||
-            response.username === "admin"
-          ) {
-            setIsModifiable(false);
-          }
+          setIsModifiable(!checkForSelfEditandAdminEdit(response.username));
           setUserName(response.username);
           setIsAdmin(response.is_staff);
         })

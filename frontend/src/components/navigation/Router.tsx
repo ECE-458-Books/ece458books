@@ -23,23 +23,6 @@ import UserList from "../../pages/users/UserList";
 import UserDetail from "../../pages/users/UserDetail";
 import { AccessType } from "../../util/UserTypes";
 
-interface NavbarProps {
-  onLogout: (user: AccessType | undefined) => void;
-  currentUser: AccessType | undefined;
-}
-
-const WithNavBar = (props: NavbarProps) => {
-  return (
-    <>
-      <NavigationBar
-        onLogout={props.onLogout}
-        currentUser={props.currentUser}
-      />
-      <Outlet />
-    </>
-  );
-};
-
 interface RouterProps {
   onLogout: (user: AccessType | undefined) => void;
   currentUser: AccessType | undefined;
@@ -51,10 +34,13 @@ export default function Router(props: RouterProps) {
       {/* No navigation bar on login page */}
       <Route
         element={
-          <WithNavBar
-            onLogout={props.onLogout}
-            currentUser={props.currentUser}
-          />
+          <>
+            <NavigationBar
+              onLogout={props.onLogout}
+              currentUser={props.currentUser}
+            />
+            <Outlet />
+          </>
         }
       >
         <Route path="books" element={<BookList />} />

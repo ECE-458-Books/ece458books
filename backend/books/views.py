@@ -1,7 +1,7 @@
 import re, datetime
 import threading
 
-from django.db.models import OuterRef, Subquery, F, Case, When, Value, Sum, Func, Q, ExpressionWrapper, FloatField
+from django.db.models import OuterRef, Subquery, F, Case, When, Value, Func, ExpressionWrapper, FloatField
 from django.db.models.functions import Coalesce, Cast, Round
 
 from rest_framework import status, filters
@@ -10,6 +10,12 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser
 
+from genres.models import Genre
+from purchase_orders.models import Purchase
+from sales.models import Sale
+from helpers.csv_writer import CSVWriter
+from utils.permissions import CustomBasePermission
+
 from .serializers import BookListAddSerializer, BookSerializer, ISBNSerializer, BookImageSerializer
 from .isbn import ISBNTools
 from .models import Book, Author, BookImage
@@ -17,13 +23,6 @@ from .paginations import BookPagination
 from .search_filters import *
 from .utils import str2bool
 from .book_images import BookImageCreator
-
-from genres.models import Genre
-from purchase_orders.models import Purchase
-from sales.models import Sale
-from helpers.csv_writer import CSVWriter
-from utils.permissions import CustomBasePermission
-
 
 class ISBNSearchView(APIView):
     """
@@ -53,11 +52,14 @@ class ISBNSearchView(APIView):
         }
 
         # Fetch from DB if exist or else get from External DB such as Google Books
+        filtered_query_set = Book.objects.filter(isbn_13__in=parsed_isbn_list, isGhost=False)
+
         threads = list()
         for index, isbn in enumerate(parsed_isbn_list):
             kwargs = {
                 "isbn": isbn,
-                "shared_dict": data_populated_isbns
+                "shared_dict": data_populated_isbns,
+                "query_set": filtered_query_set,
             }
             thread = threading.Thread(target=self.isbn_search_task, kwargs=kwargs, daemon=True)
             threads.append(thread)
@@ -68,29 +70,21 @@ class ISBNSearchView(APIView):
 
         return Response(data_populated_isbns)
     
-    def isbn_search_task(self, isbn, shared_dict):
-        query_set = Book.objects.filter(isbn_13=isbn)
+    def isbn_search_task(self, isbn, shared_dict, query_set):
+        isbn_query_set = [book.isbn_13 for book in query_set]
 
-        # If ISBN exist in DB get from DB
-        if (len(query_set) == 0):
-            # Get book data from external source
-            external_data = self.isbn_toolbox.fetch_isbn_data(isbn)
-            if "Invalid ISBN" in external_data:
-                shared_dict['invalid_isbns'].append(isbn)
-            else:
-                shared_dict['books'].append(external_data)
+        if isbn in isbn_query_set:
+            shared_dict['books'].append(self.parseDBBookModel(query_set[isbn_query_set.index(isbn)]))
         else:
-            if query_set[0].isGhost:
-                external_data = self.isbn_toolbox.fetch_isbn_data(isbn)
-                if "Invalid ISBN" in external_data:
-                    shared_dict['invalid_isbns'].append(isbn)
-                else:
-                    shared_dict['books'].append(external_data)
-            else:
-                # get book data from DB
-                shared_dict['books'].append(self.parseDBBookModel(query_set[0]))
-
+            self.populate_shared_dict_with_isbn_data(isbn, shared_dict)
     
+    def populate_shared_dict_with_isbn_data(self, isbn, shared_dict):
+        external_data = self.isbn_toolbox.fetch_isbn_data(isbn)
+        if "Invalid ISBN" in external_data:
+            shared_dict['invalid_isbns'].append(isbn)
+        else:
+            shared_dict['books'].append(external_data)
+
     def parseDBBookModel(self, book):
         # Returns a parsed Book json from Book Model
         ret = dict()

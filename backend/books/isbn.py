@@ -126,7 +126,8 @@ class ISBNTools:
                         ret[dimension] = self.centiToInches(info['dimensions'][dimension])
                 elif (key == 'industryIdentifiers'):
                     # convert to isbn
-                    ret['isbn_10'] = info[key][0]['identifier']
+                    isbn_10 = canonical(info[key][0]['identifier'])
+                    ret['isbn_10'] = isbn_10 if is_isbn10(isbn_10) else to_isbn10(isbn)
                     ret['isbn_13'] = isbn
                 elif (key == 'publishedDate'):
                     ret[key] = parser.parse(info[key]).year

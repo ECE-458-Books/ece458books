@@ -14,15 +14,7 @@ class ListCreateBookcaseAPIView(ListCreateAPIView):
     pagination_class = BookcasePagination
 
     def create(self, request, *args, **kwargs):
-        # Create DisplayBooks
-                
 
-
-        # Create the necessary Shelf
-
-        # create the bookcase
-
-        #breakpoint()
         serializer = BookcaseSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         saved_bookcase = serializer.save()
@@ -30,3 +22,7 @@ class ListCreateBookcaseAPIView(ListCreateAPIView):
         response_data = serializer.data
         response_data['id'] = saved_bookcase.id
         return Response(response_data, status=status.HTTP_201_CREATED)
+    
+    # Need to add 
+    def create_preprocess(self, request):
+        pass

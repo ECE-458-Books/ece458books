@@ -20,29 +20,20 @@ class DisplayedBookSerializer(serializers.ModelSerializer):
         fields = ['book',
                    'display_mode', 'display_count']
         read_only_fields = ['id']
-        write_only_fields = ['shelf', 'ordering']
-
-    
 
 class ShelfSerializer(serializers.ModelSerializer):
     books = DisplayedBookSerializer(many=True)
+    ordering = serializers.IntegerField(required=False)
+    bookcase = serializers.PrimaryKeyRelatedField(queryset=Bookcase.objects.all(), required=False)
 
     class Meta:
         model = Shelf
-        fields = ["books", 'ordering']
-        read_only_fields = ['id']
-
+        fields = ['books', "ordering", "bookcase"]
+        
+    
     def create(self, data):
-        print("--------------------shelfserializer------------------")
-        print(data)
         books = data.pop('books')
-        #print(books)
-        #print(data)
         shelf = Shelf.objects.create(**data)
-        for idx, book in enumerate(books):
-            book["ordering"] = idx
-            book["shelf"] = shelf
-            DisplayedBook.objects.create(**book)
         return shelf
 
 class BookcaseSerializer(serializers.ModelSerializer):
@@ -62,15 +53,30 @@ class BookcaseSerializer(serializers.ModelSerializer):
     def create(self, data):
         shelves = data.pop('shelves')
         bookcase = Bookcase.objects.create(**data)
+        self.create_shelves(shelves, bookcase)
+        return bookcase
+    
+    def preprocess_shelves(self, shelves, bookcase):
         for idx, shelf in enumerate(shelves):
             shelf["ordering"] = idx
-            shelf["bookcase"] = bookcase
+            shelf["bookcase"] = bookcase.id
             for book in shelf["books"]:
                 book["book"] = book["book"].id
-            print(shelf)
-            breakpoint()
-            serializer = ShelfSerializer(data=shelf)
-            serializer.is_valid(raise_exception=True)
-            saved_shelf = serializer.save()
-            #shelves.create(**{"bookcase":bookcase}, **{"ordering":idx}, **shelf)
-        return bookcase
+        return shelves
+
+    def create_shelves(self, shelves, bookcase):
+        breakpoint()
+        shelves = self.preprocess_shelves(shelves, bookcase)
+        serializer = ShelfSerializer(data=shelves, many=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        #for idx, shelf in enumerate(shelves):
+        #    books = shelf.pop("books")
+        #    shelf = Shelf.objects.create(**shelf)
+        #    self.create_display_books(books, shelf)
+        
+    def create_display_books(self, books, shelf):
+        for idx, book in enumerate(books):
+            book["ordering"] = idx
+            book["shelf"] = shelf
+            DisplayedBook.objects.create(**book)

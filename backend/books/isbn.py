@@ -4,6 +4,8 @@ from isbnlib import *
 from dateutil import parser
 import PIL.Image as Image
 
+import threading
+
 class ISBNTools:
     def __init__(
         self,
@@ -34,19 +36,55 @@ class ISBNTools:
             return {"Invalid ISBN": isbn}
 
         parsed_isbn = self.parse_isbn(isbn)
+    
+
+        threads = list()
+        metadata = dict()
+
+        kwargs = {
+            "isbn": parsed_isbn,
+            "shared_dict": metadata
+        }
 
         # get book metadata from Google Books API
-        end_url = self._base_url + parsed_isbn 
-        resp = urlopen(end_url)
-        json_resp = json.load(resp)
-        metadata = self.parse_response(json_resp, parsed_isbn)
+        book_metadata_thread = threading.Thread(target=self.get_external_book_metadata, kwargs=kwargs, daemon=True)
+        threads.append(book_metadata_thread)
 
         # get book url from openlibrary
-        external_image_url = self.get_external_book_image_url(parsed_isbn)
-        
-        metadata['image_url'] = external_image_url
+        image_metadata_thread = threading.Thread(target=self.get_external_book_image_url, kwargs=kwargs, daemon=True)
+        threads.append(image_metadata_thread)
 
+        for thread in threads:
+            thread.start()
+            thread.join()
+        
         return metadata
+    
+    def get_external_book_metadata(
+        self,
+        isbn,
+        shared_dict,
+    ):
+        end_url = self._base_url + isbn 
+        resp = urlopen(end_url)
+        json_resp = json.load(resp)
+        data = self.parse_response(json_resp, isbn)
+        shared_dict.update(data)
+
+    def get_external_book_image_url(
+        self, 
+        isbn,
+        shared_dict,
+    ):
+        end_url = self._image_base_url + f'/{isbn}-L.jpg?default=false'
+        image_dict = dict()
+
+        if self.get_image_raw_bytes(end_url) is None:
+            image_dict['image_url'] = self.get_default_image_url()
+        else:
+            image_dict['image_url'] = end_url
+        
+        shared_dict.update(image_dict)
     
     def parse_isbn(
         self,
@@ -134,13 +172,6 @@ class ISBNTools:
         """
         return [self.parse_isbn(raw_isbn) if self.is_valid_isbn(raw_isbn) else raw_isbn for raw_isbn in isbn_list]
     
-    def get_external_book_image_url(self, isbn_13):
-        end_url = self._image_base_url + f'/{isbn_13}-L.jpg?default=false'
-
-        if self.get_image_raw_bytes(end_url) is None:
-            return self.get_default_image_url()
-
-        return end_url
     
     def get_image_raw_bytes(self, end_url):
         """Return raw bytes of book image

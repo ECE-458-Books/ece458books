@@ -6,7 +6,6 @@ from .models import Bookcase, DisplayedBook
 from .paginations import BookcasePagination
 from .serializers import BookcaseSerializer
 
-# Create your views here.
 class ListCreateBookcaseAPIView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = BookcaseSerializer

@@ -6,8 +6,8 @@ from .models import Bookcase, Shelf, DisplayedBook
 
 class DisplayedBookSerializer(serializers.ModelSerializer):
     book = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all())
-    #book_isbn: serializers.SerializerMethodField()
-    #book_title: serializers.SerializerMethodField()
+    book_isbn: serializers.SerializerMethodField()
+    book_title: serializers.SerializerMethodField()
     display_order = serializers.IntegerField(required=False, write_only=True)
     shelf = serializers.PrimaryKeyRelatedField(queryset=Shelf.objects.all(), required=False, write_only=True)
 
@@ -20,7 +20,7 @@ class DisplayedBookSerializer(serializers.ModelSerializer):
     class Meta:
         model = DisplayedBook
         fields = ['book', 'display_mode', 'display_count', 'display_order', 'shelf']
-        read_only_fields = ['id']
+        read_only_fields = ['id', 'book_isbn', 'book_title']
 
 class ShelfSerializer(serializers.ModelSerializer):
     displayed_books = DisplayedBookSerializer(many=True)
@@ -30,6 +30,7 @@ class ShelfSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shelf
         fields = ['displayed_books', 'shelf_order', 'bookcase']
+        read_only_fields = ['id']
     
     def create(self, data):
         books = data.pop('displayed_books')
@@ -49,8 +50,6 @@ class ShelfSerializer(serializers.ModelSerializer):
             book['shelf'] = shelf.id
             book['display_order'] = idx
 
-    
-
 class BookcaseSerializer(serializers.ModelSerializer):
     shelves = ShelfSerializer(many=True)
 
@@ -69,7 +68,7 @@ class BookcaseSerializer(serializers.ModelSerializer):
         self.preprocess_shelves(shelves, bookcase)
         serializer = ShelfSerializer(data=shelves, many=True)
         serializer.is_valid(raise_exception=True)
-        saved_shelves = serializer.save()
+        serializer.save()
     
     def preprocess_shelves(self, shelves, bookcase):
         for idx, shelf in enumerate(shelves):

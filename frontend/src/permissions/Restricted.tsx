@@ -1,5 +1,5 @@
-import React from "react";
-import usePermission from "./PermissionUse";
+import React, { useContext } from "react";
+import PermissionContext from "./PermissionContext";
 
 // Permissions Consumer - Surround any component with this to restrict access,
 // if access is not provided, null will be returned
@@ -10,13 +10,11 @@ interface ConsumerProps {
 }
 
 export default function Restricted(props: ConsumerProps) {
-  // We "connect" to the provider thanks to the PermissionContext
-  //const allowed = usePermission(props.to);
+  const { isAllowedTo } = useContext(PermissionContext);
 
-  // If the user has that permission, render the children
-  // if (allowed) {
-  //   return <>{props.children}</>;
-  // }
+  if (isAllowedTo(props.to)) {
+    return <>{props.children}</>;
+  }
 
   return null;
 }

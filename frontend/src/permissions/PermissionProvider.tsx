@@ -11,8 +11,7 @@ type ProviderProps = {
 
 export default function PermissionProvider(props: ProviderProps) {
   const isAllowedTo = (permission: string): boolean => {
-    return localStorage.getItem("adminAccess") === "true";
-    //return props.permissions.includes(permission);
+    return props.permissions.includes(permission);
   };
 
   return (

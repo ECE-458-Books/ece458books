@@ -45,6 +45,7 @@ import LineItemTableTemplate, {
   emptyLineItem,
   LineItem,
 } from "../../templates/inventorydetail/LineItemTableTemplate";
+import Restricted from "../../permissions/Restricted";
 
 export default function PODetail() {
   // -------- STATE --------
@@ -407,12 +408,14 @@ export default function PODetail() {
         </div>
         <div className="col-11">
           <form onSubmit={onSubmit}>
-            <Toolbar
-              className="mb-4"
-              left={leftToolbar}
-              center={editCancelButton}
-              right={rightToolbar}
-            />
+            <Restricted to={"modify"}>
+              <Toolbar
+                className="mb-4"
+                left={leftToolbar}
+                center={editCancelButton}
+                right={rightToolbar}
+              />
+            </Restricted>
 
             <div className="flex col-12 justify-content-evenly mb-3">
               {totalDollars}

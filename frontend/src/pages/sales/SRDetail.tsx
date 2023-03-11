@@ -44,6 +44,7 @@ import LineItemTableTemplate, {
   emptyLineItem,
   LineItem,
 } from "../../templates/inventorydetail/LineItemTableTemplate";
+import Restricted from "../../permissions/Restricted";
 
 export default function SRDetail() {
   // From URL
@@ -398,12 +399,14 @@ export default function SRDetail() {
         </div>
         <div className="col-11">
           <form id="localForm">
-            <Toolbar
-              className="mb-4"
-              left={leftToolbar}
-              center={editCancelButton}
-              right={rightToolbar}
-            />
+            <Restricted to={"modify"}>
+              <Toolbar
+                className="mb-4"
+                left={leftToolbar}
+                center={editCancelButton}
+                right={rightToolbar}
+              />
+            </Restricted>
 
             <div className="flex pb-2 flex-row justify-content-evenly card-container col-12">
               {totalDollars}

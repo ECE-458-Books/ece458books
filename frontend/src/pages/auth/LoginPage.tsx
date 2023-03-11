@@ -1,35 +1,11 @@
-import { createRef, FormEvent, SetStateAction, useState } from "react";
+import { createRef, FormEvent, useState } from "react";
 import { Button } from "primereact/button";
 import { Messages } from "primereact/messages";
 import { useNavigate } from "react-router-dom";
 import { AUTH_API, LoginReq } from "../../apis/auth/AuthAPI";
 import { Password } from "primereact/password";
 import { InputText } from "primereact/inputtext";
-
-export interface AccessType {
-  userType: string;
-  permissions: string[];
-}
-
-export const noRights: AccessType = {
-  userType: "No Rights",
-  permissions: [],
-};
-
-export const user: AccessType = {
-  userType: "User",
-  permissions: [],
-};
-
-export const administrator: AccessType = {
-  userType: "Administrator",
-  permissions: [
-    "list.elements",
-    "add.element",
-    "delete.element",
-    "modify.element",
-  ],
-};
+import { AccessType, administrator, user } from "../../util/UserTypes";
 
 interface LoginPageProps {
   onLogin: (user: AccessType | undefined) => void;
@@ -57,10 +33,14 @@ export default function LoginPage(props: LoginPageProps) {
 
     AUTH_API.login(req)
       .then((response) => {
-        props.onLogin(administrator);
-        console.log(administrator);
+        if (response.is_staff) {
+          props.onLogin(administrator);
+        } else {
+          props.onLogin(user);
+        }
         localStorage.setItem("accessToken", response.access);
         localStorage.setItem("loginTime", new Date().toString());
+        localStorage.setItem("userID", response.id.toString());
         navigate("/books");
       })
       .catch(() => {
@@ -109,7 +89,7 @@ export default function LoginPage(props: LoginPageProps) {
               className="text-xl p-component text-teal-900 p-text-secondary"
               htmlFor="genre"
             >
-              User Name:
+              Username:
             </label>
           </div>
           <div className="col-7">

@@ -20,7 +20,6 @@ import AddRowButton from "../../components/buttons/AddRowButton";
 import { DataTable } from "primereact/datatable";
 import { Toolbar } from "primereact/toolbar";
 import { Column } from "primereact/column";
-import { useNavigate } from "react-router-dom";
 import BackButton from "../../components/buttons/BackButton";
 
 const DEFAULT_WIDTH = 5;
@@ -253,12 +252,9 @@ export default function ShelfCalculator() {
 
   const columns = createColumns(COLUMNS);
 
-  // The navigator to switch pages
-  const navigate = useNavigate();
-
   const backButton = (
     <div className="flex col-1">
-      <BackButton onClick={() => navigate("/books")} className="ml-1" />
+      <BackButton className="ml-1" />
     </div>
   );
 

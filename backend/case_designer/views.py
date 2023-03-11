@@ -2,7 +2,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Bookcase
+from .models import Bookcase, DisplayedBook
 from .paginations import BookcasePagination
 from .serializers import BookcaseSerializer
 
@@ -14,6 +14,15 @@ class ListCreateBookcaseAPIView(ListCreateAPIView):
     pagination_class = BookcasePagination
 
     def create(self, request, *args, **kwargs):
+        # Create DisplayBooks
+                
+
+
+        # Create the necessary Shelf
+
+        # create the bookcase
+
+        #breakpoint()
         serializer = BookcaseSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         saved_bookcase = serializer.save()

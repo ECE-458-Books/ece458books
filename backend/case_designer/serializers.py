@@ -20,20 +20,29 @@ class DisplayedBookSerializer(serializers.ModelSerializer):
         fields = ['book',
                    'display_mode', 'display_count']
         read_only_fields = ['id']
+        write_only_fields = ['shelf', 'ordering']
+
+    
 
 class ShelfSerializer(serializers.ModelSerializer):
     books = DisplayedBookSerializer(many=True)
 
     class Meta:
         model = Shelf
-        fields = ["books"]
+        fields = ["books", 'ordering']
         read_only_fields = ['id']
 
     def create(self, data):
+        print("--------------------shelfserializer------------------")
+        print(data)
         books = data.pop('books')
+        #print(books)
+        #print(data)
         shelf = Shelf.objects.create(**data)
         for idx, book in enumerate(books):
-            DisplayedBook.objects.create(shelf=shelf, ordering=idx, **book)
+            book["ordering"] = idx
+            book["shelf"] = shelf
+            DisplayedBook.objects.create(**book)
         return shelf
 
 class BookcaseSerializer(serializers.ModelSerializer):
@@ -54,6 +63,12 @@ class BookcaseSerializer(serializers.ModelSerializer):
         shelves = data.pop('shelves')
         bookcase = Bookcase.objects.create(**data)
         for idx, shelf in enumerate(shelves):
+            shelf["ordering"] = idx
+            shelf["bookcase"] = bookcase
+            for book in shelf["books"]:
+                book["book"] = book["book"].id
+            print(shelf)
+            breakpoint()
             serializer = ShelfSerializer(data=shelf)
             serializer.is_valid(raise_exception=True)
             saved_shelf = serializer.save()

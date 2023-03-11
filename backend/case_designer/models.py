@@ -20,8 +20,8 @@ class Shelf(models.Model):
     ordering=models.PositiveIntegerField()
 
 class DisplayedBook(models.Model):
-    book=models.ForeignKey(Book, related_name="displayed_books", on_delete=models.CASCADE)
     shelf=models.ForeignKey(Shelf, on_delete=models.CASCADE)
+    book=models.ForeignKey(Book, related_name="displayed_books", on_delete=models.CASCADE)
     display_mode=models.CharField(max_length=50, choices=DISPLAY_MODE_CHOICES)
     display_count=models.PositiveIntegerField()
     ordering=models.PositiveIntegerField()

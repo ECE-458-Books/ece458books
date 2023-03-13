@@ -25,4 +25,5 @@ urlpatterns = [
     path(f'{API_PREFIX}purchase_orders', include('purchase_orders.urls')),
     path(f'{API_PREFIX}auth', include('authapp.urls', namespace='authentication')),
     path(f'{API_PREFIX}buybacks', include('buybacks.urls')),
+    path(f'{API_PREFIX}case_designer', include('case_designer.urls')),
 ]

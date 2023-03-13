@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'purchase_orders',
     'sales',
     'buybacks',
+    'case_designer',
 
     # Authentication App
     'authapp',

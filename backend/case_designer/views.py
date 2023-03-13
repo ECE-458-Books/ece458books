@@ -1,7 +1,7 @@
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, filters
 from .models import Bookcase, DisplayedBook
 from .paginations import BookcasePagination
 from .serializers import BookcaseSerializer
@@ -11,6 +11,15 @@ class ListCreateBookcaseAPIView(ListCreateAPIView):
     serializer_class = BookcaseSerializer
     queryset = Bookcase.objects.all()
     pagination_class = BookcasePagination
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = '__all__'
+    ordering = ['last_edit_date']
+
+    def paginate_queryset(self, queryset):
+        if 'no_pagination' in self.request.query_params:
+            return None
+        else:
+            return super().paginate_queryset(queryset)
 
     def create(self, request, *args, **kwargs):
         request.data["creator"] = request.user.id

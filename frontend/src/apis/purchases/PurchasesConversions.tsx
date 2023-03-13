@@ -1,5 +1,4 @@
 import { v4 as uuid } from "uuid";
-import { POPurchaseRow } from "../../pages/purchases/PODetail";
 import { PurchaseOrder } from "../../pages/purchases/POList";
 import { externalToInternalDate } from "../../util/DateOps";
 import {
@@ -8,6 +7,7 @@ import {
   APIPurchaseCSVImportRow,
 } from "./PurchasesAPI";
 import { formatBookForDropdown } from "../../components/dropdowns/BookDropdown";
+import { LineItem } from "../../templates/inventorydetail/LineItemTableTemplate";
 
 // Purchase Orders
 // Internal data type -> ordering required for PO get API
@@ -23,7 +23,7 @@ export const APIPOSortFieldMap = new Map<string, string>([
 
 export function APIToInternalPOPurchaseConversion(
   purchase: APIPOPurchaseRow
-): POPurchaseRow {
+): LineItem {
   return {
     isNewRow: false,
     // (id is always defined from API)
@@ -38,7 +38,7 @@ export function APIToInternalPOPurchaseConversion(
 }
 
 export function APIToInternalPOConversion(po: APIPO): PurchaseOrder {
-  const purchases: POPurchaseRow[] = po.purchases.map((purchase) =>
+  const purchases: LineItem[] = po.purchases.map((purchase) =>
     APIToInternalPOPurchaseConversion(purchase)
   );
 
@@ -57,7 +57,7 @@ export function APIToInternalPOConversion(po: APIPO): PurchaseOrder {
 
 export function APIToInternalPurchasesCSVConversion(
   purchases: APIPurchaseCSVImportRow[]
-): POPurchaseRow[] {
+): LineItem[] {
   return purchases.map((purchase) => {
     return {
       isNewRow: true,
@@ -69,6 +69,6 @@ export function APIToInternalPurchasesCSVConversion(
       quantity: purchase.quantity,
       price: purchase.unit_wholesale_price,
       errors: purchase.errors,
-    } as POPurchaseRow;
+    } as LineItem;
   });
 }

@@ -13,12 +13,13 @@ from books.models import Book
 
 from purchase_orders.models import PurchaseOrder, Purchase
 from utils.general import str2bool
+from utils.permissions import CustomBasePermission
 
 
 class ListCreateVendorAPIView(ListCreateAPIView):
     serializer_class = VendorSerializer
     queryset = Vendor.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CustomBasePermission]
     pagination_class = VendorPagination
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
     filterset_fields = ['buyback_rate']
@@ -51,7 +52,7 @@ class ListCreateVendorAPIView(ListCreateAPIView):
 class RetrieveUpdateDestroyVendorAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = VendorSerializer
     queryset = Vendor.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CustomBasePermission]
     lookup_url_kwarg = 'id'
 
     def retrieve(self, request, *args, **kwargs):

@@ -1,4 +1,3 @@
-from rest_framework import pagination
 from utils.paginations import HTTPSNoPortPagination
 
 class BookPagination(HTTPSNoPortPagination):

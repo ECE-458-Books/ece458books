@@ -37,7 +37,7 @@ DEBUG = env('DEBUG').lower() == 'true'
 # The reason why we don't let ALLOWED_HOSTS as a wildcard asterisk
 # https://www.djangoproject.com/weblog/2013/feb/19/security/#s-issue-host-header-poisoning
 ALLOWED_HOSTS = [
-    'localhost', '127.0.0.1', 'books.colab.duke.edu', 'books-dev.colab.duke.edu', 'books-front.colab.duke.edu', 'books-test.colab.duke.edu'
+    'localhost', '127.0.0.1', 'books-front.colab.duke.edu'
 ]
 # ALLOWED_HOSTS = ['*']
 
@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
 
     # Django Extensions (shell_plus)
     'django_extensions',
@@ -185,4 +186,7 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    "UPDATE_LAST_LOGIN": True,
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
 }

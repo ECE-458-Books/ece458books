@@ -11,6 +11,7 @@ import ConfirmButton from "../../components/popups/ConfirmPopup";
 import BackButton from "../../components/buttons/BackButton";
 import DeleteButton from "../../components/buttons/DeleteButton";
 import DeletePopup from "../../components/popups/DeletePopup";
+import Restricted from "../../permissions/Restricted";
 
 export default function VendorDetail() {
   // From URL
@@ -104,7 +105,7 @@ export default function VendorDetail() {
 
   const backButton = (
     <div className="flex col-1">
-      <BackButton onClick={() => navigate("/vendors")} className="ml-1" />
+      <BackButton className="ml-1" />
     </div>
   );
 
@@ -186,14 +187,16 @@ export default function VendorDetail() {
                   }}
                 />
               )}
-              {!isModifiable && (
-                <Button
-                  type="button"
-                  label="Edit"
-                  icon="pi pi-pencil"
-                  onClick={() => setIsModifiable(!isModifiable)}
-                />
-              )}
+              <Restricted to={"modify"}>
+                {!isModifiable && (
+                  <Button
+                    type="button"
+                    label="Edit"
+                    icon="pi pi-pencil"
+                    onClick={() => setIsModifiable(!isModifiable)}
+                  />
+                )}
+              </Restricted>
               {isModifiable && (
                 <ConfirmButton
                   isPopupVisible={isConfirmationPopupVisible}

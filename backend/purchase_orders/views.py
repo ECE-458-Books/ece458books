@@ -1,23 +1,23 @@
-from rest_framework.permissions import IsAuthenticated
+import datetime, pytz
 
-from helpers.csv_reader import CSVReader
-from .serializers import PurchaseOrderSerializer
-from rest_framework.response import Response
+from django.db.models import OuterRef, Subquery, Func, Count, F, Sum
+
 from rest_framework import status, filters
-from .models import Purchase, PurchaseOrder
+from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from .paginations import PurchaseOrderPagination
-from django.db.models import OuterRef, Subquery, Func, Count, F, Sum
-import datetime, pytz
-from books.models import Book
-from helpers.csv_format_checker import CSVFormatChecker
 from rest_framework.request import Request
-from helpers.csv_exceptions import ExtraHeadersException, MissingHeadersException
 
+from books.models import Book
+from utils.permissions import CustomBasePermission
+from helpers.csv_reader import CSVReader
+
+from .models import Purchase, PurchaseOrder
+from .paginations import PurchaseOrderPagination
+from .serializers import PurchaseOrderSerializer
 
 class ListCreatePurchaseOrderAPIView(ListCreateAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CustomBasePermission]
     serializer_class = PurchaseOrderSerializer
     queryset = PurchaseOrder.objects.all()
     pagination_class = PurchaseOrderPagination
@@ -32,12 +32,14 @@ class ListCreatePurchaseOrderAPIView(ListCreateAPIView):
             return super().paginate_queryset(queryset)
 
     def create(self, request, *args, **kwargs):
+        # Add User to PurchaseOrder
+        request.data['user'] = request.user.id
+
         serializer = PurchaseOrderSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        response_data = serializer.data
-        return Response(response_data, status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get_queryset(self):
         default_query_set = PurchaseOrder.objects.all()
@@ -121,7 +123,7 @@ class ListCreatePurchaseOrderAPIView(ListCreateAPIView):
 
 
 class RetrieveUpdateDestroyPurchaseOrderAPIView(RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CustomBasePermission]
     serializer_class = PurchaseOrderSerializer
     lookup_field = 'id'
     pagination_class = PurchaseOrderPagination
@@ -180,7 +182,7 @@ class RetrieveUpdateDestroyPurchaseOrderAPIView(RetrieveUpdateDestroyAPIView):
 
 
 class CSVPurchasesAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CustomBasePermission]
 
     def post(self, request: Request):
         csv_reader = CSVReader("purchases")

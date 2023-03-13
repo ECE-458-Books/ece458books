@@ -1,30 +1,28 @@
 import re, datetime
+import threading
 
-from django.conf import settings
-from django.db import models
-from django.db.models import OuterRef, Subquery, F, Case, When, Value, Sum, Func, Q, ExpressionWrapper, FloatField
+from django.db.models import OuterRef, Subquery, F, Case, When, Value, Func, ExpressionWrapper, FloatField
 from django.db.models.functions import Coalesce, Cast, Round
 
 from rest_framework import status, filters
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAdminUser
+
+from genres.models import Genre
+from purchase_orders.models import Purchase
+from sales.models import Sale
+from helpers.csv_writer import CSVWriter
+from utils.permissions import CustomBasePermission
 
 from .serializers import BookListAddSerializer, BookSerializer, ISBNSerializer, BookImageSerializer
 from .isbn import ISBNTools
 from .models import Book, Author, BookImage
 from .paginations import BookPagination
 from .search_filters import *
-from .scpconnect import SCPTools
-from .utils import delete_all_files_in_folder_location, str2bool
-
-from genres.models import Genre
-from purchase_orders.models import Purchase
-from sales.models import Sale
-from buybacks.models import Buyback
-from helpers.csv_writer import CSVWriter
-
+from .utils import str2bool
+from .book_images import BookImageCreator
 
 class ISBNSearchView(APIView):
     """
@@ -32,15 +30,15 @@ class ISBNSearchView(APIView):
 
     * Input data is a string of ISBNs separated by spaces and/or commas
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
     isbn_toolbox = ISBNTools()
 
     def post(self, request):
         serializer = ISBNSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        # Split ISBN with spaces and/or commas
-        raw_isbn_list = re.split("\s?[, ]\s?", serializer.data['isbns'].strip())
+        # Split ISBN with newlines, tabs, spaces and/or commas
+        raw_isbn_list = re.split("\s?[, \t\n]\s?", serializer.data['isbns'].strip())
 
         # Delete all empty strings
         raw_isbn_list = [raw_isbn for raw_isbn in raw_isbn_list if raw_isbn != '']
@@ -54,30 +52,39 @@ class ISBNSearchView(APIView):
         }
 
         # Fetch from DB if exist or else get from External DB such as Google Books
-        for isbn in parsed_isbn_list:
-            query_set = Book.objects.filter(isbn_13=isbn)
+        filtered_query_set = Book.objects.filter(isbn_13__in=parsed_isbn_list, isGhost=False)
 
-            # If ISBN exist in DB get from DB
-            if (len(query_set) == 0):
-                # Get book data from external source
-                external_data = self.isbn_toolbox.fetch_isbn_data(isbn)
-                if "Invalid ISBN" in external_data:
-                    data_populated_isbns['invalid_isbns'].append(isbn)
-                else:
-                    data_populated_isbns['books'].append(external_data)
-            else:
-                if query_set[0].isGhost:
-                    external_data = self.isbn_toolbox.fetch_isbn_data(isbn)
-                    if "Invalid ISBN" in external_data:
-                        data_populated_isbns['invalid_isbns'].append(isbn)
-                    else:
-                        data_populated_isbns['books'].append(external_data)
-                else:
-                    # get book data from DB
-                    data_populated_isbns['books'].append(self.parseDBBookModel(query_set[0]))
+        threads = list()
+        for index, isbn in enumerate(parsed_isbn_list):
+            kwargs = {
+                "isbn": isbn,
+                "shared_dict": data_populated_isbns,
+                "query_set": filtered_query_set,
+            }
+            thread = threading.Thread(target=self.isbn_search_task, kwargs=kwargs, daemon=True)
+            threads.append(thread)
+            thread.start()
+        
+        for index, thread in enumerate(threads):
+            thread.join()
 
         return Response(data_populated_isbns)
     
+    def isbn_search_task(self, isbn, shared_dict, query_set):
+        isbn_query_set = [book.isbn_13 for book in query_set]
+
+        if isbn in isbn_query_set:
+            shared_dict['books'].append(self.parseDBBookModel(query_set[isbn_query_set.index(isbn)]))
+        else:
+            self.populate_shared_dict_with_isbn_data(isbn, shared_dict)
+    
+    def populate_shared_dict_with_isbn_data(self, isbn, shared_dict):
+        external_data = self.isbn_toolbox.fetch_isbn_data(isbn)
+        if "Invalid ISBN" in external_data:
+            shared_dict['invalid_isbns'].append(isbn)
+        else:
+            shared_dict['books'].append(external_data)
+
     def parseDBBookModel(self, book):
         # Returns a parsed Book json from Book Model
         ret = dict()
@@ -110,21 +117,15 @@ class ISBNSearchView(APIView):
         return ret
 
 
-class ListCreateBookAPIView(ListCreateAPIView):
+class ListCreateBookAPIView(ListCreateAPIView, BookImageCreator):
     serializer_class = BookListAddSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CustomBasePermission]
     pagination_class = BookPagination
     filter_backends = [filters.OrderingFilter, CustomSearchFilter]
     ordering_fields = '__all__'
     ordering = ['id']
     search_fields = ['authors__name', 'title', '=publisher', '=isbn_10', '=isbn_13']
     isbn_toolbox = ISBNTools()
-
-    def paginate_queryset(self, queryset):
-        if 'no_pagination' in self.request.query_params:
-            return None
-        else:
-            return super().paginate_queryset(queryset)
 
     def preprocess_multipart_form_data(self, request):
         data = request.data.dict()
@@ -190,44 +191,18 @@ class ListCreateBookAPIView(ListCreateAPIView):
 
         return data
     
-    def has_image_bytes(self, request):
-        return request.FILES.get('image_bytes', None) is not None
-
-    def has_image_url(self, request):
-        return request.data.get('image_url', None) is not None
-
-    def bookimage_get_and_create(self, request, isbn_13, setDefaultImage):
-        book = Book.objects.filter(isbn_13=isbn_13)
-
-        # This creates an image in static and sends a file
-        if setDefaultImage:
-            url = self.isbn_toolbox.get_default_image_url()
-        elif self.has_image_bytes(request):
-            url = self.isbn_toolbox.commit_image_raw_bytes(request, book[0].id, isbn_13)
-        elif self.has_image_url(request):
-            url = self.isbn_toolbox.commit_image_url(request, book[0].id, isbn_13)
-        else:
-            url = self.isbn_toolbox.get_default_image_url()
-
-
-        obj, created = BookImage.objects.get_or_create(
-            book_id=book[0].id,
-            defaults={'image_url': url},
-        )
-
-        # We need to patch the url if it is a get
-        if not created:
-            obj.image_url = url
-            obj.save()
-
-        return url
-
     def getOrCreateModel(self, item_list, model):
         if isinstance(item_list, str):
             item_list = item_list.split(',')
 
         for item in item_list:
             obj, created = model.objects.get_or_create(name=item.strip(),)
+
+    def paginate_queryset(self, queryset):
+        if 'no_pagination' in self.request.query_params:
+            return None
+        else:
+            return super().paginate_queryset(queryset)
 
     def get_queryset(self):
         default_query_set = Book.objects.filter(isGhost=False)
@@ -320,10 +295,10 @@ class ListCreateBookAPIView(ListCreateAPIView):
         return query_set.annotate(shelf_space=F('null_defaulted_thickness') * F('stock'))
 
 
-class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
+class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView, BookImageCreator):
     serializer_class = BookSerializer
     queryset = Book.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CustomBasePermission]
     lookup_url_kwarg = 'id'
     isbn_toolbox = ISBNTools()
 
@@ -380,37 +355,6 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
 
         return data
 
-    def has_image_bytes(self, request):
-        return request.FILES.get('image_bytes', None) is not None
-
-    def has_image_url(self, request):
-        return request.data.get('image_url', None) is not None
-
-    def bookimage_get_and_create(self, request, isbn_13, setDefaultImage):
-        book = Book.objects.filter(isbn_13=isbn_13)
-
-        # This creates an image in static and sends a file
-        if setDefaultImage:
-            url = self.isbn_toolbox.get_default_image_url()
-        elif self.has_image_bytes(request):
-            url = self.isbn_toolbox.commit_image_raw_bytes(request, book[0].id, isbn_13)
-        elif self.has_image_url(request):
-            url = self.isbn_toolbox.commit_image_url(request, book[0].id, isbn_13)
-        else:
-            url = self.isbn_toolbox.get_default_image_url()
-
-        obj, created = BookImage.objects.get_or_create(
-            book_id=book[0].id,
-            defaults={'image_url': url},
-        )
-
-        # We need to patch the url if it is a get
-        if not created:
-            obj.image_url = url
-            obj.save()
-
-        return url
-
     def destroy(self, request, *args, **kwargs):
 
         # Check if the request url is valid
@@ -438,13 +382,13 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView):
 class RetrieveExternalBookImageAPIView(RetrieveAPIView):
     serializer_class = BookImageSerializer
     queryset = BookImage.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CustomBasePermission]
     lookup_field = 'book_id'  # looks up using the book_id field
     lookup_url_kwarg = 'book_id'
 
 
 class CSVExportBookAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CustomBasePermission]
 
     def get(self, request, *args, **kwargs):
         csv_writer = CSVWriter("books")

@@ -18,11 +18,12 @@ class BuybackOrderSerializer(TransactionGroupBaseSerializer):
     buybacks = BuybackSerializer(many=True)
     total_revenue = serializers.SerializerMethodField()
     vendor_name = serializers.SerializerMethodField()
+    username = serializers.SerializerMethodField()
     is_deletable = serializers.SerializerMethodField()
 
     class Meta:
         model = BuybackOrder
-        fields = ['id', 'date', 'buybacks', 'vendor', 'vendor_name', 'num_books', 'num_unique_books', 'total_revenue', 'is_deletable']
+        fields = ['id', 'date', 'buybacks', 'user', 'username', 'vendor', 'vendor_name', 'num_books', 'num_unique_books', 'total_revenue', 'is_deletable']
         read_only_fields = ['id']
 
     def get_is_deletable(self, instance):
@@ -61,6 +62,9 @@ class BuybackOrderSerializer(TransactionGroupBaseSerializer):
 
     def get_vendor_name(self, instance):
         return instance.vendor.name
+
+    def get_username(self, instance):
+        return instance.user.username
 
     def validate_before_creation(self, transaction_quantities, data):
         # Check that vendor has a buyback policy

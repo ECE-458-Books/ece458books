@@ -1,11 +1,13 @@
 from django.db import models
 from vendors.models import Vendor
+from authapp.models import User
 from books.models import Book
 from django.core.validators import MinValueValidator
 
 class PurchaseOrder(models.Model):
     date = models.DateField()
     vendor = models.ForeignKey(Vendor, related_name='vendors', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name='po_users', on_delete=models.CASCADE)
 
 class Purchase(models.Model):
     book = models.ForeignKey(Book, related_name='po_books', on_delete=models.CASCADE)

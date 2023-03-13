@@ -16,16 +16,19 @@ from datetime import datetime, timedelta
 from books.models import Book
 from helpers.csv_reader import CSVReader
 from buybacks.models import BuybackOrder
+from utils.permissions import CustomBasePermission
+from .parsers import XMLParser
 
 
 class ListCreateSalesReconciliationAPIView(ListCreateAPIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [CustomBasePermission]
     serializer_class = SalesReconciliationSerializer
     queryset = SalesReconciliation.objects.all()
     pagination_class = SalesReconciliationPagination
     filter_backends = [filters.OrderingFilter, filters.SearchFilter]
     ordering_fields = '__all__'
     ordering = ['id']
+    parser_classes = [XMLParser]
 
     def paginate_queryset(self, queryset):
         if 'no_pagination' in self.request.query_params:
@@ -122,7 +125,7 @@ class ListCreateSalesReconciliationAPIView(ListCreateAPIView):
 
 
 class RetrieveUpdateDestroySalesReconciliationAPIView(RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CustomBasePermission]
     serializer_class = SalesReconciliationSerializer
     lookup_field = 'id'
     pagination_class = SalesReconciliationPagination
@@ -291,7 +294,7 @@ class RetrieveSalesReportAPIView(APIView):
 
 
 class CSVSaleAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CustomBasePermission]
 
     def post(self, request: Request):
         csv_reader = CSVReader("sales")

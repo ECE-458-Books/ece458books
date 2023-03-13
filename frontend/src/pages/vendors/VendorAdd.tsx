@@ -28,7 +28,7 @@ export interface VendorRow {
   buybackRate: number | undefined;
 }
 
-export default function GenreAdd() {
+export default function VendorAdd() {
   const emptyVendor: VendorRow = {
     id: uuid(),
     vendorName: "",
@@ -140,7 +140,7 @@ export default function GenreAdd() {
 
   const backButton = (
     <div className="flex col-1">
-      <BackButton onClick={() => navigate("/vendors")} className="ml-1" />
+      <BackButton className="ml-1" />
     </div>
   );
 

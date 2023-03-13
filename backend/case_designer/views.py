@@ -13,7 +13,8 @@ class ListCreateBookcaseAPIView(ListCreateAPIView):
     pagination_class = BookcasePagination
 
     def create(self, request, *args, **kwargs):
-        serializer = BookcaseSerializer(data=request.data)
+        request.data["creator"] = request.user.id
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         saved_bookcase = serializer.save()
 

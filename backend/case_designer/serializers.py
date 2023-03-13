@@ -6,8 +6,8 @@ from .models import Bookcase, Shelf, DisplayedBook
 
 class DisplayedBookSerializer(serializers.ModelSerializer):
     book = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all())
-    book_isbn: serializers.SerializerMethodField()
-    book_title: serializers.SerializerMethodField()
+    book_isbn = serializers.SerializerMethodField()
+    book_title = serializers.SerializerMethodField()
     display_order = serializers.IntegerField(required=False, write_only=True)
     shelf = serializers.PrimaryKeyRelatedField(queryset=Shelf.objects.all(), required=False, write_only=True)
 
@@ -19,7 +19,7 @@ class DisplayedBookSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DisplayedBook
-        fields = ['book', 'display_mode', 'display_count', 'display_order', 'shelf']
+        fields = ['book', 'display_mode', 'display_count', 'display_order', 'shelf','book_isbn', 'book_title']
         read_only_fields = ['id', 'book_isbn', 'book_title']
 
 class ShelfSerializer(serializers.ModelSerializer):
@@ -52,12 +52,16 @@ class ShelfSerializer(serializers.ModelSerializer):
 
 class BookcaseSerializer(serializers.ModelSerializer):
     shelves = ShelfSerializer(many=True)
+    creator_username = serializers.SerializerMethodField()
 
     class Meta:
         model = Bookcase
-        fields = ['name', 'width', 'shelves']
-        read_only_fields = ['id', 'last_edit_date']
+        fields = ['name', 'width', 'shelves', 'last_edit_date', "creator", "creator_username"]
+        read_only_fields = ['id', "creator_username"]
 
+    def get_creator_username(self, instance):
+        return instance.creator.username
+    
     def create(self, data):
         shelves = data.pop('shelves')
         bookcase = Bookcase.objects.create(**data)

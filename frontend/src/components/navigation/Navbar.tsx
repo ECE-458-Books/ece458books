@@ -1,8 +1,8 @@
 import { Menubar } from "primereact/menubar";
 import { MenuItem } from "primereact/menuitem";
 import { useNavigate } from "react-router-dom";
-import { AccessType } from "../../util/UserTypes";
-import { LogoutUser } from "../../util/NavbarFunctions";
+import { AccessType } from "../../util/auth/UserTypes";
+import { LogoutUser } from "../../util/auth/NavbarFunctions";
 
 interface NavigationBarProps {
   onLogout: (user: AccessType | undefined) => void;

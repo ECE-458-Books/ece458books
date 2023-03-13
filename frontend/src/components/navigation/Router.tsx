@@ -21,7 +21,7 @@ import ShelfCalculator from "../../pages/storeplanner/ShelfCalculator";
 import VendorAdd from "../../pages/vendors/VendorAdd";
 import UserList from "../../pages/users/UserList";
 import UserDetail from "../../pages/users/UserDetail";
-import { AccessType } from "../../util/UserTypes";
+import { AccessType } from "../../util/auth/UserTypes";
 
 interface RouterProps {
   onLogout: (user: AccessType | undefined) => void;

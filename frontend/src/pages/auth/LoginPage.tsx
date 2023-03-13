@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { AUTH_API, LoginReq } from "../../apis/auth/AuthAPI";
 import { Password } from "primereact/password";
 import { InputText } from "primereact/inputtext";
-import { AccessType, administrator, user } from "../../util/UserTypes";
+import { AccessType, administrator, user } from "../../util/auth/UserTypes";
 
 interface LoginPageProps {
   onLogin: (user: AccessType | undefined) => void;

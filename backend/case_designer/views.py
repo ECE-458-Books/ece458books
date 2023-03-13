@@ -23,6 +23,8 @@ class ListCreateBookcaseAPIView(ListCreateAPIView):
 
     def create(self, request, *args, **kwargs):
         request.data["creator"] = request.user.id
+        request.data["last_editor"] = request.user.id
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         saved_bookcase = serializer.save()
@@ -55,5 +57,16 @@ class RetrieveUpdateDestroyBookcaseAPIView(RetrieveUpdateDestroyAPIView):
         if (len(self.get_queryset()) == 0):
             return Response({"id": "No bookcase with queried id."}, status=status.HTTP_400_BAD_REQUEST)
         return None
+    
+    def update(self, request, *args, **kwargs):
+        invalid_id_response = self.verify_existance()
+        if invalid_id_response:
+            return invalid_id_response
+        (bookcase,) = self.get_queryset()
+        request.data['last_editor'] = request.user.id
+        serializer = self.get_serializer(bookcase, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
     # the default destroy method is used for deleting a bookcase

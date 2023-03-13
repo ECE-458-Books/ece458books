@@ -11,9 +11,8 @@ class Bookcase(models.Model):
     name=models.CharField(max_length=50)
     last_edit_date=models.DateTimeField(auto_now=True)
     width=models.FloatField()
-    creator=models.ForeignKey('authapp.User', on_delete=models.CASCADE)
-    # Will implement when doing update endpoint
-    # last_editor=models.ForeignKey('auth.User', on_delete=models.CASCADE)
+    creator=models.ForeignKey('authapp.User', related_name="bookcase_creator", on_delete=models.CASCADE)
+    last_editor=models.ForeignKey('authapp.User', on_delete=models.CASCADE)
 
 class Shelf(models.Model):
     bookcase=models.ForeignKey(Bookcase, related_name="shelves", on_delete=models.CASCADE)

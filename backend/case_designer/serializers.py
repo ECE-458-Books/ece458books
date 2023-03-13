@@ -52,15 +52,21 @@ class ShelfSerializer(serializers.ModelSerializer):
 
 class BookcaseSerializer(serializers.ModelSerializer):
     shelves = ShelfSerializer(many=True)
+    creator = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False)
     creator_username = serializers.SerializerMethodField()
+    last_editor_username = serializers.SerializerMethodField()
 
     class Meta:
         model = Bookcase
-        fields = ['id', 'name', 'width', 'shelves', 'last_edit_date', "creator", "creator_username"]
-        read_only_fields = ['id', "creator_username"]
+        fields = ['id', 'name', 'width', 'shelves', 'last_edit_date', 
+                  'creator', 'creator_username', 'last_editor', 'last_editor_username']
+        read_only_fields = ['id', 'creator_username', 'last_editor_username']
 
     def get_creator_username(self, instance):
         return instance.creator.username
+    
+    def get_last_editor_username(self, instance):
+        return instance.last_editor.username
     
     def create(self, data):
         shelves = data.pop('shelves')
@@ -68,6 +74,26 @@ class BookcaseSerializer(serializers.ModelSerializer):
         self.create_shelves(shelves, bookcase)
         return bookcase
     
+    # The update method deletes/recreates all shelves for the bookcase,
+    # and updates the top level fields 
+    def update(self, instance, validated_data):
+        self.delete_old_shelves(instance)
+        new_shelves = validated_data['shelves']
+        self.create_shelves(new_shelves, instance)
+        self.update_non_nested_fields(instance, validated_data)
+        instance.save()
+        return instance
+
+    def update_non_nested_fields(self, instance, validated_data):
+        instance.name = validated_data['name']
+        instance.width = validated_data['width']
+        instance.last_editor = validated_data['last_editor']
+
+    def delete_old_shelves(self, bookcase):
+        shelves = Shelf.objects.filter(bookcase_id=bookcase.id)
+        for shelf in shelves:
+            shelf.delete()
+
     def create_shelves(self, shelves, bookcase):
         self.preprocess_shelves(shelves, bookcase)
         serializer = ShelfSerializer(data=shelves, many=True)
@@ -78,7 +104,7 @@ class BookcaseSerializer(serializers.ModelSerializer):
         for idx, shelf in enumerate(shelves):
             shelf['bookcase'] = bookcase.id
             shelf['shelf_order'] = idx
-            for idx, book in enumerate(shelf["displayed_books"]):
+            for idx, book in enumerate(shelf['displayed_books']):
                 book['book'] = book['book'].id
 
     

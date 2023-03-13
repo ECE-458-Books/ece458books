@@ -55,15 +55,16 @@ class RetrieveUpdateDestroyBookcaseAPIView(RetrieveUpdateDestroyAPIView):
 
     def verify_existance(self):
         if (len(self.get_queryset()) == 0):
-            return Response({"id": "No bookcase with queried id."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "No bookcase with queried id."}, status=status.HTTP_400_BAD_REQUEST)
         return None
     
     def update(self, request, *args, **kwargs):
+        request.data['last_editor'] = request.user.id
+
         invalid_id_response = self.verify_existance()
         if invalid_id_response:
             return invalid_id_response
         (bookcase,) = self.get_queryset()
-        request.data['last_editor'] = request.user.id
         serializer = self.get_serializer(bookcase, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()

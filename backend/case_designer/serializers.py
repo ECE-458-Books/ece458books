@@ -56,7 +56,7 @@ class BookcaseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Bookcase
-        fields = ['name', 'width', 'shelves', 'last_edit_date', "creator", "creator_username"]
+        fields = ['id', 'name', 'width', 'shelves', 'last_edit_date', "creator", "creator_username"]
         read_only_fields = ['id', "creator_username"]
 
     def get_creator_username(self, instance):

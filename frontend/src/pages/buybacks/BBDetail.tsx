@@ -1,5 +1,4 @@
 import { Toast } from "primereact/toast";
-import { Toolbar } from "primereact/toolbar";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -267,7 +266,7 @@ export default function BBDetail() {
 
   // Top Line
   const titleText = (
-    <div className="pt-2 col-10">
+    <div className="pt-2 col-4">
       <AddDetailModifyTitle
         isModifyPage={isModifiable}
         isAddPage={isBBAddPage}
@@ -279,19 +278,17 @@ export default function BBDetail() {
   );
 
   const backButton = (
-    <div className="flex col-1">
+    <div className="flex col-4">
       <BackButton className="ml-1" />
     </div>
   );
 
   const deleteButton = (
-    <div className="flex col-1">
-      <DeleteButton
-        visible={!isBBAddPage}
-        disabled={!isPageDeleteable}
-        onClick={deleteBuyBackPopup}
-      />
-    </div>
+    <DeleteButton
+      visible={!isBBAddPage}
+      disabled={!isPageDeleteable}
+      onClick={deleteBuyBackPopup}
+    />
   );
 
   const deletePopup = (
@@ -325,15 +322,9 @@ export default function BBDetail() {
   );
 
   const csvGuideButton = (
-    <CSVEndUserDocButton visible={isModifiable} toast={toast} />
-  );
-
-  const leftToolbar = (
-    <>
-      {addRowButton}
-      {csvImportButton}
-      {csvGuideButton}
-    </>
+    <div className="ml-1">
+      <CSVEndUserDocButton visible={isModifiable} toast={toast} />
+    </div>
   );
 
   // Center
@@ -346,6 +337,7 @@ export default function BBDetail() {
       }}
       isAddPage={isBBAddPage}
       isModifiable={isModifiable}
+      className="my-auto p-button-sm mr-1"
     />
   );
 
@@ -383,10 +375,12 @@ export default function BBDetail() {
   );
 
   const rightToolbar = (
-    <>
-      {submitAndGoBackButton}
-      {submitButton}
-    </>
+    <Restricted to={"modify"}>
+      <div className="flex justify-content-end">
+        {submitAndGoBackButton}
+        {submitButton}
+      </div>
+    </Restricted>
   );
 
   // Items below toolbar
@@ -410,6 +404,23 @@ export default function BBDetail() {
     />
   );
 
+  const rightButtons = (
+    <div className="flex col-4 justify-content-end">
+      {editCancelButton}
+      {deleteButton}
+    </div>
+  );
+
+  const tableHeader = (
+    <Restricted to={"modify"}>
+      <div className="flex">
+        {addRowButton}
+        {csvImportButton}
+        {csvGuideButton}
+      </div>
+    </Restricted>
+  );
+
   // Datatable
 
   const dataTable = (
@@ -422,6 +433,7 @@ export default function BBDetail() {
       isAddPage={isBBAddPage}
       isModifiable={isModifiable}
       getPriceForNewlySelectedBook={(title) => getBestBuybackPrice(title)}
+      tableHeader={tableHeader}
     />
   );
 
@@ -432,31 +444,29 @@ export default function BBDetail() {
         <div className="flex col-12 p-0">
           {backButton}
           {titleText}
-          {deleteButton}
+          {rightButtons}
         </div>
         <div className="col-11">
           <form onSubmit={onSubmit}>
-            <Restricted to={"modify"}>
-              <Toolbar
-                className="mb-4"
-                left={leftToolbar}
-                center={editCancelButton}
-                right={rightToolbar}
-              />
-            </Restricted>
-
             <div className="flex col-12 justify-content-evenly mb-3">
               {totalDollars}
-              {calendar}
-              <div>
+              <div className="flex">
                 <label
                   htmlFor="vendor"
                   className="p-component text-teal-900 p-text-secondary my-auto pr-2"
                 >
-                  Vendor
+                  Vendor:
                 </label>
-                {vendorDropdown}
+                {isModifiable ? (
+                  vendorDropdown
+                ) : (
+                  <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
+                    {selectedVendorName}
+                  </p>
+                )}
               </div>
+              {calendar}
+              {isModifiable && rightToolbar}
             </div>
             {dataTable}
           </form>

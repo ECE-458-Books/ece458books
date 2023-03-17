@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
-import { Toolbar } from "primereact/toolbar";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   AddPOReq,
@@ -242,7 +241,7 @@ export default function PODetail() {
   // Top Line
 
   const titleText = (
-    <div className="pt-2 col-10">
+    <div className="pt-2 col-4">
       <AddDetailModifyTitle
         isModifyPage={isModifiable}
         isAddPage={isPOAddPage}
@@ -254,19 +253,17 @@ export default function PODetail() {
   );
 
   const backButton = (
-    <div className="flex col-1">
+    <div className="flex col-4">
       <BackButton className="ml-1" />
     </div>
   );
 
   const deleteButton = (
-    <div className="flex col-1">
-      <DeleteButton
-        visible={!isPOAddPage}
-        disabled={!isPageDeleteable}
-        onClick={deletePurchaseOrderPopup}
-      />
-    </div>
+    <DeleteButton
+      visible={!isPOAddPage}
+      disabled={!isPageDeleteable}
+      onClick={deletePurchaseOrderPopup}
+    />
   );
 
   const deletePopup = (
@@ -292,19 +289,23 @@ export default function PODetail() {
   );
 
   const csvGuideButton = (
-    <CSVEndUserDocButton visible={isModifiable} toast={toast} />
+    <div className="ml-1">
+      <CSVEndUserDocButton visible={isModifiable} toast={toast} />
+    </div>
   );
 
   const csvImportButton = (
     <CSVUploader visible={isModifiable} uploadHandler={csvUploadHandler} />
   );
 
-  const leftToolbar = (
-    <>
-      {addRowButton}
-      {csvImportButton}
-      {csvGuideButton}
-    </>
+  const tableHeader = (
+    <Restricted to={"modify"}>
+      <div className="flex">
+        {addRowButton}
+        {csvImportButton}
+        {csvGuideButton}
+      </div>
+    </Restricted>
   );
 
   // Center
@@ -317,6 +318,7 @@ export default function PODetail() {
       }}
       isAddPage={isPOAddPage}
       isModifiable={isModifiable}
+      className="my-auto p-button-sm mr-1"
     />
   );
 
@@ -354,10 +356,12 @@ export default function PODetail() {
   );
 
   const rightToolbar = (
-    <>
-      {submitAndGoBackButton}
-      {submitButton}
-    </>
+    <Restricted to={"modify"}>
+      <div className="flex justify-content-end">
+        {submitAndGoBackButton}
+        {submitButton}
+      </div>
+    </Restricted>
   );
 
   // Items below toolbar
@@ -380,6 +384,13 @@ export default function PODetail() {
     />
   );
 
+  const rightButtons = (
+    <div className="flex col-4 justify-content-end">
+      {editCancelButton}
+      {deleteButton}
+    </div>
+  );
+
   // Datatable
   const dataTable = (
     <LineItemTableTemplate
@@ -391,6 +402,7 @@ export default function PODetail() {
       isAddPage={isPOAddPage}
       isModifiable={isModifiable}
       getPriceForNewlySelectedBook={() => Promise.resolve(0)}
+      tableHeader={tableHeader}
     />
   );
 
@@ -401,31 +413,29 @@ export default function PODetail() {
         <div className="flex col-12 p-0">
           {backButton}
           {titleText}
-          {deleteButton}
+          {rightButtons}
         </div>
         <div className="col-11">
           <form onSubmit={onSubmit}>
-            <Restricted to={"modify"}>
-              <Toolbar
-                className="mb-4"
-                left={leftToolbar}
-                center={editCancelButton}
-                right={rightToolbar}
-              />
-            </Restricted>
-
             <div className="flex col-12 justify-content-evenly mb-3">
               {totalDollars}
-              {calendar}
-              <div>
+              <div className="flex">
                 <label
                   htmlFor="vendor"
                   className="p-component text-teal-900 p-text-secondary my-auto pr-2"
                 >
-                  Vendor
+                  Vendor:
                 </label>
-                {vendorDropdown}
+                {isModifiable ? (
+                  vendorDropdown
+                ) : (
+                  <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
+                    {selectedVendorName}
+                  </p>
+                )}
               </div>
+              {calendar}
+              {isModifiable && rightToolbar}
             </div>
             {dataTable}
           </form>

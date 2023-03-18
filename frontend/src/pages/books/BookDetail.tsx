@@ -536,95 +536,125 @@ export default function BookDetail() {
               >
                 Genre:
               </label>
-              {genreDropdown}
+              {!isModifiable ? (
+                <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
+                  {genre}
+                </p>
+              ) : (
+                genreDropdown
+              )}
             </div>
           </div>
-          <h1 className="p-component p-text-secondary mb-1 mt-2 p-0 text-xl text-center text-900 color: var(--surface-800);">
+          <h1 className="col-9 p-component p-text-secondary mb-1 mt-2 p-0 text-xl text-center text-900 color: var(--surface-800);">
             Dimensions (in)
           </h1>
           <div className="flex col-12 justify-content-start p-1">
-            <div className="p-0 col-4">
+            <div className="flex p-0 col-4">
               <label
                 className="p-component p-text-secondary text-teal-900 my-auto mr-2"
                 htmlFor="height"
               >
                 Height:
               </label>
-              <div className="flex 2rem">
-                <InputNumber
-                  id="height"
-                  className="w-4"
-                  name="height"
-                  value={height}
-                  maxFractionDigits={2}
-                  disabled={!isModifiable}
-                  onValueChange={(e: InputNumberValueChangeEvent) =>
-                    setHeight(e.value ?? undefined)
-                  }
-                />
-              </div>
+              {!isModifiable ? (
+                <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
+                  {height}
+                </p>
+              ) : (
+                <div className="flex 2rem">
+                  <InputNumber
+                    id="height"
+                    className="w-4"
+                    name="height"
+                    value={height}
+                    maxFractionDigits={2}
+                    disabled={!isModifiable}
+                    onValueChange={(e: InputNumberValueChangeEvent) =>
+                      setHeight(e.value ?? undefined)
+                    }
+                  />
+                </div>
+              )}
             </div>
-            <div className="p-0 col-4">
+            <div className="flex p-0 col-4">
               <label
                 className="p-component p-text-secondary text-teal-900 my-auto mr-2"
                 htmlFor="width"
               >
                 Width:
               </label>
-              <div className="flex 2rem">
-                <InputNumber
-                  id="width"
-                  className="w-4"
-                  name="width"
-                  value={width}
-                  disabled={!isModifiable}
-                  maxFractionDigits={2}
-                  onValueChange={(e: InputNumberValueChangeEvent) =>
-                    setWidth(e.value ?? undefined)
-                  }
-                />
-              </div>
+              {!isModifiable ? (
+                <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
+                  {width}
+                </p>
+              ) : (
+                <div className="flex 2rem">
+                  <InputNumber
+                    id="width"
+                    className="w-4"
+                    name="width"
+                    value={width}
+                    disabled={!isModifiable}
+                    maxFractionDigits={2}
+                    onValueChange={(e: InputNumberValueChangeEvent) =>
+                      setWidth(e.value ?? undefined)
+                    }
+                  />
+                </div>
+              )}
             </div>
-            <div className="p-0 col-4">
+            <div className="flex p-0 col-4">
               <label
                 className="p-component p-text-secondary text-teal-900 my-auto mr-2"
                 htmlFor="thickness"
               >
                 Thickness:
               </label>
-              <div className="flex 2rem">
-                <InputNumber
-                  id="thickness"
-                  className="w-4"
-                  name="thickness"
-                  value={thickness}
-                  maxFractionDigits={2}
-                  disabled={!isModifiable}
-                  onValueChange={(e: InputNumberValueChangeEvent) =>
-                    setThickness(e.value ?? undefined)
-                  }
-                />
-              </div>
+              {!isModifiable ? (
+                <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
+                  {thickness}
+                </p>
+              ) : (
+                <div className="flex 2rem">
+                  <InputNumber
+                    id="thickness"
+                    className="w-4"
+                    name="thickness"
+                    value={thickness}
+                    maxFractionDigits={2}
+                    disabled={!isModifiable}
+                    onValueChange={(e: InputNumberValueChangeEvent) =>
+                      setThickness(e.value ?? undefined)
+                    }
+                  />
+                </div>
+              )}
             </div>
           </div>
           <div className="flex col-12 justify-content-start p-1">
-            <div className="p-0 col-6">
+            <div className="flex p-0 col-6">
               <label
                 className="p-component p-text-secondary text-teal-900 my-auto mr-2"
                 htmlFor="pageCount"
               >
                 Page Count:
               </label>
-              <InputNumber
-                id="pageCount"
-                className="w-4"
-                name="pageCount"
-                value={pageCount}
-                disabled={!isModifiable}
-                onValueChange={(e: InputNumberValueChangeEvent) =>
-                  setPageCount(e.value ?? undefined)
-                }
-              />
+              {!isModifiable ? (
+                <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
+                  {pageCount}
+                </p>
+              ) : (
+                <InputNumber
+                  id="pageCount"
+                  className="w-4"
+                  name="pageCount"
+                  value={pageCount}
+                  disabled={!isModifiable}
+                  onValueChange={(e: InputNumberValueChangeEvent) =>
+                    setPageCount(e.value ?? undefined)
+                  }
+                />
+              )}
             </div>
             <div className="flex p-0 col-6">
               <label
@@ -687,27 +717,33 @@ export default function BookDetail() {
                 {PriceTemplate(bestBuybackPrice)}
               </p>
             </div>
-            <div className="col-4 p-0">
+            <div className="flex col-4 p-0">
               <label
                 className="p-component p-text-secondary text-teal-900 my-auto mr-2"
                 htmlFor="retailprice"
               >
                 Retail Price:
               </label>
-              <InputNumber
-                id="retail_price"
-                className="w-4"
-                name="retail_price"
-                mode="currency"
-                currency="USD"
-                locale="en-US"
-                value={price}
-                maxFractionDigits={2}
-                disabled={!isModifiable}
-                onValueChange={(e: InputNumberValueChangeEvent) =>
-                  setPrice(e.value ?? 0)
-                }
-              />
+              {!isModifiable ? (
+                <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
+                  {PriceTemplate(price)}
+                </p>
+              ) : (
+                <InputNumber
+                  id="retail_price"
+                  className="w-4"
+                  name="retail_price"
+                  mode="currency"
+                  currency="USD"
+                  locale="en-US"
+                  value={price}
+                  maxFractionDigits={2}
+                  disabled={!isModifiable}
+                  onValueChange={(e: InputNumberValueChangeEvent) =>
+                    setPrice(e.value ?? 0)
+                  }
+                />
+              )}
             </div>
           </div>
         </form>

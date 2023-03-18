@@ -49,6 +49,20 @@ import LineItemTableTemplate, {
 } from "../../templates/inventorydetail/LineItemTableTemplate";
 import Restricted from "../../permissions/Restricted";
 
+interface BackupDataStoreBB {
+  date: Date;
+  vendorName: string;
+  buybacks: LineItem[];
+  totalRevenue: number;
+}
+
+const EMPTY_ORIGINAL_DATA: BackupDataStoreBB = {
+  date: new Date(),
+  vendorName: "",
+  buybacks: [],
+  totalRevenue: 0,
+};
+
 export default function BBDetail() {
   // -------- STATE --------
   // From URL
@@ -66,6 +80,9 @@ export default function BBDetail() {
   // The rest of the data
   const [date, setDate] = useState<Date>(new Date());
   const [selectedVendorName, setSelectedVendorName] = useState<string>("");
+
+  const [originalData, setOriginalData] =
+    useState<BackupDataStoreBB>(EMPTY_ORIGINAL_DATA);
 
   // useImmer is used to set state for nested data in a simplified format
   const [buybacks, setBuybacks] = useImmer<LineItem[]>([]);
@@ -89,6 +106,12 @@ export default function BBDetail() {
           setTotalRevenue(buyBack.totalRevenue);
           setSelectedVendorName(buyBack.vendorName);
           setIsPageDeleteable(buyBack.isDeletable);
+          setOriginalData({
+            date: buyBack.date,
+            vendorName: buyBack.vendorName,
+            totalRevenue: buyBack.totalRevenue,
+            buybacks: buyBack.sales,
+          });
         })
         .catch(() =>
           showFailure(toast, "Could not fetch book buyback sales data")
@@ -257,6 +280,12 @@ export default function BBDetail() {
       .then(() => {
         showSuccess(toast, "Book Buyback modified successfully");
         setIsModifiable(!isModifiable);
+        setOriginalData({
+          date: date,
+          vendorName: selectedVendorName,
+          totalRevenue: totalRevenue,
+          buybacks: buybacks,
+        });
       })
       .catch(() => showFailure(toast, "Could not modify book buyback"));
   };
@@ -333,7 +362,10 @@ export default function BBDetail() {
       onClickEdit={() => setIsModifiable(!isModifiable)}
       onClickCancel={() => {
         setIsModifiable(!isModifiable);
-        window.location.reload();
+        setDate(originalData.date);
+        setSelectedVendorName(originalData.vendorName);
+        setTotalRevenue(originalData.totalRevenue);
+        setBuybacks(originalData.buybacks);
       }}
       isAddPage={isBBAddPage}
       isModifiable={isModifiable}

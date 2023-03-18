@@ -58,7 +58,7 @@ const EMPTY_ORIGINAL_DATA: BackupDataStorePO = {
   vendorName: "",
   purchases: [],
   totalCost: 0,
-}
+};
 
 export default function PODetail() {
   // -------- STATE --------
@@ -76,7 +76,8 @@ export default function PODetail() {
   const [date, setDate] = useState<Date>(new Date());
   const [selectedVendorName, setSelectedVendorName] = useState<string>("");
 
-  const [originalData, setOriginalData] = useState<BackupDataStorePO>(EMPTY_ORIGINAL_DATA);
+  const [originalData, setOriginalData] =
+    useState<BackupDataStorePO>(EMPTY_ORIGINAL_DATA);
 
   // useImmer is used to set state for nested data in a simplified format
   const [purchases, setPurchases] = useImmer<LineItem[]>([]);
@@ -87,15 +88,6 @@ export default function PODetail() {
   const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false); // Whether the delete popup is shown
   const [isGoBackActive, setIsGoBackActive] = useState<boolean>(false);
   const [isPageDeleteable, setIsPageDeleteable] = useState<boolean>(true);
-
-  const updateOriginalDataStore = () => {
-    setOriginalData({
-      date: date,
-      vendorName: selectedVendorName,
-      totalCost: totalCost,
-      purchases: purchases,
-    });
-  };
 
   // Load the PO data on page load
   useEffect(() => {
@@ -108,8 +100,12 @@ export default function PODetail() {
           setPurchases(purchaseOrder.purchases);
           setTotalCost(purchaseOrder.totalCost);
           setIsPageDeleteable(purchaseOrder.isDeletable);
-
-          updateOriginalDataStore();
+          setOriginalData({
+            date: purchaseOrder.date,
+            vendorName: purchaseOrder.vendorName,
+            totalCost: purchaseOrder.totalCost,
+            purchases: purchaseOrder.purchases,
+          });
         })
         .catch(() => showFailure(toast, "Could not fetch purchase order data"));
     }
@@ -257,7 +253,12 @@ export default function PODetail() {
       .then(() => {
         showSuccess(toast, "Purchase order modified successfully");
         setIsModifiable(!isModifiable);
-        updateOriginalDataStore();
+        setOriginalData({
+          date: date,
+          vendorName: selectedVendorName,
+          totalCost: totalCost,
+          purchases: purchases,
+        });
       })
       .catch(() => showFailure(toast, "Could not modify purchase order"));
   }
@@ -340,13 +341,15 @@ export default function PODetail() {
   // Center
   const editCancelButton = (
     <EditCancelButton
-      onClickEdit={() => setIsModifiable(!isModifiable)}
+      onClickEdit={() => {
+        setIsModifiable(!isModifiable);
+      }}
       onClickCancel={() => {
         setIsModifiable(!isModifiable);
-        setDate(originalData?.date);
-        setSelectedVendorName(originalData?.vendorName);
-        totalCost: totalCost;
-        purchases: purchases;
+        setDate(originalData.date);
+        setSelectedVendorName(originalData.vendorName);
+        setTotalCost(originalData.totalCost);
+        setPurchases(originalData.purchases);
       }}
       isAddPage={isPOAddPage}
       isModifiable={isModifiable}

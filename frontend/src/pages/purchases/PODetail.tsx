@@ -46,6 +46,20 @@ import LineItemTableTemplate, {
 } from "../../templates/inventorydetail/LineItemTableTemplate";
 import Restricted from "../../permissions/Restricted";
 
+interface BackupDataStorePO {
+  date: Date;
+  vendorName: string;
+  purchases: LineItem[];
+  totalCost: number;
+}
+
+const EMPTY_ORIGINAL_DATA: BackupDataStorePO = {
+  date: new Date(),
+  vendorName: "",
+  purchases: [],
+  totalCost: 0,
+}
+
 export default function PODetail() {
   // -------- STATE --------
 
@@ -61,6 +75,9 @@ export default function PODetail() {
   // The rest of the data
   const [date, setDate] = useState<Date>(new Date());
   const [selectedVendorName, setSelectedVendorName] = useState<string>("");
+
+  const [originalData, setOriginalData] = useState<BackupDataStorePO>(EMPTY_ORIGINAL_DATA);
+
   // useImmer is used to set state for nested data in a simplified format
   const [purchases, setPurchases] = useImmer<LineItem[]>([]);
   const [totalCost, setTotalCost] = useState<number>(0);
@@ -70,6 +87,15 @@ export default function PODetail() {
   const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false); // Whether the delete popup is shown
   const [isGoBackActive, setIsGoBackActive] = useState<boolean>(false);
   const [isPageDeleteable, setIsPageDeleteable] = useState<boolean>(true);
+
+  const updateOriginalDataStore = () => {
+    setOriginalData({
+      date: date,
+      vendorName: selectedVendorName,
+      totalCost: totalCost,
+      purchases: purchases,
+    });
+  };
 
   // Load the PO data on page load
   useEffect(() => {
@@ -82,6 +108,8 @@ export default function PODetail() {
           setPurchases(purchaseOrder.purchases);
           setTotalCost(purchaseOrder.totalCost);
           setIsPageDeleteable(purchaseOrder.isDeletable);
+
+          updateOriginalDataStore();
         })
         .catch(() => showFailure(toast, "Could not fetch purchase order data"));
     }
@@ -229,6 +257,7 @@ export default function PODetail() {
       .then(() => {
         showSuccess(toast, "Purchase order modified successfully");
         setIsModifiable(!isModifiable);
+        updateOriginalDataStore();
       })
       .catch(() => showFailure(toast, "Could not modify purchase order"));
   }
@@ -314,7 +343,10 @@ export default function PODetail() {
       onClickEdit={() => setIsModifiable(!isModifiable)}
       onClickCancel={() => {
         setIsModifiable(!isModifiable);
-        window.location.reload();
+        setDate(originalData?.date);
+        setSelectedVendorName(originalData?.vendorName);
+        totalCost: totalCost;
+        purchases: purchases;
       }}
       isAddPage={isPOAddPage}
       isModifiable={isModifiable}

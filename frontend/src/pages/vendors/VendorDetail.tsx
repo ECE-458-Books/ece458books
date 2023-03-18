@@ -12,6 +12,7 @@ import BackButton from "../../components/buttons/BackButton";
 import DeleteButton from "../../components/buttons/DeleteButton";
 import DeletePopup from "../../components/popups/DeletePopup";
 import Restricted from "../../permissions/Restricted";
+import PercentTemplate from "../../components/templates/PercentTemplate";
 
 export default function VendorDetail() {
   // From URL
@@ -146,19 +147,25 @@ export default function VendorDetail() {
                   className="text-xl p-component text-teal-900 p-text-secondary"
                   htmlFor="vendor"
                 >
-                  Name
+                  Name:
                 </label>
               </div>
               <div className="col-7">
-                <InputText
-                  id="vendor"
-                  name="vendor"
-                  value={vendorName}
-                  disabled={!isModifiable}
-                  onChange={(event: FormEvent<HTMLInputElement>): void => {
-                    setVendorName(event.currentTarget.value);
-                  }}
-                />
+                {!isModifiable ? (
+                  <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
+                    {vendorName}
+                  </p>
+                ) : (
+                  <InputText
+                    id="vendor"
+                    name="vendor"
+                    value={vendorName}
+                    disabled={!isModifiable}
+                    onChange={(event: FormEvent<HTMLInputElement>): void => {
+                      setVendorName(event.currentTarget.value);
+                    }}
+                  />
+                )}
               </div>
             </div>
 
@@ -168,10 +175,20 @@ export default function VendorDetail() {
                   className="text-xl p-component text-teal-900 p-text-secondary"
                   htmlFor="vendor"
                 >
-                  Buyback Rate
+                  Buyback Rate:
                 </label>
               </div>
-              <div className="col-7">{buybackRateEditor}</div>
+              <div className="col-7">
+                {!isModifiable ? (
+                  <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
+                    {buybackRate == undefined
+                      ? "No Buyback Program"
+                      : PercentTemplate(buybackRate)}
+                  </p>
+                ) : (
+                  buybackRateEditor
+                )}
+              </div>
             </div>
 
             <div className="grid justify-content-evenly col-12">

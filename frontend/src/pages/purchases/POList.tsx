@@ -15,11 +15,11 @@ import { DateTemplate } from "../../components/templates/DateTemplate";
 import PriceTemplate from "../../components/templates/PriceTemplate";
 import AddPageButton from "../../components/buttons/AddPageButton";
 import LabeledSwitch from "../../components/buttons/LabeledSwitch";
-import SelectSizeButton, {
-  SelectSizeButtonOptions,
-} from "../../components/buttons/SelectSizeButton";
 import ListTemplate from "../../templates/list/ListTemplate";
 import { LineItem } from "../../templates/inventorydetail/LineItemTableTemplate";
+import SelectSizeDropdown, {
+  SelectSizeDropdownOptions,
+} from "../../components/buttons/SelectSizeDropdown";
 
 export interface PurchaseOrder {
   id: string;
@@ -77,7 +77,7 @@ export default function PurchaseOrderList() {
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]); // The data displayed in the table
   const [isNoPagination, setIsNoPagination] = useState<boolean>(false);
   const [tableWhitespaceSize, setTableWhitespaceSize] =
-    useState<SelectSizeButtonOptions>(SelectSizeButtonOptions.Small);
+    useState<SelectSizeDropdownOptions>(SelectSizeDropdownOptions.Small);
 
   // ----------------- METHODS -----------------
 
@@ -139,7 +139,7 @@ export default function PurchaseOrderList() {
 
   const selectSizeButton = (
     <div className="flex col-6 justify-content-center my-1 p-0">
-      <SelectSizeButton
+      <SelectSizeDropdown
         value={tableWhitespaceSize}
         onChange={(e) => setTableWhitespaceSize(e.value)}
       />

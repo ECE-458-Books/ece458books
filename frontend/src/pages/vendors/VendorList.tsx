@@ -15,10 +15,10 @@ import { TableColumn } from "../../components/datatable/TableColumns";
 import PercentTemplate from "../../components/templates/PercentTemplate";
 import AddPageButton from "../../components/buttons/AddPageButton";
 import LabeledSwitch from "../../components/buttons/LabeledSwitch";
-import SelectSizeButton, {
-  SelectSizeButtonOptions,
-} from "../../components/buttons/SelectSizeButton";
 import ListTemplate from "../../templates/list/ListTemplate";
+import SelectSizeDropdown, {
+  SelectSizeDropdownOptions,
+} from "../../components/buttons/SelectSizeDropdown";
 
 // The Vendor Interface
 export interface Vendor {
@@ -54,7 +54,7 @@ export default function VendorList() {
   const [vendors, setVendors] = useState<Vendor[]>([]); // The data displayed in the table
   const [isNoPagination, setIsNoPagination] = useState<boolean>(false);
   const [tableWhitespaceSize, setTableWhitespaceSize] =
-    useState<SelectSizeButtonOptions>(SelectSizeButtonOptions.Small);
+    useState<SelectSizeDropdownOptions>(SelectSizeDropdownOptions.Small);
 
   // ----------------- METHODS -----------------
 
@@ -115,7 +115,7 @@ export default function VendorList() {
 
   const selectSizeButton = (
     <div className="flex col-6 justify-content-center my-1 p-0">
-      <SelectSizeButton
+      <SelectSizeDropdown
         value={tableWhitespaceSize}
         onChange={(e) => setTableWhitespaceSize(e.value)}
       />

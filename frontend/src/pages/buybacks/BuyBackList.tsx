@@ -12,11 +12,11 @@ import {
 import { useNavigate } from "react-router-dom";
 import AddPageButton from "../../components/buttons/AddPageButton";
 import LabeledSwitch from "../../components/buttons/LabeledSwitch";
-import SelectSizeButton, {
-  SelectSizeButtonOptions,
-} from "../../components/buttons/SelectSizeButton";
 import ListTemplate from "../../templates/list/ListTemplate";
 import { LineItem } from "../../templates/inventorydetail/LineItemTableTemplate";
+import SelectSizeDropdown, {
+  SelectSizeDropdownOptions,
+} from "../../components/buttons/SelectSizeDropdown";
 
 export interface BuyBack {
   id: string;
@@ -74,7 +74,7 @@ export default function BuyBackList() {
 
   const [isNoPagination, setIsNoPagination] = useState<boolean>(false);
   const [tableWhitespaceSize, setTableWhitespaceSize] =
-    useState<SelectSizeButtonOptions>(SelectSizeButtonOptions.Small);
+    useState<SelectSizeDropdownOptions>(SelectSizeDropdownOptions.Small);
 
   const callAPI = (page: number, pageSize: number, sortField: string) => {
     if (!isNoPagination) {
@@ -131,7 +131,7 @@ export default function BuyBackList() {
 
   const selectSizeButton = (
     <div className="flex col-6 justify-content-center my-1 p-0">
-      <SelectSizeButton
+      <SelectSizeDropdown
         value={tableWhitespaceSize}
         onChange={(e) => setTableWhitespaceSize(e.value)}
       />

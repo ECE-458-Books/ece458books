@@ -15,11 +15,11 @@ import { TableColumn } from "../../components/datatable/TableColumns";
 import { logger } from "../../util/Logger";
 import AddPageButton from "../../components/buttons/AddPageButton";
 import LabeledSwitch from "../../components/buttons/LabeledSwitch";
-import SelectSizeButton, {
-  SelectSizeButtonOptions,
-} from "../../components/buttons/SelectSizeButton";
 import { Button } from "primereact/button";
 import ListTemplate from "../../templates/list/ListTemplate";
+import SelectSizeDropdown, {
+  SelectSizeDropdownOptions,
+} from "../../components/buttons/SelectSizeDropdown";
 
 export interface Genre {
   id: string;
@@ -55,7 +55,7 @@ export default function GenreList() {
   const [genres, setGenres] = useState<Genre[]>([]); // The data displayed in the table
   const [isNoPagination, setIsNoPagination] = useState<boolean>(false);
   const [tableWhitespaceSize, setTableWhitespaceSize] =
-    useState<SelectSizeButtonOptions>(SelectSizeButtonOptions.Small);
+    useState<SelectSizeDropdownOptions>(SelectSizeDropdownOptions.Small);
 
   // ----------------- METHODS -----------------
   // Navigator used to go to a different page
@@ -139,7 +139,7 @@ export default function GenreList() {
 
   const selectSizeButton = (
     <div className="flex col-6 justify-content-center my-1 p-0">
-      <SelectSizeButton
+      <SelectSizeDropdown
         value={tableWhitespaceSize}
         onChange={(e) => setTableWhitespaceSize(e.value)}
       />

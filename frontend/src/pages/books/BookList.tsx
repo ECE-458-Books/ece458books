@@ -22,15 +22,17 @@ import GenreDropdown, {
 } from "../../components/dropdowns/GenreDropdown";
 import AddPageButton from "../../components/buttons/AddPageButton";
 import LabeledSwitch from "../../components/buttons/LabeledSwitch";
-import SelectSizeButton, {
-  SelectSizeButtonOptions,
-} from "../../components/buttons/SelectSizeButton";
 import { BookDetailLineItem } from "./BookDetailLineItems";
 import { Button } from "primereact/button";
 import { showFailure } from "../../components/Toast";
 import { saveAs } from "file-saver";
-import { MultiSelect, MultiSelectChangeEvent } from "primereact/multiselect";
 import ListTemplate from "../../templates/list/ListTemplate";
+import SelectSizeDropdown, {
+  SelectSizeDropdownOptions,
+} from "../../components/buttons/SelectSizeDropdown";
+import ToggleColumnPopup from "../../components/popups/ToggleColumnPopup";
+import ToggleColumnButton from "../../components/buttons/ToggleColumnButton";
+import { CheckboxChangeEvent } from "primereact/checkbox";
 
 export interface NewImageUploadData {
   imageFile: File;
@@ -94,15 +96,21 @@ export const emptyBook: Book = {
   lineItems: [],
 };
 
-interface ColumnMeta {
+export interface ColumnMeta {
   field: string;
   header: string;
 }
 
 const columnsMeta: ColumnMeta[] = [
+  { field: "thumbnailURL", header: "Cover Art" },
+  { field: "author", header: "Authors" },
+  { field: "genres", header: "Genre" },
+  { field: "isbn13", header: "ISBN 13" },
   { field: "isbn10", header: "ISBN 10" },
   { field: "publisher", header: "Publisher" },
+  { field: "retailPrice", header: "Retail Price ($)" },
   { field: "bestBuybackPrice", header: "Best Buyback Price ($)" },
+  { field: "stock", header: "Inventory Count" },
   { field: "daysOfSupply", header: "Days of Supply" },
   { field: "lastMonthSales", header: "Last Month Sales" },
   { field: "shelfSpace", header: "Shelf Space" },
@@ -120,11 +128,15 @@ export default function BookList() {
   ); // Initialize genre to the genre passed, if coming from genre list
   const [isNoPagination, setIsNoPagination] = useState<boolean>(false);
   const [tableWhitespaceSize, setTableWhitespaceSize] =
-    useState<SelectSizeButtonOptions>(SelectSizeButtonOptions.Small);
+    useState<SelectSizeDropdownOptions>(SelectSizeDropdownOptions.Small);
   const [genreNamesList, setGenreNamesList] = useState<string[]>([]); // List of all genre names
+
   const [visibleColumns, setVisibleColumns] = useState<ColumnMeta[]>(
-    columnsMeta.slice(2, 6)
+    [0, 1, 2, 3, 6, 7, 8, 9, 10, 11].map((x) => columnsMeta[x])
   );
+
+  const [toggleColumnPopupVisible, setToggleColumnPopupVisible] =
+    useState<boolean>(false); // Whether the toggle column popup is visible
 
   // Genres dropdown custom filter
 
@@ -149,6 +161,9 @@ export default function BookList() {
       header: "Cover Art",
       customBody: (rowData: Book) => imageBodyTemplate(rowData.thumbnailURL),
       style: { minWidth: "1rem", padding: "0.25rem" },
+      hidden: !(
+        visibleColumns.filter((item) => item.field == "thumbnailURL").length > 0
+      ),
     },
     {
       field: "title",
@@ -164,6 +179,9 @@ export default function BookList() {
       sortable: true,
       filterable: true,
       style: { minWidth: "8rem" },
+      hidden: !(
+        visibleColumns.filter((item) => item.field == "author").length > 0
+      ),
     },
     {
       field: "genres",
@@ -173,6 +191,9 @@ export default function BookList() {
       sortable: true,
       customFilter: genreFilter({ width: "8rem" }),
       style: { minWidth: "10rem" },
+      hidden: !(
+        visibleColumns.filter((item) => item.field == "genres").length > 0
+      ),
     },
     {
       field: "isbn13",
@@ -181,6 +202,9 @@ export default function BookList() {
       sortable: true,
       filterable: true,
       style: { minWidth: "8rem" },
+      hidden: !(
+        visibleColumns.filter((item) => item.field == "isbn13").length > 0
+      ),
     },
     {
       field: "isbn10",
@@ -209,6 +233,9 @@ export default function BookList() {
       sortable: true,
       customBody: (rowData: Book) => PriceTemplate(rowData.retailPrice),
       style: { minWidth: "6rem" },
+      hidden: !(
+        visibleColumns.filter((item) => item.field == "retailPrice").length > 0
+      ),
     },
     {
       field: "bestBuybackPrice",
@@ -225,6 +252,9 @@ export default function BookList() {
       header: "Inventory Count",
       sortable: true,
       style: { minWidth: "4rem" },
+      hidden: !(
+        visibleColumns.filter((item) => item.field == "stock").length > 0
+      ),
     },
     {
       field: "daysOfSupply",
@@ -366,6 +396,44 @@ export default function BookList() {
       });
   };
 
+  const toggleColumnPopupVisibity = () => {
+    logger.debug("Toggle Column Clicked");
+    setToggleColumnPopupVisible(true);
+  };
+
+  const toggleColumnFinal = () => {
+    logger.debug("Toggle Column Finalized");
+    setToggleColumnPopupVisible(false);
+  };
+
+  const onToggleColumnChange = (e: CheckboxChangeEvent) => {
+    let _selectedColumns = [...visibleColumns];
+
+    if (e.checked) _selectedColumns.push(e.value);
+    else
+      _selectedColumns = _selectedColumns.filter(
+        (category) => category.field !== e.value.field
+      );
+
+    setVisibleColumns(_selectedColumns);
+  };
+
+  const onToggleColumnSelectAll = (e: CheckboxChangeEvent) => {
+    if (e.checked) setVisibleColumns(columnsMeta);
+    else setVisibleColumns([]);
+  };
+
+  const toggleColumnPopup = (
+    <ToggleColumnPopup
+      onOptionChange={onToggleColumnChange}
+      optionsList={columnsMeta}
+      onSelectAllChange={onToggleColumnSelectAll}
+      selectedOptions={visibleColumns}
+      onConfirm={() => toggleColumnFinal()}
+      setIsVisible={setToggleColumnPopupVisible}
+    />
+  );
+
   const toast = useRef<Toast>(null);
 
   const csvExportButton = (
@@ -413,33 +481,29 @@ export default function BookList() {
   );
 
   const selectSizeButton = (
-    <SelectSizeButton
-      value={tableWhitespaceSize}
-      onChange={(e) => setTableWhitespaceSize(e.value)}
-      className="sm"
-    />
+    <div className="my-auto">
+      <SelectSizeDropdown
+        value={tableWhitespaceSize}
+        onChange={(e) => setTableWhitespaceSize(e.value)}
+        className="sm"
+      />
+    </div>
   );
 
-  const onColumnToggle = (event: MultiSelectChangeEvent) => {
-    const selectedColumns = event.value;
-    const orderedSelectedColumns = columnsMeta.filter((col) =>
-      selectedColumns.some(
-        (sCol: { field: string }) => sCol.field === col.field
-      )
-    );
-    setVisibleColumns(orderedSelectedColumns);
-  };
+  const toggleColumnButton = (
+    <div className="my-auto">
+      <ToggleColumnButton
+        onClick={toggleColumnPopupVisibity}
+        className="mr-4"
+      />
+    </div>
+  );
 
-  const toggleColumns = (
-    <MultiSelect
-      value={visibleColumns}
-      placeholder="Toggle Columns"
-      options={columnsMeta}
-      optionLabel="header"
-      onChange={onColumnToggle}
-      className="w-full sm:w-16rem"
-      display="chip"
-    />
+  const paginatorRightElements = (
+    <div className="flex">
+      {toggleColumnButton}
+      {selectSizeButton}
+    </div>
   );
 
   const dataTable = (
@@ -458,21 +522,24 @@ export default function BookList() {
       onFilter={onFilter}
       filters={filterParams.filters}
       additionalAPITriggers={[selectedGenre, filterParams]}
+      paginatorLeft={noPaginationSwitch}
+      paginatorRight={paginatorRightElements}
     />
   );
 
   return (
     <div>
       <div className="grid justify-content-evenly flex m-1">
-        {noPaginationSwitch}
-        {toggleColumns}
-        {selectSizeButton}
+        {isNoPagination && noPaginationSwitch}
+        {isNoPagination && toggleColumnButton}
+        {isNoPagination && selectSizeButton}
         {rightSideButtons}
       </div>
       <div className="card pt-0 px-3">
         <Toast ref={toast} />
         {dataTable}
       </div>
+      {toggleColumnPopupVisible && toggleColumnPopup}
     </div>
   );
 }

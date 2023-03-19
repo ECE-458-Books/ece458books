@@ -6,7 +6,7 @@ import {
   DataTableRowClickEvent,
   DataTableSortEvent,
 } from "primereact/datatable";
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   createColumns,
@@ -32,8 +32,8 @@ interface ListTemplateProps<T extends IDer> {
   filters?: DataTableFilterMeta;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   additionalAPITriggers?: any[]; // Any other variables that should trigger the API call
-  paginatorLeft?: any; // React UI components to the left of the paginator on the same horizontal space
-  paginatorRight?: any; // React UI components to the right of the paginator on the same horizontal space
+  paginatorLeft?: ReactNode; // React UI components to the left of the paginator on the same horizontal space
+  paginatorRight?: ReactNode; // React UI components to the right of the paginator on the same horizontal space
 }
 
 export const STARTING_SORT_PARAMS: DataTableSortEvent = {
@@ -134,7 +134,7 @@ export default function ListTemplate<T extends IDer>(
       totalRecords={props.totalNumberOfEntries}
       paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
       onPage={onPage}
-      rowsPerPageOptions={[5, 10, 15, 25, 50]}
+      rowsPerPageOptions={[10, 15, 25, 50, 75]}
       paginatorPosition="both"
       paginatorLeft={props.paginatorLeft}
       paginatorRight={props.paginatorRight}

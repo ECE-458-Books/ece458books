@@ -109,32 +109,26 @@ export default function SalesReconciliationList() {
   const toast = useRef<Toast>(null);
 
   const addSRButton = (
-    <div className="flex justify-content-end col-3">
-      <AddPageButton
-        onClick={() => navigate("/sales-reconciliations/add")}
-        label="Add Sale"
-        className="mr-2"
-      />
-    </div>
+    <AddPageButton
+      onClick={() => navigate("/sales-reconciliations/add")}
+      label="Add Sale"
+      className="mr-2"
+    />
   );
 
   const noPaginationSwitch = (
-    <div className="flex col-3 justify-content-center p-0 my-auto">
-      <LabeledSwitch
-        label="Show All"
-        onChange={() => setIsNoPagination(!isNoPagination)}
-        value={isNoPagination}
-      />
-    </div>
+    <LabeledSwitch
+      label="Show All"
+      onChange={() => setIsNoPagination(!isNoPagination)}
+      value={isNoPagination}
+    />
   );
 
   const selectSizeButton = (
-    <div className="flex col-6 justify-content-center my-1 p-0">
-      <SelectSizeDropdown
-        value={tableWhitespaceSize}
-        onChange={(e) => setTableWhitespaceSize(e.value)}
-      />
-    </div>
+    <SelectSizeDropdown
+      value={tableWhitespaceSize}
+      onChange={(e) => setTableWhitespaceSize(e.value)}
+    />
   );
 
   const dataTable = (
@@ -150,21 +144,43 @@ export default function SalesReconciliationList() {
       rows={salesReconciliations}
       APISortFieldMap={APISRSortFieldMap}
       callGetAPI={callAPI}
+      paginatorLeft={noPaginationSwitch}
+      paginatorRight={selectSizeButton}
     />
   );
 
   return (
     <div>
-      <div className="grid flex m-1">
-        {noPaginationSwitch}
-        {selectSizeButton}
-        {addSRButton}
-      </div>
-      <div className="flex justify-content-center">
-        <div className="card col-11 pt-0 px-3 justify-content-center">
+      {isNoPagination && (
+        <div className="grid flex m-1 justify-content-end">
+          <div className="flex col-4 justify-content-start mx-0 my-auto">
+            {noPaginationSwitch}
+          </div>
+          <div className="flex col-4 justify-content-end m-0">
+            {selectSizeButton}
+          </div>
+          <div className="flex justify-content-end col-2">{addSRButton}</div>
+        </div>
+      )}
+      <div
+        className={
+          !isNoPagination
+            ? "flex justify-content-end"
+            : "flex justify-content-center"
+        }
+      >
+        <div className="card col-9 pt-0 px-3 justify-content-center">
           <Toast ref={toast} />
           {dataTable}
         </div>
+        {!isNoPagination && (
+          <div
+            className="flex justify-content-end align-items-start mr-1 my-2"
+            style={{ width: "12.4%" }}
+          >
+            {addSRButton}
+          </div>
+        )}
       </div>
     </div>
   );

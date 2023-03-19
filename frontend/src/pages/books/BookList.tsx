@@ -443,7 +443,7 @@ export default function BookList() {
       icon="pi pi-file-export"
       onClick={callCSVExportAPI}
       iconPos="right"
-      className="p-button-sm my-auto"
+      className="p-button-sm my-auto mr-1"
     />
   );
 
@@ -451,7 +451,7 @@ export default function BookList() {
     <Button
       label="Shelf Calculator"
       icon="pi pi-calculator"
-      className="p-button-sm my-auto"
+      className="p-button-sm my-auto mr-1"
       onClick={() => navigate("/books/shelf-calculator")}
     />
   );
@@ -460,14 +460,14 @@ export default function BookList() {
     <AddPageButton
       onClick={() => navigate("/books/add")}
       label="Add Book"
-      className="mr-3"
+      className="my-auto mr-3"
     />
   );
 
   const rightSideButtons = (
     <>
-      {csvExportButton}
       {shelfCalculator}
+      {csvExportButton}
       {addBookButton}
     </>
   );
@@ -494,7 +494,7 @@ export default function BookList() {
     <div className="my-auto">
       <ToggleColumnButton
         onClick={toggleColumnPopupVisibity}
-        className="mr-4"
+        className="mr-2"
       />
     </div>
   );
@@ -529,11 +529,15 @@ export default function BookList() {
 
   return (
     <div>
-      <div className="grid justify-content-evenly flex m-1">
-        {isNoPagination && noPaginationSwitch}
-        {isNoPagination && toggleColumnButton}
-        {isNoPagination && selectSizeButton}
-        {rightSideButtons}
+      <div className="grid justify-content-end flex my-2">
+        <div className="flex justify-content-evenly m-0 p-0 col-7">
+          {isNoPagination && noPaginationSwitch}
+          {isNoPagination && toggleColumnButton}
+          {isNoPagination && selectSizeButton}
+        </div>
+        <div className="flex justify-content-end m-0 p-0 col-5">
+          {rightSideButtons}
+        </div>
       </div>
       <div className="card pt-0 px-3">
         <Toast ref={toast} />

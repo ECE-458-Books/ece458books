@@ -26,7 +26,7 @@ export default function SelectSizeDropdown(props: SelectSizeDropdownProps) {
         className="p-component p-text-secondary text-900 my-auto mr-1"
         htmlFor="whitespacedropdownselectorlabel"
       >
-        Whitespace Size
+        Cell Padding
       </label>
       <Dropdown
         value={props.value}

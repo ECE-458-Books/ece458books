@@ -1,9 +1,9 @@
 from rest_framework.parsers import BaseParser
-from defusedxml import ElementTree as ET
 from books.models import Book
 from books.isbn import ISBNTools
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
+from lxml import etree
 
 
 class XMLParser(BaseParser):
@@ -17,11 +17,22 @@ class XMLParser(BaseParser):
         return data
 
     def parse(self, stream, media_type=None, parser_context=None):
-        parser = ET.DefusedXMLParser()
         try:
-            tree = ET.parse(parser=parser, source=stream)
+            tree = etree.parse(source=stream)
         except Exception as e:
             raise serializers.ValidationError(e)
+
+        # check structure
+        with open("sales/xmlschema.xsd") as f:
+            xmlschema_doc = etree.parse(f)
+        xmlschema = etree.XMLSchema(xmlschema_doc)
+        try:
+            xmlschema.assertValid(tree)
+        except Exception as e:
+            raise serializers.ValidationError(e)
+        # if not xmlschema.validate(tree):
+        #     raise serializers.ValidationError("")
+
         root = tree.getroot()
         sales_record = {}
         sales_record['date'] = root.attrib['date']
@@ -53,6 +64,9 @@ class XMLParser(BaseParser):
                 continue
 
             sales_record['sales'].append(sale)
+        # Handle no valid sales in record
+        if len(sales_record['sales']) == 0:
+            raise serializers.ValidationError("No valid sales, sales record not added.")
         return sales_record
 
 

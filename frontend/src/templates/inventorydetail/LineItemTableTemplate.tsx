@@ -1,5 +1,4 @@
 import { DataTable, DataTableRowClickEvent } from "primereact/datatable";
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Updater } from "use-immer";
 import DeleteColumn from "../../components/datatable/DeleteColumn";
@@ -7,9 +6,7 @@ import {
   createColumns,
   TableColumn,
 } from "../../components/datatable/TableColumns";
-import BooksDropdown, {
-  BooksDropdownData,
-} from "../../components/dropdowns/BookDropdown";
+import BooksDropdown from "../../components/dropdowns/BookDropdown";
 import { NumberEditor } from "../../components/editors/NumberEditor";
 import { PriceEditor } from "../../components/editors/PriceEditor";
 import PriceTemplate from "../../components/templates/PriceTemplate";
@@ -48,13 +45,13 @@ interface InventoryDetailTemplateProps {
   getPriceForNewlySelectedBook: (title: string) => Promise<number>; // Update the price for a newly selected book
   isAddPage: boolean; // True if this is an add page
   isModifiable: boolean; // True if this page is modifiable
+  booksDropdownTitles: string[]; // The list of books for the books dropdown
 }
 
 export default function LineItemTableTemplate(
   props: InventoryDetailTemplateProps
 ) {
   const navigate = useNavigate();
-  const [booksDropdownTitles, setBooksDropdownTitles] = useState<string[]>([]);
 
   const COLUMNS: TableColumn<LineItem>[] = [
     {
@@ -150,15 +147,6 @@ export default function LineItemTableTemplate(
 
   // -------- VISUAL COMPONENTS --------
 
-  // Books Dropdown
-  useEffect(
-    () =>
-      BooksDropdownData({
-        setBookTitlesList: setBooksDropdownTitles,
-      }),
-    []
-  );
-
   const booksDropDownEditor = (
     value: string,
     onChange: (newValue: string) => void,
@@ -168,7 +156,7 @@ export default function LineItemTableTemplate(
       setSelectedBook={onChange}
       selectedBook={value}
       isDisabled={isDisabled}
-      bookTitlesList={booksDropdownTitles}
+      bookTitlesList={props.booksDropdownTitles}
       placeholder={value}
     />
   );

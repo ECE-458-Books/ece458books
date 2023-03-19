@@ -58,6 +58,7 @@ export default function PODetail() {
   // For Dropdown Menus
   const [booksMap, setBooksMap] = useState<Map<string, Book>>(new Map());
   const [vendorMap, setVendorMap] = useState<Map<string, number>>(new Map());
+  const [booksDropdownTitles, setBooksDropdownTitles] = useState<string[]>([]);
 
   // The rest of the data
   const [date, setDate] = useState<Date>(new Date());
@@ -93,6 +94,7 @@ export default function PODetail() {
     () =>
       BooksDropdownData({
         setBooksMap: setBooksMap,
+        setBookTitlesList: setBooksDropdownTitles,
       }),
     []
   );
@@ -391,6 +393,7 @@ export default function PODetail() {
       isAddPage={isPOAddPage}
       isModifiable={isModifiable}
       getPriceForNewlySelectedBook={() => Promise.resolve(0)}
+      booksDropdownTitles={booksDropdownTitles}
     />
   );
 

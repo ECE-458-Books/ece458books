@@ -3,6 +3,7 @@ from defusedxml import ElementTree as ET
 from books.models import Book
 from books.isbn import ISBNTools
 from django.core.exceptions import ObjectDoesNotExist
+from rest_framework import serializers
 
 
 class XMLParser(BaseParser):
@@ -17,7 +18,10 @@ class XMLParser(BaseParser):
 
     def parse(self, stream, media_type=None, parser_context=None):
         parser = ET.DefusedXMLParser()
-        tree = ET.parse(parser=parser, source=stream)
+        try:
+            tree = ET.parse(parser=parser, source=stream)
+        except Exception as e:
+            raise serializers.ValidationError(e)
         root = tree.getroot()
         sales_record = {}
         sales_record['date'] = root.attrib['date']

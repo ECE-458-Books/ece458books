@@ -54,6 +54,7 @@ export default function SRDetail() {
 
   // For dropdown menus
   const [booksMap, setBooksMap] = useState<Map<string, Book>>(new Map());
+  const [booksDropdownTitles, setBooksDropdownTitles] = useState<string[]>([]);
 
   // The rest of the data
   const [date, setDate] = useState<Date>(new Date());
@@ -90,6 +91,7 @@ export default function SRDetail() {
     () =>
       BooksDropdownData({
         setBooksMap: setBooksMap,
+        setBookTitlesList: setBooksDropdownTitles,
       }),
     []
   );
@@ -380,6 +382,7 @@ export default function SRDetail() {
       getPriceForNewlySelectedBook={(title) =>
         Promise.resolve(booksMap.get(title)!.retailPrice)
       }
+      booksDropdownTitles={booksDropdownTitles}
     />
   );
 

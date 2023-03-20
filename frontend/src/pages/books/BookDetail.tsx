@@ -22,7 +22,7 @@ import DeleteButton from "../../components/buttons/DeleteButton";
 import BackButton from "../../components/buttons/BackButton";
 import PriceTemplate from "../../components/templates/PriceTemplate";
 import DeletePopup from "../../components/popups/DeletePopup";
-import { DEFAULT_THICKNESS } from "../storeplanner/ShelfCalculator";
+import { DEFAULT_THICKNESS } from "../casedesigner/util/Calculations";
 import Restricted from "../../permissions/Restricted";
 import TextLabels from "../../components/text/TextLabels";
 import { TextWrapperNullableNumberEditor } from "../../components/text/TextWrapperNullableNumberEditor";

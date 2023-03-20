@@ -17,10 +17,12 @@ import PurchaseOrderList from "../../pages/purchases/POList";
 import PasswordChangePage from "../../pages/auth/PasswordChange";
 import SalesReportPage from "../../pages/sales/SalesReport";
 import BuyBackList from "../../pages/buybacks/BuyBackList";
-import ShelfCalculator from "../../pages/storeplanner/ShelfCalculator";
+import ShelfCalculator from "../../pages/casedesigner/ShelfCalculator";
 import VendorAdd from "../../pages/vendors/VendorAdd";
 import UserList from "../../pages/users/UserList";
 import UserDetail from "../../pages/users/UserDetail";
+import BookcaseList from "../../pages/casedesigner/BookcaseList";
+import BookcaseDetail from "../../pages/casedesigner/BookcaseDetail";
 import { AccessType } from "../../util/auth/UserTypes";
 
 interface RouterProps {
@@ -52,6 +54,7 @@ export default function Router(props: RouterProps) {
         />
         <Route path="vendors" element={<VendorList />} />
         <Route path="book-buybacks" element={<BuyBackList />} />
+        <Route path="bookcases" element={<BookcaseList />} />
         <Route path="books/detail/:id" element={<ModifyBook />} />
         <Route path="books/shelf-calculator" element={<ShelfCalculator />} />
         <Route path="genres/detail/:id" element={<GenreDetail />} />
@@ -59,6 +62,7 @@ export default function Router(props: RouterProps) {
         <Route path="sales-reconciliations/detail/:id" element={<ModifySR />} />
         <Route path="book-buybacks/detail/:id" element={<ModifyBB />} />
         <Route path="vendors/detail/:id" element={<VendorDetail />} />
+        <Route path="bookcases/detail/:id" element={<BookcaseDetail />} />
         <Route path="change-password" element={<PasswordChangePage />} />
         <Route path="sales-report" element={<SalesReportPage />} />
         {props.currentUser?.userType === "Administrator" && (
@@ -69,6 +73,7 @@ export default function Router(props: RouterProps) {
             <Route path="sales-reconciliations/add" element={<ModifySR />} />
             <Route path="book-buybacks/add" element={<ModifyBB />} />
             <Route path="vendors/add" element={<VendorAdd />} />
+            <Route path="bookcases/add" element={<BookcaseDetail />} />
             <Route path="users" element={<UserList />} />
             <Route path="users/add" element={<UserDetail />} />
             <Route path="users/detail/:id" element={<UserDetail />} />

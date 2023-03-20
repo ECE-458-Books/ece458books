@@ -24,7 +24,7 @@ import UserDetail from "../../pages/users/UserDetail";
 import { AccessType } from "../../util/auth/UserTypes";
 
 interface RouterProps {
-  onLogout: (user: AccessType | undefined) => void;
+  onLogout: () => void;
   currentUser: AccessType | undefined;
 }
 

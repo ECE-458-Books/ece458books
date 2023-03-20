@@ -49,6 +49,11 @@ function NavigationBar(props: NavigationBarProps) {
       command: () => navigate("/sales-report"),
     },
     {
+      label: "Bookcases",
+      icon: "pi pi-table",
+      command: () => navigate("/bookcases"),
+    },
+    {
       label: "Settings",
       icon: "pi pi-fw pi-wrench",
       items: [

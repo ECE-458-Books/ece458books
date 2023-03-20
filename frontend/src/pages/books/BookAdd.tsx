@@ -280,6 +280,10 @@ export default function BookAdd() {
     BOOKS_API.addBookInitialLookup({ isbns: textBox })
       .then((response) => {
         setIsLoadingButton(false);
+
+        const _data = [...books];
+        setBooks(_data);
+
         for (const book of response.books) {
           downloadAndSetBook(book);
         }

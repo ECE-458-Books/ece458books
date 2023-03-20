@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
-import { Toolbar } from "primereact/toolbar";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   AddPOReq,
@@ -47,6 +46,20 @@ import LineItemTableTemplate, {
 } from "../../templates/inventorydetail/LineItemTableTemplate";
 import Restricted from "../../permissions/Restricted";
 
+interface BackupDataStorePO {
+  date: Date;
+  vendorName: string;
+  purchases: LineItem[];
+  totalCost: number;
+}
+
+const EMPTY_ORIGINAL_DATA: BackupDataStorePO = {
+  date: new Date(),
+  vendorName: "",
+  purchases: [],
+  totalCost: 0,
+};
+
 export default function PODetail() {
   // -------- STATE --------
 
@@ -63,6 +76,10 @@ export default function PODetail() {
   // The rest of the data
   const [date, setDate] = useState<Date>(new Date());
   const [selectedVendorName, setSelectedVendorName] = useState<string>("");
+
+  const [originalData, setOriginalData] =
+    useState<BackupDataStorePO>(EMPTY_ORIGINAL_DATA);
+
   // useImmer is used to set state for nested data in a simplified format
   const [purchases, setPurchases] = useImmer<LineItem[]>([]);
   const [totalCost, setTotalCost] = useState<number>(0);
@@ -84,6 +101,12 @@ export default function PODetail() {
           setPurchases(purchaseOrder.purchases);
           setTotalCost(purchaseOrder.totalCost);
           setIsPageDeleteable(purchaseOrder.isDeletable);
+          setOriginalData({
+            date: purchaseOrder.date,
+            vendorName: purchaseOrder.vendorName,
+            totalCost: purchaseOrder.totalCost,
+            purchases: purchaseOrder.purchases,
+          });
         })
         .catch(() => showFailure(toast, "Could not fetch purchase order data"));
     }
@@ -232,6 +255,12 @@ export default function PODetail() {
       .then(() => {
         showSuccess(toast, "Purchase order modified successfully");
         setIsModifiable(!isModifiable);
+        setOriginalData({
+          date: date,
+          vendorName: selectedVendorName,
+          totalCost: totalCost,
+          purchases: purchases,
+        });
       })
       .catch(() => showFailure(toast, "Could not modify purchase order"));
   }
@@ -244,7 +273,7 @@ export default function PODetail() {
   // Top Line
 
   const titleText = (
-    <div className="pt-2 col-10">
+    <div className="pt-2 col-4">
       <AddDetailModifyTitle
         isModifyPage={isModifiable}
         isAddPage={isPOAddPage}
@@ -256,19 +285,17 @@ export default function PODetail() {
   );
 
   const backButton = (
-    <div className="flex col-1">
+    <div className="flex col-4">
       <BackButton className="ml-1" />
     </div>
   );
 
   const deleteButton = (
-    <div className="flex col-1">
-      <DeleteButton
-        visible={!isPOAddPage}
-        disabled={!isPageDeleteable}
-        onClick={deletePurchaseOrderPopup}
-      />
-    </div>
+    <DeleteButton
+      visible={!isPOAddPage}
+      disabled={!isPageDeleteable}
+      onClick={deletePurchaseOrderPopup}
+    />
   );
 
   const deletePopup = (
@@ -294,31 +321,41 @@ export default function PODetail() {
   );
 
   const csvGuideButton = (
-    <CSVEndUserDocButton visible={isModifiable} toast={toast} />
+    <div className="ml-1">
+      <CSVEndUserDocButton visible={isModifiable} toast={toast} />
+    </div>
   );
 
   const csvImportButton = (
     <CSVUploader visible={isModifiable} uploadHandler={csvUploadHandler} />
   );
 
-  const leftToolbar = (
-    <>
-      {addRowButton}
-      {csvImportButton}
-      {csvGuideButton}
-    </>
+  const tableHeader = (
+    <Restricted to={"modify"}>
+      <div className="flex">
+        {addRowButton}
+        {csvImportButton}
+        {csvGuideButton}
+      </div>
+    </Restricted>
   );
 
   // Center
   const editCancelButton = (
     <EditCancelButton
-      onClickEdit={() => setIsModifiable(!isModifiable)}
+      onClickEdit={() => {
+        setIsModifiable(!isModifiable);
+      }}
       onClickCancel={() => {
         setIsModifiable(!isModifiable);
-        window.location.reload();
+        setDate(originalData.date);
+        setSelectedVendorName(originalData.vendorName);
+        setTotalCost(originalData.totalCost);
+        setPurchases(originalData.purchases);
       }}
       isAddPage={isPOAddPage}
       isModifiable={isModifiable}
+      className="my-auto p-button-sm mr-1"
     />
   );
 
@@ -356,10 +393,12 @@ export default function PODetail() {
   );
 
   const rightToolbar = (
-    <>
-      {submitAndGoBackButton}
-      {submitButton}
-    </>
+    <Restricted to={"modify"}>
+      <div className="flex justify-content-end">
+        {submitAndGoBackButton}
+        {submitButton}
+      </div>
+    </Restricted>
   );
 
   // Items below toolbar
@@ -382,6 +421,13 @@ export default function PODetail() {
     />
   );
 
+  const rightButtons = (
+    <div className="flex col-4 justify-content-end">
+      {editCancelButton}
+      {deleteButton}
+    </div>
+  );
+
   // Datatable
   const dataTable = (
     <LineItemTableTemplate
@@ -394,6 +440,7 @@ export default function PODetail() {
       isModifiable={isModifiable}
       getPriceForNewlySelectedBook={() => Promise.resolve(0)}
       booksDropdownTitles={booksDropdownTitles}
+      tableHeader={tableHeader}
     />
   );
 
@@ -404,31 +451,29 @@ export default function PODetail() {
         <div className="flex col-12 p-0">
           {backButton}
           {titleText}
-          {deleteButton}
+          {rightButtons}
         </div>
         <div className="col-11">
           <form onSubmit={onSubmit}>
-            <Restricted to={"modify"}>
-              <Toolbar
-                className="mb-4"
-                left={leftToolbar}
-                center={editCancelButton}
-                right={rightToolbar}
-              />
-            </Restricted>
-
             <div className="flex col-12 justify-content-evenly mb-3">
               {totalDollars}
-              {calendar}
-              <div>
+              <div className="flex">
                 <label
                   htmlFor="vendor"
                   className="p-component text-teal-900 p-text-secondary my-auto pr-2"
                 >
-                  Vendor
+                  Vendor:
                 </label>
-                {vendorDropdown}
+                {isModifiable ? (
+                  vendorDropdown
+                ) : (
+                  <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
+                    {selectedVendorName}
+                  </p>
+                )}
               </div>
+              {calendar}
+              {isModifiable && rightToolbar}
             </div>
             {dataTable}
           </form>

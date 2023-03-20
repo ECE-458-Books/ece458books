@@ -16,7 +16,7 @@ export default function AddPageButton(props: AddPageButtonProps) {
         icon="pi pi-plus"
         onClick={props.onClick}
         iconPos="right"
-        className={"p-button-sm my-auto " + props.className}
+        className={"p-button-sm " + props.className}
       />
     </Restricted>
   );

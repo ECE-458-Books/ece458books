@@ -18,6 +18,8 @@ export default function GenreDetail() {
   const { id } = useParams();
   const [isModifiable, setIsModifiable] = useState<boolean>(false);
 
+  const [originalGenreName, setOriginalGenreName] = useState<string>("");
+
   const [genreName, setGenreName] = useState<string>("");
   const [genreBookCount, setGenreBookCount] = useState<number>(0);
   const [isConfirmationPopVisible, setIsConfirmationPopupVisible] =
@@ -33,6 +35,7 @@ export default function GenreDetail() {
       .then((response) => {
         setGenreName(response.name);
         setGenreBookCount(response.book_cnt);
+        setOriginalGenreName(response.name);
       })
       .catch(() => showFailure(toast, "Could not fetch genre data"));
   }, []);
@@ -71,7 +74,10 @@ export default function GenreDetail() {
     const modifiedGenre: Genre = { id: id!, name: genreName, bookCount: 0 };
     logger.debug("Edit Genre Submitted", modifiedGenre);
     GENRES_API.modifyGenre(modifiedGenre)
-      .then(() => showSuccess(toast, "Genre modified"))
+      .then(() => {
+        showSuccess(toast, "Genre modified");
+        setOriginalGenreName(genreName);
+      })
       .catch(() => showFailure(toast, "Genre could not be modified"));
     setIsModifiable(false);
   };
@@ -126,19 +132,25 @@ export default function GenreDetail() {
                   className="text-xl p-component text-teal-900 p-text-secondary"
                   htmlFor="genre"
                 >
-                  Genre
+                  Genre:
                 </label>
               </div>
-              <InputText
-                id="genre"
-                className="p-inputtext"
-                name="genre"
-                value={genreName}
-                disabled={!isModifiable}
-                onChange={(event: FormEvent<HTMLInputElement>): void => {
-                  setGenreName(event.currentTarget.value);
-                }}
-              />
+              {!isModifiable ? (
+                <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
+                  {genreName}
+                </p>
+              ) : (
+                <InputText
+                  id="genre"
+                  className="p-inputtext"
+                  name="genre"
+                  value={genreName}
+                  disabled={!isModifiable}
+                  onChange={(event: FormEvent<HTMLInputElement>): void => {
+                    setGenreName(event.currentTarget.value);
+                  }}
+                />
+              )}
             </div>
 
             <div className="grid justify-content-evenly col-12">
@@ -150,7 +162,7 @@ export default function GenreDetail() {
                   className="p-button-warning"
                   onClick={() => {
                     setIsModifiable(!isModifiable);
-                    window.location.reload();
+                    setGenreName(originalGenreName);
                   }}
                 />
               )}

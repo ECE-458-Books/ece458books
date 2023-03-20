@@ -13,6 +13,7 @@ export interface GenreDropdownProps {
   isDisabled?: boolean;
   style?: CSSProperties;
   showClearButton?: boolean;
+  className?: string;
 }
 
 export function GenresDropdownData(props: GenreDropdownDataProps) {
@@ -30,6 +31,7 @@ export default function GenresDropdown(props: GenreDropdownProps) {
       placeholder={"Select Genre"}
       showClear={props.showClearButton ?? true}
       disabled={props.isDisabled}
+      className={props.className}
       style={
         props.style ?? {
           width: "100%",

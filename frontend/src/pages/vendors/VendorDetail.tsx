@@ -12,6 +12,17 @@ import BackButton from "../../components/buttons/BackButton";
 import DeleteButton from "../../components/buttons/DeleteButton";
 import DeletePopup from "../../components/popups/DeletePopup";
 import Restricted from "../../permissions/Restricted";
+import PercentTemplate from "../../components/templates/PercentTemplate";
+
+interface BackupDataStoreVendor {
+  vendorName: string;
+  buybackRate: number | undefined;
+}
+
+const EMPTY_ORIGINAL_DATA: BackupDataStoreVendor = {
+  vendorName: "",
+  buybackRate: undefined,
+};
 
 export default function VendorDetail() {
   // From URL
@@ -21,6 +32,9 @@ export default function VendorDetail() {
   const [vendorName, setVendorName] = useState<string>("");
   const [numPOFromVendor, setNumPOFromVendor] = useState<number>(0);
   const [buybackRate, setBuybackRate] = useState<number>();
+
+  const [originalData, setOriginalData] =
+    useState<BackupDataStoreVendor>(EMPTY_ORIGINAL_DATA);
 
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
@@ -66,6 +80,10 @@ export default function VendorDetail() {
         setVendorName(response.name);
         setNumPOFromVendor(response.num_purchase_orders);
         setBuybackRate(response.buyback_rate);
+        setOriginalData({
+          vendorName: response.name,
+          buybackRate: response.buyback_rate,
+        });
       })
       .catch(() => showFailure(toast, "Could not fetch vendor data"));
   }, []);
@@ -87,7 +105,13 @@ export default function VendorDetail() {
     };
 
     VENDORS_API.modifyVendor(modifiedVendor)
-      .then(() => showSuccess(toast, "Vendor modified"))
+      .then(() => {
+        showSuccess(toast, "Vendor modified");
+        setOriginalData({
+          vendorName: vendorName,
+          buybackRate: buybackRate,
+        });
+      })
       .catch(() => showFailure(toast, "Vendor could not be modified"));
     setIsModifiable(false);
   };
@@ -146,19 +170,25 @@ export default function VendorDetail() {
                   className="text-xl p-component text-teal-900 p-text-secondary"
                   htmlFor="vendor"
                 >
-                  Name
+                  Name:
                 </label>
               </div>
               <div className="col-7">
-                <InputText
-                  id="vendor"
-                  name="vendor"
-                  value={vendorName}
-                  disabled={!isModifiable}
-                  onChange={(event: FormEvent<HTMLInputElement>): void => {
-                    setVendorName(event.currentTarget.value);
-                  }}
-                />
+                {!isModifiable ? (
+                  <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
+                    {vendorName}
+                  </p>
+                ) : (
+                  <InputText
+                    id="vendor"
+                    name="vendor"
+                    value={vendorName}
+                    disabled={!isModifiable}
+                    onChange={(event: FormEvent<HTMLInputElement>): void => {
+                      setVendorName(event.currentTarget.value);
+                    }}
+                  />
+                )}
               </div>
             </div>
 
@@ -168,10 +198,20 @@ export default function VendorDetail() {
                   className="text-xl p-component text-teal-900 p-text-secondary"
                   htmlFor="vendor"
                 >
-                  Buyback Rate
+                  Buyback Rate:
                 </label>
               </div>
-              <div className="col-7">{buybackRateEditor}</div>
+              <div className="col-7">
+                {!isModifiable ? (
+                  <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
+                    {buybackRate == undefined
+                      ? "No Buyback Program"
+                      : PercentTemplate(buybackRate)}
+                  </p>
+                ) : (
+                  buybackRateEditor
+                )}
+              </div>
             </div>
 
             <div className="grid justify-content-evenly col-12">
@@ -183,7 +223,8 @@ export default function VendorDetail() {
                   className="p-button-warning"
                   onClick={() => {
                     setIsModifiable(!isModifiable);
-                    window.location.reload();
+                    setVendorName(originalData.vendorName);
+                    setBuybackRate(originalData.buybackRate);
                   }}
                 />
               )}

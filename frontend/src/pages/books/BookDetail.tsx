@@ -2,10 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
 import { useNavigate, useParams } from "react-router-dom";
 import { Book, emptyBook } from "./BookList";
-import {
-  InputNumber,
-  InputNumberValueChangeEvent,
-} from "primereact/inputnumber";
 import { APIBook, BOOKS_API } from "../../apis/books/BooksAPI";
 import { FormikErrors, useFormik } from "formik";
 import { Toast } from "primereact/toast";
@@ -28,6 +24,9 @@ import PriceTemplate from "../../components/templates/PriceTemplate";
 import DeletePopup from "../../components/popups/DeletePopup";
 import { DEFAULT_THICKNESS } from "../storeplanner/ShelfCalculator";
 import Restricted from "../../permissions/Restricted";
+import TextLabels from "../../components/text/TextLabels";
+import { TextWrapperNullableNumberEditor } from "../../components/text/TextWrapperNullableNumberEditor";
+import { PriceEditor } from "../../components/editors/PriceEditor";
 
 interface ErrorDisplay {
   message: string;
@@ -456,12 +455,7 @@ export default function BookDetail() {
         <form onSubmit={formik.handleSubmit}>
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex p-0">
-              <label
-                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
-                htmlFor="title"
-              >
-                Title:
-              </label>
+              <TextLabels label="Title:" />
               <p className="p-component p-text-secondary text-900 text-3xl text-center my-0">
                 {title}
               </p>
@@ -469,12 +463,7 @@ export default function BookDetail() {
           </div>
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex p-0">
-              <label
-                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
-                htmlFor="authors"
-              >
-                Author(s):
-              </label>
+              <TextLabels label="Author(s):" />
               <p className="p-component p-text-secondary text-900 text-2xl text-center m-0">
                 {authors}
               </p>
@@ -482,23 +471,13 @@ export default function BookDetail() {
           </div>
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex p-0 col-6">
-              <label
-                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
-                htmlFor="isbn13"
-              >
-                ISBN13:
-              </label>
+              <TextLabels label="ISBN13:" />
               <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
                 {isbn13}
               </p>
             </div>
             <div className="flex p-0 col-6">
-              <label
-                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
-                htmlFor="isbn10"
-              >
-                ISBN10:
-              </label>
+              <TextLabels label="ISBN10:" />
               <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
                 {isbn10}
               </p>
@@ -506,23 +485,13 @@ export default function BookDetail() {
           </div>
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex p-0 col-6">
-              <label
-                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
-                htmlFor="publisher"
-              >
-                Publisher:
-              </label>
+              <TextLabels label="Publisher:" />
               <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
                 {publisher}
               </p>
             </div>
             <div className="flex p-0 col-6">
-              <label
-                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
-                htmlFor="pubYear"
-              >
-                Publication Year:
-              </label>
+              <TextLabels label="Publication Year:" />
               <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
                 {pubYear}
               </p>
@@ -530,109 +499,71 @@ export default function BookDetail() {
           </div>
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex p-0 col-5">
-              <label
-                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
-                htmlFor="genre"
-              >
-                Genre:
-              </label>
-              {genreDropdown}
+              <TextLabels label="Genre:" />
+              {!isModifiable ? (
+                <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
+                  {genre}
+                </p>
+              ) : (
+                genreDropdown
+              )}
             </div>
           </div>
-          <h1 className="p-component p-text-secondary mb-1 mt-2 p-0 text-xl text-center text-900 color: var(--surface-800);">
+          <h1 className="col-9 p-component p-text-secondary mb-1 mt-2 p-0 text-xl text-center text-900 color: var(--surface-800);">
             Dimensions (in)
           </h1>
           <div className="flex col-12 justify-content-start p-1">
-            <div className="p-0 col-4">
-              <label
-                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
-                htmlFor="height"
-              >
-                Height:
-              </label>
-              <div className="flex 2rem">
-                <InputNumber
-                  id="height"
-                  className="w-4"
-                  name="height"
-                  value={height}
-                  maxFractionDigits={2}
-                  disabled={!isModifiable}
-                  onValueChange={(e: InputNumberValueChangeEvent) =>
-                    setHeight(e.value ?? undefined)
-                  }
-                />
-              </div>
+            <div className="flex p-0 col-4">
+              <TextLabels label="Height:" />
+              <TextWrapperNullableNumberEditor
+                disabled={!isModifiable}
+                textValue={height}
+                value={height}
+                onValueChange={(newValue) => setHeight(newValue ?? undefined)}
+                defaultValue={undefined}
+                valueClassName="flex 2rem"
+              />
             </div>
-            <div className="p-0 col-4">
-              <label
-                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
-                htmlFor="width"
-              >
-                Width:
-              </label>
-              <div className="flex 2rem">
-                <InputNumber
-                  id="width"
-                  className="w-4"
-                  name="width"
-                  value={width}
-                  disabled={!isModifiable}
-                  maxFractionDigits={2}
-                  onValueChange={(e: InputNumberValueChangeEvent) =>
-                    setWidth(e.value ?? undefined)
-                  }
-                />
-              </div>
+            <div className="flex p-0 col-4">
+              <TextLabels label="Width:" />
+              <TextWrapperNullableNumberEditor
+                disabled={!isModifiable}
+                textValue={width}
+                value={width}
+                onValueChange={(newValue) => setWidth(newValue ?? undefined)}
+                defaultValue={undefined}
+                valueClassName="flex 2rem"
+              />
             </div>
-            <div className="p-0 col-4">
-              <label
-                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
-                htmlFor="thickness"
-              >
-                Thickness:
-              </label>
-              <div className="flex 2rem">
-                <InputNumber
-                  id="thickness"
-                  className="w-4"
-                  name="thickness"
-                  value={thickness}
-                  maxFractionDigits={2}
-                  disabled={!isModifiable}
-                  onValueChange={(e: InputNumberValueChangeEvent) =>
-                    setThickness(e.value ?? undefined)
-                  }
-                />
-              </div>
+            <div className="flex p-0 col-4">
+              <TextLabels label="Thickness:" />
+              <TextWrapperNullableNumberEditor
+                disabled={!isModifiable}
+                textValue={thickness}
+                value={thickness}
+                onValueChange={(newValue) =>
+                  setThickness(newValue ?? undefined)
+                }
+                defaultValue={undefined}
+                valueClassName="flex 2rem"
+              />
             </div>
           </div>
           <div className="flex col-12 justify-content-start p-1">
-            <div className="p-0 col-6">
-              <label
-                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
-                htmlFor="pageCount"
-              >
-                Page Count:
-              </label>
-              <InputNumber
-                id="pageCount"
-                className="w-4"
-                name="pageCount"
-                value={pageCount}
+            <div className="flex p-0 col-6">
+              <TextLabels label="Page Count:" />
+              <TextWrapperNullableNumberEditor
                 disabled={!isModifiable}
-                onValueChange={(e: InputNumberValueChangeEvent) =>
-                  setPageCount(e.value ?? undefined)
+                textValue={pageCount}
+                value={pageCount}
+                onValueChange={(newValue) =>
+                  setPageCount(newValue ?? undefined)
                 }
+                defaultValue={undefined}
               />
             </div>
             <div className="flex p-0 col-6">
-              <label
-                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
-                htmlFor="shelfspace"
-              >
-                Shelf Space (in):
-              </label>
+              <TextLabels label="Shelf Space (in):" />
               <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
                 <label className={thickness ? "" : "font-bold"}>
                   {shelfSpace}
@@ -642,23 +573,13 @@ export default function BookDetail() {
           </div>
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex col-6 p-0">
-              <label
-                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
-                htmlFor="invencountry"
-              >
-                Inventory Count:
-              </label>
+              <TextLabels label="Inventory Count:" />
               <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
                 {stock}
               </p>
             </div>
             <div className="flex p-0 col-6">
-              <label
-                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
-                htmlFor="daysofsupply"
-              >
-                Days of Supply:
-              </label>
+              <TextLabels label="Days of Supply:" />
               <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
                 {daysOfSupply}
               </p>
@@ -666,48 +587,31 @@ export default function BookDetail() {
           </div>
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex p-0 col-4">
-              <label
-                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
-                htmlFor="shelfspace"
-              >
-                Last Month Sales:
-              </label>
+              <TextLabels label="Last Month Sales:" />
               <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
                 {lastMonthSales}
               </p>
             </div>
             <div className="flex p-0 col-4">
-              <label
-                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
-                htmlFor="daysofsupply"
-              >
-                Best Buyback Price:
-              </label>
+              <TextLabels label="Best Buyback Price:" />
               <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
                 {PriceTemplate(bestBuybackPrice)}
               </p>
             </div>
-            <div className="col-4 p-0">
-              <label
-                className="p-component p-text-secondary text-teal-900 my-auto mr-2"
-                htmlFor="retailprice"
-              >
-                Retail Price:
-              </label>
-              <InputNumber
-                id="retail_price"
-                className="w-4"
-                name="retail_price"
-                mode="currency"
-                currency="USD"
-                locale="en-US"
-                value={price}
-                maxFractionDigits={2}
-                disabled={!isModifiable}
-                onValueChange={(e: InputNumberValueChangeEvent) =>
-                  setPrice(e.value ?? 0)
-                }
-              />
+            <div className="flex col-4 p-0">
+              <TextLabels label="Retail Price:" />
+              {!isModifiable ? (
+                <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
+                  {PriceTemplate(price)}
+                </p>
+              ) : (
+                PriceEditor(
+                  price,
+                  (newValue: number) => setPrice(newValue ?? 0),
+                  "w-4",
+                  !isModifiable
+                )
+              )}
             </div>
           </div>
         </form>

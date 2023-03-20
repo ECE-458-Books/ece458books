@@ -17,6 +17,7 @@ import { filterById, findById } from "../../util/IDOps";
 import { calculateTotal } from "../../util/LineItemOps";
 import { errorCellBody } from "../errors/CSVImportErrors";
 import { v4 as uuid } from "uuid";
+import { NormalTextDisplay } from "../../components/text/NormalTextDisplay";
 
 export interface LineItem {
   isNewRow: boolean;
@@ -48,6 +49,7 @@ interface InventoryDetailTemplateProps {
   getPriceForNewlySelectedBook: (title: string) => Promise<number>; // Update the price for a newly selected book
   isAddPage: boolean; // True if this is an add page
   isModifiable: boolean; // True if this page is modifiable
+  tableHeader?: JSX.Element; // add buttons and functionality to attached element of table on the top
 }
 
 export default function LineItemTableTemplate(
@@ -67,52 +69,67 @@ export default function LineItemTableTemplate(
     {
       field: "bookTitle",
       header: "Book",
-      customBody: (rowData: LineItem) =>
-        booksDropDownEditor(rowData.bookTitle, async (newValue) => {
-          const newPrice = await props.getPriceForNewlySelectedBook(newValue);
-          props.setLineItems((draft) => {
-            const lineItem = findById(draft, rowData.id)!;
-            lineItem.bookTitle = newValue;
-            lineItem.price = newPrice;
-            props.setTotalDollars(calculateTotal(draft));
-          });
-        }),
+      customBody: (rowData: LineItem) => {
+        return !props.isModifiable
+          ? NormalTextDisplay({ value: rowData.bookTitle })
+          : booksDropDownEditor(
+              rowData.bookTitle,
+              async (newValue) => {
+                const newPrice = await props.getPriceForNewlySelectedBook(
+                  newValue
+                );
+                props.setLineItems((draft) => {
+                  const lineItem = findById(draft, rowData.id)!;
+                  lineItem.bookTitle = newValue;
+                  lineItem.price = newPrice;
+                  props.setTotalDollars(calculateTotal(draft));
+                });
+              },
+              !props.isModifiable
+            );
+      },
     },
 
     {
       field: "quantity",
       header: "Quantity",
-      customBody: (rowData: LineItem) =>
-        NumberEditor(
-          rowData.quantity,
-          (newValue) => {
-            props.setLineItems((draft) => {
-              const lineItem = findById(draft, rowData.id)!;
-              lineItem.quantity = newValue;
-              props.setTotalDollars(calculateTotal(draft));
-            });
-          },
-          "integernumberPODetail",
-          !props.isModifiable
-        ),
+      customBody: (rowData: LineItem) => {
+        return !props.isModifiable
+          ? NormalTextDisplay({ value: rowData.quantity })
+          : NumberEditor(
+              rowData.quantity,
+              (newValue) => {
+                props.setLineItems((draft) => {
+                  const lineItem = findById(draft, rowData.id)!;
+                  lineItem.quantity = newValue;
+                  props.setTotalDollars(calculateTotal(draft));
+                });
+              },
+              "integernumberPODetail",
+              !props.isModifiable
+            );
+      },
       style: { minWidth: "8rem" },
     },
     {
       field: "price",
       header: props.priceColumnHeader,
-      customBody: (rowData: LineItem) =>
-        PriceEditor(
-          rowData.price,
-          (newValue) => {
-            props.setLineItems((draft) => {
-              const lineItem = findById(draft, rowData.id)!;
-              lineItem.price = newValue;
-              props.setTotalDollars(calculateTotal(draft));
-            });
-          },
-          "retailnumberPODetail",
-          !props.isModifiable
-        ),
+      customBody: (rowData: LineItem) => {
+        return !props.isModifiable
+          ? PriceTemplate(rowData.price)
+          : PriceEditor(
+              rowData.price,
+              (newValue) => {
+                props.setLineItems((draft) => {
+                  const lineItem = findById(draft, rowData.id)!;
+                  lineItem.price = newValue;
+                  props.setTotalDollars(calculateTotal(draft));
+                });
+              },
+              "retailnumberPODetail",
+              !props.isModifiable
+            );
+      },
       style: { minWidth: "10rem" },
     },
     {
@@ -176,6 +193,7 @@ export default function LineItemTableTemplate(
   return (
     <DataTable
       showGridlines
+      header={props.tableHeader}
       value={props.lineItems}
       className="editable-cells-table"
       responsiveLayout="scroll"

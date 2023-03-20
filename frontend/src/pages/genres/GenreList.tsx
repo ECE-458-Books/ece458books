@@ -15,11 +15,11 @@ import { TableColumn } from "../../components/datatable/TableColumns";
 import { logger } from "../../util/Logger";
 import AddPageButton from "../../components/buttons/AddPageButton";
 import LabeledSwitch from "../../components/buttons/LabeledSwitch";
-import SelectSizeButton, {
-  SelectSizeButtonOptions,
-} from "../../components/buttons/SelectSizeButton";
 import { Button } from "primereact/button";
 import ListTemplate from "../../templates/list/ListTemplate";
+import SelectSizeDropdown, {
+  SelectSizeDropdownOptions,
+} from "../../components/buttons/SelectSizeDropdown";
 
 export interface Genre {
   id: string;
@@ -55,7 +55,7 @@ export default function GenreList() {
   const [genres, setGenres] = useState<Genre[]>([]); // The data displayed in the table
   const [isNoPagination, setIsNoPagination] = useState<boolean>(false);
   const [tableWhitespaceSize, setTableWhitespaceSize] =
-    useState<SelectSizeButtonOptions>(SelectSizeButtonOptions.Small);
+    useState<SelectSizeDropdownOptions>(SelectSizeDropdownOptions.Small);
 
   // ----------------- METHODS -----------------
   // Navigator used to go to a different page
@@ -118,32 +118,26 @@ export default function GenreList() {
   const toast = useRef<Toast>(null);
 
   const addGenreButton = (
-    <div className="flex justify-content-end col-3">
-      <AddPageButton
-        onClick={() => navigate("/genres/add")}
-        label="Add Genre"
-        className="mr-2"
-      />
-    </div>
+    <AddPageButton
+      onClick={() => navigate("/genres/add")}
+      label="Add Genre"
+      className="mr-2"
+    />
   );
 
   const noPaginationSwitch = (
-    <div className="flex col-3 justify-content-center p-0 my-auto">
-      <LabeledSwitch
-        label="Show All"
-        onChange={() => setIsNoPagination(!isNoPagination)}
-        value={isNoPagination}
-      />
-    </div>
+    <LabeledSwitch
+      label="Show All"
+      onChange={() => setIsNoPagination(!isNoPagination)}
+      value={isNoPagination}
+    />
   );
 
   const selectSizeButton = (
-    <div className="flex col-6 justify-content-center my-1 p-0">
-      <SelectSizeButton
-        value={tableWhitespaceSize}
-        onChange={(e) => setTableWhitespaceSize(e.value)}
-      />
-    </div>
+    <SelectSizeDropdown
+      value={tableWhitespaceSize}
+      onChange={(e) => setTableWhitespaceSize(e.value)}
+    />
   );
 
   const dataTable = (
@@ -159,21 +153,43 @@ export default function GenreList() {
       rows={genres}
       APISortFieldMap={APIGenreSortFieldMap}
       callGetAPI={callAPI}
+      paginatorLeft={noPaginationSwitch}
+      paginatorRight={selectSizeButton}
     />
   );
 
   return (
     <div>
-      <div className="grid flex m-1">
-        {noPaginationSwitch}
-        {selectSizeButton}
-        {addGenreButton}
-      </div>
-      <div className="flex justify-content-center">
-        <div className="card col-8 pt-0 px-3 justify-content-center">
+      {isNoPagination && (
+        <div className="grid flex justify-content-end m-1">
+          <div className="flex col-4 justify-content-start m-0 my-auto">
+            {noPaginationSwitch}
+          </div>
+          <div className="flex col-4 justify-content-end m-0 mr-3">
+            {selectSizeButton}
+          </div>
+          <div className="flex justify-content-end col-2">{addGenreButton}</div>
+        </div>
+      )}
+      <div
+        className={
+          !isNoPagination
+            ? "flex justify-content-end"
+            : "flex justify-content-center"
+        }
+      >
+        <div className="card col-9 pt-0 px-3 justify-content-center;">
           <Toast ref={toast} />
           {dataTable}
         </div>
+        {!isNoPagination && (
+          <div
+            className="flex justify-content-end align-items-start mr-1 my-2"
+            style={{ width: "12.4%" }}
+          >
+            {addGenreButton}
+          </div>
+        )}
       </div>
     </div>
   );

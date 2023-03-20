@@ -12,10 +12,10 @@ function App() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // When the user is updated (and when visiting the site in a new tab), we re-run the code inside this block
+  // When the user is updated (or when visiting the site on a new tab), we re-run the code inside this block
   useEffect(() => {
     /* If access token is over 1 day old or not valid, we set URL
-    to the login page. The actual page that is shown 
+    to the login page. The actual component that is shown 
     is defined below the useEffect */
     if (!IsUserLoggedIn()) {
       navigate("/");

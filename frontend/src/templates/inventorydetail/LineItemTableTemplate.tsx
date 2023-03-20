@@ -1,5 +1,4 @@
 import { DataTable, DataTableRowClickEvent } from "primereact/datatable";
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Updater } from "use-immer";
 import DeleteColumn from "../../components/datatable/DeleteColumn";
@@ -7,9 +6,7 @@ import {
   createColumns,
   TableColumn,
 } from "../../components/datatable/TableColumns";
-import BooksDropdown, {
-  BooksDropdownData,
-} from "../../components/dropdowns/BookDropdown";
+import BooksDropdown from "../../components/dropdowns/BookDropdown";
 import { NumberEditor } from "../../components/editors/NumberEditor";
 import { PriceEditor } from "../../components/editors/PriceEditor";
 import PriceTemplate from "../../components/templates/PriceTemplate";
@@ -17,6 +14,7 @@ import { filterById, findById } from "../../util/IDOps";
 import { calculateTotal } from "../../util/LineItemOps";
 import { errorCellBody } from "../errors/CSVImportErrors";
 import { v4 as uuid } from "uuid";
+import { NormalTextDisplay } from "../../components/text/NormalTextDisplay";
 
 export interface LineItem {
   isNewRow: boolean;
@@ -48,13 +46,14 @@ interface InventoryDetailTemplateProps {
   getPriceForNewlySelectedBook: (title: string) => Promise<number>; // Update the price for a newly selected book
   isAddPage: boolean; // True if this is an add page
   isModifiable: boolean; // True if this page is modifiable
+  booksDropdownTitles: string[]; // The list of books for the books dropdown
+  tableHeader?: JSX.Element; // add buttons and functionality to attached element of table on the top
 }
 
 export default function LineItemTableTemplate(
   props: InventoryDetailTemplateProps
 ) {
   const navigate = useNavigate();
-  const [booksDropdownTitles, setBooksDropdownTitles] = useState<string[]>([]);
 
   const COLUMNS: TableColumn<LineItem>[] = [
     {
@@ -67,52 +66,67 @@ export default function LineItemTableTemplate(
     {
       field: "bookTitle",
       header: "Book",
-      customBody: (rowData: LineItem) =>
-        booksDropDownEditor(rowData.bookTitle, async (newValue) => {
-          const newPrice = await props.getPriceForNewlySelectedBook(newValue);
-          props.setLineItems((draft) => {
-            const lineItem = findById(draft, rowData.id)!;
-            lineItem.bookTitle = newValue;
-            lineItem.price = newPrice;
-            props.setTotalDollars(calculateTotal(draft));
-          });
-        }),
+      customBody: (rowData: LineItem) => {
+        return !props.isModifiable
+          ? NormalTextDisplay({ value: rowData.bookTitle })
+          : booksDropDownEditor(
+              rowData.bookTitle,
+              async (newValue) => {
+                const newPrice = await props.getPriceForNewlySelectedBook(
+                  newValue
+                );
+                props.setLineItems((draft) => {
+                  const lineItem = findById(draft, rowData.id)!;
+                  lineItem.bookTitle = newValue;
+                  lineItem.price = newPrice;
+                  props.setTotalDollars(calculateTotal(draft));
+                });
+              },
+              !props.isModifiable
+            );
+      },
     },
 
     {
       field: "quantity",
       header: "Quantity",
-      customBody: (rowData: LineItem) =>
-        NumberEditor(
-          rowData.quantity,
-          (newValue) => {
-            props.setLineItems((draft) => {
-              const lineItem = findById(draft, rowData.id)!;
-              lineItem.quantity = newValue;
-              props.setTotalDollars(calculateTotal(draft));
-            });
-          },
-          "integernumberPODetail",
-          !props.isModifiable
-        ),
+      customBody: (rowData: LineItem) => {
+        return !props.isModifiable
+          ? NormalTextDisplay({ value: rowData.quantity })
+          : NumberEditor(
+              rowData.quantity,
+              (newValue) => {
+                props.setLineItems((draft) => {
+                  const lineItem = findById(draft, rowData.id)!;
+                  lineItem.quantity = newValue;
+                  props.setTotalDollars(calculateTotal(draft));
+                });
+              },
+              "integernumberPODetail",
+              !props.isModifiable
+            );
+      },
       style: { minWidth: "8rem" },
     },
     {
       field: "price",
       header: props.priceColumnHeader,
-      customBody: (rowData: LineItem) =>
-        PriceEditor(
-          rowData.price,
-          (newValue) => {
-            props.setLineItems((draft) => {
-              const lineItem = findById(draft, rowData.id)!;
-              lineItem.price = newValue;
-              props.setTotalDollars(calculateTotal(draft));
-            });
-          },
-          "retailnumberPODetail",
-          !props.isModifiable
-        ),
+      customBody: (rowData: LineItem) => {
+        return !props.isModifiable
+          ? PriceTemplate(rowData.price)
+          : PriceEditor(
+              rowData.price,
+              (newValue) => {
+                props.setLineItems((draft) => {
+                  const lineItem = findById(draft, rowData.id)!;
+                  lineItem.price = newValue;
+                  props.setTotalDollars(calculateTotal(draft));
+                });
+              },
+              "retailnumberPODetail",
+              !props.isModifiable
+            );
+      },
       style: { minWidth: "10rem" },
     },
     {
@@ -150,15 +164,6 @@ export default function LineItemTableTemplate(
 
   // -------- VISUAL COMPONENTS --------
 
-  // Books Dropdown
-  useEffect(
-    () =>
-      BooksDropdownData({
-        setBookTitlesList: setBooksDropdownTitles,
-      }),
-    []
-  );
-
   const booksDropDownEditor = (
     value: string,
     onChange: (newValue: string) => void,
@@ -168,7 +173,7 @@ export default function LineItemTableTemplate(
       setSelectedBook={onChange}
       selectedBook={value}
       isDisabled={isDisabled}
-      bookTitlesList={booksDropdownTitles}
+      bookTitlesList={props.booksDropdownTitles}
       placeholder={value}
     />
   );
@@ -176,6 +181,7 @@ export default function LineItemTableTemplate(
   return (
     <DataTable
       showGridlines
+      header={props.tableHeader}
       value={props.lineItems}
       className="editable-cells-table"
       responsiveLayout="scroll"

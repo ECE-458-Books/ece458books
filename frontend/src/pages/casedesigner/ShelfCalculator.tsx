@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useImmer } from "use-immer";
 import BooksDropdown, {
   BooksDropdownData,
-  formatBookForDropdown,
 } from "../../components/dropdowns/BookDropdown";
 import DisplayModeDropdown, {
   DisplayMode,
@@ -11,36 +10,34 @@ import {
   createColumns,
   TableColumn,
 } from "../../components/datatable/TableColumns";
-import { filterById, findById } from "../../util/IDOps";
+import { filterById } from "../../util/IDOps";
 import AlteredTextTemplate from "../../components/templates/AlteredTextTemplate";
 import { NumberEditor } from "../../components/editors/NumberEditor";
 import { Book } from "../books/BookList";
-import DeleteTemplate from "../../components/templates/DeleteButton";
 import AddRowButton from "../../components/buttons/AddRowButton";
 import { DataTable } from "primereact/datatable";
 import { Toolbar } from "primereact/toolbar";
-import { Column } from "primereact/column";
 import BackButton from "../../components/buttons/BackButton";
+import { calculateTotalShelfSpace } from "./util/Calculations";
+import { DisplayBook } from "./BookcaseList";
+import {
+  updateRowOnBookChange,
+  updateRowOnDisplayCountChange,
+  updateRowOnDisplayModeChange,
+} from "./util/Updaters";
+import DeleteColumn from "../../components/datatable/DeleteColumn";
 
-const DEFAULT_WIDTH = 5;
-// const DEFAULT_HEIGHT = 8 Unused for now, but if needed later, uncomment
-export const DEFAULT_THICKNESS = 0.8;
-const SHELF_DEPTH = 8;
-
-interface ShelfCalculatorRow {
+export interface ShelfCalculatorRow extends DisplayBook {
   id: string;
-  bookISBN: string;
-  bookTitle: string;
   stock: number;
-  displayCount: number;
-  maxDisplayCount: number;
-  displayMode: DisplayMode;
-  shelfSpace: number; // This measures the horizontal distance on store shelves
+  shelfSpace: number;
   hasUnknownDimensions: boolean;
+  maxDisplayCount?: number; // Only for cover out
 }
 
 const emptyRow: ShelfCalculatorRow = {
   id: "",
+  bookId: "0",
   bookISBN: "",
   bookTitle: "",
   stock: 1,
@@ -65,7 +62,13 @@ export default function ShelfCalculator() {
       header: "Book",
       customBody: (rowData: ShelfCalculatorRow) =>
         booksDropdownEditor(rowData.bookTitle, (newValue) => {
-          handleBookChange(rowData, newValue);
+          updateRowOnBookChange(
+            setRows,
+            setTotalShelfSpace,
+            rowData,
+            newValue,
+            booksMap
+          );
         }),
       style: { width: "40%" },
     },
@@ -81,12 +84,18 @@ export default function ShelfCalculator() {
         NumberEditor(
           rowData.displayCount,
           (newValue) => {
-            handleDisplayCountChange(rowData, newValue);
+            updateRowOnDisplayCountChange(
+              setRows,
+              setTotalShelfSpace,
+              rowData,
+              newValue,
+              booksMap
+            );
           },
           "",
           false,
           0, // min
-          rowData.maxDisplayCount // max
+          rowData.maxDisplayCount // max, undefined if spine out
         ),
       style: { width: "10%" },
     },
@@ -95,7 +104,13 @@ export default function ShelfCalculator() {
       header: "Display Mode",
       customBody: (rowData: ShelfCalculatorRow) =>
         displayModeDropdownEditor(rowData.displayMode, (newValue) => {
-          handleDisplayModeChange(rowData, newValue);
+          updateRowOnDisplayModeChange(
+            setRows,
+            setTotalShelfSpace,
+            rowData,
+            newValue,
+            booksMap
+          );
         }),
       style: { width: "20%" },
     },
@@ -110,94 +125,6 @@ export default function ShelfCalculator() {
         ),
     },
   ];
-
-  const calculateShelfSpace = (row: ShelfCalculatorRow) => {
-    const book = booksMap.get(row.bookTitle)!;
-    const width = book.width ?? DEFAULT_WIDTH;
-    const thickness = book.thickness ?? DEFAULT_THICKNESS;
-
-    if (row.displayMode == DisplayMode.SPINE_OUT) {
-      return thickness * row.displayCount;
-    } else {
-      return width;
-    }
-  };
-
-  const calculateMaxDisplayCount = (row: ShelfCalculatorRow) => {
-    const book = booksMap.get(row.bookTitle)!;
-    const thickness = book.thickness ?? DEFAULT_THICKNESS;
-
-    if (row.displayMode == DisplayMode.SPINE_OUT) {
-      return row.stock;
-    } else {
-      const maxBooksThatFit = Math.floor(SHELF_DEPTH / thickness);
-      return Math.min(maxBooksThatFit, row.stock);
-    }
-  };
-
-  const calculateCurrentDisplayCount = (row: ShelfCalculatorRow) => {
-    const book = booksMap.get(row.bookTitle)!;
-    const thickness = book.thickness ?? DEFAULT_THICKNESS;
-
-    if (row.displayMode == DisplayMode.SPINE_OUT) {
-      return Math.min(row.stock, row.displayCount);
-    } else {
-      const maxBooksThatFit = Math.floor(SHELF_DEPTH / thickness);
-      // We take the minimum of the stock of this book, the currently selected
-      // display count, and the maximum number of books that can fit on the shelf
-      return Math.min(maxBooksThatFit, row.stock, row.displayCount);
-    }
-  };
-
-  // Handlers for when data is changed
-  const handleBookChange = (
-    rowData: ShelfCalculatorRow,
-    newBookTitle: string
-  ) => {
-    setRows((draft) => {
-      const row = findById(draft, rowData.id)!;
-      const book = booksMap.get(newBookTitle)!;
-
-      row.bookTitle = formatBookForDropdown(book.title, book.isbn13);
-      row.stock = book.stock;
-      row.hasUnknownDimensions = !book.thickness;
-      row.maxDisplayCount = calculateMaxDisplayCount(row);
-      row.displayCount = calculateMaxDisplayCount(row);
-      row.shelfSpace = calculateShelfSpace(row);
-      updateTotalShelfSpace(draft);
-    });
-  };
-
-  const handleDisplayCountChange = (
-    rowData: ShelfCalculatorRow,
-    newDisplayCount: number
-  ) => {
-    setRows((draft) => {
-      const row = findById(draft, rowData.id)!;
-      row.displayCount = newDisplayCount;
-      row.shelfSpace = calculateShelfSpace(row);
-      updateTotalShelfSpace(draft);
-    });
-  };
-
-  const handleDisplayModeChange = (
-    rowData: ShelfCalculatorRow,
-    newDisplayMode: DisplayMode
-  ) => {
-    setRows((draft) => {
-      const row = findById(draft, rowData.id)!;
-      row.displayMode = newDisplayMode;
-      row.maxDisplayCount = calculateMaxDisplayCount(row);
-      row.displayCount = calculateCurrentDisplayCount(row);
-      row.shelfSpace = calculateShelfSpace(row);
-      updateTotalShelfSpace(draft);
-    });
-  };
-
-  const updateTotalShelfSpace = (rows: ShelfCalculatorRow[]) => {
-    const total = rows.reduce((total, item) => total + item.shelfSpace, 0);
-    setTotalShelfSpace(Math.round(total * 100) / 100);
-  };
 
   // Dropdowns
 
@@ -235,19 +162,18 @@ export default function ShelfCalculator() {
     />
   );
 
-  // Delete icon for each row
-  const rowDeleteButton = DeleteTemplate<ShelfCalculatorRow>({
-    onDelete: (rowData) => {
-      const newRows = filterById(rows, rowData.id, setRows);
-      updateTotalShelfSpace(newRows);
-    },
-  });
-
   // Button for adding a new row
   const rowAddButton = AddRowButton<ShelfCalculatorRow>({
     emptyItem: emptyRow,
     setRows: setRows,
     rows: rows,
+  });
+
+  const deleteColumn = DeleteColumn<ShelfCalculatorRow>({
+    onDelete: (rowData) => {
+      const newRows = filterById(rows, rowData.id, setRows);
+      setTotalShelfSpace(calculateTotalShelfSpace(newRows));
+    },
   });
 
   const columns = createColumns(COLUMNS);
@@ -282,12 +208,7 @@ export default function ShelfCalculator() {
           editMode="cell"
         >
           {columns}
-          <Column
-            body={rowDeleteButton}
-            header={"Delete"}
-            exportable={false}
-            style={{ width: "10%" }}
-          ></Column>
+          {deleteColumn}
         </DataTable>
       </div>
     </div>

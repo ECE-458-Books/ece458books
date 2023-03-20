@@ -1,0 +1,18 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+<xs:element name="sale">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="item" maxOccurs="unbounded">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="isbn" type="xs:string"/>
+<xs:element name="qty" type="xs:positiveInteger"/>
+<xs:element name="price" type="xs:decimal"/>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+</xs:sequence>
+<xs:attribute name="date" type="xs:date" use="required"/>
+</xs:complexType>
+</xs:element>
+</xs:schema>

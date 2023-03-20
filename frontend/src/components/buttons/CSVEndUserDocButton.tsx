@@ -26,6 +26,8 @@ export default function CSVEndUserDocButton(props: CSVEndUserDocButtonProps) {
       visible={props.visible}
       onClick={callCSVHelpGuideAPI}
       className={"p-button-rounded my-auto" + props.className}
+      tooltip="Click for CSV Import Help Guide"
+      tooltipOptions={{ showDelay: 1000, hideDelay: 300 }}
     />
   );
 }

@@ -1,5 +1,4 @@
 import { Shelf } from "../../pages/casedesigner/BookcaseList";
-import { externalToInternalDate } from "../../util/DateOps";
 import { APIBookcase, APIShelf } from "./CaseDesignerAPI";
 
 export function APIToInternalBookcaseConversion(bookcase: APIBookcase) {

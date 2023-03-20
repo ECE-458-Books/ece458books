@@ -10,7 +10,7 @@ import {
   passwordValueCheck,
   pwCheckFooter,
   pwCheckHeader,
-} from "../../util/PWValueCheck";
+} from "../../util/auth/PWValueCheck";
 import { showFailure, showSuccess } from "../../components/Toast";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
 import DeletePopup from "../../components/popups/DeletePopup";

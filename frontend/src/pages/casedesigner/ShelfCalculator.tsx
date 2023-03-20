@@ -27,25 +27,24 @@ import {
   calculateMaxDisplayCount,
   calculateShelfSpace,
 } from "../../util/CaseDesigner";
+import { DisplayBook } from "./BookcaseList";
 
-export interface ShelfCalculatorRow {
+export interface ShelfCalculatorRow extends DisplayBook {
   id: string;
-  bookISBN: string;
-  bookTitle: string;
   stock: number;
-  displayCount: number;
-  maxDisplayCount?: number; // Only for cover out display mode, otherwise it is infinite
-  displayMode: DisplayMode;
-  shelfSpace: number; // This measures the horizontal distance on store shelves
+  shelfSpace: number;
   hasUnknownDimensions: boolean;
+  maxDisplayCount?: number; // Only for cover out
 }
 
 const emptyRow: ShelfCalculatorRow = {
   id: "",
+  bookId: "0",
   bookISBN: "",
   bookTitle: "",
   stock: 1,
   displayCount: 1,
+  maxDisplayCount: 1,
   displayMode: DisplayMode.SPINE_OUT,
   shelfSpace: 0,
   hasUnknownDimensions: false,

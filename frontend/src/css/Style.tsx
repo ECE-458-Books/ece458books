@@ -6,4 +6,5 @@ export interface Style {
   minHeight?: string;
   height?: string;
   paddingLeft?: string;
+  "font-size"?: string;
 }

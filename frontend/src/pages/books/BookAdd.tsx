@@ -28,9 +28,10 @@ import ImageUploader, {
 } from "../../components/uploaders/ImageFileUploader";
 import { FileUploadHandlerEvent } from "primereact/fileupload";
 import { useImmer } from "use-immer";
-import { findById } from "../../util/IDOps";
+import { filterById, findById } from "../../util/IDOps";
 import BackButton from "../../components/buttons/BackButton";
 import "../../css/TableCell.css";
+import DeleteColumn from "../../components/datatable/DeleteColumn";
 
 export interface BookWithDBTag extends Book {
   fromDB: boolean;
@@ -63,7 +64,7 @@ export default function BookAdd() {
       setSelectedGenre={onChange}
       genresList={genreNamesList}
       selectedGenre={value}
-      style={{ width: "10rem" }}
+      className="genreDropdown"
       showClearButton={false}
     />
   );
@@ -74,7 +75,7 @@ export default function BookAdd() {
       field: "fromDB",
       header: "Book Status",
       customBody: statusTemplate,
-      style: { width: "5%" },
+      style: { width: "2%", "font-size": "small" },
     },
     {
       field: "thumbnailURL",
@@ -85,23 +86,23 @@ export default function BookAdd() {
           imageUploadButton(rowData),
           rowData.thumbnailURL
         ),
-      style: { width: "1rem" },
+      style: { width: "2%", "font-size": "small" },
     },
 
     {
       field: "title",
       header: "Title",
-      style: { width: "15%" },
+      style: { width: "25%", "font-size": "small" },
     },
     {
       field: "author",
       header: "Authors",
-      style: { width: "10%" },
+      style: { width: "10%", "font-size": "small" },
     },
     {
       field: "genres",
       header: "Genre",
-      style: { width: "13%" },
+      style: { width: "10%", "font-size": "small" },
       customBody: (rowData: BookWithDBTag) =>
         genresDropdownEditor(rowData.genres, (newValue) => {
           setBooks((draft) => {
@@ -113,27 +114,27 @@ export default function BookAdd() {
     {
       field: "isbn13",
       header: "ISBN 13",
-      style: { width: "7%" },
+      style: { width: "4%", "font-size": "small" },
     },
     {
       field: "isbn10",
       header: "ISBN 10",
-      style: { width: "5%" },
+      style: { width: "4%", "font-size": "small" },
     },
     {
       field: "publisher",
       header: "Publisher",
-      style: { width: "10%" },
+      style: { width: "10%", "font-size": "small" },
     },
     {
       field: "publishedYear",
       header: "Publish Year",
-      style: { width: "2rem" },
+      style: { width: "4%", "font-size": "small" },
     },
     {
       field: "pageCount",
       header: "Page Count",
-      style: { width: "5%" },
+      style: { width: "2%", "font-size": "small" },
       customBody: (rowData: BookWithDBTag) =>
         NullableIntegerEditor(
           rowData.pageCount,
@@ -149,7 +150,7 @@ export default function BookAdd() {
     {
       field: "width",
       header: "Width",
-      style: { width: "5%" },
+      style: { width: "2%", "font-size": "small" },
       customBody: (rowData: BookWithDBTag) =>
         NullableNumberEditor(
           rowData.width,
@@ -165,7 +166,7 @@ export default function BookAdd() {
     {
       field: "height",
       header: "Height",
-      style: { width: "5%" },
+      style: { width: "2%", "font-size": "small" },
       customBody: (rowData: BookWithDBTag) =>
         NullableNumberEditor(
           rowData.height,
@@ -181,7 +182,7 @@ export default function BookAdd() {
     {
       field: "thickness",
       header: "Thickness",
-      style: { width: "5%" },
+      style: { width: "2%", "font-size": "small" },
       customBody: (rowData: BookWithDBTag) =>
         NullableNumberEditor(
           rowData.thickness,
@@ -197,7 +198,7 @@ export default function BookAdd() {
     {
       field: "retailPrice",
       header: "Retail Price",
-      style: { width: "5%" },
+      style: { width: "2%", "font-size": "small" },
       customBody: (rowData: BookWithDBTag) =>
         PriceEditor(
           rowData.retailPrice,
@@ -254,7 +255,7 @@ export default function BookAdd() {
           onImageChange(e, rowData.id)
         }
         className=""
-        style={{ height: "10", width: "10", paddingLeft: "5" }}
+        style={{ height: 10, width: 10, paddingLeft: 5 }}
       />
     );
   };
@@ -280,6 +281,9 @@ export default function BookAdd() {
     BOOKS_API.addBookInitialLookup({ isbns: textBox })
       .then((response) => {
         setIsLoadingButton(false);
+
+        const _data = [...books];
+        setBooks(_data);
         for (const book of response.books) {
           downloadAndSetBook(book);
         }
@@ -363,6 +367,19 @@ export default function BookAdd() {
     event.preventDefault();
   };
 
+  const clearEditTable = () => {
+    setBooks([]);
+  };
+
+  // Delete icon for each row
+  const deleteColumn = DeleteColumn<BookWithDBTag>({
+    onDelete: (rowData) => {
+      filterById(books, rowData.id, setBooks);
+    },
+    style: { width: "2%", fontSize: 12 },
+    buttonStyle: { width: 30, height: 30 },
+  });
+
   const columns = createColumns(COLUMNS);
 
   const backButton = (
@@ -428,7 +445,7 @@ export default function BookAdd() {
                   label="Lookup"
                   type="submit"
                   icon
-                  className="p-button-success p-button-raised"
+                  className="p-button-success"
                 />
               </div>
             </div>
@@ -443,23 +460,37 @@ export default function BookAdd() {
           </label>
         </div>
         <form onSubmit={onFinalSubmit}>
-          <DataTable
-            value={books}
-            showGridlines
-            editMode="cell"
-            className="editable-cells-table py-5"
-            responsiveLayout="scroll"
-            size="small"
-          >
-            {columns}
-          </DataTable>
-          <div className="flex justify-content-center col-12">
-            <Button
-              id="confirmbooks"
-              name="confirmbooks"
-              label="Submit"
-              type="submit"
-            />
+          <div className="grid flex justify-content-center">
+            <div className="col-12">
+              <DataTable
+                value={books}
+                showGridlines
+                editMode="cell"
+                className="editable-cells-table py-5"
+                responsiveLayout="scroll"
+                size="small"
+              >
+                {columns}
+                {deleteColumn}
+              </DataTable>
+            </div>
+            <div className="flex justify-content-between col-4">
+              <Button
+                id="clearEditTable"
+                name="clearEditTable"
+                label="Clear"
+                type="button"
+                onClick={clearEditTable}
+                className="p-button-info"
+              />
+              <Button
+                id="confirmbooks"
+                name="confirmbooks"
+                label="Submit"
+                className="p-button-success p-button-raised"
+                type="submit"
+              />
+            </div>
           </div>
         </form>
       </div>

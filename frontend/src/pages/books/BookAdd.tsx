@@ -32,6 +32,7 @@ import { filterById, findById } from "../../util/IDOps";
 import BackButton from "../../components/buttons/BackButton";
 import "../../css/TableCell.css";
 import DeleteColumn from "../../components/datatable/DeleteColumn";
+import { ProgressSpinner } from "primereact/progressspinner";
 
 export interface BookWithDBTag extends Book {
   fromDB: boolean;
@@ -75,7 +76,7 @@ export default function BookAdd() {
       field: "fromDB",
       header: "Book Status",
       customBody: statusTemplate,
-      style: { width: "2%", "font-size": "small" },
+      style: { width: "2%", fontSize: "small" },
     },
     {
       field: "thumbnailURL",
@@ -86,23 +87,23 @@ export default function BookAdd() {
           imageUploadButton(rowData),
           rowData.thumbnailURL
         ),
-      style: { width: "2%", "font-size": "small" },
+      style: { width: "2%", fontSize: "small" },
     },
 
     {
       field: "title",
       header: "Title",
-      style: { width: "25%", "font-size": "small" },
+      style: { width: "25%", fontSize: "small" },
     },
     {
       field: "author",
       header: "Authors",
-      style: { width: "10%", "font-size": "small" },
+      style: { width: "10%", fontSize: "small" },
     },
     {
       field: "genres",
       header: "Genre",
-      style: { width: "10%", "font-size": "small" },
+      style: { width: "10%", fontSize: "small" },
       customBody: (rowData: BookWithDBTag) =>
         genresDropdownEditor(rowData.genres, (newValue) => {
           setBooks((draft) => {
@@ -114,27 +115,27 @@ export default function BookAdd() {
     {
       field: "isbn13",
       header: "ISBN 13",
-      style: { width: "4%", "font-size": "small" },
+      style: { width: "4%", fontSize: "small" },
     },
     {
       field: "isbn10",
       header: "ISBN 10",
-      style: { width: "4%", "font-size": "small" },
+      style: { width: "4%", fontSize: "small" },
     },
     {
       field: "publisher",
       header: "Publisher",
-      style: { width: "10%", "font-size": "small" },
+      style: { width: "10%", fontSize: "small" },
     },
     {
       field: "publishedYear",
       header: "Publish Year",
-      style: { width: "4%", "font-size": "small" },
+      style: { width: "4%", fontSize: "small" },
     },
     {
       field: "pageCount",
       header: "Page Count",
-      style: { width: "2%", "font-size": "small" },
+      style: { width: "2%", fontSize: "small" },
       customBody: (rowData: BookWithDBTag) =>
         NullableIntegerEditor(
           rowData.pageCount,
@@ -150,7 +151,7 @@ export default function BookAdd() {
     {
       field: "width",
       header: "Width",
-      style: { width: "2%", "font-size": "small" },
+      style: { width: "2%", fontSize: "small" },
       customBody: (rowData: BookWithDBTag) =>
         NullableNumberEditor(
           rowData.width,
@@ -166,7 +167,7 @@ export default function BookAdd() {
     {
       field: "height",
       header: "Height",
-      style: { width: "2%", "font-size": "small" },
+      style: { width: "2%", fontSize: "small" },
       customBody: (rowData: BookWithDBTag) =>
         NullableNumberEditor(
           rowData.height,
@@ -182,7 +183,7 @@ export default function BookAdd() {
     {
       field: "thickness",
       header: "Thickness",
-      style: { width: "2%", "font-size": "small" },
+      style: { width: "2%", fontSize: "small" },
       customBody: (rowData: BookWithDBTag) =>
         NullableNumberEditor(
           rowData.thickness,
@@ -198,7 +199,7 @@ export default function BookAdd() {
     {
       field: "retailPrice",
       header: "Retail Price",
-      style: { width: "2%", "font-size": "small" },
+      style: { width: "2%", fontSize: "small" },
       customBody: (rowData: BookWithDBTag) =>
         PriceEditor(
           rowData.retailPrice,
@@ -432,12 +433,19 @@ export default function BookAdd() {
                 onClick={() => setTextBox("")}
                 className="p-button-info"
               />
-              <div>
+              <div className="flex">
                 {isLoadingButton && (
-                  <i
-                    className="pi pi-spin pi-spinner mr-1"
-                    style={{ fontSize: "2rem" }}
-                  ></i>
+                  <div className="justify-content-center mr-2 my-auto">
+                    <ProgressSpinner
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                      }}
+                      strokeWidth="8"
+                      fill="var(--surface-ground)"
+                      animationDuration=".5s"
+                    />
+                  </div>
                 )}
                 <Button
                   id="addbooksubmission"

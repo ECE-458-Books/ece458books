@@ -50,7 +50,10 @@ import LineItemTableTemplate, {
 import Restricted from "../../permissions/Restricted";
 import { Bookcase } from "./BookcaseList";
 import { CASE_DESIGNER_API } from "../../apis/casedesigner/CaseDesignerAPI";
-import { APIToInternalBookcaseConversion } from "../../apis/casedesigner/CaseDesignerConversions";
+import {
+  APIToInternalBookcaseConversion,
+  InternalToAPIBookcaseConversion,
+} from "../../apis/casedesigner/CaseDesignerConversions";
 
 const emptyBookcase: Bookcase = {
   id: "",
@@ -126,52 +129,29 @@ export default function BookcaseDetail() {
     }
   };
 
-  // Add the book buyback
   const callAddBookcaseAPI = () => {
-    BUYBACK_API.addBuyBack(buyBack)
+    const APIbookcase = InternalToAPIBookcaseConversion(bookcase);
+    CASE_DESIGNER_API.addBookcase(APIbookcase)
       .then(() => {
         showSuccess(toast, "Bookcase added successfully");
         isGoBackActive ? navigate("/bookcase") : window.location.reload();
       })
       .catch((error) => {
-        showFailure(
-          toast,
-          error.data.errors[0] ?? "Failed to add book buyback"
-        );
+        showFailure(toast, error.data.errors[0] ?? "Failed to add bookcase");
       });
   };
 
-  // Modify the sales reconciliation
   const callModifyBookcaseAPI = () => {
-    // Otherwise, it is a modify page
-    const apiSales = buybacks.map((sale) => {
-      return {
-        id: sale.isNewRow ? undefined : sale.id,
-        book: booksMap.get(sale.bookTitle)?.id ?? sale.bookId,
-        quantity: sale.quantity,
-        unit_buyback_price: sale.price,
-      } as APIBBSaleRow;
-    });
-
-    const buyBack = {
-      id: id,
-      date: internalToExternalDate(date),
-      vendor: vendorMap.get(selectedVendorName),
-      buybacks: apiSales,
-    } as ModifyBBReq;
-
-    BUYBACK_API.modifyBuyBack(buyBack)
+    const APIbookcase = InternalToAPIBookcaseConversion(bookcase);
+    // DEAL WITH THE FACT THAT ID IS UNDEFINED
+    CASE_DESIGNER_API.modifyBookcase(APIbookcase)
       .then(() => {
-        showSuccess(toast, "Book Buyback modified successfully");
-        setIsModifiable(!isModifiable);
-        setOriginalData({
-          date: date,
-          vendorName: selectedVendorName,
-          totalRevenue: totalRevenue,
-          buybacks: buybacks,
-        });
+        showSuccess(toast, "Bookcase added successfully");
+        isGoBackActive ? navigate("/bookcase") : window.location.reload();
       })
-      .catch(() => showFailure(toast, "Could not modify book buyback"));
+      .catch((error) => {
+        showFailure(toast, error.data.errors[0] ?? "Failed to add bookcase");
+      });
   };
 
   // -------- TEMPLATES/VISUAL ELEMENTS --------
@@ -224,20 +204,6 @@ export default function BookcaseDetail() {
       label={"Add Book"}
       isVisible={isModifiable}
     />
-  );
-
-  const csvImportButton = (
-    <CSVUploader
-      visible={isModifiable}
-      disabled={selectedVendorName == ""}
-      uploadHandler={csvUploadHandler}
-    />
-  );
-
-  const csvGuideButton = (
-    <div className="ml-1">
-      <CSVEndUserDocButton visible={isModifiable} toast={toast} />
-    </div>
   );
 
   // Center

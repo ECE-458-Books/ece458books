@@ -1,4 +1,4 @@
-import { Shelf } from "../../pages/casedesigner/BookcaseList";
+import { Bookcase, Shelf } from "../../pages/casedesigner/BookcaseList";
 import { APIBookcase, APIShelf } from "./CaseDesignerAPI";
 
 export function APIToInternalBookcaseConversion(bookcase: APIBookcase) {
@@ -24,6 +24,29 @@ export function APIToInternalShelfConversion(shelf: APIShelf): Shelf {
         bookTitle: displayedBook.book_title!,
         displayMode: displayedBook.display_mode,
         displayCount: displayedBook.display_count,
+      };
+    }),
+  };
+}
+
+export function InternalToAPIBookcaseConversion(bookcase: Bookcase) {
+  return {
+    id: Number(bookcase.id),
+    name: bookcase.name,
+    width: bookcase.width,
+    shelves: bookcase.shelves.map((shelf) => {
+      return InternalToAPIShelfConversion(shelf);
+    }),
+  };
+}
+
+export function InternalToAPIShelfConversion(shelf: Shelf): APIShelf {
+  return {
+    displayed_books: shelf.displayedBooks.map((displayedBook) => {
+      return {
+        book: Number(displayedBook.bookId),
+        display_mode: displayedBook.displayMode,
+        display_count: displayedBook.displayCount,
       };
     }),
   };

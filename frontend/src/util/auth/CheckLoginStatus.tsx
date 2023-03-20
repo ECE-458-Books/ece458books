@@ -1,8 +1,9 @@
 export default function IsUserLoggedIn() {
   const loginTime = localStorage.getItem("loginTime");
+  const accessToken = localStorage.getItem("accessToken");
   const now = new Date();
 
-  return loginTime && AddOneDay(loginTime!) > now;
+  return accessToken && loginTime && AddOneDay(loginTime!) > now;
 }
 
 function AddOneDay(dateStr: string) {

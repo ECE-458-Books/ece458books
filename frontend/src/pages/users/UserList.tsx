@@ -21,7 +21,7 @@ export default function UserList() {
       <AddPageButton
         onClick={() => navigate("/users/add")}
         label="Add User"
-        className="mr-2"
+        className="my-auto mr-2"
       />
     </div>
   );

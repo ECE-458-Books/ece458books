@@ -15,10 +15,10 @@ import { TableColumn } from "../../components/datatable/TableColumns";
 import PercentTemplate from "../../components/templates/PercentTemplate";
 import AddPageButton from "../../components/buttons/AddPageButton";
 import LabeledSwitch from "../../components/buttons/LabeledSwitch";
-import SelectSizeButton, {
-  SelectSizeButtonOptions,
-} from "../../components/buttons/SelectSizeButton";
 import ListTemplate from "../../templates/list/ListTemplate";
+import SelectSizeDropdown, {
+  SelectSizeDropdownOptions,
+} from "../../components/buttons/SelectSizeDropdown";
 
 // The Vendor Interface
 export interface Vendor {
@@ -54,7 +54,7 @@ export default function VendorList() {
   const [vendors, setVendors] = useState<Vendor[]>([]); // The data displayed in the table
   const [isNoPagination, setIsNoPagination] = useState<boolean>(false);
   const [tableWhitespaceSize, setTableWhitespaceSize] =
-    useState<SelectSizeButtonOptions>(SelectSizeButtonOptions.Small);
+    useState<SelectSizeDropdownOptions>(SelectSizeDropdownOptions.Small);
 
   // ----------------- METHODS -----------------
 
@@ -94,32 +94,26 @@ export default function VendorList() {
   const toast = useRef<Toast>(null);
 
   const addVendorButton = (
-    <div className="flex justify-content-end col-3">
-      <AddPageButton
-        onClick={() => navigate("/vendors/add")}
-        label="Add Vendor"
-        className="mr-2"
-      />
-    </div>
+    <AddPageButton
+      onClick={() => navigate("/vendors/add")}
+      label="Add Vendor"
+      className="mr-2"
+    />
   );
 
   const noPaginationSwitch = (
-    <div className="flex col-3 justify-content-center p-0 my-auto">
-      <LabeledSwitch
-        label="Show All"
-        onChange={() => setIsNoPagination(!isNoPagination)}
-        value={isNoPagination}
-      />
-    </div>
+    <LabeledSwitch
+      label="Show All"
+      onChange={() => setIsNoPagination(!isNoPagination)}
+      value={isNoPagination}
+    />
   );
 
   const selectSizeButton = (
-    <div className="flex col-6 justify-content-center my-1 p-0">
-      <SelectSizeButton
-        value={tableWhitespaceSize}
-        onChange={(e) => setTableWhitespaceSize(e.value)}
-      />
-    </div>
+    <SelectSizeDropdown
+      value={tableWhitespaceSize}
+      onChange={(e) => setTableWhitespaceSize(e.value)}
+    />
   );
 
   const dataTable = (
@@ -135,21 +129,49 @@ export default function VendorList() {
       rows={vendors}
       APISortFieldMap={APIVendorSortFieldMap}
       callGetAPI={callAPI}
+      paginatorLeft={
+        <div className="flex justify-content-center">{noPaginationSwitch}</div>
+      }
+      paginatorRight={
+        <div className="flex justify-content-center">{selectSizeButton}</div>
+      }
     />
   );
 
   return (
     <div>
-      <div className="grid flex m-1">
-        {noPaginationSwitch}
-        {selectSizeButton}
-        {addVendorButton}
-      </div>
-      <div className="flex justify-content-center">
-        <div className="card col-8 pt-0 px-3 justify-content-center">
+      {isNoPagination && (
+        <div className="grid flex m-1 justify-content-end">
+          <div className="flex col-4 justify-content-start m-0 my-auto">
+            {noPaginationSwitch}
+          </div>
+          <div className="flex col-4 justify-content-end m-0">
+            {selectSizeButton}
+          </div>
+          <div className="flex justify-content-end col-2">
+            {addVendorButton}
+          </div>
+        </div>
+      )}
+      <div
+        className={
+          !isNoPagination
+            ? "flex justify-content-end"
+            : "flex justify-content-center"
+        }
+      >
+        <div className="card col-9 pt-0 px-3 justify-content-center">
           <Toast ref={toast} />
           {dataTable}
         </div>
+        {!isNoPagination && (
+          <div
+            className="flex justify-content-end align-items-start mr-1 my-2"
+            style={{ width: "12.4%" }}
+          >
+            {addVendorButton}
+          </div>
+        )}
       </div>
     </div>
   );

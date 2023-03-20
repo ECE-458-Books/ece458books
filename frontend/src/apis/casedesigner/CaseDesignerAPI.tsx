@@ -65,14 +65,14 @@ export const CASE_DESIGNER_API = {
     });
   },
 
-  getBookcaseDetail: async function (id: number): Promise<APIBookcase> {
+  getBookcaseDetail: async function (id: string): Promise<APIBookcase> {
     return await API.request({
       url: CASE_DESIGNER_EXTENSION.concat("/".concat(id.toString())),
       method: METHOD_GET,
     });
   },
 
-  deleteBookcase: async function (id: number) {
+  deleteBookcase: async function (id: string) {
     return await API.request({
       url: CASE_DESIGNER_EXTENSION.concat("/".concat(id.toString())),
       method: METHOD_DELETE,

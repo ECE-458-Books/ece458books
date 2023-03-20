@@ -1,9 +1,9 @@
-interface BookDetailTextLabelsProps {
+interface TextLabelsProps {
   label: string;
   labelClassName?: string;
 }
 
-export default function BookDetailTextLabels(props: BookDetailTextLabelsProps) {
+export default function TextLabels(props: TextLabelsProps) {
   return (
     <label
       className={

@@ -24,11 +24,9 @@ import PriceTemplate from "../../components/templates/PriceTemplate";
 import DeletePopup from "../../components/popups/DeletePopup";
 import { DEFAULT_THICKNESS } from "../storeplanner/ShelfCalculator";
 import Restricted from "../../permissions/Restricted";
-import BookDetailTextLabels from "../../components/text/BookDetailTextLabels";
-import {
-  BookDetailToggleableNumberEditor,
-  InputNumberModeOptions,
-} from "../../components/text/BookDetailToggleableNumberEditor";
+import TextLabels from "../../components/text/TextLabels";
+import { TextWrapperNullableNumberEditor } from "../../components/text/TextWrapperNullableNumberEditor";
+import { PriceEditor } from "../../components/editors/PriceEditor";
 
 interface ErrorDisplay {
   message: string;
@@ -457,7 +455,7 @@ export default function BookDetail() {
         <form onSubmit={formik.handleSubmit}>
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex p-0">
-              <BookDetailTextLabels label="Title:" />
+              <TextLabels label="Title:" />
               <p className="p-component p-text-secondary text-900 text-3xl text-center my-0">
                 {title}
               </p>
@@ -465,7 +463,7 @@ export default function BookDetail() {
           </div>
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex p-0">
-              <BookDetailTextLabels label="Author(s):" />
+              <TextLabels label="Author(s):" />
               <p className="p-component p-text-secondary text-900 text-2xl text-center m-0">
                 {authors}
               </p>
@@ -473,13 +471,13 @@ export default function BookDetail() {
           </div>
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex p-0 col-6">
-              <BookDetailTextLabels label="ISBN13:" />
+              <TextLabels label="ISBN13:" />
               <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
                 {isbn13}
               </p>
             </div>
             <div className="flex p-0 col-6">
-              <BookDetailTextLabels label="ISBN10:" />
+              <TextLabels label="ISBN10:" />
               <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
                 {isbn10}
               </p>
@@ -487,13 +485,13 @@ export default function BookDetail() {
           </div>
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex p-0 col-6">
-              <BookDetailTextLabels label="Publisher:" />
+              <TextLabels label="Publisher:" />
               <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
                 {publisher}
               </p>
             </div>
             <div className="flex p-0 col-6">
-              <BookDetailTextLabels label="Publication Year:" />
+              <TextLabels label="Publication Year:" />
               <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
                 {pubYear}
               </p>
@@ -501,7 +499,7 @@ export default function BookDetail() {
           </div>
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex p-0 col-5">
-              <BookDetailTextLabels label="Genre:" />
+              <TextLabels label="Genre:" />
               {!isModifiable ? (
                 <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
                   {genre}
@@ -516,8 +514,8 @@ export default function BookDetail() {
           </h1>
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex p-0 col-4">
-              <BookDetailTextLabels label="Height:" />
-              <BookDetailToggleableNumberEditor
+              <TextLabels label="Height:" />
+              <TextWrapperNullableNumberEditor
                 disabled={!isModifiable}
                 textValue={height}
                 value={height}
@@ -527,8 +525,8 @@ export default function BookDetail() {
               />
             </div>
             <div className="flex p-0 col-4">
-              <BookDetailTextLabels label="Width:" />
-              <BookDetailToggleableNumberEditor
+              <TextLabels label="Width:" />
+              <TextWrapperNullableNumberEditor
                 disabled={!isModifiable}
                 textValue={width}
                 value={width}
@@ -538,8 +536,8 @@ export default function BookDetail() {
               />
             </div>
             <div className="flex p-0 col-4">
-              <BookDetailTextLabels label="Thickness:" />
-              <BookDetailToggleableNumberEditor
+              <TextLabels label="Thickness:" />
+              <TextWrapperNullableNumberEditor
                 disabled={!isModifiable}
                 textValue={thickness}
                 value={thickness}
@@ -553,8 +551,8 @@ export default function BookDetail() {
           </div>
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex p-0 col-6">
-              <BookDetailTextLabels label="Page Count:" />
-              <BookDetailToggleableNumberEditor
+              <TextLabels label="Page Count:" />
+              <TextWrapperNullableNumberEditor
                 disabled={!isModifiable}
                 textValue={pageCount}
                 value={pageCount}
@@ -565,7 +563,7 @@ export default function BookDetail() {
               />
             </div>
             <div className="flex p-0 col-6">
-              <BookDetailTextLabels label="Shelf Space (in):" />
+              <TextLabels label="Shelf Space (in):" />
               <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
                 <label className={thickness ? "" : "font-bold"}>
                   {shelfSpace}
@@ -575,13 +573,13 @@ export default function BookDetail() {
           </div>
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex col-6 p-0">
-              <BookDetailTextLabels label="Inventory Count:" />
+              <TextLabels label="Inventory Count:" />
               <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
                 {stock}
               </p>
             </div>
             <div className="flex p-0 col-6">
-              <BookDetailTextLabels label="Days of Supply:" />
+              <TextLabels label="Days of Supply:" />
               <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
                 {daysOfSupply}
               </p>
@@ -589,29 +587,31 @@ export default function BookDetail() {
           </div>
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex p-0 col-4">
-              <BookDetailTextLabels label="Last Month Sales:" />
+              <TextLabels label="Last Month Sales:" />
               <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
                 {lastMonthSales}
               </p>
             </div>
             <div className="flex p-0 col-4">
-              <BookDetailTextLabels label="Best Buyback Price:" />
+              <TextLabels label="Best Buyback Price:" />
               <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
                 {PriceTemplate(bestBuybackPrice)}
               </p>
             </div>
             <div className="flex col-4 p-0">
-              <BookDetailTextLabels label="Retail Price:" />
-              <BookDetailToggleableNumberEditor
-                disabled={!isModifiable}
-                textValue={PriceTemplate(price)}
-                value={price}
-                onValueChange={(newValue) => setPrice(newValue ?? 0)}
-                defaultValue={0}
-                mode={InputNumberModeOptions.Currency}
-                currency="USD"
-                locale="en-US"
-              />
+              <TextLabels label="Retail Price:" />
+              {!isModifiable ? (
+                <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
+                  {PriceTemplate(price)}
+                </p>
+              ) : (
+                PriceEditor(
+                  price,
+                  (newValue: number) => setPrice(newValue ?? 0),
+                  "w-4",
+                  !isModifiable
+                )
+              )}
             </div>
           </div>
         </form>

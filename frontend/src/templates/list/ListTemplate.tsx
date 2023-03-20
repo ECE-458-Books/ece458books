@@ -12,6 +12,7 @@ import {
   createColumns,
   TableColumn,
 } from "../../components/datatable/TableColumns";
+import { isHighlightingText } from "../../util/ClickCheck";
 import { IDer } from "../../util/IDOps";
 import { logger } from "../../util/Logger";
 import { SelectSizeDropdownOptions } from "../../components/buttons/SelectSizeDropdown";
@@ -97,6 +98,7 @@ export default function ListTemplate<T extends IDer>(
   };
 
   const onRowClick = (event: DataTableRowClickEvent) => {
+    if (isHighlightingText()) return;
     const row = event.data as T;
     logger.debug("Row Clicked", row);
     navigate(`${props.detailPageURL}${row.id}`);

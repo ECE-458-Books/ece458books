@@ -9,7 +9,7 @@ import {
   passwordValueCheck,
   pwCheckFooter,
   pwCheckHeader,
-} from "../../util/PWValueCheck";
+} from "../../util/auth/PWValueCheck";
 import { showFailure, showSuccess } from "../../components/Toast";
 
 export default function PasswordChangePage() {

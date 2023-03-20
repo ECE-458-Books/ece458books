@@ -34,9 +34,9 @@ function NavigationBar(props: NavigationBarProps) {
       command: () => navigate("/purchase-orders"),
     },
     {
-      label: "Sales Reconciliations",
+      label: "Sales Records",
       icon: "pi pi-fw pi-chart-bar",
-      command: () => navigate("/sales-reconciliations"),
+      command: () => navigate("/sales-records"),
     },
     {
       label: "Book Buybacks",

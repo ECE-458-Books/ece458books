@@ -17,7 +17,7 @@ import SelectSizeDropdown, {
   SelectSizeDropdownOptions,
 } from "../../components/buttons/SelectSizeDropdown";
 
-export interface SalesReconciliation {
+export interface SalesRecord {
   id: string;
   date: Date;
   sales: LineItem[];
@@ -27,12 +27,12 @@ export interface SalesReconciliation {
   isDeletable: boolean;
 }
 
-const COLUMNS: TableColumn<SalesReconciliation>[] = [
+const COLUMNS: TableColumn<SalesRecord>[] = [
   {
     field: "date",
     header: "Date (YYYY-MM-DD)",
     sortable: true,
-    customBody: (rowData: SalesReconciliation) => DateTemplate(rowData.date),
+    customBody: (rowData: SalesRecord) => DateTemplate(rowData.date),
     style: { minWidth: "8rem", width: "10rem" },
   },
   {
@@ -51,21 +51,17 @@ const COLUMNS: TableColumn<SalesReconciliation>[] = [
     field: "totalRevenue",
     header: "Total Revenue ($)",
     sortable: true,
-    customBody: (rowData: SalesReconciliation) =>
-      PriceTemplate(rowData.totalRevenue),
+    customBody: (rowData: SalesRecord) => PriceTemplate(rowData.totalRevenue),
     style: { minWidth: "8rem", width: "12rem" },
   },
 ];
 
-export default function SalesReconciliationList() {
+export default function SalesRecordList() {
   // ----------------- STATE -----------------
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState<boolean>(false); // Whether we show that the table is loading or not
-  const [numberOfSalesReconciliations, setNumberOfSalesReconciliations] =
-    useState(0); // The number of elements that match the query
-  const [salesReconciliations, setSalesReconciliations] = useState<
-    SalesReconciliation[]
-  >([]); // The data displayed in the table
+  const [numberOfSalesRecords, setNumberOfSalesRecords] = useState(0); // The number of elements that match the query
+  const [salesRecords, setSalesRecords] = useState<SalesRecord[]>([]); // The data displayed in the table
   const [isNoPagination, setIsNoPagination] = useState<boolean>(false);
   const [tableWhitespaceSize, setTableWhitespaceSize] =
     useState<SelectSizeDropdownOptions>(SelectSizeDropdownOptions.Small);
@@ -74,13 +70,13 @@ export default function SalesReconciliationList() {
 
   const callAPI = (page: number, pageSize: number, sortField: string) => {
     if (!isNoPagination) {
-      SALES_API.getSalesReconciliations({
+      SALES_API.getSalesRecords({
         page: page,
         page_size: pageSize,
         ordering: sortField,
       }).then((response) => onAPIResponse(response));
     } else {
-      SALES_API.getSalesReconciliationsNoPagination({
+      SALES_API.getSalesRecordsNoPagination({
         no_pagination: true,
         ordering: sortField,
       }).then((response) => onAPIResponseNoPagination(response));
@@ -89,19 +85,17 @@ export default function SalesReconciliationList() {
 
   // Set state when response to API call is received
   const onAPIResponseNoPagination = (response: APISR[]) => {
-    setSalesReconciliations(
-      response.map((sr) => APIToInternalSRConversion(sr))
-    );
-    setNumberOfSalesReconciliations(response.length);
+    setSalesRecords(response.map((sr) => APIToInternalSRConversion(sr)));
+    setNumberOfSalesRecords(response.length);
     setIsLoading(false);
   };
 
   // Set state when response to API call is received
   const onAPIResponse = (response: GetSRsResp) => {
-    setSalesReconciliations(
+    setSalesRecords(
       response.results.map((sr) => APIToInternalSRConversion(sr))
     );
-    setNumberOfSalesReconciliations(response.count);
+    setNumberOfSalesRecords(response.count);
     setIsLoading(false);
   };
 
@@ -110,7 +104,7 @@ export default function SalesReconciliationList() {
 
   const addSRButton = (
     <AddPageButton
-      onClick={() => navigate("/sales-reconciliations/add")}
+      onClick={() => navigate("/sales-records/add")}
       label="Add Sale"
       className="mr-2"
     />
@@ -134,14 +128,14 @@ export default function SalesReconciliationList() {
   const dataTable = (
     <ListTemplate
       columns={COLUMNS}
-      detailPageURL="/sales-reconciliations/detail/"
+      detailPageURL="/sales-records/detail/"
       whitespaceSize={tableWhitespaceSize}
       isNoPagination={isNoPagination}
       isLoading={isLoading}
       setIsLoading={setIsLoading}
-      totalNumberOfEntries={numberOfSalesReconciliations}
-      setTotalNumberOfEntries={setNumberOfSalesReconciliations}
-      rows={salesReconciliations}
+      totalNumberOfEntries={numberOfSalesRecords}
+      setTotalNumberOfEntries={setNumberOfSalesRecords}
+      rows={salesRecords}
       APISortFieldMap={APISRSortFieldMap}
       callGetAPI={callAPI}
       paginatorLeft={noPaginationSwitch}

@@ -1,11 +1,11 @@
 import { v4 as uuid } from "uuid";
-import { SalesReconciliation } from "../../pages/sales/SRList";
+import { SalesRecord } from "../../pages/sales/SRList";
 import { externalToInternalDate } from "../../util/DateOps";
 import { APISaleCSVImportRow, APISR, APISRSaleRow } from "./SalesAPI";
 import { formatBookForDropdown } from "../../components/dropdowns/BookDropdown";
 import { LineItem } from "../../templates/inventorydetail/LineItemTableTemplate";
 
-// Sales Reconciliations
+// Sales Records
 // Internal data type -> ordering required for book get API
 
 export const APISRSortFieldMap = new Map<string, string>([
@@ -28,7 +28,7 @@ function APIToInternalSRSaleConversion(sale: APISRSaleRow): LineItem {
   };
 }
 
-export function APIToInternalSRConversion(sr: APISR): SalesReconciliation {
+export function APIToInternalSRConversion(sr: APISR): SalesRecord {
   const sales: LineItem[] = sr.sales.map((sale) =>
     APIToInternalSRSaleConversion(sale)
   );

@@ -283,8 +283,6 @@ export default function BookAdd() {
       .then((response) => {
         setIsLoadingButton(false);
 
-        const _data = [...books];
-        setBooks(_data);
         for (const book of response.books) {
           downloadAndSetBook(book);
         }

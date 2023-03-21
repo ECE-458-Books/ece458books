@@ -48,6 +48,10 @@ class BookImage(models.Model):
 class BookInventoryCorrection(models.Model):
     date = models.DateField(auto_now_add=True)
     user = models.ForeignKey(User, related_name='inventory_correction_user', on_delete=models.CASCADE)
+<<<<<<< HEAD
     book = models.ForeignKey(Book, related_name='inventory_correction_book', on_delete=models.CASCADE)
+=======
+    book = models.OneToOneField(Book, related_name='inventory_correction_book', on_delete=models.CASCADE)
+>>>>>>> 1605640... initial commit for inventory corrections
     adjustment = models.IntegerField()
 

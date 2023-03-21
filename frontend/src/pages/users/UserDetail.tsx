@@ -48,6 +48,12 @@ export default function VendorAdd() {
           setIsModifiable(!checkForSelfEditandAdminEdit(response.username));
           setUserName(response.username);
           setIsAdmin(response.is_staff);
+          setIsPageDeleteable(
+            !(
+              response.username === "admin" ||
+              id === localStorage.getItem("userID")
+            )
+          );
         })
         .catch(() => showFailure(toast, "Could not fetch user data"));
     }

@@ -31,7 +31,7 @@ export enum BookDetailLineItemType {
 // Line item navigation mapper
 export const LineItemURLMapper = new Map<BookDetailLineItemType, string>([
   [BookDetailLineItemType.PURCHASE_ORDER, "purchase-orders"],
-  [BookDetailLineItemType.SALES_RECORD, "sales-reconciliations"],
+  [BookDetailLineItemType.SALES_RECORD, "sales-records"],
   [BookDetailLineItemType.BOOK_BUYBACK, "book-buybacks"],
 ]);
 

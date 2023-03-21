@@ -1,9 +1,10 @@
+import { v4 as uuid } from "uuid";
 import { Bookcase, Shelf } from "../../pages/casedesigner/BookcaseList";
 import { APIBookcase, APIShelf } from "./CaseDesignerAPI";
 
 export function APIToInternalBookcaseConversion(bookcase: APIBookcase) {
   return {
-    id: bookcase.id.toString(),
+    id: bookcase.id!.toString(),
     name: bookcase.name,
     width: bookcase.width,
     creator: bookcase.creator_username!,
@@ -17,6 +18,7 @@ export function APIToInternalBookcaseConversion(bookcase: APIBookcase) {
 
 export function APIToInternalShelfConversion(shelf: APIShelf): Shelf {
   return {
+    id: uuid(),
     displayedBooks: shelf.displayed_books.map((displayedBook) => {
       return {
         bookId: displayedBook.book.toString(),

@@ -1,59 +1,35 @@
 import { Toast } from "primereact/toast";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-  CSVImport200OverallErrors,
-  CSVImport400OverallErrors,
-} from "../../templates/errors/CSVImportErrors";
 import React from "react";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
-import {
-  showFailure,
-  showFailuresFunctionCaller,
-  showSuccess,
-  showWarning,
-} from "../../components/Toast";
-import {
-  APIBBSaleRow,
-  AddBBReq,
-  BUYBACK_API,
-  ModifyBBReq,
-} from "../../apis/buybacks/BuyBackAPI";
-import { internalToExternalDate } from "../../util/DateOps";
-import { Book, emptyBook } from "../books/BookList";
+import { showFailure, showSuccess } from "../../components/Toast";
+import { Book } from "../books/BookList";
 
 import { useImmer } from "use-immer";
-import {
-  APIToInternalBBConversion,
-  APIToInternalBuybackCSVConversion,
-} from "../../apis/buybacks/BuybacksConversions";
+
 import { BooksDropdownData } from "../../components/dropdowns/BookDropdown";
 import { logger } from "../../util/Logger";
 import DeletePopup from "../../components/popups/DeletePopup";
 import AddDetailModifyTitle from "../../components/text/AddDetailModifyTitle";
-import OneDayCalendar from "../../components/OneDayCalendar";
-import TotalDollars from "../../components/text/TotalDollars";
 import BackButton from "../../components/buttons/BackButton";
 import DeleteButton from "../../components/buttons/DeleteButton";
-import VendorDropdown from "../../components/dropdowns/VendorDropdown";
+
 import AddRowButton from "../../components/buttons/AddRowButton";
 import EditCancelButton from "../../components/buttons/EditCancelDetailButton";
-import { VENDORS_API } from "../../apis/vendors/VendorsAPI";
-import { FileUploadHandlerEvent } from "primereact/fileupload";
-import CSVUploader from "../../components/uploaders/CSVFileUploader";
+
 import "../../css/TableCell.css";
-import CSVEndUserDocButton from "../../components/buttons/CSVEndUserDocButton";
-import LineItemTableTemplate, {
-  emptyLineItem,
-  LineItem,
-} from "../../templates/inventorydetail/LineItemTableTemplate";
 import Restricted from "../../permissions/Restricted";
-import { Bookcase } from "./BookcaseList";
+import { Bookcase, Shelf } from "./BookcaseList";
 import { CASE_DESIGNER_API } from "../../apis/casedesigner/CaseDesignerAPI";
 import {
   APIToInternalBookcaseConversion,
   InternalToAPIBookcaseConversion,
 } from "../../apis/casedesigner/CaseDesignerConversions";
+import BookcaseDetailTable from "./BookcaseDetailTable";
+import TextLabel from "../../components/text/TextLabels";
+import { TextEditor } from "../../components/editors/TextEditor";
+import { NumberEditor } from "../../components/editors/NumberEditor";
 
 const emptyBookcase: Bookcase = {
   id: "",
@@ -63,6 +39,11 @@ const emptyBookcase: Bookcase = {
   lastEditDate: new Date(),
   lastEditor: "",
   shelves: [],
+};
+
+const emptyShelf: Shelf = {
+  id: "",
+  displayedBooks: [],
 };
 
 export default function BookcaseDetail() {
@@ -77,6 +58,7 @@ export default function BookcaseDetail() {
 
   // For dropdown menus
   const [booksMap, setBooksMap] = useState<Map<string, Book>>(new Map());
+  const [bookTitlesList, setBookTitlesList] = useState<string[]>([]);
   const [originalData, setOriginalData] = useState<Bookcase>(emptyBookcase);
 
   // useImmer is used to set state for nested data in a simplified format
@@ -85,7 +67,6 @@ export default function BookcaseDetail() {
     useState<boolean>(false);
   const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false);
   const [isGoBackActive, setIsGoBackActive] = useState<boolean>(false);
-  const [isPageDeleteable, setIsPageDeleteable] = useState<boolean>(true);
 
   // Load the Bookcase data on page load
   useEffect(() => {
@@ -105,12 +86,13 @@ export default function BookcaseDetail() {
     () =>
       BooksDropdownData({
         setBooksMap: setBooksMap,
+        setBookTitlesList: setBookTitlesList,
       }),
     []
   );
 
   // Call to delete the bookcase
-  const deleteBuyBackFinal = () => {
+  const deleteBookcaseFinal = () => {
     logger.debug("Delete Bookcase Finalized");
     setDeletePopupVisible(false);
     CASE_DESIGNER_API.deleteBookcase(id!)
@@ -134,7 +116,7 @@ export default function BookcaseDetail() {
     CASE_DESIGNER_API.addBookcase(APIbookcase)
       .then(() => {
         showSuccess(toast, "Bookcase added successfully");
-        isGoBackActive ? navigate("/bookcase") : window.location.reload();
+        isGoBackActive ? navigate("/bookcases") : window.location.reload();
       })
       .catch((error) => {
         showFailure(toast, error.data.errors[0] ?? "Failed to add bookcase");
@@ -143,15 +125,20 @@ export default function BookcaseDetail() {
 
   const callModifyBookcaseAPI = () => {
     const APIbookcase = InternalToAPIBookcaseConversion(bookcase);
-    // DEAL WITH THE FACT THAT ID IS UNDEFINED
     CASE_DESIGNER_API.modifyBookcase(APIbookcase)
       .then(() => {
-        showSuccess(toast, "Bookcase added successfully");
-        isGoBackActive ? navigate("/bookcase") : window.location.reload();
+        showSuccess(toast, "Bookcase modified successfully");
+        isGoBackActive ? navigate("/bookcases") : window.location.reload();
       })
       .catch((error) => {
         showFailure(toast, error.data.errors[0] ?? "Failed to add bookcase");
       });
+  };
+
+  const setShelves = (shelves: Shelf[]) => {
+    setBookcase((draft) => {
+      draft.shelves = shelves;
+    });
   };
 
   // -------- TEMPLATES/VISUAL ELEMENTS --------
@@ -163,9 +150,9 @@ export default function BookcaseDetail() {
       <AddDetailModifyTitle
         isModifyPage={isModifiable}
         isAddPage={isAddPage}
-        detailTitle={"Book Buyback Details"}
-        addTitle={"Add Book Buyback"}
-        modifyTitle={"Modify Book Buyback"}
+        detailTitle={"Bookcase Details"}
+        addTitle={"Add Bookcase"}
+        modifyTitle={"Modify Bookcase"}
       />
     </div>
   );
@@ -176,52 +163,42 @@ export default function BookcaseDetail() {
     </div>
   );
 
-  const deleteButton = (
-    <DeleteButton
-      visible={!isAddPage}
-      disabled={!isPageDeleteable}
-      onClick={setDeletePopupVisible(true)}
-    />
-  );
-
-  const deletePopup = (
-    <DeletePopup
-      deleteItemIdentifier={"this book buyback"}
-      onConfirm={() => deleteBuyBackFinal()}
-      setIsVisible={setDeletePopupVisible}
-    />
-  );
-
-  // Toolbar
-
-  // Left
-  const addRowButton = (
-    <AddRowButton
-      emptyItem={emptyLineItem}
-      rows={buybacks}
-      setRows={setBuybacks}
-      isDisabled={!isModifiable || selectedVendorName == ""}
-      label={"Add Book"}
-      isVisible={isModifiable}
-    />
-  );
-
-  // Center
   const editCancelButton = (
     <EditCancelButton
       onClickEdit={() => setIsModifiable(!isModifiable)}
       onClickCancel={() => {
         setIsModifiable(!isModifiable);
-        setDate(originalData.date);
-        setSelectedVendorName(originalData.vendorName);
-        setTotalRevenue(originalData.totalRevenue);
-        setBuybacks(originalData.buybacks);
+        setBookcase(originalData);
       }}
       isAddPage={isAddPage}
       isModifiable={isModifiable}
       className="my-auto p-button-sm mr-1"
     />
   );
+
+  const deleteButton = (
+    <DeleteButton
+      visible={!isAddPage}
+      onClick={() => setDeletePopupVisible(true)}
+    />
+  );
+
+  const deletePopup = (
+    <DeletePopup
+      deleteItemIdentifier={"this bookcase"}
+      onConfirm={() => deleteBookcaseFinal()}
+      setIsVisible={setDeletePopupVisible}
+    />
+  );
+
+  const rightButtons = (
+    <div className="flex col-4 justify-content-end">
+      {editCancelButton}
+      {deleteButton}
+    </div>
+  );
+
+  // Buttons/information that are right above the table
 
   // Right
   const submitButton = (
@@ -265,56 +242,70 @@ export default function BookcaseDetail() {
     </Restricted>
   );
 
-  // Items below toolbar
-  const totalDollars = (
-    <div className="flex">
-      <TotalDollars label={"Total Revenue:"} totalDollars={totalRevenue} />
-    </div>
-  );
-
-  const calendar = (
-    <OneDayCalendar disabled={!isModifiable} date={date} setDate={setDate} />
-  );
-
-  const vendorDropdown = (
-    <VendorDropdown
-      setVendorMap={setVendorMap}
-      setSelectedVendor={setSelectedVendorName}
-      selectedVendor={selectedVendorName}
-      isModifiable={isModifiable && !isBooksBuyBackSold}
-      hasBuybackPolicy={true}
+  // Components that are attached to the table
+  const addRowButton = (
+    <AddRowButton
+      emptyItem={emptyShelf}
+      rows={bookcase.shelves}
+      setRows={setShelves}
+      isDisabled={!isModifiable}
+      label={"Add Shelf"}
+      isVisible={isModifiable}
     />
   );
 
-  const rightButtons = (
-    <div className="flex col-4 justify-content-end">
-      {editCancelButton}
-      {deleteButton}
-    </div>
+  const nameEditor = (
+    <>
+      <TextLabel label={"Name: "} />
+      {isModifiable ? (
+        TextEditor(bookcase.name, (newValue) => {
+          setBookcase((draft) => {
+            draft.name = newValue;
+          });
+        })
+      ) : (
+        <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
+          {bookcase.name}
+        </p>
+      )}
+    </>
+  );
+
+  const widthEditor = (
+    <>
+      <TextLabel label={"Width: "} />
+      {isModifiable ? (
+        NumberEditor(bookcase.width, (newValue) => {
+          setBookcase((draft) => {
+            draft.width = newValue;
+          });
+        })
+      ) : (
+        <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
+          {bookcase.width}
+        </p>
+      )}
+    </>
   );
 
   const tableHeader = (
     <Restricted to={"modify"}>
       <div className="flex">
         {addRowButton}
-        {csvImportButton}
-        {csvGuideButton}
+        {nameEditor}
+        {widthEditor}
       </div>
     </Restricted>
   );
 
   // Datatable
-
   const dataTable = (
-    <LineItemTableTemplate
-      lineItems={buybacks}
-      setLineItems={setBuybacks}
-      priceColumnHeader={"Unit Buyback Price"}
-      isCSVErrorsColumnShowing={hasUploadedCSV}
-      setTotalDollars={setTotalRevenue}
+    <BookcaseDetailTable
+      shelves={bookcase.shelves}
+      setShelves={setShelves}
+      booksDropdownTitles={bookTitlesList}
       isAddPage={isAddPage}
       isModifiable={isModifiable}
-      getPriceForNewlySelectedBook={(title) => getBestBuybackPrice(title)}
       tableHeader={tableHeader}
     />
   );
@@ -331,23 +322,6 @@ export default function BookcaseDetail() {
         <div className="col-11">
           <form onSubmit={onSubmit}>
             <div className="flex col-12 justify-content-evenly mb-3">
-              {totalDollars}
-              <div className="flex">
-                <label
-                  htmlFor="vendor"
-                  className="p-component text-teal-900 p-text-secondary my-auto pr-2"
-                >
-                  Vendor:
-                </label>
-                {isModifiable ? (
-                  vendorDropdown
-                ) : (
-                  <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
-                    {selectedVendorName}
-                  </p>
-                )}
-              </div>
-              {calendar}
               {isModifiable && rightToolbar}
             </div>
             {dataTable}

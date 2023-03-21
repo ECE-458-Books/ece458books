@@ -16,7 +16,7 @@ import { APIToInternalBookConversion } from "../../apis/books/BooksConversions";
 import { TableColumn } from "../../components/datatable/TableColumns";
 import PriceTemplate from "../../components/templates/PriceTemplate";
 import AlteredTextTemplate from "../../components/templates/AlteredTextTemplate";
-import { imageBodyTemplate } from "../../components/templates/ImageTemplate";
+import { ImageTemplate } from "../../components/templates/ImageTemplate";
 import GenreDropdown, {
   GenresDropdownData,
 } from "../../components/dropdowns/GenreDropdown";
@@ -159,7 +159,7 @@ export default function BookList() {
     {
       field: "thumbnailURL",
       header: "Cover Art",
-      customBody: (rowData: Book) => imageBodyTemplate(rowData.thumbnailURL),
+      customBody: (rowData: Book) => ImageTemplate(rowData.thumbnailURL),
       style: { minWidth: "1rem", padding: "0.25rem" },
       hidden: !(
         visibleColumns.filter((item) => item.field == "thumbnailURL").length > 0

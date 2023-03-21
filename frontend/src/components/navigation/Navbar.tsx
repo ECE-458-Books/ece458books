@@ -59,11 +59,6 @@ function NavigationBar(props: NavigationBarProps) {
       command: () => navigate("/bookcases"),
     },
     {
-      label: "Bookcases",
-      icon: "pi pi-table",
-      command: () => navigate("/bookcases"),
-    },
-    {
       label: "Settings",
       icon: "pi pi-fw pi-wrench",
       items: [

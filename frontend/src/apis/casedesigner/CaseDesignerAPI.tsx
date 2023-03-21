@@ -9,15 +9,15 @@ import {
 
 const CASE_DESIGNER_EXTENSION = "case_designer";
 
-// All optional fields are given on the response, but not expected for the creation/editing request
 export interface APIBookcase {
-  id: number;
   name: string;
   width: number;
+  shelves: APIShelf[];
+  // Below optional fields are only given on the response, not needed on add/modify request
   last_edit_date?: string;
   creator_username?: string;
   last_editor_username?: string;
-  shelves: APIShelf[];
+  id?: number;
 }
 
 export interface APIShelf {

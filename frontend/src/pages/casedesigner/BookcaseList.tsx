@@ -29,6 +29,7 @@ export interface Bookcase {
 }
 
 export interface Shelf {
+  id: string;
   displayedBooks: DisplayBook[];
 }
 

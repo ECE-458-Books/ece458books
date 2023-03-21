@@ -5,7 +5,7 @@ from rest_framework.request import Request
 from rest_framework import status, filters
 from rest_framework.views import APIView
 from .models import SalesReconciliation, Sale
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListAPIView, RetrieveUpdateDestroyAPIView, CreateAPIView
 from .paginations import SalesReconciliationPagination
 from django.db.models import OuterRef, Subquery, Func, Count, Sum, F
 from purchase_orders.models import Purchase, PurchaseOrder
@@ -21,22 +21,11 @@ from .parsers import XMLParser
 from .sales_record_permissions import SalesRecordsWhitelistPermission, BodySizePermission
 
 
-class ListCreateSalesReconciliationAPIView(ListCreateAPIView):
+class CreateSalesRecordAPIView(CreateAPIView):
     permission_classes = [SalesRecordsWhitelistPermission, BodySizePermission]
     authentication_classes = []
     serializer_class = SalesReconciliationSerializer
-    queryset = SalesReconciliation.objects.all()
-    pagination_class = SalesReconciliationPagination
-    filter_backends = [filters.OrderingFilter, filters.SearchFilter]
-    ordering_fields = '__all__'
-    ordering = ['id']
     parser_classes = [XMLParser]
-
-    def paginate_queryset(self, queryset):
-        if 'no_pagination' in self.request.query_params:
-            return None
-        else:
-            return super().paginate_queryset(queryset)
 
     def create(self, request, *args, **kwargs):
         serializer = SalesReconciliationSerializer(data=request.data)
@@ -46,6 +35,22 @@ class ListCreateSalesReconciliationAPIView(ListCreateAPIView):
         response_data = serializer.data
         response_data['id'] = saved_sales_reconciliation.id
         return Response(response_data, status=status.HTTP_201_CREATED)
+
+
+class ListSalesRecordAPIView(ListAPIView):
+    permission_classes = [CustomBasePermission]
+    serializer_class = SalesReconciliationSerializer
+    queryset = SalesReconciliation.objects.all()
+    pagination_class = SalesReconciliationPagination
+    filter_backends = [filters.OrderingFilter, filters.SearchFilter]
+    ordering_fields = '__all__'
+    ordering = ['id']
+
+    def paginate_queryset(self, queryset):
+        if 'no_pagination' in self.request.query_params:
+            return None
+        else:
+            return super().paginate_queryset(queryset)
 
     def get_queryset(self):
         default_query_set = SalesReconciliation.objects.all()

@@ -162,7 +162,11 @@ class BookImageSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class BookInventoryCorrectionSerializer(serializers.ModelSerializer):
+    username = serializers.SerializerMethodField()
 
     class Meta:
         model = BookInventoryCorrection
-        field = '__all__'
+        fields = ['date', 'user', 'username', 'book', 'adjustment']
+
+    def get_username(self, instance):
+        return instance.user.username

@@ -140,6 +140,10 @@ class BookSerializer(serializers.ModelSerializer):
         items = purchases + sales + buybacks
         for item in items:
             item['date'] = item['date'].strftime('%Y-%m-%d')
+
+        from pprint import pprint
+        pprint(items)
+        
         return items
 
 

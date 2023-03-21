@@ -45,6 +45,7 @@ export interface APIBook {
   days_of_supply?: number | string;
   line_items?: APIBookLineItem[];
   isGhost?: boolean;
+  num_related_books?: number;
 }
 
 export enum APILineItemType {

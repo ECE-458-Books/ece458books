@@ -81,6 +81,7 @@ export function APIToInternalBookConversion(book: APIBook): Book {
     lineItems: book.line_items?.map((lineItem) => {
       return APIToInternalLineItemConversion(lineItem);
     }),
+    numRelatedBooks: book.num_related_books,
   };
 }
 
@@ -133,5 +134,6 @@ export function APIToInternalBookConversionWithDB(
     daysOfSupply: book.days_of_supply,
     shelfSpace: book.shelf_space,
     isGhost: book.isGhost,
+    numRelatedBooks: book.num_related_books,
   };
 }

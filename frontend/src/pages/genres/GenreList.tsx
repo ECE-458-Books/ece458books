@@ -20,6 +20,7 @@ import ListTemplate from "../../templates/list/ListTemplate";
 import SelectSizeDropdown, {
   SelectSizeDropdownOptions,
 } from "../../components/buttons/SelectSizeDropdown";
+import { scrollToTop } from "../../util/WindowViewportOps";
 
 export interface Genre {
   id: string;
@@ -128,7 +129,12 @@ export default function GenreList() {
   const noPaginationSwitch = (
     <LabeledSwitch
       label="Show All"
-      onChange={() => setIsNoPagination(!isNoPagination)}
+      onChange={() => {
+        if (!isNoPagination) {
+          scrollToTop();
+        }
+        setIsNoPagination(!isNoPagination);
+      }}
       value={isNoPagination}
     />
   );

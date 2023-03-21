@@ -17,6 +17,7 @@ import {
 } from "../../apis/casedesigner/CaseDesignerAPI";
 import { APIToInternalBookcaseConversion } from "../../apis/casedesigner/CaseDesignerConversions";
 import { DateTemplate } from "../../components/templates/DateTemplate";
+import { scrollToTop } from "../../util/WindowViewportOps";
 
 export interface Bookcase {
   id: string;
@@ -120,7 +121,12 @@ export default function BookcaseList() {
   const noPaginationSwitch = (
     <LabeledSwitch
       label="Show All"
-      onChange={() => setIsNoPagination(!isNoPagination)}
+      onChange={() => {
+        if (!isNoPagination) {
+          scrollToTop();
+        }
+        setIsNoPagination(!isNoPagination);
+      }}
       value={isNoPagination}
     />
   );

@@ -33,6 +33,7 @@ import SelectSizeDropdown, {
 import ToggleColumnPopup from "../../components/popups/ToggleColumnPopup";
 import ToggleColumnButton from "../../components/buttons/ToggleColumnButton";
 import { CheckboxChangeEvent } from "primereact/checkbox";
+import { scrollToTop } from "../../util/WindowViewportOps";
 
 export interface NewImageUploadData {
   imageFile: File;
@@ -475,7 +476,12 @@ export default function BookList() {
   const noPaginationSwitch = (
     <LabeledSwitch
       label="Show All"
-      onChange={() => setIsNoPagination(!isNoPagination)}
+      onChange={() => {
+        if (!isNoPagination) {
+          scrollToTop();
+        }
+        setIsNoPagination(!isNoPagination);
+      }}
       value={isNoPagination}
     />
   );

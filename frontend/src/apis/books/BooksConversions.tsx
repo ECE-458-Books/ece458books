@@ -82,6 +82,7 @@ export function APIToInternalBookConversion(book: APIBook): Book {
       return APIToInternalLineItemConversion(lineItem);
     }),
     numRelatedBooks: book.num_related_books,
+    relatedBooks: book.related_books,
   };
 }
 

@@ -111,6 +111,7 @@ export default function VendorAdd() {
       onShowPopup={() => setIsConfirmationPopupVisible(true)}
       label={"Submit"}
       className="p-button-success ml-2"
+      disabled={vendors.length == 0}
     />
   );
 
@@ -128,6 +129,7 @@ export default function VendorAdd() {
       }}
       label={"Submit and Go Back"}
       className="p-button-success ml-2"
+      disabled={vendors.length == 0}
     />
   );
 

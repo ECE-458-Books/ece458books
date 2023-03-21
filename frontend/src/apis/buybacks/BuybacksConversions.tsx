@@ -15,8 +15,8 @@ export const APIBBSortFieldMap = new Map<string, string>([
   ["totalBooks", "num_books"],
   ["totalRevenue", "total_revenue"],
   ["date", "date"],
-  ["associatedUserName", "user"],
-  ["associatedUserId", "user"],
+  ["creatorName", "user"],
+  ["creatorId", "user"],
 ]);
 function APIToInternalBBSaleConversion(sale: APIBBSaleRow): LineItem {
   return {
@@ -47,8 +47,8 @@ export function APIToInternalBBConversion(bb: APIBB): BuyBack {
     vendorName: bb.vendor_name,
     sales: sales,
     isDeletable: bb.is_deletable,
-    associatedUserId: bb.user,
-    associatedUserName: bb.username,
+    creatorId: bb.user,
+    creatorName: bb.username,
   };
 }
 

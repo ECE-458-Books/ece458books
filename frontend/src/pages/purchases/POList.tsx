@@ -26,8 +26,8 @@ export interface PurchaseOrder {
   date: Date;
   vendorName: string;
   vendorId: number;
-  associatedUserId: number;
-  associatedUserName: string;
+  creatorId: number;
+  creatorName: string;
   uniqueBooks: number;
   totalBooks: number;
   totalCost: number;
@@ -69,7 +69,7 @@ const COLUMNS: TableColumn<PurchaseOrder>[] = [
     style: { minWidth: "8rem", width: "12rem" },
   },
   {
-    field: "associatedUserName",
+    field: "creatorName",
     header: "Associated User",
     sortable: true,
     style: { minWidth: "8rem", width: "10rem" },

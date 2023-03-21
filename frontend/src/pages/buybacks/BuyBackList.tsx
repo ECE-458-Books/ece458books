@@ -23,8 +23,8 @@ export interface BuyBack {
   date: Date;
   vendorID: number;
   vendorName: string;
-  associatedUserId: number;
-  associatedUserName: string;
+  creatorId: number;
+  creatorName: string;
   sales: LineItem[];
   uniqueBooks: number;
   isDeletable: boolean;
@@ -66,7 +66,7 @@ const COLUMNS: TableColumn<BuyBack>[] = [
     style: { minWidth: "8rem", width: "10rem" },
   },
   {
-    field: "associatedUserName",
+    field: "creatorName",
     header: "Associated User",
     sortable: true,
     style: { minWidth: "8rem", width: "10rem" },

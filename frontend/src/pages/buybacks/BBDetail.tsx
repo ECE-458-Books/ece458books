@@ -80,7 +80,7 @@ export default function BBDetail() {
 
   // The rest of the data
   const [date, setDate] = useState<Date>(new Date());
-  const [associatedUserName, setAssociatedUserName] = useState<string>("");
+  const [creatorName, setCreatorName] = useState<string>("");
   const [selectedVendorName, setSelectedVendorName] = useState<string>("");
 
   const [originalData, setOriginalData] =
@@ -108,7 +108,7 @@ export default function BBDetail() {
           setTotalRevenue(buyBack.totalRevenue);
           setSelectedVendorName(buyBack.vendorName);
           setIsPageDeleteable(buyBack.isDeletable);
-          setAssociatedUserName(buyBack.associatedUserName);
+          setCreatorName(buyBack.creatorName);
           setOriginalData({
             date: buyBack.date,
             vendorName: buyBack.vendorName,
@@ -489,13 +489,13 @@ export default function BBDetail() {
               {!isBBAddPage && (
                 <div className="flex">
                   <label
-                    htmlFor="associatedusername"
+                    htmlFor="creatorname"
                     className="p-component text-teal-900 p-text-secondary my-auto pr-2"
                   >
                     Associated User:
                   </label>
                   <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
-                    {associatedUserName}
+                    {creatorName}
                   </p>
                 </div>
               )}

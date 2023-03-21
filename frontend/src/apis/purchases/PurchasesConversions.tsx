@@ -19,8 +19,8 @@ export const APIPOSortFieldMap = new Map<string, string>([
   ["totalBooks", "num_books"],
   ["totalCost", "total_cost"],
   ["date", "date"],
-  ["associatedUserName", "user"],
-  ["associatedUserId", "user"],
+  ["creatorName", "user"],
+  ["creatorId", "user"],
 ]);
 
 export function APIToInternalPOPurchaseConversion(
@@ -54,8 +54,8 @@ export function APIToInternalPOConversion(po: APIPO): PurchaseOrder {
     totalCost: po.total_cost,
     purchases: purchases,
     isDeletable: po.is_deletable,
-    associatedUserId: po.user,
-    associatedUserName: po.username,
+    creatorId: po.user,
+    creatorName: po.username,
   };
 }
 

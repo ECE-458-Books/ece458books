@@ -18,10 +18,12 @@ from helpers.csv_reader import CSVReader
 from buybacks.models import BuybackOrder
 from utils.permissions import CustomBasePermission
 from .parsers import XMLParser
+from .sales_record_permissions import SalesRecordsWhitelistPermission, BodySizePermission
 
 
 class ListCreateSalesReconciliationAPIView(ListCreateAPIView):
-    # permission_classes = [CustomBasePermission]
+    permission_classes = [SalesRecordsWhitelistPermission, BodySizePermission]
+    authentication_classes = []
     serializer_class = SalesReconciliationSerializer
     queryset = SalesReconciliation.objects.all()
     pagination_class = SalesReconciliationPagination

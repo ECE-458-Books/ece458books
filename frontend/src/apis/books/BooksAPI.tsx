@@ -46,6 +46,7 @@ export interface APIBook {
   line_items?: APIBookLineItem[];
   isGhost?: boolean;
   num_related_books?: number;
+  related_books?: APIBook[];
 }
 
 export enum APILineItemType {

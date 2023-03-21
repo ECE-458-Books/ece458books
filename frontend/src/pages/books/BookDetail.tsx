@@ -27,6 +27,7 @@ import Restricted from "../../permissions/Restricted";
 import TextLabels from "../../components/text/TextLabels";
 import { TextWrapperNullableNumberEditor } from "../../components/text/TextWrapperNullableNumberEditor";
 import { PriceEditor } from "../../components/editors/PriceEditor";
+import { Divider } from "primereact/divider";
 
 interface ErrorDisplay {
   message: string;
@@ -61,6 +62,8 @@ export default function BookDetail() {
   const [daysOfSupply, setDaysOfSupply] = useState<number | string>();
   const [shelfSpace, setShelfSpace] = useState<number>();
   const [lastMonthSales, setLastMonthSales] = useState<number>();
+  const [numOfRelatedBooks, setNumOfRelatedBooks] = useState<number>();
+  const [relatedBooks, setRelatedBooks] = useState<Book[]>();
   const [lineItems, setLineItems] = useState<BookDetailLineItem[]>([]);
   // Leaving this line in case of future image browser side caching workaround is needed
   const [image, setImage] = useState<ImageUrlHashStruct>({
@@ -101,6 +104,8 @@ export default function BookDetail() {
         setLastMonthSales(book.lastMonthSales);
         updateShelfSpace(book.thickness);
         setDaysOfSupply(calculateDaysOfSupply(book));
+        setNumOfRelatedBooks(book.numRelatedBooks);
+        setRelatedBooks(book.relatedBooks);
         setImage({
           imageSrc: response.image_url,
           imageHash: Date.now().toString(),
@@ -202,6 +207,7 @@ export default function BookDetail() {
             lastMonthSales: updatedBook.lastMonthSales,
             shelfSpace: updatedBook.shelfSpace,
             daysOfSupply: updatedBook.daysOfSupply,
+            numRelatedBooks: updatedBook.numRelatedBooks,
           });
           setIsModifiable(false);
           setIsImageUploaded(false);
@@ -614,9 +620,28 @@ export default function BookDetail() {
               )}
             </div>
           </div>
+          <div className="flex col-12 justify-content-start p-1">
+            <div className="flex p-0">
+              <TextLabels label="# of Related Books:" />
+              <p className="p-component p-text-secondary text-900 text-xl text-center my-0">
+                {numOfRelatedBooks}
+              </p>
+            </div>
+          </div>
         </form>
       </div>
       {deletePopupVisible && deletePopup}
+      <Divider align="center">
+        <div className="inline-flex align-items-center">
+          <b>Book Related Transactions and Adjustments</b>
+        </div>
+      </Divider>
+      <div className="flex justify-content-center col-10">{lineItemsTable}</div>
+      <Divider align="center">
+        <div className="inline-flex align-items-center">
+          <b>Related Books</b>
+        </div>
+      </Divider>
       <div className="flex justify-content-center col-10">{lineItemsTable}</div>
     </div>
   );

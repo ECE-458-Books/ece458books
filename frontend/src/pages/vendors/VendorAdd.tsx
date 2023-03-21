@@ -65,6 +65,11 @@ export default function VendorAdd() {
     },
   ];
 
+  const resetPageInputFields = () => {
+    setVendors([]);
+    setIsGoBackActive(false);
+  };
+
   // The navigator to switch pages
   const navigate = useNavigate();
 
@@ -84,7 +89,7 @@ export default function VendorAdd() {
     axios
       .all(vendorRequests)
       .then(() => {
-        isGoBackActive ? navigate("/vendors") : window.location.reload();
+        isGoBackActive ? navigate("/vendors") : resetPageInputFields();
       })
       .catch(() => {
         showFailure(toast, "One or more of the vendors failed to add");

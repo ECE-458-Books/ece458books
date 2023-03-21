@@ -17,6 +17,7 @@ import { LineItem } from "../../templates/inventorydetail/LineItemTableTemplate"
 import SelectSizeDropdown, {
   SelectSizeDropdownOptions,
 } from "../../components/buttons/SelectSizeDropdown";
+import { scrollToTop } from "../../util/WindowViewportOps";
 
 export interface BuyBack {
   id: string;
@@ -120,7 +121,12 @@ export default function BuyBackList() {
   const noPaginationSwitch = (
     <LabeledSwitch
       label="Show All"
-      onChange={() => setIsNoPagination(!isNoPagination)}
+      onChange={() => {
+        if (!isNoPagination) {
+          scrollToTop();
+        }
+        setIsNoPagination(!isNoPagination);
+      }}
       value={isNoPagination}
     />
   );

@@ -19,6 +19,7 @@ import ListTemplate from "../../templates/list/ListTemplate";
 import SelectSizeDropdown, {
   SelectSizeDropdownOptions,
 } from "../../components/buttons/SelectSizeDropdown";
+import { scrollToTop } from "../../util/WindowViewportOps";
 
 // The Vendor Interface
 export interface Vendor {
@@ -104,7 +105,12 @@ export default function VendorList() {
   const noPaginationSwitch = (
     <LabeledSwitch
       label="Show All"
-      onChange={() => setIsNoPagination(!isNoPagination)}
+      onChange={() => {
+        if (!isNoPagination) {
+          scrollToTop();
+        }
+        setIsNoPagination(!isNoPagination);
+      }}
       value={isNoPagination}
     />
   );

@@ -6,7 +6,7 @@ from django.db.models.functions import Coalesce, Cast, Round
 
 from rest_framework import status, filters
 from rest_framework.views import APIView
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView, CreateAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser
 
@@ -16,9 +16,9 @@ from sales.models import Sale
 from helpers.csv_writer import CSVWriter
 from utils.permissions import CustomBasePermission
 
-from .serializers import BookListAddSerializer, BookSerializer, ISBNSerializer, BookImageSerializer
+from .serializers import BookListAddSerializer, BookSerializer, ISBNSerializer, BookImageSerializer, BookInventoryCorrectionSerializer
 from .isbn import ISBNTools
-from .models import Book, Author, BookImage
+from .models import Book, Author, BookImage, BookInventoryCorrection
 from .paginations import BookPagination
 from .search_filters import *
 from .utils import str2bool
@@ -393,3 +393,9 @@ class CSVExportBookAPIView(APIView):
     def get(self, request, *args, **kwargs):
         csv_writer = CSVWriter("books")
         return csv_writer.write_csv(request)
+
+class CreateBookInventoryCorrectionAPIView(CreateAPIView):
+    serializer_class = BookInventoryCorrectionSerializer
+    queryset = BookInventoryCorrection.objects.all()
+    permission_classes = [CustomBasePermission]
+    lookup_field = 'book_id'

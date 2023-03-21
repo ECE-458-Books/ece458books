@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from collections import OrderedDict
 
-from .models import Book, Author, BookImage
+from .models import Book, Author, BookImage, BookInventoryCorrection
 from genres.models import Genre
 from purchase_orders.models import Purchase
 from sales.models import Sale
@@ -160,3 +160,9 @@ class BookImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = BookImage
         fields = '__all__'
+
+class BookInventoryCorrectionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = BookInventoryCorrection
+        field = '__all__'

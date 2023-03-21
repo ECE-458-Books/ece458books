@@ -218,6 +218,15 @@ export default function BBDetail() {
     return true;
   };
 
+  const resetPageInputFields = () => {
+    setSelectedVendorName("");
+    setBuybacks([]);
+    setDate(new Date());
+    setTotalRevenue(0);
+    setHasUploadedCSV(false);
+    setIsGoBackActive(false);
+  };
+
   const onSubmit = (): void => {
     if (!validateSubmission()) {
       return;
@@ -249,7 +258,7 @@ export default function BBDetail() {
     BUYBACK_API.addBuyBack(buyBack)
       .then(() => {
         showSuccess(toast, "Book Buyback added successfully");
-        isGoBackActive ? navigate("/book-buybacks") : window.location.reload();
+        isGoBackActive ? navigate("/book-buybacks") : resetPageInputFields();
       })
       .catch((error) => {
         showFailure(
@@ -375,6 +384,10 @@ export default function BBDetail() {
     />
   );
 
+  const checkForNecessaryValues = (): boolean => {
+    return buybacks.length == 0 || selectedVendorName === "";
+  };
+
   // Right
   const submitButton = (
     <ConfirmPopup
@@ -383,7 +396,7 @@ export default function BBDetail() {
       hideFunc={() => setIsConfirmationPopupVisible(false)}
       onFinalSubmission={onSubmit}
       onShowPopup={() => setIsConfirmationPopupVisible(true)}
-      disabled={!isModifiable}
+      disabled={!isModifiable || checkForNecessaryValues()}
       label={"Submit"}
       className="p-button-success ml-2"
     />
@@ -402,7 +415,7 @@ export default function BBDetail() {
         setIsConfirmationPopupVisible(true);
         setIsGoBackActive(true);
       }}
-      disabled={!isModifiable}
+      disabled={!isModifiable || checkForNecessaryValues()}
       label={"Submit and Go Back"}
       className="p-button-success ml-2"
     />

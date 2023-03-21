@@ -450,6 +450,7 @@ export default function BookAdd() {
                   name="addbooksubmission"
                   label="Lookup"
                   type="submit"
+                  disabled={textBox.length == 0}
                   icon
                   className="p-button-success"
                 />
@@ -493,6 +494,7 @@ export default function BookAdd() {
                 id="confirmbooks"
                 name="confirmbooks"
                 label="Submit"
+                disabled={books.length == 0}
                 className="p-button-success p-button-raised"
                 type="submit"
               />

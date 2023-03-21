@@ -23,6 +23,7 @@ from .paginations import BookPagination
 from .search_filters import *
 from .utils import str2bool
 from .book_images import BookImageCreator
+from .exceptions import *
 
 class ISBNSearchView(APIView):
     """
@@ -399,3 +400,48 @@ class CreateBookInventoryCorrectionAPIView(CreateAPIView):
     queryset = BookInventoryCorrection.objects.all()
     permission_classes = [CustomBasePermission]
     lookup_field = 'book_id'
+
+    def create(self, request, *args, **kwargs):
+        # Validate the incoming request
+        book_id, adjustment = self.validate_adjustment(request)
+
+        # Add User to Book Inventory Correction
+        data = request.data.dict()
+        data['user'] = request.user.id
+        data['book'] = book_id
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        # Increment Book Stock Count
+        book = Book.objects.get(id=book_id)
+        book.stock += adjustment
+        book.save()
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    def validate_adjustment(self, request):
+        book_id = self.kwargs.get(self.lookup_field)
+        book = Book.objects.filter(isGhost=False, id=book_id)
+        
+        if len(book) == 0:
+            # No Book Error
+            raise BookNonExistantException(book_id)
+
+        stock = book[0].stock
+
+        # Check if given adjustment is valid integer
+        try:
+            adjustment = int(request.data.get('adjustment'))
+        except Exception as e:
+            raise InventoryAdjustmentNonIntegerException(request.data.get('adjustment'))
+        
+        if stock + adjustment < 0:
+            raise InventoryAdjustmentBelowZeroException(adjustment, stock)
+        
+        return book_id, adjustment
+
+        
+
+

@@ -1,10 +1,4 @@
-import {
-  API,
-  METHOD_DELETE,
-  METHOD_GET,
-  METHOD_PATCH,
-  METHOD_POST,
-} from "../Config";
+import { API, METHOD_DELETE, METHOD_GET } from "../Config";
 
 const SALES_EXTENSION = "sales/sales_reconciliation";
 
@@ -54,32 +48,6 @@ export interface DeleteSRReq {
   id: string;
 }
 
-// addSalesRecord
-export interface AddSRReq {
-  date: string;
-  sales: APISRSaleRow[];
-}
-
-// modifySalesRecord
-export interface ModifySRReq extends AddSRReq {
-  id: string;
-}
-
-// salesRecordsCSVImport
-export interface SRCSVImportReq {
-  file: File;
-}
-
-export interface APISaleCSVImportRow extends APISRSaleRow {
-  isbn_13: string;
-  errors: { [key: string]: string };
-}
-
-export interface SRCSVImportResp {
-  sales: APISaleCSVImportRow[];
-  errors?: string[];
-}
-
 export const SALES_API = {
   getSalesRecords: async function (req: GetSRsReq): Promise<GetSRsResp> {
     return await API.request({
@@ -111,37 +79,5 @@ export const SALES_API = {
       url: SALES_EXTENSION.concat("/").concat(req.id.toString()),
       method: METHOD_DELETE,
     });
-  },
-
-  modifySalesRecord: async function (req: ModifySRReq) {
-    return await API.request({
-      url: SALES_EXTENSION.concat("/").concat(req.id.toString()),
-      method: METHOD_PATCH,
-      data: req,
-    });
-  },
-
-  addSalesRecord: async function (req: AddSRReq) {
-    return await API.request({
-      url: SALES_EXTENSION,
-      method: METHOD_POST,
-      data: req,
-    });
-  },
-
-  salesRecordCSVImport: async function (
-    req: SRCSVImportReq
-  ): Promise<SRCSVImportResp> {
-    const formData = new FormData();
-    formData.append("file", req.file);
-    const request = {
-      url: SALES_EXTENSION.concat("/csv/import"), // TODO: This will eventually go back to sales/sales_Record/...
-      method: METHOD_POST,
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-      data: formData,
-    };
-    return await API.request(request);
   },
 };

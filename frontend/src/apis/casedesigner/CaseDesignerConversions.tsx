@@ -24,6 +24,7 @@ export function APIToInternalShelfConversion(shelf: APIShelf): Shelf {
         bookId: displayedBook.book.toString(),
         bookISBN: displayedBook.book_isbn!,
         bookTitle: displayedBook.book_title!,
+        bookURL: displayedBook.book_url!,
         displayMode: displayedBook.display_mode,
         displayCount: displayedBook.display_count,
       };

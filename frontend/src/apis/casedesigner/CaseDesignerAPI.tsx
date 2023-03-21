@@ -30,6 +30,7 @@ export interface APIDisplayBook {
   display_count: number;
   book_isbn?: string;
   book_title?: string;
+  book_url?: string;
 }
 
 // getBookcaseList
@@ -81,7 +82,7 @@ export const CASE_DESIGNER_API = {
 
   modifyBookcase: async function (req: APIBookcase) {
     return await API.request({
-      url: CASE_DESIGNER_EXTENSION.concat("/".concat(req.id.toString())),
+      url: CASE_DESIGNER_EXTENSION.concat("/".concat(req.id!.toString())),
       method: METHOD_PATCH,
       data: req,
     });

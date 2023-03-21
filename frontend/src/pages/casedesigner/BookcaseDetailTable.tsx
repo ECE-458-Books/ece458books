@@ -10,6 +10,7 @@ import { v4 as uuid } from "uuid";
 import { Shelf } from "./BookcaseList";
 import { useState } from "react";
 import { Column } from "primereact/column";
+import { MultipleImagesTemplate } from "../../components/templates/ImageTemplate";
 
 interface BookcaseDetailTableProps {
   shelves: Shelf[]; // The array of purchases/sales
@@ -26,7 +27,9 @@ export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
       field: "displayedBooks",
       header: "Displayed Books",
       customBody: (rowData: Shelf) => {
-        return <div>Test</div>;
+        return MultipleImagesTemplate(
+          rowData.displayedBooks.map((book) => book.bookURL)
+        );
       },
     },
   ];

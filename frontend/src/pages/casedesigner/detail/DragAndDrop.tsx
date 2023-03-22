@@ -12,7 +12,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-// DEPRECATED
+// A droppable zone. The tag should be wrapped around the zone, and the id should be unique
 export interface DroppableProps {
   id: string;
   children: React.ReactNode;

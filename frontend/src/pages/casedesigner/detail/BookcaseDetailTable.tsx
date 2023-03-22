@@ -201,7 +201,7 @@ export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
           // the code in the demo works, but TypeScript complains about it
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
-          props.setBookcase(e.value);
+          setShelves(e.value);
         }}
       >
         <Column rowReorder style={{ width: "3rem" }} />

@@ -195,4 +195,8 @@ class BookInventoryCorrectionSerializer(serializers.ModelSerializer):
         fields = ['date', 'user', 'username', 'book', 'adjustment']
 
     def get_username(self, instance):
+<<<<<<< HEAD
         return instance.user.username
+=======
+        return instance.user.username
+>>>>>>> 4fbdcbfe18191b968dcdc59b770e99bcbfc214a0

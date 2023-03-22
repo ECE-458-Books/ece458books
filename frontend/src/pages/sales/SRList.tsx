@@ -10,13 +10,11 @@ import { TableColumn } from "../../components/datatable/TableColumns";
 import { DateTemplate } from "../../components/templates/DateTemplate";
 import PriceTemplate from "../../components/templates/PriceTemplate";
 import AddPageButton from "../../components/buttons/AddPageButton";
-import LabeledSwitch from "../../components/buttons/LabeledSwitch";
 import ListTemplate from "../../templates/list/ListTemplate";
 import { LineItem } from "../../templates/inventorydetail/LineItemTableTemplate";
 import SelectSizeDropdown, {
   SelectSizeDropdownOptions,
-} from "../../components/buttons/SelectSizeDropdown";
-import { scrollToTop } from "../../util/WindowViewportOps";
+} from "../../components/dropdowns/SelectSizeDropdown";
 
 export interface SalesReconciliation {
   id: string;
@@ -117,19 +115,6 @@ export default function SalesReconciliationList() {
     />
   );
 
-  const noPaginationSwitch = (
-    <LabeledSwitch
-      label="Show All"
-      onChange={() => {
-        if (!isNoPagination) {
-          scrollToTop();
-        }
-        setIsNoPagination(!isNoPagination);
-      }}
-      value={isNoPagination}
-    />
-  );
-
   const selectSizeButton = (
     <SelectSizeDropdown
       value={tableWhitespaceSize}
@@ -143,6 +128,7 @@ export default function SalesReconciliationList() {
       detailPageURL="/sales-reconciliations/detail/"
       whitespaceSize={tableWhitespaceSize}
       isNoPagination={isNoPagination}
+      setIsNoPagination={setIsNoPagination}
       isLoading={isLoading}
       setIsLoading={setIsLoading}
       totalNumberOfEntries={numberOfSalesReconciliations}
@@ -150,43 +136,24 @@ export default function SalesReconciliationList() {
       rows={salesReconciliations}
       APISortFieldMap={APISRSortFieldMap}
       callGetAPI={callAPI}
-      paginatorLeft={noPaginationSwitch}
+      paginatorLeft={<></>}
       paginatorRight={selectSizeButton}
     />
   );
 
   return (
     <div>
-      {isNoPagination && (
-        <div className="grid flex m-1 justify-content-end">
-          <div className="flex col-4 justify-content-start mx-0 my-auto">
-            {noPaginationSwitch}
-          </div>
-          <div className="flex col-4 justify-content-end m-0">
-            {selectSizeButton}
-          </div>
-          <div className="flex justify-content-end col-2">{addSRButton}</div>
-        </div>
-      )}
-      <div
-        className={
-          !isNoPagination
-            ? "flex justify-content-end"
-            : "flex justify-content-center"
-        }
-      >
+      <div className="flex justify-content-end">
         <div className="card col-9 pt-0 px-3 justify-content-center">
           <Toast ref={toast} />
           {dataTable}
         </div>
-        {!isNoPagination && (
-          <div
-            className="flex justify-content-end align-items-start mr-1 my-2"
-            style={{ width: "12.4%" }}
-          >
-            {addSRButton}
-          </div>
-        )}
+        <div
+          className="flex justify-content-end align-items-start mr-1 my-2"
+          style={{ width: "12.4%" }}
+        >
+          {addSRButton}
+        </div>
       </div>
     </div>
   );

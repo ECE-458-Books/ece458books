@@ -5,22 +5,16 @@ import {
   APIPOSortFieldMap,
   APIToInternalPOConversion,
 } from "../../apis/purchases/PurchasesConversions";
-import {
-  APIPO,
-  GetPOsResp,
-  PURCHASES_API,
-} from "../../apis/purchases/PurchasesAPI";
+import { GetPOsResp, PURCHASES_API } from "../../apis/purchases/PurchasesAPI";
 import { TableColumn } from "../../components/datatable/TableColumns";
 import { DateTemplate } from "../../components/templates/DateTemplate";
 import PriceTemplate from "../../components/templates/PriceTemplate";
 import AddPageButton from "../../components/buttons/AddPageButton";
-import LabeledSwitch from "../../components/buttons/LabeledSwitch";
 import ListTemplate from "../../templates/list/ListTemplate";
 import { LineItem } from "../../templates/inventorydetail/LineItemTableTemplate";
 import SelectSizeDropdown, {
   SelectSizeDropdownOptions,
-} from "../../components/buttons/SelectSizeDropdown";
-import { scrollToTop } from "../../util/WindowViewportOps";
+} from "../../components/dropdowns/SelectSizeDropdown";
 
 export interface PurchaseOrder {
   id: string;
@@ -83,27 +77,13 @@ export default function PurchaseOrderList() {
   // ----------------- METHODS -----------------
 
   const callAPI = (page: number, pageSize: number, sortField: string) => {
-    if (!isNoPagination) {
-      PURCHASES_API.getPurchaseOrders({
-        page: page,
-        page_size: pageSize,
-        ordering: sortField,
-      }).then((response) => {
-        return onAPIResponse(response);
-      });
-    } else {
-      PURCHASES_API.getPurchaseOrdersNoPagination({
-        no_pagination: true,
-        ordering: sortField,
-      }).then((response) => onAPIResponseNoPagination(response));
-    }
-  };
-
-  // Set state when response to API call is received
-  const onAPIResponseNoPagination = (response: APIPO[]) => {
-    setPurchaseOrders(response.map((po) => APIToInternalPOConversion(po)));
-    setNumberOfPurchaseOrders(response.length);
-    setIsLoading(false);
+    PURCHASES_API.getPurchaseOrders({
+      page: page,
+      page_size: pageSize,
+      ordering: sortField,
+    }).then((response) => {
+      return onAPIResponse(response);
+    });
   };
 
   // Set state when response to API call is received
@@ -126,19 +106,6 @@ export default function PurchaseOrderList() {
     />
   );
 
-  const noPaginationSwitch = (
-    <LabeledSwitch
-      label="Show All"
-      onChange={() => {
-        if (!isNoPagination) {
-          scrollToTop();
-        }
-        setIsNoPagination(!isNoPagination);
-      }}
-      value={isNoPagination}
-    />
-  );
-
   const selectSizeButton = (
     <SelectSizeDropdown
       value={tableWhitespaceSize}
@@ -152,6 +119,7 @@ export default function PurchaseOrderList() {
       detailPageURL="/purchase-orders/detail/"
       whitespaceSize={tableWhitespaceSize}
       isNoPagination={isNoPagination}
+      setIsNoPagination={setIsNoPagination}
       isLoading={isLoading}
       setIsLoading={setIsLoading}
       totalNumberOfEntries={numberOfPurchaseOrders}
@@ -159,43 +127,24 @@ export default function PurchaseOrderList() {
       rows={purchaseOrders}
       APISortFieldMap={APIPOSortFieldMap}
       callGetAPI={callAPI}
-      paginatorLeft={noPaginationSwitch}
+      paginatorLeft={<></>}
       paginatorRight={selectSizeButton}
     />
   );
 
   return (
     <div>
-      {isNoPagination && (
-        <div className="grid flex justify-content-end m-1">
-          <div className="flex col-4 justify-content-start mx-0 my-auto">
-            {noPaginationSwitch}
-          </div>
-          <div className="flex col-4 justify-content-end my-1 m-0">
-            {selectSizeButton}
-          </div>
-          <div className="flex justify-content-end col-2">{addPOButton}</div>
-        </div>
-      )}
-      <div
-        className={
-          !isNoPagination
-            ? "flex justify-content-end"
-            : "flex justify-content-center"
-        }
-      >
+      <div className="flex justify-content-end">
         <div className="card col-9 pt-0 px-3 justify-content-center">
           <Toast ref={toast} />
           {dataTable}
         </div>
-        {!isNoPagination && (
-          <div
-            className="flex justify-content-end align-items-start mr-1 my-2"
-            style={{ width: "12.4%" }}
-          >
-            {addPOButton}
-          </div>
-        )}
+        <div
+          className="flex justify-content-end align-items-start mr-1 my-2"
+          style={{ width: "12.4%" }}
+        >
+          {addPOButton}
+        </div>
       </div>
     </div>
   );

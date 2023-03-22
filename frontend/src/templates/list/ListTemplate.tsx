@@ -15,13 +15,17 @@ import {
 import { isHighlightingText } from "../../util/ClickCheck";
 import { IDer } from "../../util/IDOps";
 import { logger } from "../../util/Logger";
-import { SelectSizeDropdownOptions } from "../../components/buttons/SelectSizeDropdown";
+import { SelectSizeDropdownOptions } from "../../components/dropdowns/SelectSizeDropdown";
+import { Dropdown } from "primereact/dropdown";
+import { PaginatorRowsPerPageDropdownOptions } from "primereact/paginator";
+import { scrollToTop } from "../../util/WindowViewportOps";
 
 interface ListTemplateProps<T extends IDer> {
   columns: TableColumn<T>[]; // The columns of the table
   detailPageURL: string; // The URL of the detail page
   whitespaceSize: SelectSizeDropdownOptions; // Whitespace size between table rows
   isNoPagination: boolean; // Whether pagination is currently enabled
+  setIsNoPagination: (isNoPagination: boolean) => void;
   isLoading: boolean; // Whether the table is currently loading data
   setIsLoading: (isLoading: boolean) => void;
   totalNumberOfEntries: number; // Number of total entries that can be in the table
@@ -45,7 +49,7 @@ export const STARTING_SORT_PARAMS: DataTableSortEvent = {
 
 export const STARTING_PAGE_PARAMS: DataTablePageEvent = {
   first: 0,
-  rows: 10,
+  rows: 15,
   page: 0,
 };
 
@@ -65,7 +69,7 @@ export default function ListTemplate<T extends IDer>(
   // ----------------- STATE -----------------
   const navigate = useNavigate();
   const [numCurrentlyDisplayedRows, setNumCurrentlyDisplayedRows] =
-    useState<number>(10);
+    useState<number>(STARTING_PAGE_PARAMS.rows);
   const [sortParams, setSortParams] =
     useState<DataTableSortEvent>(STARTING_SORT_PARAMS);
   const [pageParams, setPageParams] =
@@ -84,6 +88,9 @@ export default function ListTemplate<T extends IDer>(
   const onPage = (event: DataTablePageEvent) => {
     logger.debug("Page Applied", event);
     setNumCurrentlyDisplayedRows(event.rows);
+    event.rows === props.totalNumberOfEntries
+      ? props.setIsNoPagination(true)
+      : props.setIsNoPagination(false);
     props.setIsLoading(true);
     setPageParams(event);
   };
@@ -109,11 +116,41 @@ export default function ListTemplate<T extends IDer>(
     let sortField = props.APISortFieldMap.get(sortParams.sortField) ?? "";
     sortField = invertSortFieldIfNecessary(sortParams, sortField);
     props.callGetAPI((pageParams.page ?? 0) + 1, pageParams.rows, sortField);
-  }, [sortParams, pageParams, props.isNoPagination].concat(props.additionalAPITriggers ?? []));
+  }, [sortParams, pageParams].concat(props.additionalAPITriggers ?? []));
+
+  //no pagination effect creator
+  useEffect(() => {
+    if (props.isNoPagination) {
+      scrollToTop();
+    }
+  }, [props.isNoPagination]);
 
   // ----------------- VISUAL ELEMENTS -----------------
 
   const columns = createColumns(props.columns);
+
+  const paginatorTemplateCustom = {
+    layout:
+      "FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown",
+    RowsPerPageDropdown: (options: PaginatorRowsPerPageDropdownOptions) => {
+      const dropdownOptions = [
+        { label: 10, value: 10 },
+        { label: 15, value: 15 },
+        { label: 25, value: 25 },
+        { label: 50, value: 50 },
+        { label: 75, value: 75 },
+        { label: "Show All", value: options.totalRecords },
+      ];
+
+      return (
+        <Dropdown
+          value={options.value}
+          options={dropdownOptions}
+          onChange={options.onChange}
+        />
+      );
+    },
+  };
 
   return (
     <DataTable
@@ -130,13 +167,12 @@ export default function ListTemplate<T extends IDer>(
       selectionMode={"single"}
       onRowClick={(event) => onRowClick(event)}
       // Paginator
-      paginator={!props.isNoPagination}
+      paginator
       first={pageParams.first}
       rows={numCurrentlyDisplayedRows}
       totalRecords={props.totalNumberOfEntries}
-      paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+      paginatorTemplate={paginatorTemplateCustom}
       onPage={onPage}
-      rowsPerPageOptions={[10, 15, 25, 50, 75]}
       paginatorPosition="both"
       paginatorLeft={props.paginatorLeft}
       paginatorRight={props.paginatorRight}

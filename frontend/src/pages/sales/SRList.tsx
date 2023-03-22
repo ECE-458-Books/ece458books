@@ -5,7 +5,7 @@ import {
   APISRSortFieldMap,
   APIToInternalSRConversion,
 } from "../../apis/sales/SalesConversions";
-import { APISR, GetSRsResp, SALES_API } from "../../apis/sales/SalesAPI";
+import { GetSRsResp, SALES_API } from "../../apis/sales/SalesAPI";
 import { TableColumn } from "../../components/datatable/TableColumns";
 import { DateTemplate } from "../../components/templates/DateTemplate";
 import PriceTemplate from "../../components/templates/PriceTemplate";
@@ -72,27 +72,11 @@ export default function SalesReconciliationList() {
   // ----------------- METHODS -----------------
 
   const callAPI = (page: number, pageSize: number, sortField: string) => {
-    if (!isNoPagination) {
-      SALES_API.getSalesReconciliations({
-        page: page,
-        page_size: pageSize,
-        ordering: sortField,
-      }).then((response) => onAPIResponse(response));
-    } else {
-      SALES_API.getSalesReconciliationsNoPagination({
-        no_pagination: true,
-        ordering: sortField,
-      }).then((response) => onAPIResponseNoPagination(response));
-    }
-  };
-
-  // Set state when response to API call is received
-  const onAPIResponseNoPagination = (response: APISR[]) => {
-    setSalesReconciliations(
-      response.map((sr) => APIToInternalSRConversion(sr))
-    );
-    setNumberOfSalesReconciliations(response.length);
-    setIsLoading(false);
+    SALES_API.getSalesReconciliations({
+      page: page,
+      page_size: pageSize,
+      ordering: sortField,
+    }).then((response) => onAPIResponse(response));
   };
 
   // Set state when response to API call is received

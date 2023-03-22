@@ -15,11 +15,6 @@ export interface GetBBsReq {
   ordering: string;
 }
 
-export interface GetBBsNoPageReq {
-  no_pagination: boolean;
-  ordering: string;
-}
-
 export interface APIBBSaleRow {
   id?: number; // ID only for new rows, not already existing ones
   book: number;
@@ -86,16 +81,6 @@ export interface BBCSVImportResp {
 
 export const BUYBACK_API = {
   getBuyBacks: async function (req: GetBBsReq): Promise<GetBBsResp> {
-    return await API.request({
-      url: BUYBACK_EXTENSION,
-      method: METHOD_GET,
-      params: req,
-    });
-  },
-
-  getBuyBacksNoPagination: async function (
-    req: GetBBsNoPageReq
-  ): Promise<APIBB[]> {
     return await API.request({
       url: BUYBACK_EXTENSION,
       method: METHOD_GET,

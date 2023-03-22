@@ -3,7 +3,7 @@ import { DateTemplate } from "../../components/templates/DateTemplate";
 import PriceTemplate from "../../components/templates/PriceTemplate";
 import { TableColumn } from "../../components/datatable/TableColumns";
 import { Toast } from "primereact/toast";
-import { APIBB, BUYBACK_API, GetBBsResp } from "../../apis/buybacks/BuyBackAPI";
+import { BUYBACK_API, GetBBsResp } from "../../apis/buybacks/BuyBackAPI";
 import {
   APIBBSortFieldMap,
   APIToInternalBBConversion,
@@ -11,18 +11,19 @@ import {
 
 import { useNavigate } from "react-router-dom";
 import AddPageButton from "../../components/buttons/AddPageButton";
-import LabeledSwitch from "../../components/buttons/LabeledSwitch";
 import ListTemplate from "../../templates/list/ListTemplate";
 import { LineItem } from "../../templates/inventorydetail/LineItemTableTemplate";
 import SelectSizeDropdown, {
   SelectSizeDropdownOptions,
-} from "../../components/buttons/SelectSizeDropdown";
+} from "../../components/dropdowns/SelectSizeDropdown";
 
 export interface BuyBack {
   id: string;
   date: Date;
   vendorID: number;
   vendorName: string;
+  creatorId: number;
+  creatorName: string;
   sales: LineItem[];
   uniqueBooks: number;
   isDeletable: boolean;
@@ -63,6 +64,12 @@ const COLUMNS: TableColumn<BuyBack>[] = [
     customBody: (rowData: BuyBack) => PriceTemplate(rowData.totalRevenue),
     style: { minWidth: "8rem", width: "10rem" },
   },
+  {
+    field: "creatorName",
+    header: "Associated User",
+    sortable: true,
+    style: { minWidth: "8rem", width: "10rem" },
+  },
 ];
 
 export default function BuyBackList() {
@@ -77,25 +84,11 @@ export default function BuyBackList() {
     useState<SelectSizeDropdownOptions>(SelectSizeDropdownOptions.Small);
 
   const callAPI = (page: number, pageSize: number, sortField: string) => {
-    if (!isNoPagination) {
-      BUYBACK_API.getBuyBacks({
-        page: page,
-        page_size: pageSize,
-        ordering: sortField,
-      }).then((response) => onAPIResponse(response));
-    } else {
-      BUYBACK_API.getBuyBacksNoPagination({
-        no_pagination: true,
-        ordering: sortField,
-      }).then((response) => onAPIResponseNoPagination(response));
-    }
-  };
-
-  // Set state when response to API call is received
-  const onAPIResponseNoPagination = (response: APIBB[]) => {
-    setBuybacks(response.map((bb) => APIToInternalBBConversion(bb)));
-    setNumberOfBuyBacks(response.length);
-    setIsLoading(false);
+    BUYBACK_API.getBuyBacks({
+      page: page,
+      page_size: pageSize,
+      ordering: sortField,
+    }).then((response) => onAPIResponse(response));
   };
 
   // Set state when response to API call is received
@@ -117,19 +110,13 @@ export default function BuyBackList() {
     />
   );
 
-  const noPaginationSwitch = (
-    <LabeledSwitch
-      label="Show All"
-      onChange={() => setIsNoPagination(!isNoPagination)}
-      value={isNoPagination}
-    />
-  );
-
   const selectSizeButton = (
-    <SelectSizeDropdown
-      value={tableWhitespaceSize}
-      onChange={(e) => setTableWhitespaceSize(e.value)}
-    />
+    <div className="col-3">
+      <SelectSizeDropdown
+        value={tableWhitespaceSize}
+        onChange={(e) => setTableWhitespaceSize(e.value)}
+      />
+    </div>
   );
 
   const dataTable = (
@@ -138,6 +125,7 @@ export default function BuyBackList() {
       detailPageURL="/book-buybacks/detail/"
       whitespaceSize={tableWhitespaceSize}
       isNoPagination={isNoPagination}
+      setIsNoPagination={setIsNoPagination}
       isLoading={isLoading}
       setIsLoading={setIsLoading}
       totalNumberOfEntries={numberOfBuyBacks}
@@ -145,43 +133,24 @@ export default function BuyBackList() {
       rows={buybacks}
       APISortFieldMap={APIBBSortFieldMap}
       callGetAPI={callAPI}
-      paginatorLeft={noPaginationSwitch}
+      paginatorLeft={<></>}
       paginatorRight={selectSizeButton}
     />
   );
 
   return (
     <div>
-      {isNoPagination && (
-        <div className="grid flex m-1 justify-content-end">
-          <div className="flex col-4 justify-content-start mx-0 my-auto">
-            {noPaginationSwitch}
-          </div>
-          <div className="flex col-4 justify-content-end m-0">
-            {selectSizeButton}
-          </div>
-          <div className="flex justify-content-end col-2">{addBBButton}</div>
-        </div>
-      )}
-      <div
-        className={
-          !isNoPagination
-            ? "flex justify-content-end"
-            : "flex justify-content-center"
-        }
-      >
+      <div className="flex justify-content-end">
         <div className="card col-9 pt-0 px-3 justify-content-center">
           <Toast ref={toast} />
           {dataTable}
         </div>
-        {!isNoPagination && (
-          <div
-            className="flex justify-content-end align-items-start mr-1 my-2"
-            style={{ width: "12.4%" }}
-          >
-            {addBBButton}
-          </div>
-        )}
+        <div
+          className="flex justify-content-end align-items-start mr-1 my-2"
+          style={{ width: "12.4%" }}
+        >
+          {addBBButton}
+        </div>
       </div>
     </div>
   );

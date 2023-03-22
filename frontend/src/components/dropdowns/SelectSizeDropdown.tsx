@@ -15,19 +15,13 @@ export enum SelectSizeDropdownOptions {
 
 export default function SelectSizeDropdown(props: SelectSizeDropdownProps) {
   const [sizeOptions] = useState([
-    { label: "Small", value: SelectSizeDropdownOptions.Small },
-    { label: "Normal", value: SelectSizeDropdownOptions.Normal },
-    { label: "Large", value: SelectSizeDropdownOptions.Large },
+    { label: "Compact", value: SelectSizeDropdownOptions.Small },
+    { label: "Standard", value: SelectSizeDropdownOptions.Normal },
+    { label: "Comfortable", value: SelectSizeDropdownOptions.Large },
   ]);
 
   return (
     <div className="flex">
-      <label
-        className="p-component p-text-secondary text-900 my-auto mr-1"
-        htmlFor="whitespacedropdownselectorlabel"
-      >
-        Cell Padding
-      </label>
       <Dropdown
         value={props.value}
         onChange={props.onChange}

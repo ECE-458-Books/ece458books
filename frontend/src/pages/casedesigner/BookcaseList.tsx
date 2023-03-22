@@ -5,13 +5,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TableColumn } from "../../components/datatable/TableColumns";
 import AddPageButton from "../../components/buttons/AddPageButton";
-import LabeledSwitch from "../../components/buttons/LabeledSwitch";
 import ListTemplate from "../../templates/list/ListTemplate";
 import SelectSizeDropdown, {
   SelectSizeDropdownOptions,
-} from "../../components/buttons/SelectSizeDropdown";
+} from "../../components/dropdowns/SelectSizeDropdown";
 import {
-  APIBookcase,
   CASE_DESIGNER_API,
   GetBookcasesResp,
 } from "../../apis/casedesigner/CaseDesignerAPI";
@@ -77,25 +75,10 @@ export default function BookcaseList() {
 
   // Calls the Bookcases API
   const callAPI = (page: number, pageSize: number) => {
-    if (!isNoPagination) {
-      CASE_DESIGNER_API.getBookcases({
-        page: page,
-        page_size: pageSize,
-      }).then((response) => onAPIResponse(response));
-    } else {
-      CASE_DESIGNER_API.getBookcasesNoPagination({
-        no_pagination: true,
-      }).then((response) => onAPIResponseNoPagination(response));
-    }
-  };
-
-  // Set state when response to API call is received
-  const onAPIResponseNoPagination = (response: APIBookcase[]) => {
-    setBookcases(
-      response.map((Bookcase) => APIToInternalBookcaseConversion(Bookcase))
-    );
-    setNumberOfBookcases(response.length);
-    setIsLoading(false);
+    CASE_DESIGNER_API.getBookcases({
+      page: page,
+      page_size: pageSize,
+    }).then((response) => onAPIResponse(response));
   };
 
   // Set state when response to API call is received
@@ -120,14 +103,6 @@ export default function BookcaseList() {
     />
   );
 
-  const noPaginationSwitch = (
-    <LabeledSwitch
-      label="Show All"
-      onChange={() => setIsNoPagination(!isNoPagination)}
-      value={isNoPagination}
-    />
-  );
-
   const selectSizeButton = (
     <SelectSizeDropdown
       value={tableWhitespaceSize}
@@ -141,6 +116,7 @@ export default function BookcaseList() {
       detailPageURL="/Bookcases/detail/"
       whitespaceSize={tableWhitespaceSize}
       isNoPagination={isNoPagination}
+      setIsNoPagination={setIsNoPagination}
       isLoading={isLoading}
       setIsLoading={setIsLoading}
       totalNumberOfEntries={numberOfBookcases}
@@ -148,9 +124,7 @@ export default function BookcaseList() {
       rows={bookcases}
       APISortFieldMap={new Map()}
       callGetAPI={callAPI}
-      paginatorLeft={
-        <div className="flex justify-content-center">{noPaginationSwitch}</div>
-      }
+      paginatorLeft={<></>}
       paginatorRight={
         <div className="flex justify-content-center">{selectSizeButton}</div>
       }
@@ -159,38 +133,17 @@ export default function BookcaseList() {
 
   return (
     <div>
-      {isNoPagination && (
-        <div className="grid flex m-1 justify-content-end">
-          <div className="flex col-4 justify-content-start m-0 my-auto">
-            {noPaginationSwitch}
-          </div>
-          <div className="flex col-4 justify-content-end m-0">
-            {selectSizeButton}
-          </div>
-          <div className="flex justify-content-end col-2">
-            {addBookcaseButton}
-          </div>
-        </div>
-      )}
-      <div
-        className={
-          !isNoPagination
-            ? "flex justify-content-end"
-            : "flex justify-content-center"
-        }
-      >
+      <div className="flex justify-content-end">
         <div className="card col-9 pt-0 px-3 justify-content-center">
           <Toast ref={toast} />
           {dataTable}
         </div>
-        {!isNoPagination && (
-          <div
-            className="flex justify-content-end align-items-start mr-1 my-2"
-            style={{ width: "12.4%" }}
-          >
-            {addBookcaseButton}
-          </div>
-        )}
+        <div
+          className="flex justify-content-end align-items-start mr-1 my-2"
+          style={{ width: "12.4%" }}
+        >
+          {addBookcaseButton}
+        </div>
       </div>
     </div>
   );

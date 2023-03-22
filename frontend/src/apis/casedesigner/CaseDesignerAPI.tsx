@@ -56,17 +56,7 @@ export const CASE_DESIGNER_API = {
     });
   },
 
-  getBookcasesNoPagination: async function (
-    req: GetBookcasesReq
-  ): Promise<APIBookcase[]> {
-    return await API.request({
-      url: CASE_DESIGNER_EXTENSION,
-      method: METHOD_GET,
-      params: req,
-    });
-  },
-
-  getBookcaseDetail: async function (id: string): Promise<APIBookcase> {
+  getBookcaseDetail: async function (id: number): Promise<APIBookcase> {
     return await API.request({
       url: CASE_DESIGNER_EXTENSION.concat("/".concat(id.toString())),
       method: METHOD_GET,

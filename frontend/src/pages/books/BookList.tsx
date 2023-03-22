@@ -1,5 +1,4 @@
 import {
-  APIBook,
   BOOKS_API,
   GetBooksReq,
   GetBooksResp,
@@ -21,7 +20,6 @@ import GenreDropdown, {
   GenresDropdownData,
 } from "../../components/dropdowns/GenreDropdown";
 import AddPageButton from "../../components/buttons/AddPageButton";
-import LabeledSwitch from "../../components/buttons/LabeledSwitch";
 import { BookDetailLineItem } from "./BookDetailLineItems";
 import { Button } from "primereact/button";
 import { showFailure } from "../../components/Toast";
@@ -29,7 +27,7 @@ import { saveAs } from "file-saver";
 import ListTemplate from "../../templates/list/ListTemplate";
 import SelectSizeDropdown, {
   SelectSizeDropdownOptions,
-} from "../../components/buttons/SelectSizeDropdown";
+} from "../../components/dropdowns/SelectSizeDropdown";
 import ToggleColumnPopup from "../../components/popups/ToggleColumnPopup";
 import ToggleColumnButton from "../../components/buttons/ToggleColumnButton";
 import { CheckboxChangeEvent } from "primereact/checkbox";
@@ -344,9 +342,8 @@ export default function BookList() {
     }
 
     return {
-      no_pagination: isNoPagination ? true : undefined,
-      page: isNoPagination ? undefined : page,
-      page_size: isNoPagination ? undefined : pageSize,
+      page: page,
+      page_size: pageSize,
       ordering: sortField,
       genre: selectedGenre,
       search: search_string,
@@ -359,21 +356,9 @@ export default function BookList() {
 
   // Calls the Books API
   const callAPI = (page: number, pageSize: number, sortField: string) => {
-    if (!isNoPagination) {
-      BOOKS_API.getBooks(createAPIRequest(page, pageSize, sortField)).then(
-        (response) => onAPIResponse(response)
-      );
-    } else {
-      BOOKS_API.getBooksNoPaginationLISTVIEW(
-        createAPIRequest(page, pageSize, sortField)
-      ).then((response) => onAPIResponseNoPagination(response));
-    }
-  };
-
-  const onAPIResponseNoPagination = (response: APIBook[]) => {
-    setBooks(response.map((book) => APIToInternalBookConversion(book)));
-    setNumberOfBooks(response.length);
-    setIsLoading(false);
+    BOOKS_API.getBooks(createAPIRequest(page, pageSize, sortField)).then(
+      (response) => onAPIResponse(response)
+    );
   };
 
   // Set state when response to API call is received
@@ -472,14 +457,6 @@ export default function BookList() {
     </>
   );
 
-  const noPaginationSwitch = (
-    <LabeledSwitch
-      label="Show All"
-      onChange={() => setIsNoPagination(!isNoPagination)}
-      value={isNoPagination}
-    />
-  );
-
   const selectSizeButton = (
     <div className="my-auto">
       <SelectSizeDropdown
@@ -499,19 +476,13 @@ export default function BookList() {
     </div>
   );
 
-  const paginatorRightElements = (
-    <div className="flex">
-      {toggleColumnButton}
-      {selectSizeButton}
-    </div>
-  );
-
   const dataTable = (
     <ListTemplate
       columns={COLUMNS}
       detailPageURL="/books/detail/"
       whitespaceSize={tableWhitespaceSize}
       isNoPagination={isNoPagination}
+      setIsNoPagination={setIsNoPagination}
       isLoading={isLoading}
       setIsLoading={setIsLoading}
       totalNumberOfEntries={numberOfBooks}
@@ -522,19 +493,14 @@ export default function BookList() {
       onFilter={onFilter}
       filters={filterParams.filters}
       additionalAPITriggers={[selectedGenre, filterParams]}
-      paginatorLeft={noPaginationSwitch}
-      paginatorRight={paginatorRightElements}
+      paginatorLeft={toggleColumnButton}
+      paginatorRight={selectSizeButton}
     />
   );
 
   return (
     <div>
       <div className="grid justify-content-end flex my-2">
-        <div className="flex justify-content-evenly m-0 p-0 col-7">
-          {isNoPagination && noPaginationSwitch}
-          {isNoPagination && toggleColumnButton}
-          {isNoPagination && selectSizeButton}
-        </div>
         <div className="flex justify-content-end m-0 p-0 col-5">
           {rightSideButtons}
         </div>

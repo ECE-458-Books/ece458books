@@ -1,17 +1,29 @@
 /* Book Add */
 .integerNumbeBookAdd .p-inputtext {
     padding: 0.25rem 0.25rem;
-    width: 90px;
+    width: 70px;
+    font-size: small;
 }
 
 .decimalNumberBookAdd .p-inputtext {
     padding: 0.15rem 0.15rem;
-    width: 70px;
+    width: 60px;
+    font-size: small;
 }
 
 .retailNumberBookAdd .p-inputtext {
     padding: 0.15rem 0.15rem;
-    width: 90px;
+    width: 80px;
+    font-size: small;
+}
+
+.genreDropdown .p-inputtext {
+    font-size: small;
+}
+
+.deleteButton .p-button {
+    width: 10;
+    height: 10;
 }
 
 /* BB PO SR detail */

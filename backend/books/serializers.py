@@ -1,14 +1,16 @@
-from rest_framework import serializers
+import datetime
 from collections import OrderedDict
 
-from .models import Book, Author, BookImage, BookInventoryCorrection
+from rest_framework import serializers
+from django.db.models import F, Sum, Value, CharField
+
 from genres.models import Genre
 from purchase_orders.models import Purchase
 from sales.models import Sale
 from buybacks.models import Buyback
-from django.db.models import F, Sum, Value, CharField
-import datetime
 
+from .models import Book, Author, BookImage, BookInventoryCorrection
+from .exceptions import InventoryCountUnMatchedException
 
 class BookListAddSerializer(serializers.ModelSerializer):
     """BookAddSerializer used for ListCreateBookAPIView
@@ -160,7 +162,8 @@ class BookSerializer(serializers.ModelSerializer):
             item['stock'] = stock
         
         # Final Sanity check if stock equals the stock recorded in DB
-        assert stock == instance.stock
+        if stock != instance.stock:
+            raise InventoryCountUnMatchedException(stock, instance.stock)
 
         return sorted_items
     

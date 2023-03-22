@@ -22,3 +22,10 @@ class InventoryAdjustmentBelowZeroException(APIException):
     def __init__(self, msg, stock):
         default_detail = f"BelowZeroError: Adjustment ({msg}) results in stock below zero. Current inventory count is {stock}"
         super().__init__(detail=default_detail, code=self.status_code)
+
+class InventoryCountUnMatchedException(APIException):
+    status_code = 400
+
+    def __init__(self, running_stock, db_stock):
+        default_detail = f"InventoryCountUnMatchedError: DB stock ({db_stock}) is inconsistent with running stock ({running_stock})"
+        super().__init__(detail=default_detail, code=self.status_code)

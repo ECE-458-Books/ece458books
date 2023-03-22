@@ -2,34 +2,34 @@ import { Toast } from "primereact/toast";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import React from "react";
-import ConfirmPopup from "../../components/popups/ConfirmPopup";
-import { showFailure, showSuccess } from "../../components/Toast";
-import { Book } from "../books/BookList";
+import ConfirmPopup from "../../../components/popups/ConfirmPopup";
+import { showFailure, showSuccess } from "../../../components/Toast";
+import { Book } from "../../books/BookList";
 
 import { useImmer } from "use-immer";
 
-import { BooksDropdownData } from "../../components/dropdowns/BookDropdown";
-import { logger } from "../../util/Logger";
-import DeletePopup from "../../components/popups/DeletePopup";
-import AddDetailModifyTitle from "../../components/text/AddDetailModifyTitle";
-import BackButton from "../../components/buttons/BackButton";
-import DeleteButton from "../../components/buttons/DeleteButton";
+import { BooksDropdownData } from "../../../components/dropdowns/BookDropdown";
+import { logger } from "../../../util/Logger";
+import DeletePopup from "../../../components/popups/DeletePopup";
+import AddDetailModifyTitle from "../../../components/text/AddDetailModifyTitle";
+import BackButton from "../../../components/buttons/BackButton";
+import DeleteButton from "../../../components/buttons/DeleteButton";
 
-import AddRowButton from "../../components/buttons/AddRowButton";
-import EditCancelButton from "../../components/buttons/EditCancelDetailButton";
+import AddRowButton from "../../../components/buttons/AddRowButton";
+import EditCancelButton from "../../../components/buttons/EditCancelDetailButton";
 
-import "../../css/TableCell.css";
-import Restricted from "../../permissions/Restricted";
-import { Bookcase, Shelf } from "./BookcaseList";
-import { CASE_DESIGNER_API } from "../../apis/casedesigner/CaseDesignerAPI";
+import "../../../css/TableCell.css";
+import Restricted from "../../../permissions/Restricted";
+import { Bookcase, Shelf } from "../BookcaseList";
+import { CASE_DESIGNER_API } from "../../../apis/casedesigner/CaseDesignerAPI";
 import {
   APIToInternalBookcaseConversion,
   InternalToAPIBookcaseConversion,
-} from "../../apis/casedesigner/CaseDesignerConversions";
+} from "../../../apis/casedesigner/CaseDesignerConversions";
 import BookcaseDetailTable from "./BookcaseDetailTable";
-import TextLabel from "../../components/text/TextLabels";
-import { TextEditor } from "../../components/editors/TextEditor";
-import { NumberEditor } from "../../components/editors/NumberEditor";
+import TextLabel from "../../../components/text/TextLabels";
+import { TextEditor } from "../../../components/editors/TextEditor";
+import { NumberEditor } from "../../../components/editors/NumberEditor";
 
 const emptyBookcase: Bookcase = {
   id: "",
@@ -116,7 +116,7 @@ export default function BookcaseDetail() {
     CASE_DESIGNER_API.addBookcase(APIbookcase)
       .then(() => {
         showSuccess(toast, "Bookcase added successfully");
-        isGoBackActive ? navigate("/bookcases") : window.location.reload();
+        isGoBackActive ? navigate("/bookcases") : undefined;
       })
       .catch((error) => {
         showFailure(toast, error.data.errors[0] ?? "Failed to add bookcase");
@@ -128,7 +128,7 @@ export default function BookcaseDetail() {
     CASE_DESIGNER_API.modifyBookcase(APIbookcase)
       .then(() => {
         showSuccess(toast, "Bookcase modified successfully");
-        isGoBackActive ? navigate("/bookcases") : window.location.reload();
+        isGoBackActive ? navigate("/bookcases") : undefined;
       })
       .catch((error) => {
         showFailure(toast, error.data.errors[0] ?? "Failed to add bookcase");
@@ -302,7 +302,7 @@ export default function BookcaseDetail() {
   const dataTable = (
     <BookcaseDetailTable
       shelves={bookcase.shelves}
-      setShelves={setShelves}
+      setBookcase={setBookcase}
       booksDropdownTitles={bookTitlesList}
       isAddPage={isAddPage}
       isModifiable={isModifiable}

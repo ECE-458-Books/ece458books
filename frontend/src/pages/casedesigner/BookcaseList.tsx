@@ -34,6 +34,7 @@ export interface Shelf {
 }
 
 export interface DisplayBook {
+  id: string;
   bookId: string;
   bookISBN: string;
   bookTitle: string;

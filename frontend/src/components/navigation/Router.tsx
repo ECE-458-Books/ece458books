@@ -22,7 +22,7 @@ import VendorAdd from "../../pages/vendors/VendorAdd";
 import UserList from "../../pages/users/UserList";
 import UserDetail from "../../pages/users/UserDetail";
 import BookcaseList from "../../pages/casedesigner/BookcaseList";
-import BookcaseDetail from "../../pages/casedesigner/BookcaseDetail";
+import BookcaseDetail from "../../pages/casedesigner/detail/BookcaseDetail";
 import { AccessType } from "../../util/auth/UserTypes";
 
 interface RouterProps {

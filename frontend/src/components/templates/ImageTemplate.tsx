@@ -2,25 +2,6 @@ import { Image } from "primereact/image";
 import { DEFAULT_BOOK_IMAGE } from "../uploaders/ImageFileUploader";
 import { MAX_IMAGE_HEIGHT, MAX_IMAGE_WIDTH } from "../editors/PriceEditor";
 
-export function MultipleImagesTemplate(imageURLs: string[]) {
-  return imageURLs.map((url) => {
-    return (
-      <Image
-        src={url}
-        id="imageONpage"
-        alt="Image"
-        imageStyle={{
-          objectFit: "contain",
-          maxHeight: MAX_IMAGE_HEIGHT,
-          maxWidth: MAX_IMAGE_WIDTH,
-        }}
-        className="flex justify-content-center"
-        imageClassName="shadow-2 border-round"
-      />
-    );
-  });
-}
-
 export function ImageTemplate(imageURL: string) {
   if (!imageURL) {
     imageURL = DEFAULT_BOOK_IMAGE;

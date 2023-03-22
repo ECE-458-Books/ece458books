@@ -21,6 +21,7 @@ export function APIToInternalShelfConversion(shelf: APIShelf): Shelf {
     id: uuid(),
     displayedBooks: shelf.displayed_books.map((displayedBook) => {
       return {
+        id: uuid(),
         bookId: displayedBook.book.toString(),
         bookISBN: displayedBook.book_isbn!,
         bookTitle: displayedBook.book_title!,

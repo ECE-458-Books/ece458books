@@ -116,8 +116,8 @@ class BookSerializer(serializers.ModelSerializer):
 
     def get_line_items(self, instance):
         purchases = Purchase.objects.filter(book=instance.id).annotate(date=F('purchase_order__date')).annotate(vendor=F('purchase_order__vendor')).annotate(
-            vendor_name=F('purchase_order__vendor__name')).annotate(unit_price=F('unit_wholesale_price')).annotate(type=Value("purchase order", CharField())).values(
-                'purchase_order', 'date', 'vendor', 'vendor_name', 'unit_price', 'quantity', 'type')
+            vendor_name=F('purchase_order__vendor__name')).annotate(unit_price=F('unit_wholesale_price')).annotate(username=F('purchase_order__user__username')).annotate(type=Value("purchase order", CharField())).values(
+                'purchase_order', 'date', 'vendor', 'vendor_name', 'unit_price', 'quantity', 'type', 'username')
         purchases = list(purchases)
         for purchase in purchases:
             purchase['id'] = purchase.pop('purchase_order')
@@ -130,21 +130,43 @@ class BookSerializer(serializers.ModelSerializer):
             sale['id'] = sale.pop('sales_reconciliation')
 
         buybacks = Buyback.objects.filter(book=instance.id).annotate(date=F('buyback_order__date')).annotate(vendor=F('buyback_order__vendor')).annotate(
-            vendor_name=F('buyback_order__vendor__name')).annotate(unit_price=F('unit_buyback_price')).annotate(type=Value("buyback order", CharField())).values(
-                'buyback_order', 'date', 'vendor', 'vendor_name', 'unit_price', 'quantity', 'type')
+            vendor_name=F('buyback_order__vendor__name')).annotate(unit_price=F('unit_buyback_price')).annotate(username=F('buyback_order__user__username')).annotate(type=Value("buyback order", CharField())).values(
+                'buyback_order', 'date', 'vendor', 'vendor_name', 'unit_price', 'quantity', 'type', 'username')
 
         buybacks = list(buybacks)
         for buyback in buybacks:
             buyback['id'] = buyback.pop('buyback_order')
-
-        items = purchases + sales + buybacks
-        for item in items:
-            item['date'] = item['date'].strftime('%Y-%m-%d')
-
-        from pprint import pprint
-        pprint(items)
         
-        return items
+        corrections = BookInventoryCorrection.objects.filter(book=instance.id).annotate(quantity=F('adjustment')).annotate(
+            username=F('user__username')).annotate(type=Value("inventory corrections", CharField())).values('id', 'date', 'quantity', 'type', 'username')
+
+        corrections = list(corrections)
+
+        items = purchases + sales + buybacks + corrections
+
+        # Sort it by date
+        sorted_items = sorted(items, key=lambda d: d['date'])
+
+        # Add running stock
+        stock = 0
+        for item in sorted_items:
+            # change the date str format
+            item['date'] = item['date'].strftime('%Y-%m-%d')
+            change_in_stock = self.get_delta_stock(item)
+            stock += change_in_stock
+            item['stock'] = stock
+
+        return sorted_items
+    
+    def get_delta_stock(self, item):
+        item_type = item.get('type')
+        item_quantity = item.get('quantity')
+        if item_type == 'buyback order':
+            return -item_quantity
+        elif item_type == 'sales reconciliation':
+            return -item_quantity
+
+        return item.get('quantity')
 
 
 class AuthorSerializer(serializers.ModelSerializer):

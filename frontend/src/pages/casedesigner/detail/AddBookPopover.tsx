@@ -48,7 +48,7 @@ export default function AddBookPopover(props: AddBookPopoverProps) {
             bookId: book.id,
             bookISBN: book.isbn13,
             bookTitle: selectedBookTitle,
-            bookURL: book.thumbnailURL,
+            bookImageURL: book.thumbnailURL,
             displayMode: selectedDisplayMode,
             displayCount: selectedDisplayCount,
           });

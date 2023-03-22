@@ -38,7 +38,7 @@ export interface DisplayBook {
   bookId: string;
   bookISBN: string;
   bookTitle: string;
-  bookURL: string;
+  bookImageURL: string;
   displayMode: DisplayMode;
   displayCount: number;
 }

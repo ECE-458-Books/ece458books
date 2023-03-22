@@ -80,6 +80,7 @@ export default function BBDetail() {
 
   // The rest of the data
   const [date, setDate] = useState<Date>(new Date());
+  const [creatorName, setCreatorName] = useState<string>("");
   const [selectedVendorName, setSelectedVendorName] = useState<string>("");
 
   const [originalData, setOriginalData] =
@@ -107,6 +108,7 @@ export default function BBDetail() {
           setTotalRevenue(buyBack.totalRevenue);
           setSelectedVendorName(buyBack.vendorName);
           setIsPageDeleteable(buyBack.isDeletable);
+          setCreatorName(buyBack.creatorName);
           setOriginalData({
             date: buyBack.date,
             vendorName: buyBack.vendorName,
@@ -497,6 +499,19 @@ export default function BBDetail() {
         <div className="col-11">
           <form onSubmit={onSubmit}>
             <div className="flex col-12 justify-content-evenly mb-3">
+              {!isBBAddPage && (
+                <div className="flex">
+                  <label
+                    htmlFor="creatorname"
+                    className="p-component text-teal-900 p-text-secondary my-auto pr-2"
+                  >
+                    Associated User:
+                  </label>
+                  <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
+                    {creatorName}
+                  </p>
+                </div>
+              )}
               {totalDollars}
               <div className="flex">
                 <label

@@ -33,6 +33,8 @@ export interface APIBB {
   id: number;
   date: string;
   buybacks: APIBBSaleRow[];
+  user: number;
+  username: string;
   vendor: number;
   vendor_name: string;
   num_books: number;

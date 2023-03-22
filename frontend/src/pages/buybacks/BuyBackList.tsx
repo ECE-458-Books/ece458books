@@ -24,6 +24,8 @@ export interface BuyBack {
   date: Date;
   vendorID: number;
   vendorName: string;
+  creatorId: number;
+  creatorName: string;
   sales: LineItem[];
   uniqueBooks: number;
   isDeletable: boolean;
@@ -62,6 +64,12 @@ const COLUMNS: TableColumn<BuyBack>[] = [
     header: "Total Revenue ($)",
     sortable: true,
     customBody: (rowData: BuyBack) => PriceTemplate(rowData.totalRevenue),
+    style: { minWidth: "8rem", width: "10rem" },
+  },
+  {
+    field: "creatorName",
+    header: "Associated User",
+    sortable: true,
     style: { minWidth: "8rem", width: "10rem" },
   },
 ];

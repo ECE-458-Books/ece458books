@@ -27,6 +27,8 @@ export interface PurchaseOrder {
   date: Date;
   vendorName: string;
   vendorId: number;
+  creatorId: number;
+  creatorName: string;
   uniqueBooks: number;
   totalBooks: number;
   totalCost: number;
@@ -66,6 +68,12 @@ const COLUMNS: TableColumn<PurchaseOrder>[] = [
     sortable: true,
     customBody: (rowData: PurchaseOrder) => PriceTemplate(rowData.totalCost),
     style: { minWidth: "8rem", width: "12rem" },
+  },
+  {
+    field: "creatorName",
+    header: "Associated User",
+    sortable: true,
+    style: { minWidth: "8rem", width: "10rem" },
   },
 ];
 

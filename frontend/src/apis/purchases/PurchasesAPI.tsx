@@ -16,11 +16,6 @@ export interface GetPOsReq {
   ordering: string;
 }
 
-export interface GetPOsNoPageReq {
-  no_pagination: boolean;
-  ordering: string;
-}
-
 export interface APIPOPurchaseRow {
   id?: number; // ID only for new rows, not already existing ones
   book: number;
@@ -88,16 +83,6 @@ export interface POCSVImportResp {
 
 export const PURCHASES_API = {
   getPurchaseOrders: async function (req: GetPOsReq): Promise<GetPOsResp> {
-    return await API.request({
-      url: PURCHASES_EXTENSION,
-      method: METHOD_GET,
-      params: req,
-    });
-  },
-
-  getPurchaseOrdersNoPagination: async function (
-    req: GetPOsNoPageReq
-  ): Promise<APIPO[]> {
     return await API.request({
       url: PURCHASES_EXTENSION,
       method: METHOD_GET,

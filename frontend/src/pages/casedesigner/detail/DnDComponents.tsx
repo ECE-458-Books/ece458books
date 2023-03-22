@@ -1,16 +1,29 @@
-import { useDroppable } from "@dnd-kit/core";
+import {
+  closestCenter,
+  DndContext,
+  DragOverlay,
+  KeyboardSensor,
+  PointerSensor,
+  useDroppable,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
 import {
   MAX_IMAGE_HEIGHT,
   MAX_IMAGE_WIDTH,
 } from "../../../components/editors/PriceEditor";
 import { Image } from "primereact/image";
-import { DisplayBook, Shelf } from "../BookcaseList";
+import { Bookcase, DisplayBook, Shelf } from "../BookcaseList";
 import {
   horizontalListSortingStrategy,
   SortableContext,
+  sortableKeyboardCoordinates,
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { onDragEnd, onDragOver, onDragStart } from "./DndFunctions";
+import { Updater } from "use-immer";
+import { useState } from "react";
 
 // A droppable zone. The tag should be wrapped around the zone, and the id should be unique
 export interface DroppableProps {
@@ -81,7 +94,7 @@ export interface MultipleDraggableBooksProps {
 
 export function MultipleDraggableBooks(props: MultipleDraggableBooksProps) {
   return (
-    <div className={"flex"}>
+    <div className={"flex"} style={{ minHeight: 50 }}>
       {props.displayBooks.map((book) => (
         <DraggableBook book={book} key={book.id} />
       ))}
@@ -105,5 +118,48 @@ export function ShelfWithBookImages(props: ShelfWithBookImagesProps) {
         <MultipleDraggableBooks displayBooks={props.shelf.displayedBooks} />
       </SortableContext>
     </Droppable>
+  );
+}
+
+// The context is how drag and drop actually works. It's a wrapper around the children,
+// where each SortableContext is a shelf, and each SortableItem is a book.
+// The context also handles the drag and drop events.
+// The DragOverlay handles animation for the book being dragged
+export interface DragAndDropContextProps {
+  shelves: Shelf[];
+  setBookcase: Updater<Bookcase>;
+  children: React.ReactNode;
+}
+
+export function DragAndDropContext(props: DragAndDropContextProps) {
+  const [currentlyDraggedBook, setCurrentlyDraggedBook] =
+    useState<DisplayBook>();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={(e) =>
+        onDragStart(e, props.shelves, setCurrentlyDraggedBook)
+      }
+      onDragOver={(e) => onDragOver(e, props.setBookcase)}
+      onDragEnd={(e) =>
+        onDragEnd(e, props.setBookcase, setCurrentlyDraggedBook)
+      }
+    >
+      {props.children}
+      <DragOverlay>
+        {currentlyDraggedBook ? (
+          <DraggableBook book={currentlyDraggedBook} />
+        ) : null}
+      </DragOverlay>
+    </DndContext>
   );
 }

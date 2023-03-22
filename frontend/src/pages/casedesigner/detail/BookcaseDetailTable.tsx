@@ -8,24 +8,9 @@ import { BooksDropdownData } from "../../../components/dropdowns/BookDropdown";
 import { filterById, findById } from "../../../util/IDOps";
 import { Bookcase, DisplayBook, Shelf } from "../BookcaseList";
 import { Column } from "primereact/column";
-import {
-  closestCenter,
-  DndContext,
-  DragEndEvent,
-  DragOverEvent,
-  DragOverlay,
-  DragStartEvent,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import { DraggableBook, ShelfWithBookImages } from "./DnDComponents";
-import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { DragAndDropContext, ShelfWithBookImages } from "./DnDComponents";
 import { useEffect, useRef, useState } from "react";
 import { Updater } from "use-immer";
-import { current } from "immer";
-import { logger } from "../../../util/Logger";
 import { Button } from "primereact/button";
 import { Book } from "../../books/BookList";
 import { OverlayPanel } from "primereact/overlaypanel";
@@ -45,8 +30,6 @@ export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
   const addBookOverlayPanelRef = useRef<OverlayPanel>(null);
   const [currentAddBookShelfId, setCurrentAddBookShelfId] =
     useState<string>("");
-  const [currentlyDraggedBook, setCurrentlyDraggedBook] =
-    useState<DisplayBook>();
 
   const COLUMNS: TableColumn<Shelf>[] = [
     {
@@ -93,20 +76,18 @@ export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
 
   const addBookButton = (rowData: Shelf) => {
     return (
-      <>
-        <div className="flex justify-content-center">
-          <Button
-            icon="pi pi-plus"
-            className="p-button-rounded"
-            style={{ height: 40, width: 40 }}
-            onClick={(e) => {
-              addBookOverlayPanelRef.current!.toggle(e);
-              setCurrentAddBookShelfId(rowData.id);
-              e.preventDefault();
-            }}
-          />
-        </div>
-      </>
+      <div className="flex justify-content-center">
+        <Button
+          icon="pi pi-plus"
+          className="p-button-rounded"
+          style={{ height: 40, width: 40 }}
+          onClick={(e) => {
+            addBookOverlayPanelRef.current!.toggle(e);
+            setCurrentAddBookShelfId(rowData.id);
+            e.preventDefault();
+          }}
+        />
+      </div>
     );
   };
 
@@ -130,34 +111,8 @@ export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
     });
   };
 
-  function findShelf(shelves: Shelf[], shelfOrBookId: string) {
-    // If book is dragged to an empty shelf, the shelf ID is given
-    const emptyShelf = shelves.find((shelf) => shelf.id === shelfOrBookId);
-    if (emptyShelf) return emptyShelf;
-
-    // Otherwise we find the id of the book that the book is being dragged to
-    return shelves.find((shelf) => {
-      return shelf.displayedBooks.some((book) => book.id === shelfOrBookId);
-    });
-  }
-
-  
-
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragStart={onDragStart}
-      onDragOver={onDragOver}
-      onDragEnd={onDragEnd}
-    >
+    <DragAndDropContext shelves={props.shelves} setBookcase={props.setBookcase}>
       <DataTable
         showGridlines
         header={props.tableHeader}
@@ -177,12 +132,7 @@ export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
         {columns}
         {deleteColumn}
       </DataTable>
-      <DragOverlay>
-        {currentlyDraggedBook ? (
-          <DraggableBook book={currentlyDraggedBook} />
-        ) : null}
-      </DragOverlay>
       {addBookPopover}
-    </DndContext>
+    </DragAndDropContext>
   );
 }

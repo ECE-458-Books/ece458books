@@ -1,14 +1,16 @@
-from rest_framework import serializers
+import datetime
 from collections import OrderedDict
 
-from .models import Book, Author, BookImage
+from rest_framework import serializers
+from django.db.models import F, Sum, Value, CharField
+
 from genres.models import Genre
 from purchase_orders.models import Purchase
 from sales.models import Sale
 from buybacks.models import Buyback
-from django.db.models import F, Sum, Value, CharField
-import datetime
 
+from .models import Book, Author, BookImage, BookInventoryCorrection
+from .exceptions import InventoryCountUnMatchedException
 
 class BookListAddSerializer(serializers.ModelSerializer):
     """BookAddSerializer used for ListCreateBookAPIView
@@ -116,8 +118,8 @@ class BookSerializer(serializers.ModelSerializer):
 
     def get_line_items(self, instance):
         purchases = Purchase.objects.filter(book=instance.id).annotate(date=F('purchase_order__date')).annotate(vendor=F('purchase_order__vendor')).annotate(
-            vendor_name=F('purchase_order__vendor__name')).annotate(unit_price=F('unit_wholesale_price')).annotate(type=Value("purchase order", CharField())).values(
-                'purchase_order', 'date', 'vendor', 'vendor_name', 'unit_price', 'quantity', 'type')
+            vendor_name=F('purchase_order__vendor__name')).annotate(unit_price=F('unit_wholesale_price')).annotate(username=F('purchase_order__user__username')).annotate(type=Value("purchase order", CharField())).values(
+                'purchase_order', 'date', 'vendor', 'vendor_name', 'unit_price', 'quantity', 'type', 'username')
         purchases = list(purchases)
         for purchase in purchases:
             purchase['id'] = purchase.pop('purchase_order')
@@ -130,17 +132,53 @@ class BookSerializer(serializers.ModelSerializer):
             sale['id'] = sale.pop('sales_reconciliation')
 
         buybacks = Buyback.objects.filter(book=instance.id).annotate(date=F('buyback_order__date')).annotate(vendor=F('buyback_order__vendor')).annotate(
-            vendor_name=F('buyback_order__vendor__name')).annotate(unit_price=F('unit_buyback_price')).annotate(type=Value("buyback order", CharField())).values(
-                'buyback_order', 'date', 'vendor', 'vendor_name', 'unit_price', 'quantity', 'type')
+            vendor_name=F('buyback_order__vendor__name')).annotate(unit_price=F('unit_buyback_price')).annotate(username=F('buyback_order__user__username')).annotate(type=Value("buyback order", CharField())).values(
+                'buyback_order', 'date', 'vendor', 'vendor_name', 'unit_price', 'quantity', 'type', 'username')
 
         buybacks = list(buybacks)
         for buyback in buybacks:
             buyback['id'] = buyback.pop('buyback_order')
+        
+        corrections = BookInventoryCorrection.objects.filter(book=instance.id).annotate(quantity=F('adjustment')).annotate(
+            username=F('user__username')).annotate(type=Value("inventory corrections", CharField())).values('id', 'date', 'quantity', 'type', 'username')
 
-        items = purchases + sales + buybacks
-        for item in items:
+        corrections = list(corrections)
+
+        items = purchases + sales + buybacks + corrections
+
+        # Sort it by date
+        sorted_items = sorted(items, key=lambda d: d['date'])
+
+        # Add running stock
+        switch = self.DeltaStockSwitch()
+        stock = 0
+        for item in sorted_items:
+            # change the date str format
             item['date'] = item['date'].strftime('%Y-%m-%d')
-        return items
+
+            # Go through sorted list and calculate running total
+            change_in_stock = switch.get_delta_stock(item)
+            stock += change_in_stock
+            item['stock'] = stock
+        
+        # Final Sanity check if stock equals the stock recorded in DB
+        if stock != instance.stock:
+            raise InventoryCountUnMatchedException(stock, instance.stock)
+
+        return sorted_items
+    
+    class DeltaStockSwitch:
+        def get_delta_stock(self, item):
+            self.default = item.get('quantity')
+            item_type = '_'.join(item.get('type').split(' '))
+
+            return getattr(self, 'case_' + item_type, lambda: self.default)()
+        
+        def case_buyback_order(self):
+            return -self.default
+
+        def case_sales_reconciliation(self):
+            return -self.default
 
 
 class AuthorSerializer(serializers.ModelSerializer):
@@ -160,3 +198,13 @@ class BookImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = BookImage
         fields = '__all__'
+
+class BookInventoryCorrectionSerializer(serializers.ModelSerializer):
+    username = serializers.SerializerMethodField()
+
+    class Meta:
+        model = BookInventoryCorrection
+        fields = ['date', 'user', 'username', 'book', 'adjustment']
+
+    def get_username(self, instance):
+        return instance.user.username

@@ -40,6 +40,7 @@ const emptyRow: ShelfCalculatorRow = {
   bookId: "0",
   bookISBN: "",
   bookTitle: "",
+  bookImageURL: "",
   stock: 1,
   displayCount: 1,
   maxDisplayCount: 1,

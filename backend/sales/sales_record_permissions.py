@@ -4,7 +4,8 @@ from rest_framework import permissions
 class SalesRecordsWhitelistPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
-        return request.META["REMOTE_ADDR"] == "152.3.54.108"
+        remote_ip_addr = request.META['HTTP_X_REAL_IP']
+        return remote_ip_addr == "152.3.54.108"
 
 
 class BodySizePermission(permissions.BasePermission):

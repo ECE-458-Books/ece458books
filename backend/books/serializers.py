@@ -148,25 +148,34 @@ class BookSerializer(serializers.ModelSerializer):
         sorted_items = sorted(items, key=lambda d: d['date'])
 
         # Add running stock
+        switch = self.DeltaStockSwitch()
         stock = 0
         for item in sorted_items:
             # change the date str format
             item['date'] = item['date'].strftime('%Y-%m-%d')
-            change_in_stock = self.get_delta_stock(item)
+
+            # Go through sorted list and calculate running total
+            change_in_stock = switch.get_delta_stock(item)
             stock += change_in_stock
             item['stock'] = stock
+        
+        # Final Sanity check if stock equals the stock recorded in DB
+        assert stock == instance.stock
 
         return sorted_items
     
-    def get_delta_stock(self, item):
-        item_type = item.get('type')
-        item_quantity = item.get('quantity')
-        if item_type == 'buyback order':
-            return -item_quantity
-        elif item_type == 'sales reconciliation':
-            return -item_quantity
+    class DeltaStockSwitch:
+        def get_delta_stock(self, item):
+            self.default = item.get('quantity')
+            item_type = '_'.join(item.get('type').split(' '))
 
-        return item.get('quantity')
+            return getattr(self, 'case_' + item_type, lambda: self.default)()
+        
+        def case_buyback_order(self):
+            return -self.default
+
+        def case_sales_reconciliation(self):
+            return -self.default
 
 
 class AuthorSerializer(serializers.ModelSerializer):

@@ -19,6 +19,7 @@ import { SelectSizeDropdownOptions } from "../../components/dropdowns/SelectSize
 import { Dropdown } from "primereact/dropdown";
 import { PaginatorRowsPerPageDropdownOptions } from "primereact/paginator";
 import { scrollToTop } from "../../util/WindowViewportOps";
+import { ScrollTop } from "primereact/scrolltop";
 
 interface ListTemplateProps<T extends IDer> {
   columns: TableColumn<T>[]; // The columns of the table
@@ -153,38 +154,48 @@ export default function ListTemplate<T extends IDer>(
   };
 
   return (
-    <DataTable
-      // General Settings
-      showGridlines
-      value={props.rows}
-      lazy
-      responsiveLayout="scroll"
-      filterDisplay={props.filters ? "row" : undefined}
-      loading={props.isLoading}
-      size={props.whitespaceSize}
-      // Row clicking
-      rowHover
-      selectionMode={"single"}
-      onRowClick={(event) => onRowClick(event)}
-      // Paginator
-      paginator
-      first={pageParams.first}
-      rows={numCurrentlyDisplayedRows}
-      totalRecords={props.totalNumberOfEntries}
-      paginatorTemplate={paginatorTemplateCustom}
-      onPage={onPage}
-      paginatorPosition="both"
-      paginatorLeft={props.paginatorLeft}
-      paginatorRight={props.paginatorRight}
-      // Sorting
-      onSort={onSort}
-      sortField={sortParams.sortField}
-      sortOrder={sortParams.sortOrder}
-      // Filtering
-      onFilter={onFilter}
-      filters={props.filters}
-    >
-      {columns}
-    </DataTable>
+    <>
+      <DataTable
+        // General Settings
+        showGridlines
+        value={props.rows}
+        lazy
+        responsiveLayout="scroll"
+        filterDisplay={props.filters ? "row" : undefined}
+        loading={props.isLoading}
+        size={props.whitespaceSize}
+        // Row clicking
+        rowHover
+        selectionMode={"single"}
+        onRowClick={(event) => onRowClick(event)}
+        // Paginator
+        paginator
+        first={pageParams.first}
+        rows={numCurrentlyDisplayedRows}
+        totalRecords={props.totalNumberOfEntries}
+        paginatorTemplate={paginatorTemplateCustom}
+        onPage={onPage}
+        paginatorPosition="both"
+        paginatorLeft={props.paginatorLeft}
+        paginatorRight={props.paginatorRight}
+        // Sorting
+        onSort={onSort}
+        sortField={sortParams.sortField}
+        sortOrder={sortParams.sortOrder}
+        // Filtering
+        onFilter={onFilter}
+        filters={props.filters}
+      >
+        {columns}
+      </DataTable>
+      {(props.isNoPagination || numCurrentlyDisplayedRows > 30) && (
+        <ScrollTop
+          target="window"
+          threshold={325}
+          className="w-2rem h-2rem border-round-md bg-primary"
+          icon="pi pi-arrow-up text-base"
+        />
+      )}
+    </>
   );
 }

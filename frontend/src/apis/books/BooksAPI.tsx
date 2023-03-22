@@ -28,7 +28,7 @@ export interface APIBook {
   authors: string[];
   genres: string[];
   title: string;
-  isbn_13: number;
+  isbn_13: string;
   isbn_10: string;
   publisher: string;
   publishedDate: number;

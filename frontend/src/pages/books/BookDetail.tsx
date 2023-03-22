@@ -47,7 +47,7 @@ export default function BookDetail() {
   const [title, setTitle] = useState<string>("");
   const [authors, setAuthors] = useState<string>("");
   const [genre, setGenre] = useState<string>("");
-  const [isbn13, setISBN13] = useState<number>(0);
+  const [isbn13, setISBN13] = useState<string>("");
   const [isbn10, setISBN10] = useState<string>("");
   const [publisher, setPublisher] = useState<string>("");
   const [pubYear, setPubYear] = useState<number>(0);

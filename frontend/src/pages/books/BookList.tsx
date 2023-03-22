@@ -45,7 +45,7 @@ export interface Book {
   title: string;
   author: string;
   genres: string;
-  isbn13: number;
+  isbn13: string;
   isbn10: string;
   publisher: string;
   publishedYear: number;
@@ -78,7 +78,7 @@ export const emptyBook: Book = {
   title: "",
   author: "",
   genres: "",
-  isbn13: 0,
+  isbn13: "",
   isbn10: "",
   publisher: "",
   publishedYear: 0,

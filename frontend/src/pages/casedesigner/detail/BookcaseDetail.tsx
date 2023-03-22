@@ -4,20 +4,14 @@ import { useNavigate, useParams } from "react-router-dom";
 import React from "react";
 import ConfirmPopup from "../../../components/popups/ConfirmPopup";
 import { showFailure, showSuccess } from "../../../components/Toast";
-import { Book } from "../../books/BookList";
-
 import { useImmer } from "use-immer";
-
-import { BooksDropdownData } from "../../../components/dropdowns/BookDropdown";
 import { logger } from "../../../util/Logger";
 import DeletePopup from "../../../components/popups/DeletePopup";
 import AddDetailModifyTitle from "../../../components/text/AddDetailModifyTitle";
 import BackButton from "../../../components/buttons/BackButton";
 import DeleteButton from "../../../components/buttons/DeleteButton";
-
 import AddRowButton from "../../../components/buttons/AddRowButton";
 import EditCancelButton from "../../../components/buttons/EditCancelDetailButton";
-
 import "../../../css/TableCell.css";
 import Restricted from "../../../permissions/Restricted";
 import { Bookcase, Shelf } from "../BookcaseList";
@@ -56,9 +50,6 @@ export default function BookcaseDetail() {
   // The navigator to switch pages
   const navigate = useNavigate();
 
-  // For dropdown menus
-  const [booksMap, setBooksMap] = useState<Map<string, Book>>(new Map());
-  const [bookTitlesList, setBookTitlesList] = useState<string[]>([]);
   const [originalData, setOriginalData] = useState<Bookcase>(emptyBookcase);
 
   // useImmer is used to set state for nested data in a simplified format
@@ -80,16 +71,6 @@ export default function BookcaseDetail() {
         .catch(() => showFailure(toast, "Could not fetch bookcase data"));
     }
   }, []);
-
-  // Get the data for the books dropdown
-  useEffect(
-    () =>
-      BooksDropdownData({
-        setBooksMap: setBooksMap,
-        setBookTitlesList: setBookTitlesList,
-      }),
-    []
-  );
 
   // Call to delete the bookcase
   const deleteBookcaseFinal = () => {
@@ -303,7 +284,6 @@ export default function BookcaseDetail() {
     <BookcaseDetailTable
       shelves={bookcase.shelves}
       setBookcase={setBookcase}
-      booksDropdownTitles={bookTitlesList}
       isAddPage={isAddPage}
       isModifiable={isModifiable}
       tableHeader={tableHeader}

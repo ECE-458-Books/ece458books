@@ -4,7 +4,7 @@ import {
   createColumns,
   TableColumn,
 } from "../../../components/datatable/TableColumns";
-import BooksDropdown from "../../../components/dropdowns/BookDropdown";
+import { BooksDropdownData } from "../../../components/dropdowns/BookDropdown";
 import { filterById, findById } from "../../../util/IDOps";
 import { Bookcase, DisplayBook, Shelf } from "../BookcaseList";
 import { Column } from "primereact/column";
@@ -20,23 +20,31 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { DraggableBook, ShelfWithBookImages } from "./DragAndDrop";
+import { DraggableBook, ShelfWithBookImages } from "./DnDComponents";
 import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Updater } from "use-immer";
 import { current } from "immer";
 import { logger } from "../../../util/Logger";
+import { Button } from "primereact/button";
+import { Book } from "../../books/BookList";
+import { OverlayPanel } from "primereact/overlaypanel";
+import AddBookPopover from "./AddBookPopover";
 
 interface BookcaseDetailTableProps {
   shelves: Shelf[]; // The array of shelves
   setBookcase: Updater<Bookcase>; // Update the bookcase
   isAddPage: boolean; // True if this is an add page
   isModifiable: boolean; // True if this page is modifiable
-  booksDropdownTitles: string[]; // The list of books for the books dropdown
   tableHeader?: JSX.Element; // add buttons and functionality to attached element of table on the top
 }
 
 export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
+  const [booksMap, setBooksMap] = useState<Map<string, Book>>(new Map());
+  const [bookTitlesList, setBookTitlesList] = useState<string[]>([]);
+  const addBookOverlayPanelRef = useRef<OverlayPanel>(null);
+  const [currentAddBookShelfId, setCurrentAddBookShelfId] =
+    useState<string>("");
   const [currentlyDraggedBook, setCurrentlyDraggedBook] =
     useState<DisplayBook>();
 
@@ -48,13 +56,32 @@ export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
         return <ShelfWithBookImages shelf={rowData} />;
       },
     },
+    {
+      field: "none",
+      header: "Add Book",
+      customBody: (rowData: Shelf) => addBookButton(rowData),
+      style: { width: "3rem", padding: "2" },
+    },
   ];
 
-  const setShelves = (shelves: Shelf[]) => {
+  const addBookToCurrentShelf = (book: DisplayBook) => {
     props.setBookcase((draft) => {
-      draft.shelves = shelves;
+      const shelf = findById(draft.shelves, currentAddBookShelfId)!;
+      shelf.displayedBooks.push(book);
     });
   };
+
+  // Get the data for the books dropdown
+  useEffect(
+    () =>
+      BooksDropdownData({
+        setBooksMap: setBooksMap,
+        setBookTitlesList: setBookTitlesList,
+      }),
+    []
+  );
+
+  // -------- VISUAL COMPONENTS --------
 
   // Delete icon for each row
   const deleteColumn = DeleteColumn<Shelf>({
@@ -64,25 +91,44 @@ export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
     hidden: !props.isModifiable,
   });
 
+  const addBookButton = (rowData: Shelf) => {
+    return (
+      <>
+        <div className="flex justify-content-center">
+          <Button
+            icon="pi pi-plus"
+            className="p-button-rounded"
+            style={{ height: 40, width: 40 }}
+            onClick={(e) => {
+              addBookOverlayPanelRef.current!.toggle(e);
+              setCurrentAddBookShelfId(rowData.id);
+              e.preventDefault();
+            }}
+          />
+        </div>
+      </>
+    );
+  };
+
   const columns = createColumns(COLUMNS);
 
-  // -------- VISUAL COMPONENTS --------
-
-  const booksDropDownEditor = (
-    value: string,
-    onChange: (newValue: string) => void,
-    isDisabled?: boolean
-  ) => (
-    <BooksDropdown
-      setSelectedBook={onChange}
-      selectedBook={value}
-      isDisabled={isDisabled}
-      bookTitlesList={props.booksDropdownTitles}
-      placeholder={value}
+  // The popover for adding books
+  const addBookPopover = (
+    <AddBookPopover
+      booksDropdownTitles={bookTitlesList}
+      panelRef={addBookOverlayPanelRef}
+      booksMap={booksMap}
+      addBookToShelf={addBookToCurrentShelf}
     />
   );
 
   // -------- DRAG AND DROP --------
+
+  const setShelves = (shelves: Shelf[]) => {
+    props.setBookcase((draft) => {
+      draft.shelves = shelves;
+    });
+  };
 
   function findShelf(shelves: Shelf[], shelfOrBookId: string) {
     // If book is dragged to an empty shelf, the shelf ID is given
@@ -95,84 +141,7 @@ export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
     });
   }
 
-  function onDragStart(event: DragStartEvent) {
-    const draggedBookId = event.active.id as string;
-    const shelf = findShelf(props.shelves, draggedBookId);
-    const draggedBook = shelf?.displayedBooks.find(
-      (book) => book.bookId === draggedBookId
-    );
-    setCurrentlyDraggedBook(draggedBook);
-  }
-
-  // Only updates state when the shelf that the book is on actually changes
-  function onDragOver(event: DragOverEvent) {
-    const draggedId = event.active.id as string;
-    const overId = event.over?.id as string;
-
-    props.setBookcase((draft) => {
-      const previousShelf = findShelf(draft.shelves, draggedId);
-      const newShelf = findShelf(draft.shelves, overId);
-
-      logger.debug("previousShelf", current(previousShelf));
-      logger.debug("newShelf", current(newShelf));
-
-      if (!newShelf || !previousShelf || previousShelf === newShelf) return;
-
-      const previousShelfIndex = previousShelf.displayedBooks.findIndex(
-        (book) => book.id === draggedId
-      );
-      const newShelfIndex = newShelf.displayedBooks.findIndex(
-        (book) => book.id === overId
-      );
-
-      const draggedBook = previousShelf.displayedBooks[previousShelfIndex];
-
-      logger.debug("draggedId", draggedId);
-      logger.debug("overId", overId);
-
-      logger.debug("previousShelfIndex", previousShelfIndex);
-      logger.debug("newShelfIndex", newShelfIndex);
-      logger.debug("draggedBook", current(draggedBook));
-
-      previousShelf.displayedBooks = filterById(
-        previousShelf.displayedBooks,
-        draggedId
-      );
-
-      logger.debug("previousShelf", current(previousShelf));
-
-      newShelf.displayedBooks.splice(newShelfIndex, 0, draggedBook);
-
-      logger.debug("newShelf", current(newShelf));
-    });
-  }
-
-  const onDragEnd = (event: DragEndEvent) => {
-    const draggedId = event.active.id as string;
-    const overId = event.over?.id as string;
-
-    props.setBookcase((draft) => {
-      const previousShelf = findShelf(draft.shelves, draggedId);
-      const newShelf = findShelf(draft.shelves, overId);
-
-      if (!newShelf || !previousShelf || previousShelf !== newShelf) return;
-
-      const previousIndex = previousShelf.displayedBooks.findIndex(
-        (book) => book.id === draggedId
-      );
-      const newIndex = newShelf.displayedBooks.findIndex(
-        (book) => book.id === overId
-      );
-
-      previousShelf.displayedBooks = arrayMove(
-        previousShelf.displayedBooks,
-        previousIndex,
-        newIndex
-      );
-    });
-
-    setCurrentlyDraggedBook(undefined);
-  };
+  
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -207,13 +176,13 @@ export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
         <Column rowReorder style={{ width: "3rem" }} />
         {columns}
         {deleteColumn}
-        {/* ADD ROW COLUMN} */}
       </DataTable>
       <DragOverlay>
         {currentlyDraggedBook ? (
           <DraggableBook book={currentlyDraggedBook} />
         ) : null}
       </DragOverlay>
+      {addBookPopover}
     </DndContext>
   );
 }

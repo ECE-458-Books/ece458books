@@ -81,7 +81,7 @@ export interface MultipleDraggableBooksProps {
 
 export function MultipleDraggableBooks(props: MultipleDraggableBooksProps) {
   return (
-    <div>
+    <div className={"flex"}>
       {props.displayBooks.map((book) => (
         <DraggableBook book={book} key={book.id} />
       ))}

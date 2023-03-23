@@ -14,7 +14,7 @@ import {
   GetBookcasesResp,
 } from "../../apis/casedesigner/CaseDesignerAPI";
 import { APIToInternalBookcaseConversion } from "../../apis/casedesigner/CaseDesignerConversions";
-import { DateTemplate } from "../../components/templates/DateTemplate";
+import { DateTimeTemplate } from "../../components/templates/DateTemplate";
 
 export interface Bookcase {
   id: string;
@@ -58,7 +58,7 @@ export default function BookcaseList() {
     {
       field: "lastEditDate",
       header: "Last Edit Date",
-      customBody: (rowData: Bookcase) => DateTemplate(rowData.lastEditDate),
+      customBody: (rowData: Bookcase) => DateTimeTemplate(rowData.lastEditDate),
     },
   ];
 

@@ -22,8 +22,11 @@ import {
 } from "../../../apis/casedesigner/CaseDesignerConversions";
 import BookcaseDetailTable from "./BookcaseDetailTable";
 import TextLabel from "../../../components/text/TextLabels";
-import { TextEditor } from "../../../components/editors/TextEditor";
 import { NumberEditor } from "../../../components/editors/NumberEditor";
+import { Button } from "primereact/button";
+import { Dialog } from "primereact/dialog";
+import { TextEditor } from "../../../components/editors/TextEditor";
+import { ProgressSpinner } from "primereact/progressspinner";
 
 const emptyBookcase: Bookcase = {
   id: "",
@@ -57,7 +60,8 @@ export default function BookcaseDetail() {
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
   const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false);
-  const [isGoBackActive, setIsGoBackActive] = useState<boolean>(false);
+  const [isSaveAsPopupVisible, setIsSaveAsPopupVisible] =
+    useState<boolean>(false);
 
   // Load the Bookcase data on page load
   useEffect(() => {
@@ -84,20 +88,13 @@ export default function BookcaseDetail() {
       .catch(() => showFailure(toast, "Failed to delete bookcase"));
   };
 
-  const onSubmit = (): void => {
-    if (isAddPage) {
-      callAddBookcaseAPI();
-    } else {
-      callModifyBookcaseAPI();
-    }
-  };
-
   const callAddBookcaseAPI = () => {
     const APIbookcase = InternalToAPIBookcaseConversion(bookcase);
     CASE_DESIGNER_API.addBookcase(APIbookcase)
       .then(() => {
         showSuccess(toast, "Bookcase added successfully");
-        isGoBackActive ? navigate("/bookcases") : undefined;
+        setIsModifiable(!isModifiable);
+        setOriginalData(bookcase);
       })
       .catch((error) => {
         showFailure(toast, error.data.errors[0] ?? "Failed to add bookcase");
@@ -109,7 +106,8 @@ export default function BookcaseDetail() {
     CASE_DESIGNER_API.modifyBookcase(APIbookcase)
       .then(() => {
         showSuccess(toast, "Bookcase modified successfully");
-        isGoBackActive ? navigate("/bookcases") : undefined;
+        setIsModifiable(!isModifiable);
+        setOriginalData(bookcase);
       })
       .catch((error) => {
         showFailure(toast, error.data.errors[0] ?? "Failed to add bookcase");
@@ -182,43 +180,67 @@ export default function BookcaseDetail() {
   // Buttons/information that are right above the table
 
   // Right
-  const submitButton = (
+  const saveButton = (
     <ConfirmPopup
-      isButtonVisible={isModifiable}
+      isButtonVisible={isModifiable && !isAddPage}
       isPopupVisible={isConfirmationPopupVisible}
-      hideFunc={() => setIsConfirmationPopupVisible(false)}
-      onFinalSubmission={onSubmit}
+      onHide={() => setIsConfirmationPopupVisible(false)}
+      onFinalSubmission={callModifyBookcaseAPI}
       onShowPopup={() => setIsConfirmationPopupVisible(true)}
       disabled={!isModifiable}
-      label={"Submit"}
+      buttonLabel={"Save"}
       className="p-button-success ml-2"
     />
   );
 
-  const submitAndGoBackButton = (
-    <ConfirmPopup
-      isButtonVisible={isModifiable && isAddPage}
-      isPopupVisible={isConfirmationPopupVisible && isModifiable && isAddPage}
-      hideFunc={() => setIsConfirmationPopupVisible(false)}
-      onFinalSubmission={onSubmit}
-      onRejectFinalSubmission={() => {
-        setIsGoBackActive(false);
-      }}
-      onShowPopup={() => {
-        setIsConfirmationPopupVisible(true);
-        setIsGoBackActive(true);
-      }}
+  const saveAsButton = (
+    <Button
+      id={"enterfinalsubmission"}
+      type="button"
+      onClick={() => setIsSaveAsPopupVisible(true)}
       disabled={!isModifiable}
-      label={"Submit and Go Back"}
+      label={"Save As"}
       className="p-button-success ml-2"
+      icon={"pi pi-save"}
     />
+  );
+
+  const saveAsDialog = (
+    <Dialog
+      onHide={() => setIsSaveAsPopupVisible(false)}
+      visible={isSaveAsPopupVisible}
+      header={"Save As"}
+    >
+      <div className="flex col-12 justify-content-start p-1">
+        <TextLabel label={"Name: "} />
+        <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
+          {TextEditor(bookcase.name, (newValue) =>
+            setBookcase((draft) => {
+              draft.name = newValue;
+            })
+          )}
+        </p>
+      </div>
+      <div className="flex col-12 justify-content-end p-1">
+        <Button
+          type="button"
+          label={"Save"}
+          onClick={() => {
+            callAddBookcaseAPI();
+            setIsSaveAsPopupVisible(false);
+          }}
+          iconPos="right"
+          className={"p-button-sm"}
+        />
+      </div>
+    </Dialog>
   );
 
   const rightToolbar = (
     <Restricted to={"modify"}>
       <div className="flex justify-content-end">
-        {submitAndGoBackButton}
-        {submitButton}
+        {saveAsButton}
+        {saveButton}
       </div>
     </Restricted>
   );
@@ -235,25 +257,23 @@ export default function BookcaseDetail() {
     />
   );
 
-  const nameEditor = (
-    <>
-      <TextLabel label={"Name: "} />
-      {isModifiable ? (
-        TextEditor(bookcase.name, (newValue) => {
-          setBookcase((draft) => {
-            draft.name = newValue;
-          });
-        })
+  const bookcaseName = (
+    <div className="flex">
+      {isAddPage ? (
+        ""
       ) : (
-        <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
-          {bookcase.name}
-        </p>
+        <>
+          <TextLabel label={"Name: "} />
+          <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
+            {bookcase.name}
+          </p>
+        </>
       )}
-    </>
+    </div>
   );
 
   const widthEditor = (
-    <>
+    <div className="flex">
       <TextLabel label={"Width: "} />
       {isModifiable ? (
         NumberEditor(bookcase.width, (newValue) => {
@@ -266,16 +286,12 @@ export default function BookcaseDetail() {
           {bookcase.width}
         </p>
       )}
-    </>
+    </div>
   );
 
   const tableHeader = (
     <Restricted to={"modify"}>
-      <div className="flex">
-        {addRowButton}
-        {nameEditor}
-        {widthEditor}
-      </div>
+      <div className="flex">{addRowButton}</div>
     </Restricted>
   );
 
@@ -300,14 +316,15 @@ export default function BookcaseDetail() {
           {rightButtons}
         </div>
         <div className="col-11">
-          <form onSubmit={onSubmit}>
-            <div className="flex col-12 justify-content-evenly mb-3">
-              {isModifiable && rightToolbar}
-            </div>
-            {dataTable}
-          </form>
+          <div className="flex col-12 justify-content-evenly mb-3">
+            {bookcaseName}
+            {widthEditor}
+            {isModifiable && rightToolbar}
+          </div>
+          {dataTable}
         </div>
         {deletePopupVisible && deletePopup}
+        {saveAsDialog}
       </div>
     </div>
   );

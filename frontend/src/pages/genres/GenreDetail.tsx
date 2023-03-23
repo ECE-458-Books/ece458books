@@ -179,14 +179,14 @@ export default function GenreDetail() {
               {isModifiable && (
                 <ConfirmButton
                   isPopupVisible={isConfirmationPopVisible}
-                  hideFunc={() => setIsConfirmationPopupVisible(false)}
+                  onHide={() => setIsConfirmationPopupVisible(false)}
                   onFinalSubmission={onSubmit}
                   onRejectFinalSubmission={() => {
                     // do nothing
                   }}
                   onShowPopup={() => setIsConfirmationPopupVisible(true)}
                   disabled={!isModifiable}
-                  label={"Submit"}
+                  buttonLabel={"Submit"}
                   className="p-button-success p-button-raised"
                 />
               )}

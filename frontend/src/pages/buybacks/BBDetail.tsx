@@ -395,11 +395,11 @@ export default function BBDetail() {
     <ConfirmPopup
       isButtonVisible={isModifiable}
       isPopupVisible={isConfirmationPopupVisible}
-      hideFunc={() => setIsConfirmationPopupVisible(false)}
+      onHide={() => setIsConfirmationPopupVisible(false)}
       onFinalSubmission={onSubmit}
       onShowPopup={() => setIsConfirmationPopupVisible(true)}
       disabled={!isModifiable || checkForNecessaryValues()}
-      label={"Submit"}
+      buttonLabel={"Submit"}
       className="p-button-success ml-2"
     />
   );
@@ -408,7 +408,7 @@ export default function BBDetail() {
     <ConfirmPopup
       isButtonVisible={isModifiable && isBBAddPage}
       isPopupVisible={isConfirmationPopupVisible && isModifiable && isBBAddPage}
-      hideFunc={() => setIsConfirmationPopupVisible(false)}
+      onHide={() => setIsConfirmationPopupVisible(false)}
       onFinalSubmission={onSubmit}
       onRejectFinalSubmission={() => {
         setIsGoBackActive(false);
@@ -418,7 +418,7 @@ export default function BBDetail() {
         setIsGoBackActive(true);
       }}
       disabled={!isModifiable || checkForNecessaryValues()}
-      label={"Submit and Go Back"}
+      buttonLabel={"Submit and Go Back"}
       className="p-button-success ml-2"
     />
   );

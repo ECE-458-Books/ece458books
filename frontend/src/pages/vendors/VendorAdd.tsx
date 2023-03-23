@@ -111,10 +111,10 @@ export default function VendorAdd() {
   const submitButton = (
     <ConfirmPopup
       isPopupVisible={isConfirmationPopupVisible}
-      hideFunc={() => setIsConfirmationPopupVisible(false)}
+      onHide={() => setIsConfirmationPopupVisible(false)}
       onFinalSubmission={onSubmit}
       onShowPopup={() => setIsConfirmationPopupVisible(true)}
-      label={"Submit"}
+      buttonLabel={"Submit"}
       className="p-button-success ml-2"
       disabled={vendors.length == 0}
     />
@@ -123,7 +123,7 @@ export default function VendorAdd() {
   const submitAndGoBackButton = (
     <ConfirmPopup
       isPopupVisible={isConfirmationPopupVisible}
-      hideFunc={() => setIsConfirmationPopupVisible(false)}
+      onHide={() => setIsConfirmationPopupVisible(false)}
       onFinalSubmission={onSubmit}
       onRejectFinalSubmission={() => {
         setIsGoBackActive(false);
@@ -132,7 +132,7 @@ export default function VendorAdd() {
         setIsConfirmationPopupVisible(true);
         setIsGoBackActive(true);
       }}
-      label={"Submit and Go Back"}
+      buttonLabel={"Submit and Go Back"}
       className="p-button-success ml-2"
       disabled={vendors.length == 0}
     />

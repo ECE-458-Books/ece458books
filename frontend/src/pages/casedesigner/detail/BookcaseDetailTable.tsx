@@ -15,6 +15,7 @@ import { Button } from "primereact/button";
 import { Book } from "../../books/BookList";
 import AddEditDeleteDisplayBookPopup from "./AddBookPopover";
 import { DisplayMode } from "../../../components/dropdowns/DisplayModeDropdown";
+import { findShelf } from "./DndFunctions";
 
 interface BookcaseDetailTableProps {
   shelves: Shelf[]; // The array of shelves
@@ -67,14 +68,14 @@ export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
 
   const addBookToCurrentShelf = () => {
     props.setBookcase((draft) => {
-      const shelf = findById(draft.shelves, currentAddBookShelfId)!;
+      const shelf = findShelf(draft.shelves, currentAddBookShelfId)!;
       shelf.displayedBooks.push(currentlySelectedBook);
     });
   };
 
   const editBookOnCurrentShelf = () => {
     props.setBookcase((draft) => {
-      const shelf = findById(draft.shelves, currentAddBookShelfId)!;
+      const shelf = findShelf(draft.shelves, currentlySelectedBook.id)!;
       const bookIndex = shelf.displayedBooks.findIndex(
         (draftBook) => draftBook.id === currentlySelectedBook.id
       );
@@ -84,7 +85,7 @@ export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
 
   const deleteBookFromCurrentShelf = () => {
     props.setBookcase((draft) => {
-      const shelf = findById(draft.shelves, currentAddBookShelfId)!;
+      const shelf = findShelf(draft.shelves, currentlySelectedBook.id)!;
       const bookIndex = shelf.displayedBooks.findIndex(
         (draftBook) => draftBook.id === currentlySelectedBook.id
       );

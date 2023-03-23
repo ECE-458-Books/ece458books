@@ -5,7 +5,7 @@ import {
   TableColumn,
 } from "../../../components/datatable/TableColumns";
 import { BooksDropdownData } from "../../../components/dropdowns/BookDropdown";
-import { filterById, findById } from "../../../util/IDOps";
+import { filterById } from "../../../util/IDOps";
 import { Bookcase, DisplayBook, Shelf } from "../BookcaseList";
 import { Column } from "primereact/column";
 import { DragAndDropContext, ShelfWithBookImages } from "./DnDComponents";

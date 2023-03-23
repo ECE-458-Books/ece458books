@@ -7,6 +7,8 @@ import { DisplayBook } from "../BookcaseList";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { Updater } from "use-immer";
+import DeleteButton from "../../../components/buttons/DeleteButton";
+import TextLabel from "../../../components/text/TextLabels";
 
 export interface AddEditDeleteDisplayBookPopupProps {
   isAddPopup: boolean;
@@ -58,17 +60,13 @@ export default function AddEditDeleteDisplayBookPopup(
   );
 
   const deleteButton = (
-    <Button
-      type="button"
-      label={"Delete"}
-      visible={!props.isAddPopup}
-      icon="pi pi-trash"
+    <DeleteButton
       onClick={() => {
         props.deleteBookFromShelf();
         props.setIsVisible(false);
       }}
-      iconPos="right"
-      className={"p-button-sm"}
+      visible={!props.isAddPopup}
+      className={"ml-1 "}
     />
   );
 
@@ -97,17 +95,22 @@ export default function AddEditDeleteDisplayBookPopup(
       onHide={() => props.setIsVisible(false)}
     >
       <div className="flex col-12 justify-content-start p-1">
+        <TextLabel label={"Book:"} />
         {booksDropdown}
       </div>
       <div className="flex col-12 justify-content-start p-1">
+        <TextLabel label={"Display Mode:"} />
         {displayModeDropdown}
       </div>
       <div className="flex col-12 justify-content-start p-1">
+        <TextLabel label={"Display Count:"} />
         {numberEditor}
       </div>
-      <div className="flex col-12 justify-content-end p-1">
-        <div className="flex p-0 col-6">{deleteButton}</div>
-        <div className="flex p-0 col-6">{addSaveButton}</div>
+      <div className="flex col-12 p-0">
+        <div className="flex col-6 justify-content-end p-1">
+          <div className="flex p-0 col-6">{deleteButton}</div>
+          <div className="flex p-0 col-6">{addSaveButton}</div>
+        </div>
       </div>
     </Dialog>
   );

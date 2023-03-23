@@ -75,6 +75,7 @@ export default function PODetail() {
 
   // The rest of the data
   const [date, setDate] = useState<Date>(new Date());
+  const [creatorName, setCreatorName] = useState<string>("");
   const [selectedVendorName, setSelectedVendorName] = useState<string>("");
 
   const [originalData, setOriginalData] =
@@ -101,6 +102,7 @@ export default function PODetail() {
           setPurchases(purchaseOrder.purchases);
           setTotalCost(purchaseOrder.totalCost);
           setIsPageDeleteable(purchaseOrder.isDeletable);
+          setCreatorName(purchaseOrder.creatorName);
           setOriginalData({
             date: purchaseOrder.date,
             vendorName: purchaseOrder.vendorName,
@@ -193,6 +195,15 @@ export default function PODetail() {
     return true;
   };
 
+  const resetPageInputFields = () => {
+    setSelectedVendorName("");
+    setPurchases([]);
+    setDate(new Date());
+    setTotalCost(0);
+    setHasUploadedCSV(false);
+    setIsGoBackActive(false);
+  };
+
   // On submission of the PO, we either add/edit depending on the page type
   const onSubmit = (): void => {
     if (!validateSubmission()) {
@@ -225,9 +236,7 @@ export default function PODetail() {
     PURCHASES_API.addPurchaseOrder(purchaseOrder)
       .then(() => {
         showSuccess(toast, "Purchase order added successfully");
-        isGoBackActive
-          ? navigate("/purchase-orders")
-          : window.location.reload();
+        isGoBackActive ? navigate("/purchase-orders") : resetPageInputFields();
       })
       .catch(() => showFailure(toast, "Could not add purchase order"));
   }
@@ -359,6 +368,10 @@ export default function PODetail() {
     />
   );
 
+  const checkForNecessaryValues = (): boolean => {
+    return purchases.length == 0 || selectedVendorName === "";
+  };
+
   // Right
   const submitButton = (
     <ConfirmPopup
@@ -367,7 +380,7 @@ export default function PODetail() {
       hideFunc={() => setIsConfirmationPopupVisible(false)}
       onFinalSubmission={onSubmit}
       onShowPopup={() => setIsConfirmationPopupVisible(true)}
-      disabled={!isModifiable}
+      disabled={!isModifiable || checkForNecessaryValues()}
       label={"Submit"}
       className="p-button-success ml-2"
     />
@@ -386,7 +399,7 @@ export default function PODetail() {
         setIsConfirmationPopupVisible(true);
         setIsGoBackActive(true);
       }}
-      disabled={!isModifiable}
+      disabled={!isModifiable || checkForNecessaryValues()}
       label={"Submit and Go Back"}
       className="p-button-success ml-2"
     />
@@ -456,6 +469,19 @@ export default function PODetail() {
         <div className="col-11">
           <form onSubmit={onSubmit}>
             <div className="flex col-12 justify-content-evenly mb-3">
+              {!isPOAddPage && (
+                <div className="flex">
+                  <label
+                    htmlFor="creatorname"
+                    className="p-component text-teal-900 p-text-secondary my-auto pr-2"
+                  >
+                    Associated User:
+                  </label>
+                  <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
+                    {creatorName}
+                  </p>
+                </div>
+              )}
               {totalDollars}
               <div className="flex">
                 <label

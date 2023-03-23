@@ -5,17 +5,16 @@ import {
   APISRSortFieldMap,
   APIToInternalSRConversion,
 } from "../../apis/sales/SalesConversions";
-import { APISR, GetSRsResp, SALES_API } from "../../apis/sales/SalesAPI";
+import { GetSRsResp, SALES_API } from "../../apis/sales/SalesAPI";
 import { TableColumn } from "../../components/datatable/TableColumns";
 import { DateTemplate } from "../../components/templates/DateTemplate";
 import PriceTemplate from "../../components/templates/PriceTemplate";
 import AddPageButton from "../../components/buttons/AddPageButton";
-import LabeledSwitch from "../../components/buttons/LabeledSwitch";
 import ListTemplate from "../../templates/list/ListTemplate";
 import { LineItem } from "../../templates/inventorydetail/LineItemTableTemplate";
 import SelectSizeDropdown, {
   SelectSizeDropdownOptions,
-} from "../../components/buttons/SelectSizeDropdown";
+} from "../../components/dropdowns/SelectSizeDropdown";
 
 export interface SalesRecord {
   id: string;
@@ -69,25 +68,11 @@ export default function SalesRecordList() {
   // ----------------- METHODS -----------------
 
   const callAPI = (page: number, pageSize: number, sortField: string) => {
-    if (!isNoPagination) {
-      SALES_API.getSalesRecords({
-        page: page,
-        page_size: pageSize,
-        ordering: sortField,
-      }).then((response) => onAPIResponse(response));
-    } else {
-      SALES_API.getSalesRecordsNoPagination({
-        no_pagination: true,
-        ordering: sortField,
-      }).then((response) => onAPIResponseNoPagination(response));
-    }
-  };
-
-  // Set state when response to API call is received
-  const onAPIResponseNoPagination = (response: APISR[]) => {
-    setSalesRecords(response.map((sr) => APIToInternalSRConversion(sr)));
-    setNumberOfSalesRecords(response.length);
-    setIsLoading(false);
+    SALES_API.getSalesRecords({
+      page: page,
+      page_size: pageSize,
+      ordering: sortField,
+    }).then((response) => onAPIResponse(response));
   };
 
   // Set state when response to API call is received
@@ -110,14 +95,6 @@ export default function SalesRecordList() {
     />
   );
 
-  const noPaginationSwitch = (
-    <LabeledSwitch
-      label="Show All"
-      onChange={() => setIsNoPagination(!isNoPagination)}
-      value={isNoPagination}
-    />
-  );
-
   const selectSizeButton = (
     <SelectSizeDropdown
       value={tableWhitespaceSize}
@@ -131,6 +108,7 @@ export default function SalesRecordList() {
       detailPageURL="/sales-records/detail/"
       whitespaceSize={tableWhitespaceSize}
       isNoPagination={isNoPagination}
+      setIsNoPagination={setIsNoPagination}
       isLoading={isLoading}
       setIsLoading={setIsLoading}
       totalNumberOfEntries={numberOfSalesRecords}
@@ -138,43 +116,24 @@ export default function SalesRecordList() {
       rows={salesRecords}
       APISortFieldMap={APISRSortFieldMap}
       callGetAPI={callAPI}
-      paginatorLeft={noPaginationSwitch}
+      paginatorLeft={<></>}
       paginatorRight={selectSizeButton}
     />
   );
 
   return (
     <div>
-      {isNoPagination && (
-        <div className="grid flex m-1 justify-content-end">
-          <div className="flex col-4 justify-content-start mx-0 my-auto">
-            {noPaginationSwitch}
-          </div>
-          <div className="flex col-4 justify-content-end m-0">
-            {selectSizeButton}
-          </div>
-          <div className="flex justify-content-end col-2">{addSRButton}</div>
-        </div>
-      )}
-      <div
-        className={
-          !isNoPagination
-            ? "flex justify-content-end"
-            : "flex justify-content-center"
-        }
-      >
+      <div className="flex justify-content-end">
         <div className="card col-9 pt-0 px-3 justify-content-center">
           <Toast ref={toast} />
           {dataTable}
         </div>
-        {!isNoPagination && (
-          <div
-            className="flex justify-content-end align-items-start mr-1 my-2"
-            style={{ width: "12.4%" }}
-          >
-            {addSRButton}
-          </div>
-        )}
+        <div
+          className="flex justify-content-end align-items-start mr-1 my-2"
+          style={{ width: "12.4%" }}
+        >
+          {addSRButton}
+        </div>
       </div>
     </div>
   );

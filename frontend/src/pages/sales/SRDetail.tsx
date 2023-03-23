@@ -41,7 +41,7 @@ export default function SRDetail() {
 
   // Load the SR data on page load
   useEffect(() => {
-    SALES_API.getSalesRecordDetail({ id: id! })
+    SALES_API.getSalesRecordsDetail({ id: id! })
       .then((response) => {
         const salesRecord = APIToInternalSRConversion(response);
         setDate(salesRecord.date);

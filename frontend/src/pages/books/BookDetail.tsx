@@ -31,6 +31,7 @@ import TextLabels from "../../components/text/TextLabels";
 import { TextWrapperNullableNumberEditor } from "../../components/text/TextWrapperNullableNumberEditor";
 import { PriceEditor } from "../../components/editors/PriceEditor";
 import { Divider } from "primereact/divider";
+import BookDetailRelatedBooks from "./BookDetailRelatedBooks";
 
 export interface BookwithRelatedBooks extends Book {
   relatedBooks?: Book[];
@@ -325,6 +326,10 @@ export default function BookDetail() {
 
   // Line item table
   const lineItemsTable = <BookDetailLineItems lineItems={lineItems} />;
+
+  const relatedBooksTable = (
+    <BookDetailRelatedBooks relatedBooks={relatedBooks} />
+  );
 
   const backButton = (
     <div className="flex col-4">
@@ -644,7 +649,7 @@ export default function BookDetail() {
           <b>Related Books</b>
         </div>
       </Divider>
-      <div className="flex justify-content-center col-10">{lineItemsTable}</div>
+      <div className="col-12">{relatedBooksTable}</div>
     </div>
   );
 }

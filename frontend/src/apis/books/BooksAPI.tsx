@@ -98,6 +98,7 @@ export interface AddBookInitialLookupReq {
 
 export interface APIBookWithDBTag extends APIBook {
   fromDB: boolean;
+  related_books: APIBook[];
 }
 
 export interface AddBooksInitialLookupResp {

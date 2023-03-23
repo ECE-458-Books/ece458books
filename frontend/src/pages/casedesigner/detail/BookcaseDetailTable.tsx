@@ -9,12 +9,12 @@ import { filterById, findById } from "../../../util/IDOps";
 import { Bookcase, DisplayBook, Shelf } from "../BookcaseList";
 import { Column } from "primereact/column";
 import { DragAndDropContext, ShelfWithBookImages } from "./DnDComponents";
-import { useEffect, useRef, useState } from "react";
-import { Updater } from "use-immer";
+import { useEffect, useState } from "react";
+import { Updater, useImmer } from "use-immer";
 import { Button } from "primereact/button";
 import { Book } from "../../books/BookList";
-import { OverlayPanel } from "primereact/overlaypanel";
-import AddBookPopover from "./AddBookPopover";
+import AddEditDeleteDisplayBookPopup from "./AddBookPopover";
+import { DisplayMode } from "../../../components/dropdowns/DisplayModeDropdown";
 
 interface BookcaseDetailTableProps {
   shelves: Shelf[]; // The array of shelves
@@ -24,19 +24,37 @@ interface BookcaseDetailTableProps {
   tableHeader?: JSX.Element; // add buttons and functionality to attached element of table on the top
 }
 
+const emptyDisplayBook: DisplayBook = {
+  id: "",
+  bookId: "",
+  bookTitle: "",
+  bookISBN: "",
+  bookImageURL: "",
+  displayMode: DisplayMode.SPINE_OUT,
+  displayCount: 1,
+};
+
 export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
   const [booksMap, setBooksMap] = useState<Map<string, Book>>(new Map());
   const [bookTitlesList, setBookTitlesList] = useState<string[]>([]);
-  const addBookOverlayPanelRef = useRef<OverlayPanel>(null);
   const [currentAddBookShelfId, setCurrentAddBookShelfId] =
     useState<string>("");
+  const [currentlySelectedBook, setCurrentlySelectedBook] =
+    useImmer<DisplayBook>(emptyDisplayBook);
+  const [isBookPopupVisible, setIsBookPopupVisible] = useState<boolean>(false);
 
   const COLUMNS: TableColumn<Shelf>[] = [
     {
       field: "displayedBooks",
       header: "Displayed Books",
       customBody: (rowData: Shelf) => {
-        return <ShelfWithBookImages shelf={rowData} />;
+        return (
+          <ShelfWithBookImages
+            shelf={rowData}
+            setSelectedBook={setCurrentlySelectedBook}
+            setIsBookPopupVisible={setIsBookPopupVisible}
+          />
+        );
       },
     },
     {
@@ -47,11 +65,32 @@ export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
     },
   ];
 
-  const addBookToCurrentShelf = (book: DisplayBook) => {
+  const addBookToCurrentShelf = () => {
     props.setBookcase((draft) => {
       const shelf = findById(draft.shelves, currentAddBookShelfId)!;
-      shelf.displayedBooks.push(book);
+      shelf.displayedBooks.push(currentlySelectedBook);
     });
+  };
+
+  const editBookOnCurrentShelf = () => {
+    props.setBookcase((draft) => {
+      const shelf = findById(draft.shelves, currentAddBookShelfId)!;
+      const bookIndex = shelf.displayedBooks.findIndex(
+        (draftBook) => draftBook.id === currentlySelectedBook.id
+      );
+      shelf.displayedBooks[bookIndex] = currentlySelectedBook;
+    });
+  };
+
+  const deleteBookFromCurrentShelf = () => {
+    props.setBookcase((draft) => {
+      const shelf = findById(draft.shelves, currentAddBookShelfId)!;
+      const bookIndex = shelf.displayedBooks.findIndex(
+        (draftBook) => draftBook.id === currentlySelectedBook.id
+      );
+      shelf.displayedBooks.splice(bookIndex, 1);
+    });
+    setCurrentlySelectedBook(emptyDisplayBook);
   };
 
   // Get the data for the books dropdown
@@ -82,7 +121,8 @@ export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
           className="p-button-rounded"
           style={{ height: 40, width: 40 }}
           onClick={(e) => {
-            addBookOverlayPanelRef.current!.toggle(e);
+            setIsBookPopupVisible(true);
+            setCurrentlySelectedBook(emptyDisplayBook);
             setCurrentAddBookShelfId(rowData.id);
             e.preventDefault();
           }}
@@ -95,11 +135,16 @@ export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
 
   // The popover for adding books
   const addBookPopover = (
-    <AddBookPopover
+    <AddEditDeleteDisplayBookPopup
       booksDropdownTitles={bookTitlesList}
-      panelRef={addBookOverlayPanelRef}
-      booksMap={booksMap}
+      isVisible={isBookPopupVisible}
+      setIsVisible={setIsBookPopupVisible}
       addBookToShelf={addBookToCurrentShelf}
+      editBookOnShelf={editBookOnCurrentShelf}
+      deleteBookFromShelf={deleteBookFromCurrentShelf}
+      selectedDisplayBook={currentlySelectedBook}
+      setSelectedDisplayBook={setCurrentlySelectedBook}
+      isAddPopup={currentlySelectedBook.id === ""}
     />
   );
 

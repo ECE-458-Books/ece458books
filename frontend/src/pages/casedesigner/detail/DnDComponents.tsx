@@ -70,13 +70,16 @@ export function SortableItem(props: SortableItemProps) {
 // A draggable book, which uses the sortable item above.
 export interface DraggableBookProps {
   book: DisplayBook;
+  // Only for the actual books, not the drag overlay UI element
+  setSelectedBook?: Updater<DisplayBook>;
+  setIsBookPopupVisible?: (isVisible: boolean) => void;
 }
 
 export function DraggableBook(props: DraggableBookProps) {
   return (
     <SortableItem id={props.book.id} key={props.book.id}>
       <Image
-        src={props.book.bookImageURL}
+        src={"https://books-test.colab.duke.edu/media/books/default.jpeg"}
         id={props.book.id}
         alt="Image"
         imageStyle={{
@@ -86,6 +89,11 @@ export function DraggableBook(props: DraggableBookProps) {
         }}
         className="flex justify-content-center"
         imageClassName="shadow-2 border-round"
+        onClick={() => {
+          if (!props.setSelectedBook || !props.setIsBookPopupVisible) return;
+          props.setSelectedBook(props.book);
+          props.setIsBookPopupVisible(true);
+        }}
       />
     </SortableItem>
   );
@@ -94,13 +102,20 @@ export function DraggableBook(props: DraggableBookProps) {
 // Component for creating a shelf's draggable books
 export interface MultipleDraggableBooksProps {
   displayBooks: DisplayBook[];
+  setSelectedBook: Updater<DisplayBook>;
+  setIsBookPopupVisible: (isVisible: boolean) => void;
 }
 
 export function MultipleDraggableBooks(props: MultipleDraggableBooksProps) {
   return (
     <div className={"flex"}>
       {props.displayBooks.map((book) => (
-        <DraggableBook book={book} key={book.id} />
+        <DraggableBook
+          book={book}
+          key={book.id}
+          setIsBookPopupVisible={props.setIsBookPopupVisible}
+          setSelectedBook={props.setSelectedBook}
+        />
       ))}
     </div>
   );
@@ -110,6 +125,8 @@ export function MultipleDraggableBooks(props: MultipleDraggableBooksProps) {
 // of the books.
 export interface ShelfWithBookImagesProps {
   shelf: Shelf;
+  setSelectedBook: Updater<DisplayBook>;
+  setIsBookPopupVisible: (isVisible: boolean) => void;
 }
 
 export function ShelfWithBookImages(props: ShelfWithBookImagesProps) {
@@ -119,7 +136,11 @@ export function ShelfWithBookImages(props: ShelfWithBookImagesProps) {
         items={props.shelf.displayedBooks.map((book) => book.id)}
         strategy={horizontalListSortingStrategy}
       >
-        <MultipleDraggableBooks displayBooks={props.shelf.displayedBooks} />
+        <MultipleDraggableBooks
+          displayBooks={props.shelf.displayedBooks}
+          setIsBookPopupVisible={props.setIsBookPopupVisible}
+          setSelectedBook={props.setSelectedBook}
+        />
       </SortableContext>
     </Droppable>
   );
@@ -140,7 +161,11 @@ export function DragAndDropContext(props: DragAndDropContextProps) {
     useState<DisplayBook>();
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })

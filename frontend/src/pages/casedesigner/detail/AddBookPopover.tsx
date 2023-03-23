@@ -65,6 +65,7 @@ export default function AddEditDeleteDisplayBookPopup(
       icon="pi pi-trash"
       onClick={() => {
         props.deleteBookFromShelf();
+        props.setIsVisible(false);
       }}
       iconPos="right"
       className={"p-button-sm"}

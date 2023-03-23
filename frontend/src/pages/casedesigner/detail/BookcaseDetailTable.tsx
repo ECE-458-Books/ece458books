@@ -16,6 +16,7 @@ import { Book } from "../../books/BookList";
 import AddEditDeleteDisplayBookPopup from "./AddBookPopover";
 import { DisplayMode } from "../../../components/dropdowns/DisplayModeDropdown";
 import { findShelf } from "./DndFunctions";
+import { v4 as uuid } from "uuid";
 
 interface BookcaseDetailTableProps {
   shelves: Shelf[]; // The array of shelves
@@ -67,9 +68,21 @@ export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
   ];
 
   const addBookToCurrentShelf = () => {
+    const selectedBook = booksMap.get(currentlySelectedBook.bookTitle)!;
+
+    const newDisplayBook: DisplayBook = {
+      id: uuid(),
+      bookId: selectedBook.id,
+      bookTitle: currentlySelectedBook.bookTitle,
+      bookISBN: selectedBook.isbn13,
+      bookImageURL: selectedBook.thumbnailURL,
+      displayMode: currentlySelectedBook.displayMode,
+      displayCount: currentlySelectedBook.displayCount,
+    };
+
     props.setBookcase((draft) => {
       const shelf = findShelf(draft.shelves, currentAddBookShelfId)!;
-      shelf.displayedBooks.push(currentlySelectedBook);
+      shelf.displayedBooks.push(newDisplayBook);
     });
   };
 

@@ -113,7 +113,7 @@ export default function BookcaseList() {
   const dataTable = (
     <ListTemplate
       columns={COLUMNS}
-      detailPageURL="/Bookcases/detail/"
+      detailPageURL="/bookcases/detail/"
       whitespaceSize={tableWhitespaceSize}
       isNoPagination={isNoPagination}
       setIsNoPagination={setIsNoPagination}

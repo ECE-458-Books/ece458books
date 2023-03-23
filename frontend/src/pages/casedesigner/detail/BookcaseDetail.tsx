@@ -26,7 +26,6 @@ import { NumberEditor } from "../../../components/editors/NumberEditor";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { TextEditor } from "../../../components/editors/TextEditor";
-import { ProgressSpinner } from "primereact/progressspinner";
 
 const emptyBookcase: Bookcase = {
   id: "",
@@ -83,7 +82,7 @@ export default function BookcaseDetail() {
     CASE_DESIGNER_API.deleteBookcase(id!)
       .then(() => {
         showSuccess(toast, "Bookcase deleted");
-        navigate("/bookcase");
+        navigate("/bookcases");
       })
       .catch(() => showFailure(toast, "Failed to delete bookcase"));
   };

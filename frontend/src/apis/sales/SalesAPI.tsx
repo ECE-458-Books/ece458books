@@ -1,14 +1,8 @@
-import {
-  API,
-  METHOD_DELETE,
-  METHOD_GET,
-  METHOD_PATCH,
-  METHOD_POST,
-} from "../Config";
+import { API, METHOD_DELETE, METHOD_GET } from "../Config";
 
 const SALES_EXTENSION = "sales/sales_reconciliation";
 
-// getSalesReconciliations
+// getSalesRecords
 export interface GetSRsReq {
   page: number;
   page_size: number;
@@ -39,46 +33,18 @@ export interface GetSRsResp {
   count: number;
 }
 
-// getSalesReconciliationDetail
+// getSalesRecordDetail
 export interface GetSRDetailReq {
   id: string;
 }
 
-// deleteSalesReconciliation
+// deleteSalesRecord
 export interface DeleteSRReq {
   id: string;
 }
 
-// addSalesReconciliation
-export interface AddSRReq {
-  date: string;
-  sales: APISRSaleRow[];
-}
-
-// modifySalesReconciliation
-export interface ModifySRReq extends AddSRReq {
-  id: string;
-}
-
-// salesReconciliationsCSVImport
-export interface SRCSVImportReq {
-  file: File;
-}
-
-export interface APISaleCSVImportRow extends APISRSaleRow {
-  isbn_13: string;
-  errors: { [key: string]: string };
-}
-
-export interface SRCSVImportResp {
-  sales: APISaleCSVImportRow[];
-  errors?: string[];
-}
-
 export const SALES_API = {
-  getSalesReconciliations: async function (
-    req: GetSRsReq
-  ): Promise<GetSRsResp> {
+  getSalesRecords: async function (req: GetSRsReq): Promise<GetSRsResp> {
     return await API.request({
       url: SALES_EXTENSION,
       method: METHOD_GET,
@@ -86,51 +52,17 @@ export const SALES_API = {
     });
   },
 
-  getSalesReconciliationDetail: async function (
-    req: GetSRDetailReq
-  ): Promise<APISR> {
+  getSalesRecordsDetail: async function (req: GetSRDetailReq): Promise<APISR> {
     return await API.request({
       url: SALES_EXTENSION.concat("/".concat(req.id.toString())),
       method: METHOD_GET,
     });
   },
 
-  deleteSalesReconciliation: async function (req: DeleteSRReq) {
+  deleteSalesRecord: async function (req: DeleteSRReq) {
     return await API.request({
       url: SALES_EXTENSION.concat("/").concat(req.id.toString()),
       method: METHOD_DELETE,
     });
-  },
-
-  modifySalesReconciliation: async function (req: ModifySRReq) {
-    return await API.request({
-      url: SALES_EXTENSION.concat("/").concat(req.id.toString()),
-      method: METHOD_PATCH,
-      data: req,
-    });
-  },
-
-  addSalesReconciliation: async function (req: AddSRReq) {
-    return await API.request({
-      url: SALES_EXTENSION,
-      method: METHOD_POST,
-      data: req,
-    });
-  },
-
-  salesReconciliationCSVImport: async function (
-    req: SRCSVImportReq
-  ): Promise<SRCSVImportResp> {
-    const formData = new FormData();
-    formData.append("file", req.file);
-    const request = {
-      url: SALES_EXTENSION.concat("/csv/import"), // TODO: This will eventually go back to sales/sales_reconciliation/...
-      method: METHOD_POST,
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-      data: formData,
-    };
-    return await API.request(request);
   },
 };

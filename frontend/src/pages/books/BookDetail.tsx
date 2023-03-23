@@ -28,6 +28,9 @@ import TextLabels from "../../components/text/TextLabels";
 import { TextWrapperNullableNumberEditor } from "../../components/text/TextWrapperNullableNumberEditor";
 import { PriceEditor } from "../../components/editors/PriceEditor";
 import { Divider } from "primereact/divider";
+import { OverlayPanel } from "primereact/overlaypanel";
+import InventoryCorrectionPopover from "../../components/popups/InventoryCorrectionPopover";
+import { arrowColorDeterminer, colorDeterminer } from "../../util/CSSFunctions";
 
 interface ErrorDisplay {
   message: string;
@@ -72,11 +75,14 @@ export default function BookDetail() {
   const [imageFile, setImageFile] = useState<File>(new File([""], "filename"));
   const [isImageUploaded, setIsImageUploaded] = useState<boolean>(false);
   const [isImageRemoved, setIsImageRemoved] = useState<boolean>(false);
+  const [inventoryAdjustment, setInventoryAdjustment] = useState<number>(0);
 
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
   const [genreNamesList, setGenreNamesList] = useState<string[]>([]);
   const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false); // Whether the delete popup is visible
+  const inventoryCorrectionPanelRef = useRef<OverlayPanel>(null);
+  const isMounted = useRef(false);
 
   // Load the book data on page load
   useEffect(() => {
@@ -101,7 +107,9 @@ export default function BookDetail() {
         setBestBuybackPrice(book.bestBuybackPrice);
         setLastMonthSales(book.lastMonthSales);
         updateShelfSpace(book.thickness);
+        setInventoryAdjustment(0);
         setDaysOfSupply(calculateDaysOfSupply(book));
+        isMounted.current = true;
         setImage({
           imageSrc: response.image_url,
           imageHash: Date.now().toString(),
@@ -210,6 +218,41 @@ export default function BookDetail() {
           showSuccess(toast, "Book Edited");
         })
         .catch(() => showFailure(toast, "Could not modify book"));
+
+      if (inventoryAdjustment !== 0) {
+        BOOKS_API.inventoryCorrection({
+          id: id!,
+          adjustment: inventoryAdjustment,
+        })
+          .then((response) => {
+            setStock(stock + response.adjustment);
+            setInventoryAdjustment(0);
+            setOriginalBookData({
+              id: originalBookData.id!,
+              title: originalBookData.title,
+              author: originalBookData.author,
+              isbn10: originalBookData.isbn10,
+              isbn13: originalBookData.isbn13,
+              publisher: originalBookData.publisher,
+              publishedYear: originalBookData.publishedYear,
+              genres: originalBookData.genres,
+              height: originalBookData.height,
+              width: originalBookData.width,
+              thickness: originalBookData.thickness,
+              pageCount: originalBookData.pageCount,
+              stock: stock,
+              retailPrice: originalBookData.retailPrice,
+              thumbnailURL: originalBookData.thumbnailURL,
+              lineItems: originalBookData.lineItems,
+              bestBuybackPrice: originalBookData.bestBuybackPrice,
+              lastMonthSales: originalBookData.lastMonthSales,
+              shelfSpace: originalBookData.shelfSpace,
+              daysOfSupply: originalBookData.daysOfSupply,
+            });
+            showSuccess(toast, "Inventory Adjusted");
+          })
+          .catch(() => showFailure(toast, "Could not modify inventory"));
+      }
       formik.resetForm();
     },
   });
@@ -229,6 +272,7 @@ export default function BookDetail() {
       });
       setIsImageUploaded(false);
       setIsImageRemoved(false);
+      setInventoryAdjustment(0);
     }
   }, [isModifiable]);
 
@@ -414,6 +458,27 @@ export default function BookDetail() {
     </div>
   );
 
+  const inventoryCorrectionPopover = (
+    <InventoryCorrectionPopover
+      panelRef={inventoryCorrectionPanelRef}
+      value={originalBookData.stock}
+      setDelta={setInventoryAdjustment}
+    />
+  );
+
+  const inventoryCorrectionButton = (
+    <Restricted to={"modify"}>
+      <Button
+        icon="pi pi-pencil"
+        type="button"
+        visible={isModifiable}
+        onClick={(e) => inventoryCorrectionPanelRef.current!.toggle(e)}
+        className="p-button-rounded p-button-sm ml-2"
+        style={{ width: 10, height: 35 }}
+      />
+    </Restricted>
+  );
+
   return (
     <div className="grid flex justify-content-center">
       <Toast ref={toast} />
@@ -578,6 +643,23 @@ export default function BookDetail() {
               <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
                 {stock}
               </p>
+              {isModifiable && inventoryAdjustment !== 0 && (
+                <>
+                  <span
+                    className="pi pi-arrow-right my-auto font-semibold px-1"
+                    style={arrowColorDeterminer(inventoryAdjustment)}
+                  ></span>
+                  <p
+                    className={
+                      "p-component p-text-secondary text-xl text-center my-0 text-center my-auto " +
+                      colorDeterminer(inventoryAdjustment)
+                    }
+                  >
+                    {stock + inventoryAdjustment}
+                  </p>
+                </>
+              )}
+              {inventoryCorrectionButton}
             </div>
             <div className="flex p-0 col-6">
               <TextLabels label="Days of Supply:" />
@@ -623,6 +705,7 @@ export default function BookDetail() {
           <b>Book Related Transactions and Adjustments</b>
         </div>
       </Divider>
+      {inventoryCorrectionPopover}
       <div className="flex justify-content-center col-10">{lineItemsTable}</div>
     </div>
   );

@@ -51,9 +51,12 @@ export enum APILineItemType {
   PURCHASE_ORDER = "purchase order",
   SALES_RECONCILIATION = "sales reconciliation",
   BOOK_BUYBACK = "buyback order",
+  INVENTORY_CORRECTION = "inventory corrections",
 }
 
 export interface APIBookLineItem {
+  stock: number;
+  username?: string;
   id: number;
   date: string;
   type: APILineItemType;
@@ -106,6 +109,20 @@ export interface AddBookFinalReq {
   image: File;
   isImageUploaded: boolean;
   isImageRemoved: boolean;
+}
+
+// inventory correction
+export interface InvnCorrReq {
+  id: string;
+  adjustment: number;
+}
+
+// inventory correction
+export interface InvnCorrResp {
+  user: number;
+  adjustment: number;
+  username: string;
+  date: string;
 }
 
 export const BOOKS_API = {
@@ -238,6 +255,22 @@ export const BOOKS_API = {
       url: BOOKS_EXTENSION.concat("/csv/export"),
       method: METHOD_GET,
       params: req,
+    });
+  },
+
+  inventoryCorrection: async function (
+    req: InvnCorrReq
+  ): Promise<InvnCorrResp> {
+    const formData = new FormData();
+    formData.append("adjustment", req.adjustment.toString());
+
+    return await API.request({
+      url: BOOKS_EXTENSION.concat("/correction/".concat(req.id.toString())),
+      method: METHOD_POST,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      data: formData,
     });
   },
 };

@@ -18,14 +18,17 @@ export interface BookDetailLineItem {
   type: BookDetailLineItemType;
   vendor?: number;
   vendorName?: string;
+  creatorName?: string;
   price: number;
   quantity: number;
+  stock: number;
 }
 
 export enum BookDetailLineItemType {
   PURCHASE_ORDER = "Purchase Order",
   SALES_RECONCILIATION = "Sales Reconciliation",
   BOOK_BUYBACK = "Book Buyback",
+  INVENTORY_CORRECTION = "Inventory Correction",
 }
 
 // Line item navigation mapper
@@ -51,6 +54,11 @@ export default function BookDetailLineItems(props: BookDetailLineItemsProps) {
       style: { minWidth: "8rem", width: "12rem" },
     },
     {
+      header: "User",
+      field: "creatorName",
+      style: { minWidth: "8rem", width: "18rem" },
+    },
+    {
       header: "Vendor",
       field: "vendorName",
       style: { minWidth: "8rem", width: "22rem" },
@@ -62,8 +70,13 @@ export default function BookDetailLineItems(props: BookDetailLineItemsProps) {
       style: { minWidth: "6rem", width: "10rem" },
     },
     {
-      header: "Quantity",
+      header: "Transaction Amount",
       field: "quantity",
+      style: { minWidth: "6rem", width: "8rem" },
+    },
+    {
+      header: "Stock",
+      field: "stock",
       style: { minWidth: "6rem", width: "8rem" },
     },
   ];

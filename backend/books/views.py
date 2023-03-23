@@ -190,7 +190,6 @@ class ListCreateBookAPIView(ListCreateAPIView, BookImageCreator):
     def get_or_create_related_books_group(self, data):
         obj, created = RelatedBookGroup.objects.get_or_create(title="".join(data['title'].lower().split()))
         data['related_book_group'] = obj.pk
-        print("".join(data['title'].lower().split()))
         return data
 
     def convert_zero_to_null(self, data):

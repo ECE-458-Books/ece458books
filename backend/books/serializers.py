@@ -44,7 +44,6 @@ class BookListAddSerializer(serializers.ModelSerializer):
         return OrderedDict([(key, result[key]) for key in result if result[key] is not None])
 
     def get_num_related_books(self, instance):
-        print(RelatedBookGroup.objects.get(instance.related_book_group))
         return len(Book.objects.filter(related_book_group=instance.related_book_group))
 
     def get_last_month_sales(self, instance):

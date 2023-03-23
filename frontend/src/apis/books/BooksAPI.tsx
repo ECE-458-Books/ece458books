@@ -133,19 +133,7 @@ export const BOOKS_API = {
     });
   },
 
-  getBooksNoPaginationLISTVIEW: async function (
-    req: GetBooksReq
-  ): Promise<APIBook[]> {
-    return await API.request({
-      url: BOOKS_EXTENSION,
-      method: METHOD_GET,
-      params: req,
-    });
-  },
-
-  getBookDetail: async function (
-    req: GetBookDetailReq
-  ): Promise<APIBookwithRelatedBooks> {
+  getBookDetail: async function (req: GetBookDetailReq): Promise<APIBook> {
     return await API.request({
       url: BOOKS_EXTENSION.concat("/".concat(req.id.toString())),
       method: METHOD_GET,

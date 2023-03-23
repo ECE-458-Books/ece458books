@@ -14,6 +14,11 @@ export default function GenreAdd() {
   const [textBox, setTextBox] = useState<string>("");
   const [isGoBackActive, setIsGoBackActive] = useState<boolean>(false);
 
+  const resetPageInputFields = () => {
+    setTextBox("");
+    setIsGoBackActive(false);
+  };
+
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
 
@@ -36,7 +41,7 @@ export default function GenreAdd() {
     axios
       .all(genreRequests)
       .then(() => {
-        isGoBackActive ? navigate("/genres") : window.location.reload();
+        isGoBackActive ? navigate("/genres") : resetPageInputFields();
       })
       .catch(() => {
         showFailure(toast, "One or more of the genres failed to add");
@@ -95,11 +100,13 @@ export default function GenreAdd() {
             <Button
               label="Submit"
               type="submit"
+              disabled={textBox.length == 0}
               className="p-button-success p-button-raised"
             />
             <Button
               label="Submit and Go Back"
               type="submit"
+              disabled={textBox.length == 0}
               onClick={() => setIsGoBackActive(true)}
               className="p-button-success p-button-raised"
             />

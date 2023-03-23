@@ -17,11 +17,6 @@ export interface GetUsersReq {
   ordering: string;
 }
 
-export interface GetUsersNoPageReq {
-  no_pagination: boolean;
-  ordering: string;
-}
-
 export interface APIUser {
   id: number;
   username: string;
@@ -65,16 +60,6 @@ export interface UserTypeResp {
 
 export const USER_API = {
   getUsers: async function (req: GetUsersReq): Promise<GetUsersResp> {
-    return await API.request({
-      url: USERS_EXTENSION,
-      method: METHOD_GET,
-      params: req,
-    });
-  },
-
-  getUsersNoPagination: async function (
-    req: GetUsersNoPageReq
-  ): Promise<APIUser[]> {
     return await API.request({
       url: USERS_EXTENSION,
       method: METHOD_GET,

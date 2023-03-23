@@ -75,6 +75,7 @@ export default function PODetail() {
 
   // The rest of the data
   const [date, setDate] = useState<Date>(new Date());
+  const [creatorName, setCreatorName] = useState<string>("");
   const [selectedVendorName, setSelectedVendorName] = useState<string>("");
 
   const [originalData, setOriginalData] =
@@ -101,6 +102,7 @@ export default function PODetail() {
           setPurchases(purchaseOrder.purchases);
           setTotalCost(purchaseOrder.totalCost);
           setIsPageDeleteable(purchaseOrder.isDeletable);
+          setCreatorName(purchaseOrder.creatorName);
           setOriginalData({
             date: purchaseOrder.date,
             vendorName: purchaseOrder.vendorName,
@@ -467,6 +469,19 @@ export default function PODetail() {
         <div className="col-11">
           <form onSubmit={onSubmit}>
             <div className="flex col-12 justify-content-evenly mb-3">
+              {!isPOAddPage && (
+                <div className="flex">
+                  <label
+                    htmlFor="creatorname"
+                    className="p-component text-teal-900 p-text-secondary my-auto pr-2"
+                  >
+                    Associated User:
+                  </label>
+                  <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
+                    {creatorName}
+                  </p>
+                </div>
+              )}
               {totalDollars}
               <div className="flex">
                 <label

@@ -2,9 +2,7 @@ import { useNavigate } from "react-router-dom";
 import AddPageButton from "../../components/buttons/AddPageButton";
 import { Toast } from "primereact/toast";
 import { useRef, useState } from "react";
-import SelectSizeDropdown, {
-  SelectSizeDropdownOptions,
-} from "../../components/buttons/SelectSizeDropdown";
+
 import { GetUsersResp, USER_API } from "../../apis/users/UserAPI";
 import {
   APIToInternalUserConversion,
@@ -14,6 +12,9 @@ import LabeledSwitch from "../../components/buttons/LabeledSwitch";
 import { scrollToTop } from "../../util/WindowViewportOps";
 import ListTemplate from "../../templates/list/ListTemplate";
 import { TableColumn } from "../../components/datatable/TableColumns";
+import SelectSizeDropdown, {
+  SelectSizeDropdownOptions,
+} from "../../components/dropdowns/SelectSizeDropdown";
 
 export interface User {
   id: string;
@@ -56,9 +57,8 @@ export default function UserList() {
   // Calls the Users API
   const callAPI = (page: number, pageSize: number, sortField: string) => {
     USER_API.getUsers({
-      no_pagination: isNoPagination ? true : undefined,
-      page: isNoPagination ? undefined : page,
-      page_size: isNoPagination ? undefined : pageSize,
+      page: page,
+      page_size: pageSize,
       ordering: sortField,
     }).then((response) => onAPIResponse(response));
   };
@@ -104,6 +104,7 @@ export default function UserList() {
       detailPageURL={"/users/detail/"}
       whitespaceSize={tableWhitespaceSize}
       isNoPagination={isNoPagination}
+      setIsNoPagination={setIsNoPagination}
       isLoading={isLoading}
       setIsLoading={setIsLoading}
       totalNumberOfEntries={numberOfUsers}
@@ -118,36 +119,17 @@ export default function UserList() {
 
   return (
     <div>
-      {isNoPagination && (
-        <div className="grid flex justify-content-end m-1">
-          <div className="flex col-4 justify-content-start m-0 my-auto">
-            {noPaginationSwitch}
-          </div>
-          <div className="flex col-4 justify-content-end m-0 mr-3">
-            {selectSizeButton}
-          </div>
-          <div className="flex justify-content-end col-2">{addUserButton}</div>
-        </div>
-      )}
-      <div
-        className={
-          !isNoPagination
-            ? "flex justify-content-end"
-            : "flex justify-content-center"
-        }
-      >
+      <div className="flex justify-content-end">
         <div className="card col-9 pt-0 px-3 justify-content-center;">
           <Toast ref={toast} />
           {dataTable}
         </div>
-        {!isNoPagination && (
-          <div
-            className="flex justify-content-end align-items-start mr-1 my-2"
-            style={{ width: "12.4%" }}
-          >
-            {addUserButton}
-          </div>
-        )}
+        <div
+          className="flex justify-content-end align-items-start mr-1 my-2"
+          style={{ width: "12.4%" }}
+        >
+          {addUserButton}
+        </div>
       </div>
     </div>
   );

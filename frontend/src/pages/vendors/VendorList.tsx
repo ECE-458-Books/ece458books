@@ -6,20 +6,14 @@ import {
   APIToInternalVendorConversion,
   APIVendorSortFieldMap,
 } from "../../apis/vendors/VendorsConversions";
-import {
-  APIVendor,
-  GetVendorsResp,
-  VENDORS_API,
-} from "../../apis/vendors/VendorsAPI";
+import { GetVendorsResp, VENDORS_API } from "../../apis/vendors/VendorsAPI";
 import { TableColumn } from "../../components/datatable/TableColumns";
 import PercentTemplate from "../../components/templates/PercentTemplate";
 import AddPageButton from "../../components/buttons/AddPageButton";
-import LabeledSwitch from "../../components/buttons/LabeledSwitch";
 import ListTemplate from "../../templates/list/ListTemplate";
 import SelectSizeDropdown, {
   SelectSizeDropdownOptions,
-} from "../../components/buttons/SelectSizeDropdown";
-import { scrollToTop } from "../../util/WindowViewportOps";
+} from "../../components/dropdowns/SelectSizeDropdown";
 
 // The Vendor Interface
 export interface Vendor {
@@ -61,25 +55,11 @@ export default function VendorList() {
 
   // Calls the Vendors API
   const callAPI = (page: number, pageSize: number, sortField: string) => {
-    if (!isNoPagination) {
-      VENDORS_API.getVendors({
-        page: page,
-        page_size: pageSize,
-        ordering: sortField,
-      }).then((response) => onAPIResponse(response));
-    } else {
-      VENDORS_API.getVendorsNoPaginationLISTVIEW({
-        no_pagination: true,
-        ordering: sortField,
-      }).then((response) => onAPIResponseNoPagination(response));
-    }
-  };
-
-  // Set state when response to API call is received
-  const onAPIResponseNoPagination = (response: APIVendor[]) => {
-    setVendors(response.map((vendor) => APIToInternalVendorConversion(vendor)));
-    setNumberOfVendors(response.length);
-    setIsLoading(false);
+    VENDORS_API.getVendors({
+      page: page,
+      page_size: pageSize,
+      ordering: sortField,
+    }).then((response) => onAPIResponse(response));
   };
 
   // Set state when response to API call is received
@@ -102,19 +82,6 @@ export default function VendorList() {
     />
   );
 
-  const noPaginationSwitch = (
-    <LabeledSwitch
-      label="Show All"
-      onChange={() => {
-        if (!isNoPagination) {
-          scrollToTop();
-        }
-        setIsNoPagination(!isNoPagination);
-      }}
-      value={isNoPagination}
-    />
-  );
-
   const selectSizeButton = (
     <SelectSizeDropdown
       value={tableWhitespaceSize}
@@ -128,6 +95,7 @@ export default function VendorList() {
       detailPageURL="/vendors/detail/"
       whitespaceSize={tableWhitespaceSize}
       isNoPagination={isNoPagination}
+      setIsNoPagination={setIsNoPagination}
       isLoading={isLoading}
       setIsLoading={setIsLoading}
       totalNumberOfEntries={numberOfVendors}
@@ -135,9 +103,7 @@ export default function VendorList() {
       rows={vendors}
       APISortFieldMap={APIVendorSortFieldMap}
       callGetAPI={callAPI}
-      paginatorLeft={
-        <div className="flex justify-content-center">{noPaginationSwitch}</div>
-      }
+      paginatorLeft={<></>}
       paginatorRight={
         <div className="flex justify-content-center">{selectSizeButton}</div>
       }
@@ -146,38 +112,17 @@ export default function VendorList() {
 
   return (
     <div>
-      {isNoPagination && (
-        <div className="grid flex m-1 justify-content-end">
-          <div className="flex col-4 justify-content-start m-0 my-auto">
-            {noPaginationSwitch}
-          </div>
-          <div className="flex col-4 justify-content-end m-0">
-            {selectSizeButton}
-          </div>
-          <div className="flex justify-content-end col-2">
-            {addVendorButton}
-          </div>
-        </div>
-      )}
-      <div
-        className={
-          !isNoPagination
-            ? "flex justify-content-end"
-            : "flex justify-content-center"
-        }
-      >
+      <div className="flex justify-content-end">
         <div className="card col-9 pt-0 px-3 justify-content-center">
           <Toast ref={toast} />
           {dataTable}
         </div>
-        {!isNoPagination && (
-          <div
-            className="flex justify-content-end align-items-start mr-1 my-2"
-            style={{ width: "12.4%" }}
-          >
-            {addVendorButton}
-          </div>
-        )}
+        <div
+          className="flex justify-content-end align-items-start mr-1 my-2"
+          style={{ width: "12.4%" }}
+        >
+          {addVendorButton}
+        </div>
       </div>
     </div>
   );

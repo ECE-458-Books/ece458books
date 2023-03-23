@@ -6,7 +6,7 @@ from django.db.models.functions import Coalesce, Cast, Round
 
 from rest_framework import status, filters
 from rest_framework.views import APIView
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView, CreateAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser
 
@@ -16,13 +16,14 @@ from sales.models import Sale
 from helpers.csv_writer import CSVWriter
 from utils.permissions import CustomBasePermission
 
-from .serializers import BookListAddSerializer, BookSerializer, ISBNSerializer, BookImageSerializer
+from .serializers import BookListAddSerializer, BookSerializer, ISBNSerializer, BookImageSerializer, BookInventoryCorrectionSerializer
 from .isbn import ISBNTools
-from .models import Book, Author, BookImage
+from .models import Book, Author, BookImage, BookInventoryCorrection
 from .paginations import BookPagination
 from .search_filters import *
 from .utils import str2bool
 from .book_images import BookImageCreator
+from .exceptions import *
 
 class ISBNSearchView(APIView):
     """
@@ -393,3 +394,54 @@ class CSVExportBookAPIView(APIView):
     def get(self, request, *args, **kwargs):
         csv_writer = CSVWriter("books")
         return csv_writer.write_csv(request)
+
+class CreateBookInventoryCorrectionAPIView(CreateAPIView):
+    serializer_class = BookInventoryCorrectionSerializer
+    queryset = BookInventoryCorrection.objects.all()
+    permission_classes = [CustomBasePermission]
+    lookup_field = 'book_id'
+
+    def create(self, request, *args, **kwargs):
+        # Validate the incoming request
+        book_id, adjustment = self.validate_adjustment(request)
+
+        # Add User to Book Inventory Correction
+        data = request.data.dict()
+        data['user'] = request.user.id
+        data['book'] = book_id
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        # Increment Book Stock Count
+        book = Book.objects.get(id=book_id)
+        book.stock += adjustment
+        book.save()
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    def validate_adjustment(self, request):
+        book_id = self.kwargs.get(self.lookup_field)
+        book = Book.objects.filter(isGhost=False, id=book_id)
+        
+        if len(book) == 0:
+            # No Book Error
+            raise BookNonExistantException(book_id)
+
+        stock = book[0].stock
+
+        # Check if given adjustment is valid integer
+        try:
+            adjustment = int(request.data.get('adjustment'))
+        except Exception as e:
+            raise InventoryAdjustmentNonIntegerException(request.data.get('adjustment'))
+        
+        if stock + adjustment < 0:
+            raise InventoryAdjustmentBelowZeroException(adjustment, stock)
+        
+        return book_id, adjustment
+
+        
+
+

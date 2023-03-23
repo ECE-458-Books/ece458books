@@ -638,11 +638,6 @@ export default function BookDetail() {
         </form>
       </div>
       {deletePopupVisible && deletePopup}
-      <Divider align="center">
-        <div className="inline-flex align-items-center">
-          <b>Book Related Transactions and Adjustments</b>
-        </div>
-      </Divider>
       <div className="flex justify-content-center col-10">{lineItemsTable}</div>
       <Divider align="center">
         <div className="inline-flex align-items-center">

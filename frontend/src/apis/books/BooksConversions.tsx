@@ -113,10 +113,31 @@ export function APIToInternalBookConversionwithRelatedBooks(
     lineItems: book.line_items?.map((lineItem) => {
       return APIToInternalLineItemConversion(lineItem);
     }),
-    numRelatedBooks: book.num_related_books,
-    relatedBooks: book.related_books?.map((bookItem) => {
-      return APIToInternalBookConversion(bookItem);
-    }),
+    numRelatedBooks: 1,
+    relatedBooks: [
+      {
+        id: "17",
+        author: "Hala",
+        genres: "all of them",
+        title: "The Great Beyond",
+        isbn13: 812345814124,
+        isbn10: "4512454151245",
+        publisher: "Thap",
+        publishedYear: 2019,
+        pageCount: 10,
+        width: 20.3,
+        height: 10.9,
+        thickness: 9.3,
+        retailPrice: 10.9,
+        stock: 10,
+        thumbnailURL: "",
+        bestBuybackPrice: 1.2,
+        lastMonthSales: 33,
+        daysOfSupply: 2,
+        shelfSpace: undefined,
+        numRelatedBooks: 30,
+      },
+    ],
   };
 }
 

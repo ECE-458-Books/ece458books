@@ -46,7 +46,10 @@ export interface APIBook {
   line_items?: APIBookLineItem[];
   isGhost?: boolean;
   num_related_books?: number;
-  related_books?: APIBook[];
+}
+
+export interface APIBookwithRelatedBooks extends APIBook {
+  related_books: APIBook[];
 }
 
 export enum APILineItemType {
@@ -140,7 +143,9 @@ export const BOOKS_API = {
     });
   },
 
-  getBookDetail: async function (req: GetBookDetailReq): Promise<APIBook> {
+  getBookDetail: async function (
+    req: GetBookDetailReq
+  ): Promise<APIBookwithRelatedBooks> {
     return await API.request({
       url: BOOKS_EXTENSION.concat("/".concat(req.id.toString())),
       method: METHOD_GET,

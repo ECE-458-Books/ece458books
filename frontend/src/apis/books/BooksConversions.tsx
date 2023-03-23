@@ -10,6 +10,7 @@ import {
   APIBook,
   APIBookLineItem,
   APIBookWithDBTag,
+  APIBookwithRelatedBooks,
   APILineItemType,
 } from "./BooksAPI";
 import {
@@ -17,6 +18,7 @@ import {
   BookDetailLineItemType,
 } from "../../pages/books/BookDetailLineItems";
 import { DEFAULT_BOOK_IMAGE } from "../../components/uploaders/ImageFileUploader";
+import { BookwithRelatedBooks } from "../../pages/books/BookDetail";
 
 export const APIBookSortFieldMap = new Map<string, string>([
   ["isbn13", "isbn_13"],
@@ -82,8 +84,14 @@ export function APIToInternalBookConversion(book: APIBook): Book {
       return APIToInternalLineItemConversion(lineItem);
     }),
     numRelatedBooks: book.num_related_books,
-    relatedBooks: book.related_books,
   };
+}
+
+export function APIToInternalBookConversionwithRelatedBooks(
+  book: APIBookwithRelatedBooks
+): BookwithRelatedBooks {
+  const bookRet = APIToInternalBookConversion(book);
+  return Object.assign(bookRet,: book.related_books });
 }
 
 export function InternalToAPIBookConversion(book: Book): APIBook {

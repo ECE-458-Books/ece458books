@@ -64,7 +64,6 @@ export interface Book {
   lineItems?: BookDetailLineItem[];
   isGhost?: boolean;
   numRelatedBooks?: number;
-  relatedBooks?: Book[];
 }
 
 interface Filters {

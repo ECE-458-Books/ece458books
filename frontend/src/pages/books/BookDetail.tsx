@@ -29,6 +29,10 @@ import { TextWrapperNullableNumberEditor } from "../../components/text/TextWrapp
 import { PriceEditor } from "../../components/editors/PriceEditor";
 import { Divider } from "primereact/divider";
 
+export interface BookwithRelatedBooks extends Book {
+  relatedBooks: Book[];
+}
+
 interface ErrorDisplay {
   message: string;
 }

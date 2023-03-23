@@ -27,13 +27,16 @@ export interface Bookcase {
 }
 
 export interface Shelf {
+  id: string;
   displayedBooks: DisplayBook[];
 }
 
 export interface DisplayBook {
+  id: string;
   bookId: string;
   bookISBN: string;
   bookTitle: string;
+  bookImageURL: string;
   displayMode: DisplayMode;
   displayCount: number;
 }

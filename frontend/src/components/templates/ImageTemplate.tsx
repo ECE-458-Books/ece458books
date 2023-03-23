@@ -2,15 +2,15 @@ import { Image } from "primereact/image";
 import { DEFAULT_BOOK_IMAGE } from "../uploaders/ImageFileUploader";
 import { MAX_IMAGE_HEIGHT, MAX_IMAGE_WIDTH } from "../editors/PriceEditor";
 
-export function imageBodyTemplate(thumbnailURL: string) {
-  if (!thumbnailURL) {
-    thumbnailURL = DEFAULT_BOOK_IMAGE;
+export function ImageTemplate(imageURL: string) {
+  if (!imageURL) {
+    imageURL = DEFAULT_BOOK_IMAGE;
   }
   return (
     <Image
       // Leaving this line in case of future image browser side caching workaround is needed
-      src={`${thumbnailURL.concat(
-        thumbnailURL.startsWith("https://books") ? "?" + Date.now() : ""
+      src={`${imageURL.concat(
+        imageURL.startsWith("https://books") ? "?" + Date.now() : ""
       )}`}
       // src={thumbnailURL}
       id="imageONpage"

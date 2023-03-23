@@ -79,7 +79,7 @@ export function DraggableBook(props: DraggableBookProps) {
   return (
     <SortableItem id={props.book.id} key={props.book.id}>
       <Image
-        src={"https://books-test.colab.duke.edu/media/books/default.jpeg"}
+        src={props.book.bookImageURL}
         id={props.book.id}
         alt="Image"
         imageStyle={{

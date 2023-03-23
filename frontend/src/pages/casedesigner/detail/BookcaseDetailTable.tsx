@@ -67,10 +67,10 @@ export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
     },
   ];
 
-  const addBookToCurrentShelf = () => {
+  const createNewDisplayBook = () => {
     const selectedBook = booksMap.get(currentlySelectedBook.bookTitle)!;
 
-    const newDisplayBook: DisplayBook = {
+    return {
       id: uuid(),
       bookId: selectedBook.id,
       bookTitle: currentlySelectedBook.bookTitle,
@@ -78,11 +78,13 @@ export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
       bookImageURL: selectedBook.thumbnailURL,
       displayMode: currentlySelectedBook.displayMode,
       displayCount: currentlySelectedBook.displayCount,
-    };
+    } as DisplayBook;
+  };
 
+  const addBookToCurrentShelf = () => {
     props.setBookcase((draft) => {
       const shelf = findShelf(draft.shelves, currentAddBookShelfId)!;
-      shelf.displayedBooks.push(newDisplayBook);
+      shelf.displayedBooks.push(createNewDisplayBook());
     });
   };
 
@@ -92,7 +94,7 @@ export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
       const bookIndex = shelf.displayedBooks.findIndex(
         (draftBook) => draftBook.id === currentlySelectedBook.id
       );
-      shelf.displayedBooks[bookIndex] = currentlySelectedBook;
+      shelf.displayedBooks[bookIndex] = createNewDisplayBook();
     });
   };
 

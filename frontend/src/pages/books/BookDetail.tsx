@@ -27,6 +27,7 @@ import Restricted from "../../permissions/Restricted";
 import TextLabels from "../../components/text/TextLabels";
 import { TextWrapperNullableNumberEditor } from "../../components/text/TextWrapperNullableNumberEditor";
 import { PriceEditor } from "../../components/editors/PriceEditor";
+import { Divider } from "primereact/divider";
 
 interface ErrorDisplay {
   message: string;
@@ -617,6 +618,11 @@ export default function BookDetail() {
         </form>
       </div>
       {deletePopupVisible && deletePopup}
+      <Divider align="center">
+        <div className="inline-flex align-items-center">
+          <b>Book Related Transactions and Adjustments</b>
+        </div>
+      </Divider>
       <div className="flex justify-content-center col-10">{lineItemsTable}</div>
     </div>
   );

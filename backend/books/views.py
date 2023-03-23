@@ -18,12 +18,13 @@ from utils.permissions import CustomBasePermission
 
 from .serializers import BookListAddSerializer, BookSerializer, ISBNSerializer, BookImageSerializer, BookInventoryCorrectionSerializer
 from .isbn import ISBNTools
-from .models import Book, Author, BookImage, BookInventoryCorrection
+from .models import Book, Author, BookImage, BookInventoryCorrection, RelatedBookGroup
 from .paginations import BookPagination
 from .search_filters import *
 from .utils import str2bool
 from .book_images import BookImageCreator
 from .exceptions import *
+
 
 class ISBNSearchView(APIView):
     """
@@ -65,12 +66,12 @@ class ISBNSearchView(APIView):
             thread = threading.Thread(target=self.isbn_search_task, kwargs=kwargs, daemon=True)
             threads.append(thread)
             thread.start()
-        
+
         for index, thread in enumerate(threads):
             thread.join()
 
         return Response(data_populated_isbns)
-    
+
     def isbn_search_task(self, isbn, shared_dict, query_set):
         isbn_query_set = [book.isbn_13 for book in query_set]
 
@@ -78,7 +79,7 @@ class ISBNSearchView(APIView):
             shared_dict['books'].append(self.parseDBBookModel(query_set[isbn_query_set.index(isbn)]))
         else:
             self.populate_shared_dict_with_isbn_data(isbn, shared_dict)
-    
+
     def populate_shared_dict_with_isbn_data(self, isbn, shared_dict):
         external_data = self.isbn_toolbox.fetch_isbn_data(isbn)
         if "Invalid ISBN" in external_data:
@@ -159,6 +160,9 @@ class ListCreateBookAPIView(ListCreateAPIView, BookImageCreator):
         except Exception as e:
             obj = None
 
+        # add primary key of related books group
+        data = self.get_or_create_related_books_group(data)
+
         # If the object with the specific isbn_13 is found we do the following:
         # 1. add the isGhost field to the request data
         # 2. update the already existing row in DB
@@ -183,6 +187,11 @@ class ListCreateBookAPIView(ListCreateAPIView, BookImageCreator):
         headers = self.get_success_headers(serializer.data)
         return Response(res, status=status.HTTP_201_CREATED, headers=headers)
 
+    def get_or_create_related_books_group(self, data):
+        obj, created = RelatedBookGroup.objects.get_or_create(title="".join(data['title'].lower().split()))
+        data['related_book_group'] = obj.pk
+        return data
+
     def convert_zero_to_null(self, data):
         possible_zero_fields = ['pageCount', 'width', 'height', 'thickness']
         for possible_zero_field in possible_zero_fields:
@@ -191,7 +200,7 @@ class ListCreateBookAPIView(ListCreateAPIView, BookImageCreator):
                 data[possible_zero_field] = None
 
         return data
-    
+
     def getOrCreateModel(self, item_list, model):
         if isinstance(item_list, str):
             item_list = item_list.split(',')
@@ -249,7 +258,7 @@ class ListCreateBookAPIView(ListCreateAPIView, BookImageCreator):
         pass
         # subquery = Purchase.objects.filter(book=107).annotate(vendor_id=F('purchase_order__vendor'))
         # subquery = Purchase.objects.filter(book=OuterRef('pk')).annotate(vendor_id=F('purchase_order__vendor'))
-        
+
         # subquery = subquery.annotate(buyback_rate=Case(When(purchase_order__vendor__buyback_rate__isnull=False, then=F('purchase_order__vendor__buyback_rate')), default=Value(0)))
 
         # subquery = subquery.order_by('vendor_id', '-purchase_order__date').distinct('vendor_id')
@@ -370,9 +379,10 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView, BookImageCr
         if instance.stock != 0:
             return Response({"error": f"Cannot delete book with title: {instance.title} and id: {instance.id} because its stock is {instance.stock}. Stock must be 0 to delete a book."})
 
-        # If book can be destroyed, we just make the isGhost=True and do not delete in database
+        # If book can be destroyed, we just make the isGhost=True and do not delete in database. Then remove it from the related book group
         partial = True
-        data = {"isGhost": True}
+        data = {"isGhost": True, "related_book_group": None}
+
         serializer = self.get_serializer(instance, data=data, partial=partial)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -394,6 +404,7 @@ class CSVExportBookAPIView(APIView):
     def get(self, request, *args, **kwargs):
         csv_writer = CSVWriter("books")
         return csv_writer.write_csv(request)
+
 
 class CreateBookInventoryCorrectionAPIView(CreateAPIView):
     serializer_class = BookInventoryCorrectionSerializer
@@ -420,11 +431,11 @@ class CreateBookInventoryCorrectionAPIView(CreateAPIView):
         book.save()
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
+
     def validate_adjustment(self, request):
         book_id = self.kwargs.get(self.lookup_field)
         book = Book.objects.filter(isGhost=False, id=book_id)
-        
+
         if len(book) == 0:
             # No Book Error
             raise BookNonExistantException(book_id)
@@ -436,12 +447,8 @@ class CreateBookInventoryCorrectionAPIView(CreateAPIView):
             adjustment = int(request.data.get('adjustment'))
         except Exception as e:
             raise InventoryAdjustmentNonIntegerException(request.data.get('adjustment'))
-        
+
         if stock + adjustment < 0:
             raise InventoryAdjustmentBelowZeroException(adjustment, stock)
-        
+
         return book_id, adjustment
-
-        
-
-

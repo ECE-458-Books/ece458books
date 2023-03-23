@@ -36,10 +36,7 @@ export const APIBookSortFieldMap = new Map<string, string>([
 // External line item -> Internal Line Item
 export const LineItemMapper = new Map<APILineItemType, BookDetailLineItemType>([
   [APILineItemType.PURCHASE_ORDER, BookDetailLineItemType.PURCHASE_ORDER],
-  [
-    APILineItemType.SALES_RECONCILIATION,
-    BookDetailLineItemType.SALES_RECONCILIATION,
-  ],
+  [APILineItemType.SALES_RECORD, BookDetailLineItemType.SALES_RECORD],
   [APILineItemType.BOOK_BUYBACK, BookDetailLineItemType.BOOK_BUYBACK],
 ]);
 

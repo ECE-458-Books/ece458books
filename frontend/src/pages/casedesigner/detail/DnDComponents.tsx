@@ -24,7 +24,6 @@ import { CSS } from "@dnd-kit/utilities";
 import { onDragEnd, onDragOver, onDragStart } from "./DndFunctions";
 import { Updater } from "use-immer";
 import { useState } from "react";
-import { DEFAULT_BOOK_IMAGE } from "../../../components/uploaders/ImageFileUploader";
 
 // A droppable zone. The tag should be wrapped around the zone, and the id should be unique
 export interface DroppableProps {
@@ -80,7 +79,7 @@ export function DraggableBook(props: DraggableBookProps) {
   return (
     <SortableItem id={props.book.id} key={props.book.id}>
       <Image
-        src={DEFAULT_BOOK_IMAGE}
+        src={props.book.bookImageURL}
         id={props.book.id}
         alt="Image"
         imageStyle={{

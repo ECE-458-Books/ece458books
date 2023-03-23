@@ -4,6 +4,7 @@ from collections import OrderedDict
 from rest_framework import serializers
 from django.db.models import F, Sum, Value, CharField
 
+from .models import Book, Author, BookImage, RelatedBookGroup
 from genres.models import Genre
 from purchase_orders.models import Purchase
 from sales.models import Sale
@@ -11,6 +12,7 @@ from buybacks.models import Buyback
 
 from .models import Book, Author, BookImage, BookInventoryCorrection
 from .exceptions import InventoryCountUnMatchedException
+
 
 class BookListAddSerializer(serializers.ModelSerializer):
     """BookAddSerializer used for ListCreateBookAPIView
@@ -24,6 +26,7 @@ class BookListAddSerializer(serializers.ModelSerializer):
     authors = serializers.SlugRelatedField(queryset=Author.objects.all(), many=True, slug_field='name')
     genres = serializers.SlugRelatedField(queryset=Genre.objects.all(), many=True, slug_field='name')
     image_url = serializers.StringRelatedField()
+    num_related_books = serializers.SerializerMethodField()
     best_buyback_price = serializers.SerializerMethodField()
     last_month_sales = serializers.SerializerMethodField()
     shelf_space = serializers.SerializerMethodField()
@@ -33,12 +36,15 @@ class BookListAddSerializer(serializers.ModelSerializer):
         model = Book
         fields = [
             'id', 'title', 'authors', 'genres', 'isbn_13', 'isbn_10', 'publisher', 'publishedDate', 'pageCount', 'width', 'height', 'thickness', 'retail_price', 'isGhost', 'stock', 'image_url',
-            'best_buyback_price', 'last_month_sales', 'shelf_space', 'days_of_supply'
+            'best_buyback_price', 'last_month_sales', 'shelf_space', 'days_of_supply', 'num_related_books'
         ]
 
     def to_representation(self, instance):
         result = super(BookListAddSerializer, self).to_representation(instance)
         return OrderedDict([(key, result[key]) for key in result if result[key] is not None])
+
+    def get_num_related_books(self, instance):
+        return len(Book.objects.filter(related_book_group=instance.related_book_group))
 
     def get_last_month_sales(self, instance):
         end_date = datetime.datetime.now().strftime('%Y-%m-%d')
@@ -59,21 +65,21 @@ class BookListAddSerializer(serializers.ModelSerializer):
         recent_vendor_purchase_buyback_price = list(recent_purchases_info.values('vendor_id', 'buyback_price'))
         buyback_prices = [purchase['buyback_price'] for purchase in recent_vendor_purchase_buyback_price if purchase['buyback_price'] is not None]
         try:
-            return round(max(buyback_prices),2)
+            return round(max(buyback_prices), 2)
         except:
             return None
-        
+
     def get_shelf_space(self, instance):
         default_thickness = 0.8
         thickness = default_thickness if instance.thickness is None else instance.thickness
-        return round(thickness*instance.stock, 2)
+        return round(thickness * instance.stock, 2)
 
     def get_days_of_supply(self, instance):
         stock = instance.stock
         last_month_sales = self.get_last_month_sales(instance)
-        if(last_month_sales == 0):
+        if (last_month_sales == 0):
             return "inf"
-        return round((stock/last_month_sales)*30, 2)
+        return round((stock / last_month_sales) * 30, 2)
 
 
 class BookSerializer(serializers.ModelSerializer):
@@ -83,15 +89,19 @@ class BookSerializer(serializers.ModelSerializer):
     best_buyback_price = serializers.SerializerMethodField()
     last_month_sales = serializers.SerializerMethodField()
     line_items = serializers.SerializerMethodField()
+    num_related_books = serializers.SerializerMethodField()
 
     class Meta:
         model = Book
         fields = '__all__'
-        read_only_fields = ['title', 'authors', 'isbn_13', 'isbn_10', 'publisher', 'publishedDate', 'image_url', 'best_buyback_price', 'last_month_sales']
+        read_only_fields = ['title', 'authors', 'isbn_13', 'isbn_10', 'publisher', 'publishedDate', 'image_url', 'best_buyback_price', 'last_month_sales', 'num_related_books']
 
     def to_representation(self, instance):
         result = super(BookSerializer, self).to_representation(instance)
         return OrderedDict([(key, result[key]) for key in result if result[key] is not None])
+
+    def get_num_related_books(self, instance):
+        return len(Book.objects.filter(related_book_group=instance.related_book_group)) - 1
 
     def get_best_buyback_price(self, instance):
         purchases_of_book = Purchase.objects.filter(book=instance.id)
@@ -118,8 +128,8 @@ class BookSerializer(serializers.ModelSerializer):
 
     def get_line_items(self, instance):
         purchases = Purchase.objects.filter(book=instance.id).annotate(date=F('purchase_order__date')).annotate(vendor=F('purchase_order__vendor')).annotate(
-            vendor_name=F('purchase_order__vendor__name')).annotate(unit_price=F('unit_wholesale_price')).annotate(username=F('purchase_order__user__username')).annotate(type=Value("purchase order", CharField())).values(
-                'purchase_order', 'date', 'vendor', 'vendor_name', 'unit_price', 'quantity', 'type', 'username')
+            vendor_name=F('purchase_order__vendor__name')).annotate(unit_price=F('unit_wholesale_price')).annotate(username=F('purchase_order__user__username')).annotate(
+                type=Value("purchase order", CharField())).values('purchase_order', 'date', 'vendor', 'vendor_name', 'unit_price', 'quantity', 'type', 'username')
         purchases = list(purchases)
         for purchase in purchases:
             purchase['id'] = purchase.pop('purchase_order')
@@ -132,15 +142,15 @@ class BookSerializer(serializers.ModelSerializer):
             sale['id'] = sale.pop('sales_reconciliation')
 
         buybacks = Buyback.objects.filter(book=instance.id).annotate(date=F('buyback_order__date')).annotate(vendor=F('buyback_order__vendor')).annotate(
-            vendor_name=F('buyback_order__vendor__name')).annotate(unit_price=F('unit_buyback_price')).annotate(username=F('buyback_order__user__username')).annotate(type=Value("buyback order", CharField())).values(
-                'buyback_order', 'date', 'vendor', 'vendor_name', 'unit_price', 'quantity', 'type', 'username')
+            vendor_name=F('buyback_order__vendor__name')).annotate(unit_price=F('unit_buyback_price')).annotate(username=F('buyback_order__user__username')).annotate(
+                type=Value("buyback order", CharField())).values('buyback_order', 'date', 'vendor', 'vendor_name', 'unit_price', 'quantity', 'type', 'username')
 
         buybacks = list(buybacks)
         for buyback in buybacks:
             buyback['id'] = buyback.pop('buyback_order')
-        
-        corrections = BookInventoryCorrection.objects.filter(book=instance.id).annotate(quantity=F('adjustment')).annotate(
-            username=F('user__username')).annotate(type=Value("inventory corrections", CharField())).values('id', 'date', 'quantity', 'type', 'username')
+
+        corrections = BookInventoryCorrection.objects.filter(book=instance.id).annotate(quantity=F('adjustment')).annotate(username=F('user__username')).annotate(
+            type=Value("inventory corrections", CharField())).values('id', 'date', 'quantity', 'type', 'username')
 
         corrections = list(corrections)
 
@@ -160,20 +170,21 @@ class BookSerializer(serializers.ModelSerializer):
             change_in_stock = switch.get_delta_stock(item)
             stock += change_in_stock
             item['stock'] = stock
-        
+
         # Final Sanity check if stock equals the stock recorded in DB
         if stock != instance.stock:
             raise InventoryCountUnMatchedException(stock, instance.stock)
 
         return sorted_items
-    
+
     class DeltaStockSwitch:
+
         def get_delta_stock(self, item):
             self.default = item.get('quantity')
             item_type = '_'.join(item.get('type').split(' '))
 
             return getattr(self, 'case_' + item_type, lambda: self.default)()
-        
+
         def case_buyback_order(self):
             return -self.default
 
@@ -198,6 +209,7 @@ class BookImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = BookImage
         fields = '__all__'
+
 
 class BookInventoryCorrectionSerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField()

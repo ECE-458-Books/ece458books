@@ -49,7 +49,7 @@ export interface APIBook {
 }
 
 export interface APIBookwithRelatedBooks extends APIBook {
-  related_books: APIBook[];
+  related_books?: APIBook[];
 }
 
 export enum APILineItemType {

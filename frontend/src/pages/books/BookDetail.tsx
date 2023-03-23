@@ -14,7 +14,10 @@ import ImageUploader, {
   DEFAULT_BOOK_IMAGE,
 } from "../../components/uploaders/ImageFileUploader";
 import { showFailure, showSuccess } from "../../components/Toast";
-import { APIToInternalBookConversion } from "../../apis/books/BooksConversions";
+import {
+  APIToInternalBookConversion,
+  APIToInternalBookConversionwithRelatedBooks,
+} from "../../apis/books/BooksConversions";
 import { Button } from "primereact/button";
 import GenreDropdown from "../../components/dropdowns/GenreDropdown";
 import BookDetailLineItems, { BookDetailLineItem } from "./BookDetailLineItems";
@@ -30,7 +33,7 @@ import { PriceEditor } from "../../components/editors/PriceEditor";
 import { Divider } from "primereact/divider";
 
 export interface BookwithRelatedBooks extends Book {
-  relatedBooks: Book[];
+  relatedBooks?: Book[];
 }
 
 interface ErrorDisplay {
@@ -88,7 +91,7 @@ export default function BookDetail() {
   useEffect(() => {
     BOOKS_API.getBookDetail({ id: id! })
       .then((response) => {
-        const book = APIToInternalBookConversion(response);
+        const book = APIToInternalBookConversionwithRelatedBooks(response);
         setOriginalBookData(book);
         setTitle(book.title);
         setAuthors(book.author);

@@ -90,8 +90,34 @@ export function APIToInternalBookConversion(book: APIBook): Book {
 export function APIToInternalBookConversionwithRelatedBooks(
   book: APIBookwithRelatedBooks
 ): BookwithRelatedBooks {
-  const bookRet = APIToInternalBookConversion(book);
-  return Object.assign(bookRet,: book.related_books });
+  return {
+    id: book.id!.toString(),
+    author: ArrayToCommaSeparatedString(book.authors),
+    genres: ArrayToCommaSeparatedString(book.genres),
+    title: book.title,
+    isbn13: book.isbn_13,
+    isbn10: book.isbn_10,
+    publisher: book.publisher,
+    publishedYear: book.publishedDate,
+    pageCount: book.pageCount,
+    width: book.width,
+    height: book.height,
+    thickness: book.thickness,
+    retailPrice: book.retail_price,
+    stock: book.stock,
+    thumbnailURL: book.image_url,
+    bestBuybackPrice: book.best_buyback_price,
+    lastMonthSales: book.last_month_sales,
+    daysOfSupply: book.days_of_supply,
+    shelfSpace: book.shelf_space,
+    lineItems: book.line_items?.map((lineItem) => {
+      return APIToInternalLineItemConversion(lineItem);
+    }),
+    numRelatedBooks: book.num_related_books,
+    relatedBooks: book.related_books?.map((bookItem) => {
+      return APIToInternalBookConversion(bookItem);
+    }),
+  };
 }
 
 export function InternalToAPIBookConversion(book: Book): APIBook {

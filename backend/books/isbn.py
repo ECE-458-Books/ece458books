@@ -6,10 +6,13 @@ import PIL.Image as Image
 
 import threading
 
+from books.models import Book, RelatedBookGroup
+from books.serializers import RelatedBookSerializer
+
+
 class ISBNTools:
-    def __init__(
-        self,
-    ):
+
+    def __init__(self,):
         env = environ.Env()
         BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
@@ -21,7 +24,7 @@ class ISBNTools:
         self._default_image_name = env('DEFAULT_IMAGE_NAME')
         self._host_name = env('HOST_NAME')
         self._internal_image_base_url = f'https://{self._host_name}{self._internal_book_image_url_path}'
-    
+
     def is_valid_isbn(
         self,
         isbn: str,
@@ -40,10 +43,7 @@ class ISBNTools:
         threads = list()
         metadata = dict()
 
-        kwargs = {
-            "isbn": parsed_isbn,
-            "shared_dict": metadata
-        }
+        kwargs = {"isbn": parsed_isbn, "shared_dict": metadata}
 
         # get book metadata from Google Books API
         book_metadata_thread = threading.Thread(target=self.get_external_book_metadata, kwargs=kwargs, daemon=True)
@@ -57,15 +57,15 @@ class ISBNTools:
 
         for thread in threads:
             thread.join()
-        
+
         return metadata
-    
+
     def get_external_book_metadata(
         self,
         isbn,
         shared_dict,
     ):
-        end_url = self._base_url + isbn 
+        end_url = self._base_url + isbn
         try:
             resp = urlopen(end_url)
         except:
@@ -79,7 +79,7 @@ class ISBNTools:
         shared_dict.update(data)
 
     def get_external_book_image_url(
-        self, 
+        self,
         isbn,
         shared_dict,
     ):
@@ -90,9 +90,9 @@ class ISBNTools:
             image_dict['image_url'] = self.get_default_image_url()
         else:
             image_dict['image_url'] = end_url
-        
+
         shared_dict.update(image_dict)
-    
+
     def parse_isbn(
         self,
         isbn: str = None,
@@ -120,7 +120,7 @@ class ISBNTools:
 
         for key in relevant_keys:
             if key in info.keys():
-                if(key == 'dimensions'):
+                if (key == 'dimensions'):
                     # convert dimensions
                     for dimension in info['dimensions'].keys():
                         ret[dimension] = self.centiToInches(info['dimensions'][dimension])
@@ -133,16 +133,25 @@ class ISBNTools:
                     ret[key] = parser.parse(info[key]).year
                 else:
                     ret[key] = info[key]
-        
+
         # Set from DB to False
         ret["fromDB"] = False
-
+        ret = self.check_for_related_book_group(ret)
         return ret
 
-    def centiToInches(
-        self, 
-        centi: str
-    ) -> float:
+    def check_for_related_book_group(self, data):
+        # If this book has related books, then add related books
+        try:
+            related_book_group = RelatedBookGroup.objects.get(title="".join(data['title'].lower().split()))
+            data['related_books'] = RelatedBookSerializer(related_book_group.related_books.all(), many=True).data
+            data['num_related_books'] = len(Book.objects.filter(related_book_group=related_book_group))
+        except RelatedBookGroup.DoesNotExist:
+            data['related_books'] = []
+            data['num_related_books'] = 0
+
+        return data
+
+    def centiToInches(self, centi: str) -> float:
         """Convert Google Books cm to Inches
 
         Args:
@@ -161,13 +170,10 @@ class ISBNTools:
 
         centi_reformatted = float(centi.replace(unit, "").strip())
 
-        inch = '{0:.2f}'.format(centi_reformatted/2.54)
+        inch = '{0:.2f}'.format(centi_reformatted / 2.54)
         return float(inch)
 
-    def parse_raw_isbn_list(
-        self, 
-        isbn_list
-    ):
+    def parse_raw_isbn_list(self, isbn_list):
         """Return parsed ISBN list 
         If the ISBN isn't valid we return the raw_isbn without formatting
 
@@ -179,8 +185,7 @@ class ISBNTools:
 
         """
         return [self.parse_isbn(raw_isbn) if self.is_valid_isbn(raw_isbn) else raw_isbn for raw_isbn in isbn_list]
-    
-    
+
     def get_image_raw_bytes(self, end_url):
         """Return raw bytes of book image
 
@@ -195,11 +200,11 @@ class ISBNTools:
         except Exception as e:
             # Case where defualt image does not exist
             return None
-        
-        image_bytes= resp.read()
+
+        image_bytes = resp.read()
 
         return image_bytes
-    
+
     def create_local_image(self, filename_without_extension, image_bytes):
         if image_bytes is None:
             return '', self._default_image_name
@@ -214,7 +219,7 @@ class ISBNTools:
             filename = self._default_image_name
             absolute_location = ''
 
-        return absolute_location, filename # Absolute location is used to send the static file to image server
+        return absolute_location, filename  # Absolute location is used to send the static file to image server
 
     def commit_image_url(self, request, book_id, isbn_13):
         # Get the image url
@@ -223,14 +228,13 @@ class ISBNTools:
         # If the url is the default iamge url no need to download
         if end_url == self.get_default_image_url():
             return self.get_default_image_url()
-        
+
         image_bytes = self.get_image_raw_bytes(end_url)
         filename_without_extension = f'{book_id}'
         abs_location, filename = self.create_local_image(filename_without_extension, image_bytes)
 
         return f"{self._internal_image_base_url}/{filename}"
 
-    
     def commit_image_raw_bytes(self, request, book_id, isbn_13):
         # Get the image raw_bytes
         file_uploaded = request.data.get('image_bytes')
@@ -242,7 +246,6 @@ class ISBNTools:
         absolute_location, filename = self.create_local_image(filename_without_extension, file_bytes)
 
         return f"{self._internal_image_base_url}/{filename}"
-        
+
     def get_default_image_url(self,):
         return f'{self._internal_image_base_url}/{self._default_image_name}'
-

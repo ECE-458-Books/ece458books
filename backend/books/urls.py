@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import ISBNSearchView, ListCreateBookAPIView, RetrieveUpdateDestroyBookAPIView, RetrieveExternalBookImageAPIView, CSVExportBookAPIView, CreateBookInventoryCorrectionAPIView
 
-app_name='books'
+app_name = 'books'
 
 urlpatterns = [
     path('', ListCreateBookAPIView.as_view()),

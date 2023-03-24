@@ -65,7 +65,7 @@ export interface ModifyBBReq extends AddBBReq {
   id: string;
 }
 
-// salesReconciliationsCSVImport
+// buybackCSVImport
 export interface BBCSVImportReq {
   file: File;
   vendor: string;

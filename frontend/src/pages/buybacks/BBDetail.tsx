@@ -154,7 +154,7 @@ export default function BBDetail() {
 
   // Called to make delete pop up show
   const deleteBuyBackPopup = () => {
-    logger.debug("Delete Sales Reconciliation Clicked");
+    logger.debug("Delete Book Buyback Clicked");
     setDeletePopupVisible(true);
   };
 
@@ -270,7 +270,7 @@ export default function BBDetail() {
       });
   };
 
-  // Modify the sales reconciliation
+  // Modify the book buyback
   const callModifyBBAPI = () => {
     // Otherwise, it is a modify page
     const apiSales = buybacks.map((sale) => {

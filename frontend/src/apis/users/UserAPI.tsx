@@ -9,10 +9,23 @@ import {
 const USERS_EXTENSION = "auth/users";
 const USER_EXTENSION = "auth/user";
 
+// getUsers
+export interface GetUsersReq {
+  no_pagination?: boolean;
+  page?: number;
+  page_size?: number;
+  ordering: string;
+}
+
 export interface APIUser {
   id: number;
   username: string;
   is_staff: boolean;
+}
+
+export interface GetUsersResp {
+  results: APIUser[];
+  count: number;
 }
 
 // getBookDetail
@@ -46,6 +59,14 @@ export interface UserTypeResp {
 }
 
 export const USER_API = {
+  getUsers: async function (req: GetUsersReq): Promise<GetUsersResp> {
+    return await API.request({
+      url: USERS_EXTENSION,
+      method: METHOD_GET,
+      params: req,
+    });
+  },
+
   getUserDetail: async function (req: GetUserDetailReq): Promise<APIUser> {
     return await API.request({
       url: USER_EXTENSION.concat("/".concat(req.id.toString())),

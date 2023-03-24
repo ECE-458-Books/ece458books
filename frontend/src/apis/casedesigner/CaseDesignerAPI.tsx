@@ -9,15 +9,15 @@ import {
 
 const CASE_DESIGNER_EXTENSION = "case_designer";
 
-// All optional fields are given on the response, but not expected for the creation/editing request
 export interface APIBookcase {
-  id: number;
   name: string;
   width: number;
+  shelves: APIShelf[];
+  // Below optional fields are only given on the response, not needed on add/modify request
   last_edit_date?: string;
   creator_username?: string;
   last_editor_username?: string;
-  shelves: APIShelf[];
+  id?: number;
 }
 
 export interface APIShelf {
@@ -30,6 +30,7 @@ export interface APIDisplayBook {
   display_count: number;
   book_isbn?: string;
   book_title?: string;
+  book_url?: string;
 }
 
 // getBookcaseList
@@ -55,14 +56,14 @@ export const CASE_DESIGNER_API = {
     });
   },
 
-  getBookcaseDetail: async function (id: number): Promise<APIBookcase> {
+  getBookcaseDetail: async function (id: string): Promise<APIBookcase> {
     return await API.request({
       url: CASE_DESIGNER_EXTENSION.concat("/".concat(id.toString())),
       method: METHOD_GET,
     });
   },
 
-  deleteBookcase: async function (id: number) {
+  deleteBookcase: async function (id: string) {
     return await API.request({
       url: CASE_DESIGNER_EXTENSION.concat("/".concat(id.toString())),
       method: METHOD_DELETE,
@@ -71,7 +72,7 @@ export const CASE_DESIGNER_API = {
 
   modifyBookcase: async function (req: APIBookcase) {
     return await API.request({
-      url: CASE_DESIGNER_EXTENSION.concat("/".concat(req.id.toString())),
+      url: CASE_DESIGNER_EXTENSION.concat("/".concat(req.id!.toString())),
       method: METHOD_PATCH,
       data: req,
     });

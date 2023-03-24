@@ -28,7 +28,7 @@ export interface APIBook {
   authors: string[];
   genres: string[];
   title: string;
-  isbn_13: number;
+  isbn_13: string;
   isbn_10: string;
   publisher: string;
   publishedDate: number;
@@ -49,7 +49,7 @@ export interface APIBook {
 
 export enum APILineItemType {
   PURCHASE_ORDER = "purchase order",
-  SALES_RECONCILIATION = "sales reconciliation",
+  SALES_RECORD = "sales reconciliation",
   BOOK_BUYBACK = "buyback order",
   INVENTORY_CORRECTION = "inventory corrections",
 }

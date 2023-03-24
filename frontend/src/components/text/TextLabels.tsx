@@ -1,9 +1,9 @@
-interface TextLabelsProps {
+interface TextLabelProps {
   label: string;
   labelClassName?: string;
 }
 
-export default function TextLabels(props: TextLabelsProps) {
+export default function TextLabel(props: TextLabelProps) {
   return (
     <label
       className={

@@ -11,9 +11,9 @@ export function findById<T extends IDer>(array: T[], id: string | number) {
 export function filterById<T extends IDer>(
   array: T[],
   id: string | number,
-  setArray: (array: T[]) => void
+  setArray?: (array: T[]) => void
 ) {
   const newData = array.filter((element) => element.id !== id);
-  setArray(newData);
+  if (setArray) setArray(newData);
   return newData;
 }

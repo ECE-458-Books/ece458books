@@ -24,7 +24,7 @@ import PriceTemplate from "../../components/templates/PriceTemplate";
 import DeletePopup from "../../components/popups/DeletePopup";
 import { DEFAULT_THICKNESS } from "../casedesigner/util/Calculations";
 import Restricted from "../../permissions/Restricted";
-import TextLabels from "../../components/text/TextLabels";
+import TextLabel from "../../components/text/TextLabels";
 import { TextWrapperNullableNumberEditor } from "../../components/text/TextWrapperNullableNumberEditor";
 import { PriceEditor } from "../../components/editors/PriceEditor";
 import { Divider } from "primereact/divider";
@@ -54,7 +54,7 @@ export default function BookDetail() {
   const [title, setTitle] = useState<string>("");
   const [authors, setAuthors] = useState<string>("");
   const [genre, setGenre] = useState<string>("");
-  const [isbn13, setISBN13] = useState<number>(0);
+  const [isbn13, setISBN13] = useState<string>("");
   const [isbn10, setISBN10] = useState<string>("");
   const [publisher, setPublisher] = useState<string>("");
   const [pubYear, setPubYear] = useState<number>(0);
@@ -561,7 +561,7 @@ export default function BookDetail() {
         <form onSubmit={formik.handleSubmit}>
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex p-0">
-              <TextLabels label="Title:" />
+              <TextLabel label="Title:" />
               <p className="p-component p-text-secondary text-900 text-3xl text-center my-0">
                 {title}
               </p>
@@ -569,7 +569,7 @@ export default function BookDetail() {
           </div>
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex p-0">
-              <TextLabels label="Author(s):" />
+              <TextLabel label="Author(s):" />
               <p className="p-component p-text-secondary text-900 text-2xl text-center m-0">
                 {authors}
               </p>
@@ -577,13 +577,13 @@ export default function BookDetail() {
           </div>
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex p-0 col-6">
-              <TextLabels label="ISBN13:" />
+              <TextLabel label="ISBN13:" />
               <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
                 {isbn13}
               </p>
             </div>
             <div className="flex p-0 col-6">
-              <TextLabels label="ISBN10:" />
+              <TextLabel label="ISBN10:" />
               <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
                 {isbn10}
               </p>
@@ -591,13 +591,13 @@ export default function BookDetail() {
           </div>
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex p-0 col-6">
-              <TextLabels label="Publisher:" />
+              <TextLabel label="Publisher:" />
               <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
                 {publisher}
               </p>
             </div>
             <div className="flex p-0 col-6">
-              <TextLabels label="Publication Year:" />
+              <TextLabel label="Publication Year:" />
               <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
                 {pubYear}
               </p>
@@ -605,7 +605,7 @@ export default function BookDetail() {
           </div>
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex p-0 col-5">
-              <TextLabels label="Genre:" />
+              <TextLabel label="Genre:" />
               {!isModifiable ? (
                 <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
                   {genre}
@@ -620,7 +620,7 @@ export default function BookDetail() {
           </h1>
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex p-0 col-4">
-              <TextLabels label="Height:" />
+              <TextLabel label="Height:" />
               <TextWrapperNullableNumberEditor
                 disabled={!isModifiable}
                 textValue={height}
@@ -631,7 +631,7 @@ export default function BookDetail() {
               />
             </div>
             <div className="flex p-0 col-4">
-              <TextLabels label="Width:" />
+              <TextLabel label="Width:" />
               <TextWrapperNullableNumberEditor
                 disabled={!isModifiable}
                 textValue={width}
@@ -642,7 +642,7 @@ export default function BookDetail() {
               />
             </div>
             <div className="flex p-0 col-4">
-              <TextLabels label="Thickness:" />
+              <TextLabel label="Thickness:" />
               <TextWrapperNullableNumberEditor
                 disabled={!isModifiable}
                 textValue={thickness}
@@ -657,7 +657,7 @@ export default function BookDetail() {
           </div>
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex p-0 col-6">
-              <TextLabels label="Page Count:" />
+              <TextLabel label="Page Count:" />
               <TextWrapperNullableNumberEditor
                 disabled={!isModifiable}
                 textValue={pageCount}
@@ -669,7 +669,7 @@ export default function BookDetail() {
               />
             </div>
             <div className="flex p-0 col-6">
-              <TextLabels label="Shelf Space (in):" />
+              <TextLabel label="Shelf Space (in):" />
               <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
                 <label className={thickness ? "" : "font-bold"}>
                   {shelfSpace}
@@ -680,7 +680,7 @@ export default function BookDetail() {
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex col-6 p-0">
               <div className="my-auto" style={{ width: "28%" }}>
-                <TextLabels label="Inventory Count:" />
+                <TextLabel label="Inventory Count:" />
               </div>
               <div className="flex flex-wrap" style={{ width: "25%" }}>
                 <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
@@ -711,7 +711,7 @@ export default function BookDetail() {
               </div>
             </div>
             <div className="flex p-0 col-6">
-              <TextLabels label="Days of Supply:" />
+              <TextLabel label="Days of Supply:" />
               <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
                 {daysOfSupply}
               </p>
@@ -719,19 +719,19 @@ export default function BookDetail() {
           </div>
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex p-0 col-4">
-              <TextLabels label="Last Month Sales:" />
+              <TextLabel label="Last Month Sales:" />
               <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
                 {lastMonthSales}
               </p>
             </div>
             <div className="flex p-0 col-4">
-              <TextLabels label="Best Buyback Price:" />
+              <TextLabel label="Best Buyback Price:" />
               <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
                 {PriceTemplate(bestBuybackPrice)}
               </p>
             </div>
             <div className="flex col-4 p-0">
-              <TextLabels label="Retail Price:" />
+              <TextLabel label="Retail Price:" />
               {!isModifiable ? (
                 <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
                   {PriceTemplate(price)}

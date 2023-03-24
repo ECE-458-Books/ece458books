@@ -44,10 +44,10 @@ function NavigationBar(props: NavigationBarProps) {
       command: () => navigateIfLoggedIn("/purchase-orders"),
     },
     {
-      label: "Sales Reconciliations",
+      label: "Sales Records",
       id: "salesRecordsMenuitem",
       icon: "pi pi-fw pi-chart-bar",
-      command: () => navigateIfLoggedIn("/sales-reconciliations"),
+      command: () => navigateIfLoggedIn("/sales-records"),
     },
     {
       label: "Book Buybacks",

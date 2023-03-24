@@ -26,7 +26,7 @@ export interface BookDetailLineItem {
 
 export enum BookDetailLineItemType {
   PURCHASE_ORDER = "Purchase Order",
-  SALES_RECONCILIATION = "Sales Reconciliation",
+  SALES_RECORD = "Sales Record",
   BOOK_BUYBACK = "Book Buyback",
   INVENTORY_CORRECTION = "Inventory Correction",
 }
@@ -34,7 +34,7 @@ export enum BookDetailLineItemType {
 // Line item navigation mapper
 export const LineItemURLMapper = new Map<BookDetailLineItemType, string>([
   [BookDetailLineItemType.PURCHASE_ORDER, "purchase-orders"],
-  [BookDetailLineItemType.SALES_RECONCILIATION, "sales-reconciliations"],
+  [BookDetailLineItemType.SALES_RECORD, "sales-records"],
   [BookDetailLineItemType.BOOK_BUYBACK, "book-buybacks"],
 ]);
 

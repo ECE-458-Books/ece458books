@@ -18,3 +18,8 @@ class GenreSerializer(serializers.ModelSerializer):
         query_set = Book.objects.filter(genres=obj, isGhost=False)
 
         return len(query_set)
+    
+    def create(self, validated_data):
+        validated_data['name'] = validated_data['name'].strip().lower()
+        return Genre.objects.create(**validated_data)
+    

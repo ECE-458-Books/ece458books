@@ -14,7 +14,7 @@ import {
   GetBookcasesResp,
 } from "../../apis/casedesigner/CaseDesignerAPI";
 import { APIToInternalBookcaseConversion } from "../../apis/casedesigner/CaseDesignerConversions";
-import { DateTemplate } from "../../components/templates/DateTemplate";
+import { DateTimeTemplate } from "../../components/templates/DateTemplate";
 
 export interface Bookcase {
   id: string;
@@ -27,13 +27,16 @@ export interface Bookcase {
 }
 
 export interface Shelf {
+  id: string;
   displayedBooks: DisplayBook[];
 }
 
 export interface DisplayBook {
+  id: string;
   bookId: string;
   bookISBN: string;
   bookTitle: string;
+  bookImageURL: string;
   displayMode: DisplayMode;
   displayCount: number;
 }
@@ -55,7 +58,7 @@ export default function BookcaseList() {
     {
       field: "lastEditDate",
       header: "Last Edit Date",
-      customBody: (rowData: Bookcase) => DateTemplate(rowData.lastEditDate),
+      customBody: (rowData: Bookcase) => DateTimeTemplate(rowData.lastEditDate),
     },
   ];
 
@@ -110,7 +113,7 @@ export default function BookcaseList() {
   const dataTable = (
     <ListTemplate
       columns={COLUMNS}
-      detailPageURL="/Bookcases/detail/"
+      detailPageURL="/bookcases/detail/"
       whitespaceSize={tableWhitespaceSize}
       isNoPagination={isNoPagination}
       setIsNoPagination={setIsNoPagination}

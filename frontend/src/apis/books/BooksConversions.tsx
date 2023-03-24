@@ -38,10 +38,7 @@ export const APIBookSortFieldMap = new Map<string, string>([
 // External line item -> Internal Line Item
 export const LineItemMapper = new Map<APILineItemType, BookDetailLineItemType>([
   [APILineItemType.PURCHASE_ORDER, BookDetailLineItemType.PURCHASE_ORDER],
-  [
-    APILineItemType.SALES_RECONCILIATION,
-    BookDetailLineItemType.SALES_RECONCILIATION,
-  ],
+  [APILineItemType.SALES_RECORD, BookDetailLineItemType.SALES_RECORD],
   [APILineItemType.BOOK_BUYBACK, BookDetailLineItemType.BOOK_BUYBACK],
 ]);
 
@@ -120,7 +117,7 @@ export function APIToInternalBookConversionwithRelatedBooks(
         author: "Hala",
         genres: "all of them",
         title: "The Great Beyond",
-        isbn13: 812345814124,
+        isbn13: "812345814124",
         isbn10: "4512454151245",
         publisher: "Thap",
         publishedYear: 2019,
@@ -197,7 +194,7 @@ export function APIToInternalBookConversionWithDB(
         author: "Hala",
         genres: "all of them",
         title: "The Great Beyond",
-        isbn13: 812345814124,
+        isbn13: "812345814124",
         isbn10: "4512454151245",
         publisher: "Thap",
         publishedYear: 2019,

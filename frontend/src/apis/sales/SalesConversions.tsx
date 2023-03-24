@@ -1,11 +1,10 @@
-import { v4 as uuid } from "uuid";
-import { SalesReconciliation } from "../../pages/sales/SRList";
+import { SalesRecord } from "../../pages/sales/SRList";
 import { externalToInternalDate } from "../../util/DateOps";
-import { APISaleCSVImportRow, APISR, APISRSaleRow } from "./SalesAPI";
+import * as SalesAPI from "./SalesAPI";
 import { formatBookForDropdown } from "../../components/dropdowns/BookDropdown";
 import { LineItem } from "../../templates/inventorydetail/LineItemTableTemplate";
 
-// Sales Reconciliations
+// Sales Records
 // Internal data type -> ordering required for book get API
 
 export const APISRSortFieldMap = new Map<string, string>([
@@ -14,7 +13,7 @@ export const APISRSortFieldMap = new Map<string, string>([
   ["totalRevenue", "total_revenue"],
   ["date", "date"],
 ]);
-function APIToInternalSRSaleConversion(sale: APISRSaleRow): LineItem {
+function APIToInternalSRSaleConversion(sale: SalesAPI.APISRSaleRow): LineItem {
   return {
     isNewRow: false,
     // (id is always defined from API)
@@ -28,7 +27,7 @@ function APIToInternalSRSaleConversion(sale: APISRSaleRow): LineItem {
   };
 }
 
-export function APIToInternalSRConversion(sr: APISR): SalesReconciliation {
+export function APIToInternalSRConversion(sr: SalesAPI.APISR): SalesRecord {
   const sales: LineItem[] = sr.sales.map((sale) =>
     APIToInternalSRSaleConversion(sale)
   );
@@ -42,22 +41,4 @@ export function APIToInternalSRConversion(sr: APISR): SalesReconciliation {
     sales: sales,
     isDeletable: sr.is_deletable,
   };
-}
-
-export function APIToInternalSalesCSVConversion(
-  sales: APISaleCSVImportRow[]
-): LineItem[] {
-  return sales.map((sale) => {
-    return {
-      isNewRow: true,
-      id: uuid(),
-      subtotal: 0,
-      bookId: sale.book,
-      bookTitle: formatBookForDropdown(sale.book_title, sale.isbn_13),
-      bookISBN: sale.isbn_13,
-      quantity: sale.quantity,
-      price: sale.unit_retail_price,
-      errors: sale.errors,
-    } as LineItem;
-  });
 }

@@ -154,7 +154,7 @@ export default function BBDetail() {
 
   // Called to make delete pop up show
   const deleteBuyBackPopup = () => {
-    logger.debug("Delete Sales Reconciliation Clicked");
+    logger.debug("Delete Book Buyback Clicked");
     setDeletePopupVisible(true);
   };
 
@@ -270,7 +270,7 @@ export default function BBDetail() {
       });
   };
 
-  // Modify the sales reconciliation
+  // Modify the book buyback
   const callModifyBBAPI = () => {
     // Otherwise, it is a modify page
     const apiSales = buybacks.map((sale) => {
@@ -395,11 +395,11 @@ export default function BBDetail() {
     <ConfirmPopup
       isButtonVisible={isModifiable}
       isPopupVisible={isConfirmationPopupVisible}
-      hideFunc={() => setIsConfirmationPopupVisible(false)}
+      onHide={() => setIsConfirmationPopupVisible(false)}
       onFinalSubmission={onSubmit}
       onShowPopup={() => setIsConfirmationPopupVisible(true)}
       disabled={!isModifiable || checkForNecessaryValues()}
-      label={"Submit"}
+      buttonLabel={"Submit"}
       className="p-button-success ml-2"
     />
   );
@@ -408,7 +408,7 @@ export default function BBDetail() {
     <ConfirmPopup
       isButtonVisible={isModifiable && isBBAddPage}
       isPopupVisible={isConfirmationPopupVisible && isModifiable && isBBAddPage}
-      hideFunc={() => setIsConfirmationPopupVisible(false)}
+      onHide={() => setIsConfirmationPopupVisible(false)}
       onFinalSubmission={onSubmit}
       onRejectFinalSubmission={() => {
         setIsGoBackActive(false);
@@ -418,7 +418,7 @@ export default function BBDetail() {
         setIsGoBackActive(true);
       }}
       disabled={!isModifiable || checkForNecessaryValues()}
-      label={"Submit and Go Back"}
+      buttonLabel={"Submit and Go Back"}
       className="p-button-success ml-2"
     />
   );

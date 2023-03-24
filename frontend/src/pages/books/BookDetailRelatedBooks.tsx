@@ -9,7 +9,7 @@ import PriceTemplate from "../../components/templates/PriceTemplate";
 import { Book, ColumnMeta, columnsMeta } from "./BookList";
 import { useState } from "react";
 import AlteredTextTemplate from "../../components/templates/AlteredTextTemplate";
-import { imageBodyTemplate } from "../../components/templates/ImageTemplate";
+import { ImageTemplate } from "../../components/templates/ImageTemplate";
 import ToggleColumnPopup from "../../components/popups/ToggleColumnPopup";
 import ToggleColumnButton from "../../components/buttons/ToggleColumnButton";
 import { CheckboxChangeEvent } from "primereact/checkbox";
@@ -34,7 +34,7 @@ export default function BookDetailRelatedBooks(
     {
       field: "thumbnailURL",
       header: "Cover Art",
-      customBody: (rowData: Book) => imageBodyTemplate(rowData.thumbnailURL),
+      customBody: (rowData: Book) => ImageTemplate(rowData.thumbnailURL),
       style: { minWidth: "1rem", padding: "0.25rem", width: "2rem" },
       hidden: !(
         visibleColumns.filter((item) => item.field == "thumbnailURL").length > 0

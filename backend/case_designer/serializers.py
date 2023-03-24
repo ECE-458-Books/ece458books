@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from authapp.models import User
-from books.models import Book
+from books.models import Book, BookImage
 
 from .models import Bookcase, Shelf, DisplayedBook
 
@@ -8,6 +8,7 @@ class DisplayedBookSerializer(serializers.ModelSerializer):
     book = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all())
     book_isbn = serializers.SerializerMethodField()
     book_title = serializers.SerializerMethodField()
+    book_url = serializers.SerializerMethodField()
     display_order = serializers.IntegerField(required=False, write_only=True)
     shelf = serializers.PrimaryKeyRelatedField(queryset=Shelf.objects.all(), required=False, write_only=True)
 
@@ -17,10 +18,13 @@ class DisplayedBookSerializer(serializers.ModelSerializer):
     def get_book_title(self, instance):
         return instance.book.title
 
+    def get_book_url(self, instance):
+        return BookImage.objects.get(book=instance.book).image_url
+
     class Meta:
         model = DisplayedBook
-        fields = ['book', 'display_mode', 'display_count', 'display_order', 'shelf','book_isbn', 'book_title']
-        read_only_fields = ['book_isbn', 'book_title']
+        fields = ['book', 'display_mode', 'display_count', 'display_order', 'shelf','book_isbn', 'book_title', 'book_url']
+        read_only_fields = ['book_isbn', 'book_title', 'book_url']
 
 class ShelfSerializer(serializers.ModelSerializer):
     displayed_books = DisplayedBookSerializer(many=True)

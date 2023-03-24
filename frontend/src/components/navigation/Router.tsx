@@ -4,7 +4,7 @@ import NavigationBar from "./Navbar";
 import BookList from "../../pages/books/BookList";
 import GenreList from "../../pages/genres/GenreList";
 import VendorList from "../../pages/vendors/VendorList";
-import SalesReconciliationList from "../../pages/sales/SRList";
+import SalesRecordList from "../../pages/sales/SRList";
 import ModifyBook from "../../pages/books/BookDetail";
 import ModifySR from "../../pages/sales/SRDetail";
 import ModifyPO from "../../pages/purchases/PODetail";
@@ -22,7 +22,7 @@ import VendorAdd from "../../pages/vendors/VendorAdd";
 import UserList from "../../pages/users/UserList";
 import UserDetail from "../../pages/users/UserDetail";
 import BookcaseList from "../../pages/casedesigner/BookcaseList";
-import BookcaseDetail from "../../pages/casedesigner/BookcaseDetail";
+import BookcaseDetail from "../../pages/casedesigner/detail/BookcaseDetail";
 import { AccessType } from "../../util/auth/UserTypes";
 
 interface RouterProps {
@@ -48,10 +48,7 @@ export default function Router(props: RouterProps) {
         <Route path="books" element={<BookList />} />
         <Route path="genres" element={<GenreList />} />
         <Route path="purchase-orders" element={<PurchaseOrderList />} />
-        <Route
-          path="sales-reconciliations"
-          element={<SalesReconciliationList />}
-        />
+        <Route path="sales-records" element={<SalesRecordList />} />
         <Route path="vendors" element={<VendorList />} />
         <Route path="book-buybacks" element={<BuyBackList />} />
         <Route path="bookcases" element={<BookcaseList />} />
@@ -59,7 +56,7 @@ export default function Router(props: RouterProps) {
         <Route path="books/shelf-calculator" element={<ShelfCalculator />} />
         <Route path="genres/detail/:id" element={<GenreDetail />} />
         <Route path="purchase-orders/detail/:id" element={<ModifyPO />} />
-        <Route path="sales-reconciliations/detail/:id" element={<ModifySR />} />
+        <Route path="sales-records/detail/:id" element={<ModifySR />} />
         <Route path="book-buybacks/detail/:id" element={<ModifyBB />} />
         <Route path="vendors/detail/:id" element={<VendorDetail />} />
         <Route path="bookcases/detail/:id" element={<BookcaseDetail />} />
@@ -70,7 +67,6 @@ export default function Router(props: RouterProps) {
             <Route path="books/add" element={<BookAdd />} />
             <Route path="genres/add" element={<GenreAdd />} />
             <Route path="purchase-orders/add" element={<ModifyPO />} />
-            <Route path="sales-reconciliations/add" element={<ModifySR />} />
             <Route path="book-buybacks/add" element={<ModifyBB />} />
             <Route path="vendors/add" element={<VendorAdd />} />
             <Route path="bookcases/add" element={<BookcaseDetail />} />

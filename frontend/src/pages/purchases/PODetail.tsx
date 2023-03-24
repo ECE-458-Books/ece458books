@@ -377,11 +377,11 @@ export default function PODetail() {
     <ConfirmPopup
       isButtonVisible={isModifiable}
       isPopupVisible={isConfirmationPopupVisible}
-      hideFunc={() => setIsConfirmationPopupVisible(false)}
+      onHide={() => setIsConfirmationPopupVisible(false)}
       onFinalSubmission={onSubmit}
       onShowPopup={() => setIsConfirmationPopupVisible(true)}
       disabled={!isModifiable || checkForNecessaryValues()}
-      label={"Submit"}
+      buttonLabel={"Submit"}
       className="p-button-success ml-2"
     />
   );
@@ -390,7 +390,7 @@ export default function PODetail() {
     <ConfirmPopup
       isButtonVisible={isModifiable && isPOAddPage}
       isPopupVisible={isConfirmationPopupVisible && isModifiable && isPOAddPage}
-      hideFunc={() => setIsConfirmationPopupVisible(false)}
+      onHide={() => setIsConfirmationPopupVisible(false)}
       onFinalSubmission={onSubmit}
       onRejectFinalSubmission={() => {
         setIsGoBackActive(false);
@@ -400,7 +400,7 @@ export default function PODetail() {
         setIsGoBackActive(true);
       }}
       disabled={!isModifiable || checkForNecessaryValues()}
-      label={"Submit and Go Back"}
+      buttonLabel={"Submit and Go Back"}
       className="p-button-success ml-2"
     />
   );

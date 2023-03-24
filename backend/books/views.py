@@ -346,6 +346,9 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView, BookImageCr
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
 
+        # add primary key of related books group
+        data = self.get_or_create_related_books_group(data, instance)
+
         serializer = self.get_serializer(instance, data=data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
@@ -363,6 +366,11 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView, BookImageCr
         res['image_url'] = url
 
         return Response(res)
+
+    def get_or_create_related_books_group(self, data, instance):
+        obj, created = RelatedBookGroup.objects.get_or_create(title="".join(instance.title.lower().split()))
+        data['related_book_group'] = obj.pk
+        return data
 
     def convert_zero_to_null(self, data):
         possible_zero_fields = ['pageCount', 'width', 'height', 'thickness']

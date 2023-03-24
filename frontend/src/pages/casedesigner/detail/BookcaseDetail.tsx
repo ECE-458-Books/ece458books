@@ -43,24 +43,24 @@ const emptyShelf: Shelf = {
 };
 
 export default function BookcaseDetail() {
+  const navigate = useNavigate();
   // -------- STATE --------
   // From URL
   const { id } = useParams();
   const isAddPage = id === undefined;
   const [isModifiable, setIsModifiable] = useState<boolean>(id === undefined);
 
-  // The navigator to switch pages
-  const navigate = useNavigate();
-
   const [originalData, setOriginalData] = useState<Bookcase>(emptyBookcase);
 
-  // useImmer is used to set state for nested data in a simplified format
   const [bookcase, setBookcase] = useImmer<Bookcase>(emptyBookcase);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
-  const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false);
+  const [isDeletePopupVisible, setIsDeletePopupVisible] =
+    useState<boolean>(false);
   const [isSaveAsPopupVisible, setIsSaveAsPopupVisible] =
     useState<boolean>(false);
+  const [bookcaseNameInSaveAsPopup, setBookcaseNameInSaveAsPopup] =
+    useState<string>("");
 
   // Load the Bookcase data on page load
   useEffect(() => {
@@ -70,6 +70,7 @@ export default function BookcaseDetail() {
           const bookcase = APIToInternalBookcaseConversion(response);
           setOriginalData(bookcase);
           setBookcase(bookcase);
+          setBookcaseNameInSaveAsPopup(bookcase.name);
         })
         .catch(() => showFailure(toast, "Could not fetch bookcase data"));
     }
@@ -78,7 +79,7 @@ export default function BookcaseDetail() {
   // Call to delete the bookcase
   const deleteBookcaseFinal = () => {
     logger.debug("Delete Bookcase Finalized");
-    setDeletePopupVisible(false);
+    setIsDeletePopupVisible(false);
     CASE_DESIGNER_API.deleteBookcase(id!)
       .then(() => {
         showSuccess(toast, "Bookcase deleted");
@@ -89,14 +90,25 @@ export default function BookcaseDetail() {
 
   const callAddBookcaseAPI = () => {
     const APIbookcase = InternalToAPIBookcaseConversion(bookcase);
+    APIbookcase.name = bookcaseNameInSaveAsPopup;
     CASE_DESIGNER_API.addBookcase(APIbookcase)
-      .then(() => {
+      .then((response) => {
         showSuccess(toast, "Bookcase added successfully");
         setIsModifiable(!isModifiable);
-        setOriginalData(bookcase);
+        setBookcase((draft) => {
+          draft.name = bookcaseNameInSaveAsPopup;
+        });
+        setOriginalData(APIToInternalBookcaseConversion(response));
       })
       .catch((error) => {
-        showFailure(toast, error.data.errors[0] ?? "Failed to add bookcase");
+        console.log(error);
+        const bookcaseNotUnique = error.data.errors?.name?.[0];
+        showFailure(
+          toast,
+          bookcaseNotUnique
+            ? "Bookcase not saved, name is not unique"
+            : "Failed to save bookcase"
+        );
       });
   };
 
@@ -109,7 +121,14 @@ export default function BookcaseDetail() {
         setOriginalData(bookcase);
       })
       .catch((error) => {
-        showFailure(toast, error.data.errors[0] ?? "Failed to add bookcase");
+        console.log(error);
+        const bookcaseNotUnique = error.data.errors?.name?.[0];
+        showFailure(
+          toast,
+          bookcaseNotUnique
+            ? "Bookcase not saved, name is not unique"
+            : "Failed to save bookcase"
+        );
       });
   };
 
@@ -157,7 +176,7 @@ export default function BookcaseDetail() {
   const deleteButton = (
     <DeleteButton
       visible={!isAddPage}
-      onClick={() => setDeletePopupVisible(true)}
+      onClick={() => setIsDeletePopupVisible(true)}
     />
   );
 
@@ -165,7 +184,7 @@ export default function BookcaseDetail() {
     <DeletePopup
       deleteItemIdentifier={"this bookcase"}
       onConfirm={() => deleteBookcaseFinal()}
-      setIsVisible={setDeletePopupVisible}
+      setIsVisible={setIsDeletePopupVisible}
     />
   );
 
@@ -213,10 +232,8 @@ export default function BookcaseDetail() {
       <div className="flex col-12 justify-content-start p-1">
         <TextLabel label={"Name: "} />
         <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
-          {TextEditor(bookcase.name, (newValue) =>
-            setBookcase((draft) => {
-              draft.name = newValue;
-            })
+          {TextEditor(bookcaseNameInSaveAsPopup, (newValue) =>
+            setBookcaseNameInSaveAsPopup(newValue)
           )}
         </p>
       </div>
@@ -322,7 +339,7 @@ export default function BookcaseDetail() {
           </div>
           {dataTable}
         </div>
-        {deletePopupVisible && deletePopup}
+        {isDeletePopupVisible && deletePopup}
         {saveAsDialog}
       </div>
     </div>

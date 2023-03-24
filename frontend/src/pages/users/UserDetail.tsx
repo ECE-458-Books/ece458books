@@ -156,11 +156,11 @@ export default function VendorAdd() {
     <ConfirmPopup
       isButtonVisible={isModifiable}
       isPopupVisible={isConfirmationPopupVisible}
-      hideFunc={() => setIsConfirmationPopupVisible(false)}
+      onHide={() => setIsConfirmationPopupVisible(false)}
       onFinalSubmission={onSubmit}
       onShowPopup={() => setIsConfirmationPopupVisible(true)}
       disabled={!isModifiable}
-      label={"Submit"}
+      buttonLabel={"Submit"}
       className="p-button-success ml-1 p-button-sm"
       classNameDiv="flex my-auto"
     />

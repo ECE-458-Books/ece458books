@@ -189,7 +189,7 @@ export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
           setShelves(e.value);
         }}
       >
-        <Column rowReorder style={{ width: "3rem" }} />
+        {props.isModifiable && <Column rowReorder style={{ width: "3rem" }} />}
         {columns}
         {deleteColumn}
       </DataTable>

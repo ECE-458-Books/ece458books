@@ -241,14 +241,14 @@ export default function VendorDetail() {
               {isModifiable && (
                 <ConfirmButton
                   isPopupVisible={isConfirmationPopupVisible}
-                  hideFunc={() => setIsConfirmationPopupVisible(false)}
+                  onHide={() => setIsConfirmationPopupVisible(false)}
                   onFinalSubmission={onSubmit}
                   onRejectFinalSubmission={() => {
                     // do nothing
                   }}
                   onShowPopup={() => setIsConfirmationPopupVisible(true)}
                   disabled={!isModifiable}
-                  label={"Submit"}
+                  buttonLabel={"Submit"}
                   className="p-button-success p-button-raised"
                 />
               )}

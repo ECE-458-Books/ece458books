@@ -332,11 +332,11 @@ export default function BookDetail() {
     <ConfirmPopup
       isButtonVisible={isModifiable}
       isPopupVisible={isConfirmationPopupVisible}
-      hideFunc={() => setIsConfirmationPopupVisible(false)}
+      onHide={() => setIsConfirmationPopupVisible(false)}
       onFinalSubmission={formik.handleSubmit}
       onShowPopup={() => setIsConfirmationPopupVisible(true)}
       disabled={!isModifiable}
-      label={"Submit"}
+      buttonLabel={"Submit"}
       className="p-button-success ml-1 p-button-sm"
       classNameDiv="flex my-auto"
     />

@@ -8,7 +8,7 @@ DISPLAY_MODE_CHOICES = [
 ]
 
 class Bookcase(models.Model):
-    name=models.CharField(max_length=50)
+    name=models.CharField(max_length=50, unique=True)
     last_edit_date=models.DateTimeField(auto_now=True)
     width=models.FloatField()
     creator=models.ForeignKey('authapp.User', related_name="bookcase_creator", on_delete=models.CASCADE)

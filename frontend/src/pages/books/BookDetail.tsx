@@ -32,6 +32,12 @@ import { TextWrapperNullableNumberEditor } from "../../components/text/TextWrapp
 import { PriceEditor } from "../../components/editors/PriceEditor";
 import { Divider } from "primereact/divider";
 import BookDetailRelatedBooks from "./BookDetailRelatedBooks";
+import { arrowColorDeterminer, colorDeterminer } from "../../util/CSSFunctions";
+import {
+  InputNumber,
+  InputNumberValueChangeEvent,
+} from "primereact/inputnumber";
+import "../../css/MiscellaneousCSS.css";
 
 export interface BookwithRelatedBooks extends Book {
   relatedBooks?: Book[];
@@ -82,11 +88,14 @@ export default function BookDetail() {
   const [imageFile, setImageFile] = useState<File>(new File([""], "filename"));
   const [isImageUploaded, setIsImageUploaded] = useState<boolean>(false);
   const [isImageRemoved, setIsImageRemoved] = useState<boolean>(false);
+  const [inventoryAdjustment, setInventoryAdjustment] = useState<number>(0);
 
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
   const [genreNamesList, setGenreNamesList] = useState<string[]>([]);
   const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false); // Whether the delete popup is visible
+  const [isInventoryCorrectionVisible, setIsInventoryCorrectionVisible] =
+    useState<boolean>(false);
 
   // Load the book data on page load
   useEffect(() => {
@@ -111,16 +120,15 @@ export default function BookDetail() {
         setBestBuybackPrice(book.bestBuybackPrice);
         setLastMonthSales(book.lastMonthSales);
         updateShelfSpace(book.thickness);
+        setInventoryAdjustment(0);
         setDaysOfSupply(calculateDaysOfSupply(book));
-        setNumOfRelatedBooks(book.numRelatedBooks);
-        setRelatedBooks(book.relatedBooks);
         setImage({
           imageSrc: response.image_url,
           imageHash: Date.now().toString(),
         });
       })
       .catch(() => showFailure(toast, "Could not fetch book data"));
-  }, []);
+  }, [stock]);
 
   const calculateDaysOfSupply = (book: Book) => {
     if (book.stock === 0) {
@@ -135,6 +143,45 @@ export default function BookDetail() {
     setShelfSpace(
       Math.round((calcThickness * stock + Number.EPSILON) * 100) / 100
     );
+  };
+
+  const bookModifyAPIRequest = (book: APIBook) => {
+    BOOKS_API.modifyBook({
+      book: book,
+      image: imageFile,
+      isImageUploaded: isImageUploaded,
+      isImageRemoved: isImageRemoved,
+    })
+      .then((response) => {
+        const updatedBook = APIToInternalBookConversion(response);
+        setOriginalBookData({
+          id: updatedBook.id!,
+          title: updatedBook.title,
+          author: updatedBook.author,
+          isbn10: updatedBook.isbn10,
+          isbn13: updatedBook.isbn13,
+          publisher: updatedBook.publisher,
+          publishedYear: updatedBook.publishedYear,
+          genres: updatedBook.genres,
+          height: updatedBook.height,
+          width: updatedBook.width,
+          thickness: updatedBook.thickness,
+          pageCount: updatedBook.pageCount,
+          stock: updatedBook.stock,
+          retailPrice: updatedBook.retailPrice,
+          thumbnailURL: updatedBook.thumbnailURL,
+          lineItems: updatedBook.lineItems,
+          bestBuybackPrice: updatedBook.bestBuybackPrice,
+          lastMonthSales: updatedBook.lastMonthSales,
+          shelfSpace: updatedBook.shelfSpace,
+          daysOfSupply: updatedBook.daysOfSupply,
+        });
+        setIsModifiable(false);
+        setIsImageUploaded(false);
+        setIsImageRemoved(false);
+        showSuccess(toast, "Book Edited");
+      })
+      .catch(() => showFailure(toast, "Could not modify book"));
   };
 
   // Update shelf space
@@ -186,43 +233,44 @@ export default function BookDetail() {
         image_url: image.imageSrc,
       };
       logger.debug("Submitting Book Modify", book);
-      BOOKS_API.modifyBook({
-        book: book,
-        image: imageFile,
-        isImageUploaded: isImageUploaded,
-        isImageRemoved: isImageRemoved,
-      })
-        .then((response) => {
-          const updatedBook = APIToInternalBookConversion(response);
-          setOriginalBookData({
-            id: updatedBook.id!,
-            title: updatedBook.title,
-            author: updatedBook.author,
-            isbn10: updatedBook.isbn10,
-            isbn13: updatedBook.isbn13,
-            publisher: updatedBook.publisher,
-            publishedYear: updatedBook.publishedYear,
-            genres: updatedBook.genres,
-            height: updatedBook.height,
-            width: updatedBook.width,
-            thickness: updatedBook.thickness,
-            pageCount: updatedBook.pageCount,
-            stock: updatedBook.stock,
-            retailPrice: updatedBook.retailPrice,
-            thumbnailURL: updatedBook.thumbnailURL,
-            lineItems: updatedBook.lineItems,
-            bestBuybackPrice: updatedBook.bestBuybackPrice,
-            lastMonthSales: updatedBook.lastMonthSales,
-            shelfSpace: updatedBook.shelfSpace,
-            daysOfSupply: updatedBook.daysOfSupply,
-            numRelatedBooks: updatedBook.numRelatedBooks,
-          });
-          setIsModifiable(false);
-          setIsImageUploaded(false);
-          setIsImageRemoved(false);
-          showSuccess(toast, "Book Edited");
+
+      if (inventoryAdjustment !== 0) {
+        BOOKS_API.inventoryCorrection({
+          id: id!,
+          adjustment: inventoryAdjustment,
         })
-        .catch(() => showFailure(toast, "Could not modify book"));
+          .then((response) => {
+            setStock(stock + response.adjustment);
+            setInventoryAdjustment(0);
+            setOriginalBookData({
+              id: originalBookData.id!,
+              title: originalBookData.title,
+              author: originalBookData.author,
+              isbn10: originalBookData.isbn10,
+              isbn13: originalBookData.isbn13,
+              publisher: originalBookData.publisher,
+              publishedYear: originalBookData.publishedYear,
+              genres: originalBookData.genres,
+              height: originalBookData.height,
+              width: originalBookData.width,
+              thickness: originalBookData.thickness,
+              pageCount: originalBookData.pageCount,
+              stock: stock,
+              retailPrice: originalBookData.retailPrice,
+              thumbnailURL: originalBookData.thumbnailURL,
+              lineItems: originalBookData.lineItems,
+              bestBuybackPrice: originalBookData.bestBuybackPrice,
+              lastMonthSales: originalBookData.lastMonthSales,
+              shelfSpace: originalBookData.shelfSpace,
+              daysOfSupply: originalBookData.daysOfSupply,
+            });
+            showSuccess(toast, "Inventory Adjusted");
+            bookModifyAPIRequest(book);
+          })
+          .catch(() => showFailure(toast, "Could not modify inventory"));
+      } else {
+        bookModifyAPIRequest(book);
+      }
       formik.resetForm();
     },
   });
@@ -242,6 +290,8 @@ export default function BookDetail() {
       });
       setIsImageUploaded(false);
       setIsImageRemoved(false);
+      setInventoryAdjustment(0);
+      setIsInventoryCorrectionVisible(false);
     }
   }, [isModifiable]);
 
@@ -431,6 +481,56 @@ export default function BookDetail() {
     </div>
   );
 
+  const inventoryCorrectionButton = (
+    <Restricted to={"modify"}>
+      <Button
+        icon="pi pi-pencil"
+        type="button"
+        visible={isModifiable && !isInventoryCorrectionVisible}
+        onClick={() => {
+          setIsInventoryCorrectionVisible(true);
+          console.log(inventoryAdjustment);
+        }}
+        className="p-button-rounded p-button-sm ml-2"
+        style={{ width: 10, height: 35 }}
+      />
+    </Restricted>
+  );
+
+  const inventoryCorrectionEditLine = (
+    <Restricted to={"modify"}>
+      <InputNumber
+        value={inventoryAdjustment}
+        onValueChange={(e: InputNumberValueChangeEvent) =>
+          setInventoryAdjustment(e.value ?? 0)
+        }
+        mode="decimal"
+        showButtons
+        buttonLayout="horizontal"
+        step={1}
+        size={5}
+        decrementButtonClassName="p-button-danger"
+        incrementButtonClassName="p-button-success"
+        incrementButtonIcon="pi pi-plus"
+        decrementButtonIcon="pi pi-minus"
+        min={-stock}
+        className="inventoryCorrectionInLineFormat plusMinusButtonsForInventoryCorrection"
+      />
+      <Button
+        type="button"
+        icon="pi pi-times"
+        className="p-button-sm"
+        style={{ width: "1rem" }}
+        tooltip="Cancel Inventory Correction"
+        tooltipOptions={{ showDelay: 1000, hideDelay: 300 }}
+        onClick={() => {
+          setIsInventoryCorrectionVisible(false);
+          setInventoryAdjustment(0);
+        }}
+      />
+    </Restricted>
+  );
+
   return (
     <div className="grid flex justify-content-center">
       <Toast ref={toast} />
@@ -591,10 +691,36 @@ export default function BookDetail() {
           </div>
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex col-6 p-0">
-              <TextLabel label="Inventory Count:" />
-              <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
-                {stock}
-              </p>
+              <div className="my-auto" style={{ width: "28%" }}>
+                <TextLabel label="Inventory Count:" />
+              </div>
+              <div className="flex flex-wrap" style={{ width: "25%" }}>
+                <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
+                  {stock}
+                </p>
+                {isModifiable && inventoryAdjustment !== 0 && (
+                  <>
+                    <span
+                      className="pi pi-arrow-right my-auto font-semibold px-1"
+                      style={arrowColorDeterminer(inventoryAdjustment)}
+                    ></span>
+                    <p
+                      className={
+                        "p-component p-text-secondary text-xl text-center my-0 text-center my-auto " +
+                        colorDeterminer(inventoryAdjustment)
+                      }
+                    >
+                      {stock + inventoryAdjustment}
+                    </p>
+                  </>
+                )}
+              </div>
+              <div className="flex" style={{ width: "47%" }}>
+                {isInventoryCorrectionVisible &&
+                  isModifiable &&
+                  inventoryCorrectionEditLine}
+                {inventoryCorrectionButton}
+              </div>
             </div>
             <div className="flex p-0 col-6">
               <TextLabel label="Days of Supply:" />
@@ -643,6 +769,11 @@ export default function BookDetail() {
         </form>
       </div>
       {deletePopupVisible && deletePopup}
+      <Divider align="center">
+        <div className="inline-flex align-items-center">
+          <b>Book Related Transactions and Adjustments</b>
+        </div>
+      </Divider>
       <div className="flex justify-content-center col-10">{lineItemsTable}</div>
       <Divider align="center">
         <div className="inline-flex align-items-center">

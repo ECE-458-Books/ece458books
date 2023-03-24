@@ -21,21 +21,13 @@ import BackButton from "../../components/buttons/BackButton";
 import { calculateTotalShelfSpace } from "./util/Calculations";
 import { DisplayBook } from "./BookcaseList";
 import {
-  updateRowOnBookChange,
-  updateRowOnDisplayCountChange,
-  updateRowOnDisplayModeChange,
+  updateDisplayBookOnTitleChange,
+  updateDisplayBookOnCountChange,
+  updateDisplayBookOnModeChange,
 } from "./util/Updaters";
 import DeleteColumn from "../../components/datatable/DeleteColumn";
 
-export interface ShelfCalculatorRow extends DisplayBook {
-  id: string;
-  stock: number;
-  shelfSpace: number;
-  hasUnknownDimensions: boolean;
-  maxDisplayCount?: number; // Only for cover out
-}
-
-const emptyRow: ShelfCalculatorRow = {
+const emptyRow: DisplayBook = {
   id: "",
   bookId: "0",
   bookISBN: "",
@@ -50,22 +42,21 @@ const emptyRow: ShelfCalculatorRow = {
 };
 
 export default function ShelfCalculator() {
-  const [rows, setRows] = useImmer<ShelfCalculatorRow[]>([]);
+  const [rows, setRows] = useImmer<DisplayBook[]>([]);
   const [totalShelfSpace, setTotalShelfSpace] = useState<number>(0);
 
   // For dropdown menus
   const [booksMap, setBooksMap] = useState<Map<string, Book>>(new Map());
   const [booksDropdownTitles, setBooksDropdownTitles] = useState<string[]>([]);
 
-  const COLUMNS: TableColumn<ShelfCalculatorRow>[] = [
+  const COLUMNS: TableColumn<DisplayBook>[] = [
     {
       field: "bookTitle",
       header: "Book",
-      customBody: (rowData: ShelfCalculatorRow) =>
+      customBody: (rowData: DisplayBook) =>
         booksDropdownEditor(rowData.bookTitle, (newValue) => {
-          updateRowOnBookChange(
-            setRows,
-            setTotalShelfSpace,
+          updateDisplayBookOnTitleChange(
+            setDisplayBook,
             rowData,
             newValue,
             booksMap
@@ -81,13 +72,12 @@ export default function ShelfCalculator() {
     {
       field: "displayCount",
       header: "Display Count",
-      customBody: (rowData: ShelfCalculatorRow) =>
+      customBody: (rowData: DisplayBook) =>
         NumberEditor(
           rowData.displayCount,
           (newValue) => {
-            updateRowOnDisplayCountChange(
-              setRows,
-              setTotalShelfSpace,
+            updateDisplayBookOnCountChange(
+              setDisplayBook,
               rowData,
               newValue,
               booksMap
@@ -103,11 +93,10 @@ export default function ShelfCalculator() {
     {
       field: "displayMode",
       header: "Display Mode",
-      customBody: (rowData: ShelfCalculatorRow) =>
+      customBody: (rowData: DisplayBook) =>
         displayModeDropdownEditor(rowData.displayMode, (newValue) => {
-          updateRowOnDisplayModeChange(
-            setRows,
-            setTotalShelfSpace,
+          updateDisplayBookOnModeChange(
+            setDisplayBook,
             rowData,
             newValue,
             booksMap
@@ -119,7 +108,7 @@ export default function ShelfCalculator() {
       field: "shelfSpace",
       header: "Shelf Space (inches) (Bold=Estimation)",
       style: { width: "10%" },
-      customBody: (rowData: ShelfCalculatorRow) =>
+      customBody: (rowData: DisplayBook) =>
         AlteredTextTemplate(
           rowData.hasUnknownDimensions ? "font-bold" : "",
           Math.round(rowData.shelfSpace * 100) / 100
@@ -127,7 +116,13 @@ export default function ShelfCalculator() {
     },
   ];
 
-  // Dropdowns
+  const setDisplayBook = (displayBook: DisplayBook) => {
+    setRows((draft) => {
+      const index = draft.findIndex((row) => row.id === displayBook.id);
+      draft[index] = displayBook;
+      setTotalShelfSpace(calculateTotalShelfSpace(draft));
+    });
+  };
 
   // Get the data for the books dropdown
   useEffect(
@@ -164,13 +159,13 @@ export default function ShelfCalculator() {
   );
 
   // Button for adding a new row
-  const rowAddButton = AddRowButton<ShelfCalculatorRow>({
+  const rowAddButton = AddRowButton<DisplayBook>({
     emptyItem: emptyRow,
     setRows: setRows,
     rows: rows,
   });
 
-  const deleteColumn = DeleteColumn<ShelfCalculatorRow>({
+  const deleteColumn = DeleteColumn<DisplayBook>({
     onDelete: (rowData) => {
       const newRows = filterById(rows, rowData.id, setRows);
       setTotalShelfSpace(calculateTotalShelfSpace(newRows));

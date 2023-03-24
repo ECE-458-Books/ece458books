@@ -462,7 +462,7 @@ export default function BookAdd() {
                 className="text-xl p-component text-teal-900 p-text-secondary"
                 htmlFor="addbook"
               >
-                Enter ISBN-13 values, separated by comma or space:
+                Enter ISBN-13 values, separated by comma, space, or newline:
               </label>
             </div>
             <InputTextarea

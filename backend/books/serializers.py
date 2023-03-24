@@ -27,6 +27,8 @@ class BookListAddSerializer(serializers.ModelSerializer):
     genres = serializers.SlugRelatedField(queryset=Genre.objects.all(), many=True, slug_field='name')
     image_url = serializers.StringRelatedField()
     num_related_books = serializers.SerializerMethodField()
+    related_books = serializers.SerializerMethodField()
+    related_book_group = serializers.PrimaryKeyRelatedField(queryset=RelatedBookGroup.objects.all(), write_only=True)
     best_buyback_price = serializers.SerializerMethodField()
     last_month_sales = serializers.SerializerMethodField()
     shelf_space = serializers.SerializerMethodField()
@@ -36,15 +38,23 @@ class BookListAddSerializer(serializers.ModelSerializer):
         model = Book
         fields = [
             'id', 'title', 'authors', 'genres', 'isbn_13', 'isbn_10', 'publisher', 'publishedDate', 'pageCount', 'width', 'height', 'thickness', 'retail_price', 'isGhost', 'stock', 'image_url',
-            'best_buyback_price', 'last_month_sales', 'shelf_space', 'days_of_supply', 'num_related_books'
+            'best_buyback_price', 'last_month_sales', 'shelf_space', 'days_of_supply', 'num_related_books', 'related_books', 'related_book_group'
         ]
 
     def to_representation(self, instance):
         result = super(BookListAddSerializer, self).to_representation(instance)
         return OrderedDict([(key, result[key]) for key in result if result[key] is not None])
 
+    def get_related_books(self, instance):
+        if instance.related_book_group == None:
+            return []
+        related_books_serializer = RelatedBookSerializer(instance.related_book_group.related_books.all().exclude(id=instance.id), many=True)
+        return related_books_serializer.data
+
     def get_num_related_books(self, instance):
-        return len(Book.objects.filter(related_book_group=instance.related_book_group))
+        if instance.related_book_group == None:
+            return 0
+        return len(Book.objects.filter(related_book_group=instance.related_book_group)) - 1
 
     def get_last_month_sales(self, instance):
         end_date = datetime.datetime.now().strftime('%Y-%m-%d')
@@ -82,6 +92,21 @@ class BookListAddSerializer(serializers.ModelSerializer):
         return round((stock / last_month_sales) * 30, 2)
 
 
+class RelatedBookSerializer(serializers.ModelSerializer):
+    authors = serializers.SlugRelatedField(queryset=Author.objects.all(), many=True, slug_field='name')
+    genres = serializers.SlugRelatedField(queryset=Genre.objects.all(), many=True, slug_field='name')
+    image_url = serializers.StringRelatedField()
+
+    class Meta:
+        model = Book
+        fields = ['id', 'title', 'authors', 'genres', 'isbn_13', 'publisher', 'publishedDate', 'image_url', 'retail_price']
+        # read_only_fields = ['title', 'authors', 'isbn_13', 'publisher', 'publishedDate', 'image_url']
+
+    def to_representation(self, instance):
+        result = super(RelatedBookSerializer, self).to_representation(instance)
+        return OrderedDict([(key, result[key]) for key in result if result[key] is not None])
+
+
 class BookSerializer(serializers.ModelSerializer):
     authors = serializers.SlugRelatedField(queryset=Author.objects.all(), many=True, slug_field='name')
     genres = serializers.SlugRelatedField(queryset=Genre.objects.all(), many=True, slug_field='name')
@@ -90,17 +115,27 @@ class BookSerializer(serializers.ModelSerializer):
     last_month_sales = serializers.SerializerMethodField()
     line_items = serializers.SerializerMethodField()
     num_related_books = serializers.SerializerMethodField()
+    related_books = serializers.SerializerMethodField()
+    related_book_group = serializers.PrimaryKeyRelatedField(queryset=RelatedBookGroup.objects.all(), write_only=True, allow_null=True)
 
     class Meta:
         model = Book
         fields = '__all__'
-        read_only_fields = ['title', 'authors', 'isbn_13', 'isbn_10', 'publisher', 'publishedDate', 'image_url', 'best_buyback_price', 'last_month_sales', 'num_related_books']
+        read_only_fields = ['title', 'authors', 'isbn_13', 'isbn_10', 'publisher', 'publishedDate', 'image_url', 'best_buyback_price', 'last_month_sales', 'num_related_books', 'related_books']
 
     def to_representation(self, instance):
         result = super(BookSerializer, self).to_representation(instance)
         return OrderedDict([(key, result[key]) for key in result if result[key] is not None])
 
+    def get_related_books(self, instance):
+        if instance.related_book_group == None:
+            return []
+        related_books_serializer = RelatedBookSerializer(instance.related_book_group.related_books.all().exclude(id=instance.id), many=True)
+        return related_books_serializer.data
+
     def get_num_related_books(self, instance):
+        if instance.related_book_group == None:
+            return 0
         return len(Book.objects.filter(related_book_group=instance.related_book_group)) - 1
 
     def get_best_buyback_price(self, instance):

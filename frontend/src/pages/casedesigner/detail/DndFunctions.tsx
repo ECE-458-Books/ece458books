@@ -4,7 +4,7 @@ import { Updater } from "use-immer";
 import { filterById } from "../../../util/IDOps";
 import { Bookcase, DisplayBook, Shelf } from "../BookcaseList";
 
-function findShelf(shelves: Shelf[], shelfOrBookId: string) {
+export function findShelf(shelves: Shelf[], shelfOrBookId: string) {
   // If book is dragged to an empty shelf, the shelf ID is given
   const emptyShelf = shelves.find((shelf) => shelf.id === shelfOrBookId);
   if (emptyShelf) return emptyShelf;

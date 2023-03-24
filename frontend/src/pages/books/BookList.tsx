@@ -99,7 +99,7 @@ export interface ColumnMeta {
   header: string;
 }
 
-const columnsMeta: ColumnMeta[] = [
+export const columnsMeta: ColumnMeta[] = [
   { field: "thumbnailURL", header: "Cover Art" },
   { field: "author", header: "Authors" },
   { field: "genres", header: "Genre" },

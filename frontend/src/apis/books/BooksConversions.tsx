@@ -38,6 +38,10 @@ export const LineItemMapper = new Map<APILineItemType, BookDetailLineItemType>([
   [APILineItemType.PURCHASE_ORDER, BookDetailLineItemType.PURCHASE_ORDER],
   [APILineItemType.SALES_RECORD, BookDetailLineItemType.SALES_RECORD],
   [APILineItemType.BOOK_BUYBACK, BookDetailLineItemType.BOOK_BUYBACK],
+  [
+    APILineItemType.INVENTORY_CORRECTION,
+    BookDetailLineItemType.INVENTORY_CORRECTION,
+  ],
 ]);
 
 function APIToInternalLineItemConversion(
@@ -51,6 +55,8 @@ function APIToInternalLineItemConversion(
     vendorName: lineItem.vendor_name,
     price: lineItem.unit_price,
     quantity: lineItem.quantity,
+    creatorName: lineItem.username,
+    stock: lineItem.stock,
   };
 }
 

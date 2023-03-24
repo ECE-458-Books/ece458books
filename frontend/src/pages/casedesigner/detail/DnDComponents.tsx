@@ -73,6 +73,7 @@ export interface DraggableBookProps {
   // Only for the actual books, not the drag overlay UI element
   setSelectedBook?: Updater<DisplayBook>;
   setIsBookPopupVisible?: (isVisible: boolean) => void;
+  isModifiable?: boolean;
 }
 
 export function DraggableBook(props: DraggableBookProps) {
@@ -90,7 +91,12 @@ export function DraggableBook(props: DraggableBookProps) {
         className="flex justify-content-center"
         imageClassName="shadow-2 border-round"
         onClick={() => {
-          if (!props.setSelectedBook || !props.setIsBookPopupVisible) return;
+          if (
+            !props.setSelectedBook ||
+            !props.setIsBookPopupVisible ||
+            !props.isModifiable
+          )
+            return;
           props.setSelectedBook(props.book);
           props.setIsBookPopupVisible(true);
         }}
@@ -104,6 +110,7 @@ export interface MultipleDraggableBooksProps {
   displayBooks: DisplayBook[];
   setSelectedBook: Updater<DisplayBook>;
   setIsBookPopupVisible: (isVisible: boolean) => void;
+  isModifiable: boolean;
 }
 
 export function MultipleDraggableBooks(props: MultipleDraggableBooksProps) {
@@ -115,6 +122,7 @@ export function MultipleDraggableBooks(props: MultipleDraggableBooksProps) {
           key={book.id}
           setIsBookPopupVisible={props.setIsBookPopupVisible}
           setSelectedBook={props.setSelectedBook}
+          isModifiable={props.isModifiable}
         />
       ))}
     </div>
@@ -127,6 +135,7 @@ export interface ShelfWithBookImagesProps {
   shelf: Shelf;
   setSelectedBook: Updater<DisplayBook>;
   setIsBookPopupVisible: (isVisible: boolean) => void;
+  isModifiable: boolean;
 }
 
 export function ShelfWithBookImages(props: ShelfWithBookImagesProps) {
@@ -140,6 +149,7 @@ export function ShelfWithBookImages(props: ShelfWithBookImagesProps) {
           displayBooks={props.shelf.displayedBooks}
           setIsBookPopupVisible={props.setIsBookPopupVisible}
           setSelectedBook={props.setSelectedBook}
+          isModifiable={props.isModifiable}
         />
       </SortableContext>
     </Droppable>
@@ -154,6 +164,7 @@ export interface DragAndDropContextProps {
   shelves: Shelf[];
   setBookcase: Updater<Bookcase>;
   children: React.ReactNode;
+  isModifiable: boolean;
 }
 
 export function DragAndDropContext(props: DragAndDropContextProps) {
@@ -170,6 +181,9 @@ export function DragAndDropContext(props: DragAndDropContextProps) {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
+
+  // If not modifiable, just return the children without the drag and drop context
+  if (!props.isModifiable) return <>{props.children}</>;
 
   return (
     <DndContext

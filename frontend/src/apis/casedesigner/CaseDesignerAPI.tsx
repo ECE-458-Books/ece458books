@@ -78,7 +78,7 @@ export const CASE_DESIGNER_API = {
     });
   },
 
-  addBookcase: async function (req: APIBookcase) {
+  addBookcase: async function (req: APIBookcase): Promise<APIBookcase> {
     return await API.request({
       url: CASE_DESIGNER_EXTENSION,
       method: METHOD_POST,

@@ -90,10 +90,11 @@ export default function BookcaseDetail() {
   const callAddBookcaseAPI = () => {
     const APIbookcase = InternalToAPIBookcaseConversion(bookcase);
     CASE_DESIGNER_API.addBookcase(APIbookcase)
-      .then(() => {
+      .then((response) => {
         showSuccess(toast, "Bookcase added successfully");
         setIsModifiable(!isModifiable);
         setOriginalData(bookcase);
+        navigate("/bookcases/detail/" + response.id);
       })
       .catch((error) => {
         showFailure(toast, error.data.errors[0] ?? "Failed to add bookcase");

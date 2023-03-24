@@ -1,6 +1,15 @@
 import { v4 as uuid } from "uuid";
 import { formatBookForDropdown } from "../../components/dropdowns/BookDropdown";
-import { Bookcase, Shelf } from "../../pages/casedesigner/BookcaseList";
+import {
+  Bookcase,
+  DisplayBook,
+  Shelf,
+} from "../../pages/casedesigner/BookcaseList";
+import {
+  calculateMaxDisplayCount,
+  calculateSingleBookShelfSpace,
+  calculateTotalShelfSpace,
+} from "../../pages/casedesigner/util/Calculations";
 import { APIBookcase, APIShelf } from "./CaseDesignerAPI";
 
 export function APIToInternalBookcaseConversion(bookcase: APIBookcase) {
@@ -18,9 +27,8 @@ export function APIToInternalBookcaseConversion(bookcase: APIBookcase) {
 }
 
 export function APIToInternalShelfConversion(shelf: APIShelf): Shelf {
-  return {
-    id: uuid(),
-    displayedBooks: shelf.displayed_books.map((displayedBook) => {
+  const displayedBooks: DisplayBook[] = shelf.displayed_books.map(
+    (displayedBook) => {
       return {
         id: uuid(),
         bookId: displayedBook.book.toString(),
@@ -32,8 +40,26 @@ export function APIToInternalShelfConversion(shelf: APIShelf): Shelf {
         bookImageURL: displayedBook.book_url!,
         displayMode: displayedBook.display_mode,
         displayCount: displayedBook.display_count,
+        stock: displayedBook.book_stock!,
+        hasUnknownDimensions: !displayedBook.book_thickness,
+        maxDisplayCount: calculateMaxDisplayCount(
+          displayedBook.display_mode,
+          displayedBook.book_thickness
+        ),
+        shelfSpace: calculateSingleBookShelfSpace(
+          displayedBook.display_mode,
+          displayedBook.display_count,
+          displayedBook.book_thickness,
+          displayedBook.book_width
+        ),
       };
-    }),
+    }
+  );
+
+  return {
+    id: uuid(),
+    displayedBooks: displayedBooks,
+    shelfSpace: calculateTotalShelfSpace(displayedBooks),
   };
 }
 

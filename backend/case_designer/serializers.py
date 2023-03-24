@@ -9,6 +9,9 @@ class DisplayedBookSerializer(serializers.ModelSerializer):
     book_isbn = serializers.SerializerMethodField()
     book_title = serializers.SerializerMethodField()
     book_url = serializers.SerializerMethodField()
+    book_stock = serializers.SerializerMethodField()
+    book_thickness = serializers.SerializerMethodField()
+    book_width = serializers.SerializerMethodField()
     display_order = serializers.IntegerField(required=False, write_only=True)
     shelf = serializers.PrimaryKeyRelatedField(queryset=Shelf.objects.all(), required=False, write_only=True)
 
@@ -20,11 +23,20 @@ class DisplayedBookSerializer(serializers.ModelSerializer):
 
     def get_book_url(self, instance):
         return BookImage.objects.get(book=instance.book).image_url
+    
+    def get_book_stock(self, instance):
+        return instance.book.stock
+    
+    def get_book_thickness(self, instance):
+        return instance.book.thickness
+    
+    def get_book_width(self, instance):
+        return instance.book.width
 
     class Meta:
         model = DisplayedBook
-        fields = ['book', 'display_mode', 'display_count', 'display_order', 'shelf','book_isbn', 'book_title', 'book_url']
-        read_only_fields = ['book_isbn', 'book_title', 'book_url']
+        fields = ['book', 'display_mode', 'display_count', 'display_order', 'shelf','book_isbn', 'book_title', 'book_url', 'book_stock', 'book_thickness', 'book_width']
+        read_only_fields = ['book_isbn', 'book_title', 'book_url', 'book_stock', 'book_thickness', 'book_width']
 
 class ShelfSerializer(serializers.ModelSerializer):
     displayed_books = DisplayedBookSerializer(many=True)

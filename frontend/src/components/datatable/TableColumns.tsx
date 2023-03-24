@@ -9,6 +9,7 @@ export interface TableColumn<T> {
   header?: string; // Displayed header on table
   hidden?: boolean; // Set to true if hiding column
   style?: Style; // Used for setting width
+  className?: string; // Used for setting specific settings
 
   // Filter Information
   filterable?: boolean; // Set to true to enabling filter
@@ -34,6 +35,7 @@ export function createColumns<T>(columns: TableColumn<T>[]) {
         field={col.field}
         header={col.header}
         style={col.style ?? { minWidth: "16rem" }}
+        className={col.className}
         // Filtering
         filter={col.filterable ?? false}
         filterElement={col.customFilter}

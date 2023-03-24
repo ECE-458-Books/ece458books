@@ -649,7 +649,7 @@ export default function BookDetail() {
           <b>Related Books</b>
         </div>
       </Divider>
-      <div className="col-12">{relatedBooksTable}</div>
+      <div className="col-10">{relatedBooksTable}</div>
     </div>
   );
 }

@@ -405,9 +405,12 @@ export default function BookAdd() {
   const rowExpansionTemplate = (rowData: BookWithDBTag) => {
     return (
       <div>
-        <h5>Related Books for {rowData.title}</h5>
-        <div className="col-12 p-0 pb-2">
-          <BookDetailRelatedBooks relatedBooks={rowData.relatedBooks} />
+        <h5 className="p-2 m-0">Related Books for {rowData.title}</h5>
+        <div className="col-10 p-0 pb-3">
+          <BookDetailRelatedBooks
+            relatedBooks={rowData.relatedBooks}
+            globalClassName="text-sm"
+          />
         </div>
       </div>
     );

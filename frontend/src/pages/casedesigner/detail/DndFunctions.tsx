@@ -3,6 +3,7 @@ import { arrayMove } from "@dnd-kit/sortable";
 import { Updater } from "use-immer";
 import { filterById } from "../../../util/IDOps";
 import { Bookcase, DisplayBook, Shelf } from "../BookcaseList";
+import { calculateTotalShelfSpace } from "../util/Calculations";
 
 export function findShelf(shelves: Shelf[], shelfOrBookId: string) {
   // If book is dragged to an empty shelf, the shelf ID is given
@@ -59,7 +60,13 @@ export function onDragOver(
       draggedId
     );
 
+    previousShelf.shelfSpace = calculateTotalShelfSpace(
+      previousShelf.displayedBooks
+    );
+
     newShelf.displayedBooks.splice(newShelfIndex, 0, draggedBook);
+
+    newShelf.shelfSpace = calculateTotalShelfSpace(newShelf.displayedBooks);
   });
 }
 
@@ -90,6 +97,10 @@ export function onDragEnd(
       previousShelf.displayedBooks,
       previousIndex,
       newIndex
+    );
+
+    previousShelf.shelfSpace = calculateTotalShelfSpace(
+      previousShelf.displayedBooks
     );
   });
 

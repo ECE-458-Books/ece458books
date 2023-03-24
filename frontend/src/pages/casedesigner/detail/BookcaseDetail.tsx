@@ -274,7 +274,7 @@ export default function BookcaseDetail() {
 
   const widthEditor = (
     <div className="flex">
-      <TextLabel label={"Width: "} />
+      <TextLabel label={"Width (in): "} />
       {isModifiable ? (
         NumberEditor(bookcase.width, (newValue) => {
           setBookcase((draft) => {

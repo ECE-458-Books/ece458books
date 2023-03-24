@@ -75,7 +75,8 @@ export default function AddEditDeleteDisplayBookPopup(
       ),
     "",
     false,
-    0
+    0,
+    props.selectedDisplayBook.maxDisplayCount
   );
 
   const deleteButton = (

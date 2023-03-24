@@ -85,7 +85,9 @@ export default function BookDetailLineItems(props: BookDetailLineItemsProps) {
     const lineItem = event.data as BookDetailLineItem;
     logger.debug("Line Item Clicked (Book Detail View)", lineItem);
     const urlExtension = LineItemURLMapper.get(lineItem.type);
-    navigate(`/${urlExtension}/detail/${lineItem.id}`);
+    if (urlExtension) {
+      navigate(`/${urlExtension}/detail/${lineItem.id}`);
+    }
   };
 
   const columns = createColumns(COLUMNS);

@@ -99,6 +99,7 @@ export default function BookcaseDetail() {
           draft.name = bookcaseNameInSaveAsPopup;
         });
         setOriginalData(APIToInternalBookcaseConversion(response));
+        navigate("/bookcases/detail/" + response.id);
       })
       .catch((error) => {
         console.log(error);

@@ -55,6 +55,7 @@ export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
             shelf={rowData}
             setSelectedBook={setCurrentlySelectedBook}
             setIsBookPopupVisible={setIsBookPopupVisible}
+            isModifiable={props.isModifiable}
           />
         );
       },
@@ -62,6 +63,7 @@ export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
     {
       field: "none",
       header: "Add Book",
+      hidden: !props.isModifiable,
       customBody: (rowData: Shelf) => addBookButton(rowData),
       style: { width: "3rem", padding: "2" },
     },
@@ -173,14 +175,18 @@ export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
   };
 
   return (
-    <DragAndDropContext shelves={props.shelves} setBookcase={props.setBookcase}>
+    <DragAndDropContext
+      shelves={props.shelves}
+      setBookcase={props.setBookcase}
+      isModifiable={props.isModifiable}
+    >
       <DataTable
         showGridlines
         header={props.tableHeader}
         value={props.shelves}
         className="editable-cells-table"
         responsiveLayout="scroll"
-        reorderableRows={true}
+        reorderableRows={props.isModifiable}
         onRowReorder={(e) => {
           // I think something is wrong with the PrimeReact library, because
           // the code in the demo works, but TypeScript complains about it

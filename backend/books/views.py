@@ -16,7 +16,7 @@ from sales.models import Sale
 from helpers.csv_writer import CSVWriter
 from utils.permissions import CustomBasePermission
 
-from .serializers import BookListAddSerializer, BookSerializer, ISBNSerializer, BookImageSerializer, BookInventoryCorrectionSerializer
+from .serializers import BookListAddSerializer, BookSerializer, ISBNSerializer, BookImageSerializer, BookInventoryCorrectionSerializer, RelatedBookSerializer
 from .isbn import ISBNTools
 from .models import Book, Author, BookImage, BookInventoryCorrection, RelatedBookGroup
 from .paginations import BookPagination
@@ -115,6 +115,14 @@ class ISBNSearchView(APIView):
 
         ret["image_url"] = local_url
         ret["fromDB"] = True
+        if "related_book_group" in ret.keys():
+            related_book_group = ret["related_book_group"]
+            ret["related_books"] = RelatedBookSerializer(related_book_group.related_books.all().exclude(id=ret['id']), many=True).data
+            del ret["related_book_group"]
+        else:
+            ret["related_books"] = []
+
+        ret["num_related_books"] = len(ret["related_books"])
 
         return ret
 
@@ -382,7 +390,6 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView, BookImageCr
         # If book can be destroyed, we just make the isGhost=True and do not delete in database. Then remove it from the related book group
         partial = True
         data = {"isGhost": True, "related_book_group": None}
-
         serializer = self.get_serializer(instance, data=data, partial=partial)
         serializer.is_valid(raise_exception=True)
         serializer.save()

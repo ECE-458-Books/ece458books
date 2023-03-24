@@ -33,7 +33,7 @@ import {
   InputNumber,
   InputNumberValueChangeEvent,
 } from "primereact/inputnumber";
-import "../../css/Miscellaneous.css";
+import "../../css/MiscellaneousCSS.css";
 
 interface ErrorDisplay {
   message: string;
@@ -120,7 +120,7 @@ export default function BookDetail() {
         });
       })
       .catch(() => showFailure(toast, "Could not fetch book data"));
-  }, []);
+  }, [stock]);
 
   const calculateDaysOfSupply = (book: Book) => {
     if (book.stock === 0) {
@@ -283,6 +283,7 @@ export default function BookDetail() {
       setIsImageUploaded(false);
       setIsImageRemoved(false);
       setInventoryAdjustment(0);
+      setIsInventoryCorrectionVisible(false);
     }
   }, [isModifiable]);
 
@@ -507,6 +508,9 @@ export default function BookDetail() {
         type="button"
         icon="pi pi-times"
         className="p-button-sm"
+        style={{ width: "1rem" }}
+        tooltip="Cancel Inventory Correction"
+        tooltipOptions={{ showDelay: 1000, hideDelay: 300 }}
         onClick={() => {
           setIsInventoryCorrectionVisible(false);
           setInventoryAdjustment(0);
@@ -678,7 +682,7 @@ export default function BookDetail() {
               <div className="my-auto" style={{ width: "28%" }}>
                 <TextLabels label="Inventory Count:" />
               </div>
-              <div className="flex" style={{ width: "25%" }}>
+              <div className="flex flex-wrap" style={{ width: "25%" }}>
                 <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
                   {stock}
                 </p>

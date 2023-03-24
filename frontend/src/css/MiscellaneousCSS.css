@@ -1,9 +1,9 @@
 /* Book Detail Inventory Correction inLine Edit */
 .inventoryCorrectionInLineFormat .p-inputtext {
-    padding: 0.4rem;
+    padding: 0.35rem;
 }
 
 .plusMinusButtonsForInventoryCorrection .p-button.p-button-icon-only {
     width: 2rem;
-    height: 2.3rem;
+    height: auto;
 }

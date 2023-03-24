@@ -1,4 +1,5 @@
 import { v4 as uuid } from "uuid";
+import { formatBookForDropdown } from "../../components/dropdowns/BookDropdown";
 import { Bookcase, Shelf } from "../../pages/casedesigner/BookcaseList";
 import { APIBookcase, APIShelf } from "./CaseDesignerAPI";
 
@@ -24,7 +25,10 @@ export function APIToInternalShelfConversion(shelf: APIShelf): Shelf {
         id: uuid(),
         bookId: displayedBook.book.toString(),
         bookISBN: displayedBook.book_isbn!,
-        bookTitle: displayedBook.book_title!,
+        bookTitle: formatBookForDropdown(
+          displayedBook.book_title!,
+          displayedBook.book_isbn!
+        ),
         bookImageURL: displayedBook.book_url!,
         displayMode: displayedBook.display_mode,
         displayCount: displayedBook.display_count,

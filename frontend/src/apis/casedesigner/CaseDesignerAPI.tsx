@@ -31,6 +31,9 @@ export interface APIDisplayBook {
   book_isbn?: string;
   book_title?: string;
   book_url?: string;
+  book_thickness?: number;
+  book_width?: number;
+  book_stock?: number;
 }
 
 // getBookcaseList

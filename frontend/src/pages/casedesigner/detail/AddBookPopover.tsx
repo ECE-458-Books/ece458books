@@ -9,10 +9,17 @@ import { Dialog } from "primereact/dialog";
 import { Updater } from "use-immer";
 import DeleteButton from "../../../components/buttons/DeleteButton";
 import TextLabel from "../../../components/text/TextLabels";
+import { Book } from "../../books/BookList";
+import {
+  updateDisplayBookOnCountChange,
+  updateDisplayBookOnModeChange,
+  updateDisplayBookOnTitleChange,
+} from "../util/Updaters";
 
 export interface AddEditDeleteDisplayBookPopupProps {
   isAddPopup: boolean;
   booksDropdownTitles: string[];
+  booksMap: Map<string, Book>;
   addBookToShelf: () => void;
   editBookOnShelf: () => void;
   deleteBookFromShelf: () => void;
@@ -28,9 +35,12 @@ export default function AddEditDeleteDisplayBookPopup(
   const booksDropdown = (
     <BooksDropdown
       setSelectedBook={(newValue) =>
-        props.setSelectedDisplayBook((draft) => {
-          draft.bookTitle = newValue;
-        })
+        updateDisplayBookOnTitleChange(
+          props.setSelectedDisplayBook,
+          props.selectedDisplayBook,
+          newValue,
+          props.booksMap
+        )
       }
       selectedBook={props.selectedDisplayBook?.bookTitle ?? ""}
       bookTitlesList={props.booksDropdownTitles}
@@ -41,9 +51,12 @@ export default function AddEditDeleteDisplayBookPopup(
   const displayModeDropdown = (
     <DisplayModeDropdown
       setSelectedDisplayMode={(newValue) =>
-        props.setSelectedDisplayBook((draft) => {
-          draft.displayMode = newValue;
-        })
+        updateDisplayBookOnModeChange(
+          props.setSelectedDisplayBook,
+          props.selectedDisplayBook,
+          newValue,
+          props.booksMap
+        )
       }
       selectedDisplayMode={
         props.selectedDisplayBook?.displayMode ?? DisplayMode.SPINE_OUT
@@ -52,11 +65,17 @@ export default function AddEditDeleteDisplayBookPopup(
   );
 
   const numberEditor = NumberEditor(
-    props.selectedDisplayBook?.displayCount ?? 1,
+    props.selectedDisplayBook?.displayCount ?? 0,
     (newValue) =>
-      props.setSelectedDisplayBook((draft) => {
-        draft.displayCount = newValue;
-      })
+      updateDisplayBookOnCountChange(
+        props.setSelectedDisplayBook,
+        props.selectedDisplayBook,
+        newValue,
+        props.booksMap
+      ),
+    "",
+    false,
+    0
   );
 
   const deleteButton = (

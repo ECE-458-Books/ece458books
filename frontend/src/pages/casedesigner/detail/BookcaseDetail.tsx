@@ -40,6 +40,7 @@ const emptyBookcase: Bookcase = {
 const emptyShelf: Shelf = {
   id: "",
   displayedBooks: [],
+  shelfSpace: 0,
 };
 
 export default function BookcaseDetail() {
@@ -298,6 +299,7 @@ export default function BookcaseDetail() {
   const dataTable = (
     <BookcaseDetailTable
       shelves={bookcase.shelves}
+      shelfWidth={bookcase.width}
       setBookcase={setBookcase}
       isAddPage={isAddPage}
       isModifiable={isModifiable}

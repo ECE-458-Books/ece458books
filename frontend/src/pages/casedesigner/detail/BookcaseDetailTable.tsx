@@ -17,12 +17,19 @@ import AddEditDeleteDisplayBookPopup from "./AddBookPopover";
 import { DisplayMode } from "../../../components/dropdowns/DisplayModeDropdown";
 import { findShelf } from "./DndFunctions";
 import { v4 as uuid } from "uuid";
+import AlteredTextTemplate from "../../../components/templates/AlteredTextTemplate";
+import {
+  calculateMaxDisplayCount,
+  calculateSingleBookShelfSpace,
+  calculateTotalShelfSpace,
+} from "../util/Calculations";
 
 interface BookcaseDetailTableProps {
   shelves: Shelf[]; // The array of shelves
   setBookcase: Updater<Bookcase>; // Update the bookcase
   isAddPage: boolean; // True if this is an add page
   isModifiable: boolean; // True if this page is modifiable
+  shelfWidth: number; // Width of the shelves
   tableHeader?: JSX.Element; // add buttons and functionality to attached element of table on the top
 }
 
@@ -34,6 +41,10 @@ const emptyDisplayBook: DisplayBook = {
   bookImageURL: "",
   displayMode: DisplayMode.SPINE_OUT,
   displayCount: 1,
+  maxDisplayCount: 1,
+  stock: 1,
+  shelfSpace: 0,
+  hasUnknownDimensions: false,
 };
 
 export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
@@ -60,6 +71,16 @@ export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
       },
     },
     {
+      field: "shelfSpace",
+      header: "Shelf Space",
+      customBody: (rowData: Shelf) =>
+        AlteredTextTemplate(
+          rowData.shelfSpace > props.shelfWidth ? "font-bold" : "",
+          Math.round(rowData.shelfSpace * 100) / 100
+        ),
+      style: { width: "5rem", padding: "2" },
+    },
+    {
       field: "none",
       header: "Add Book",
       customBody: (rowData: Shelf) => addBookButton(rowData),
@@ -67,7 +88,7 @@ export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
     },
   ];
 
-  const createNewDisplayBook = () => {
+  const createNewDisplayBook = (): DisplayBook => {
     const selectedBook = booksMap.get(currentlySelectedBook.bookTitle)!;
 
     return {
@@ -78,7 +99,19 @@ export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
       bookImageURL: selectedBook.thumbnailURL,
       displayMode: currentlySelectedBook.displayMode,
       displayCount: currentlySelectedBook.displayCount,
-    } as DisplayBook;
+      stock: selectedBook.stock,
+      maxDisplayCount: calculateMaxDisplayCount(
+        currentlySelectedBook.displayMode,
+        selectedBook.thickness
+      ),
+      hasUnknownDimensions: !selectedBook.thickness,
+      shelfSpace: calculateSingleBookShelfSpace(
+        currentlySelectedBook.displayMode,
+        currentlySelectedBook.displayCount,
+        selectedBook.thickness,
+        selectedBook.width
+      ),
+    };
   };
 
   const addBookToCurrentShelf = () => {
@@ -86,6 +119,7 @@ export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
       const shelf = findShelf(draft.shelves, currentAddBookShelfId)!;
       shelf.displayedBooks.push(createNewDisplayBook());
     });
+    computeShelfSpaceForAllShelves();
   };
 
   const editBookOnCurrentShelf = () => {
@@ -96,6 +130,7 @@ export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
       );
       shelf.displayedBooks[bookIndex] = createNewDisplayBook();
     });
+    computeShelfSpaceForAllShelves();
   };
 
   const deleteBookFromCurrentShelf = () => {
@@ -107,6 +142,15 @@ export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
       shelf.displayedBooks.splice(bookIndex, 1);
     });
     setCurrentlySelectedBook(emptyDisplayBook);
+    computeShelfSpaceForAllShelves();
+  };
+
+  const computeShelfSpaceForAllShelves = () => {
+    props.setBookcase((draft) => {
+      draft.shelves.forEach((shelf) => {
+        shelf.shelfSpace = calculateTotalShelfSpace(shelf.displayedBooks);
+      });
+    });
   };
 
   // Get the data for the books dropdown
@@ -153,6 +197,7 @@ export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
   const addBookPopover = (
     <AddEditDeleteDisplayBookPopup
       booksDropdownTitles={bookTitlesList}
+      booksMap={booksMap}
       isVisible={isBookPopupVisible}
       setIsVisible={setIsBookPopupVisible}
       addBookToShelf={addBookToCurrentShelf}

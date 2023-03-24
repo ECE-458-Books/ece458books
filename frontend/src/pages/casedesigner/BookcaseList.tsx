@@ -29,6 +29,7 @@ export interface Bookcase {
 export interface Shelf {
   id: string;
   displayedBooks: DisplayBook[];
+  shelfSpace: number;
 }
 
 export interface DisplayBook {
@@ -39,6 +40,10 @@ export interface DisplayBook {
   bookImageURL: string;
   displayMode: DisplayMode;
   displayCount: number;
+  stock: number;
+  shelfSpace: number;
+  hasUnknownDimensions: boolean;
+  maxDisplayCount?: number; // Only for cover out
 }
 
 export default function BookcaseList() {

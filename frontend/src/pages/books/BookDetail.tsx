@@ -14,10 +14,7 @@ import ImageUploader, {
   DEFAULT_BOOK_IMAGE,
 } from "../../components/uploaders/ImageFileUploader";
 import { showFailure, showSuccess } from "../../components/Toast";
-import {
-  APIToInternalBookConversion,
-  APIToInternalBookConversionwithRelatedBooks,
-} from "../../apis/books/BooksConversions";
+import { APIToInternalBookConversion } from "../../apis/books/BooksConversions";
 import { Button } from "primereact/button";
 import GenreDropdown from "../../components/dropdowns/GenreDropdown";
 import BookDetailLineItems, { BookDetailLineItem } from "./BookDetailLineItems";
@@ -31,17 +28,13 @@ import TextLabel from "../../components/text/TextLabels";
 import { TextWrapperNullableNumberEditor } from "../../components/text/TextWrapperNullableNumberEditor";
 import { PriceEditor } from "../../components/editors/PriceEditor";
 import { Divider } from "primereact/divider";
-import BookDetailRelatedBooks from "./BookDetailRelatedBooks";
+import BookDetailRelatedBooks, { RelatedBook } from "./BookDetailRelatedBooks";
 import { arrowColorDeterminer, colorDeterminer } from "../../util/CSSFunctions";
 import {
   InputNumber,
   InputNumberValueChangeEvent,
 } from "primereact/inputnumber";
 import "../../css/MiscellaneousCSS.css";
-
-export interface BookwithRelatedBooks extends Book {
-  relatedBooks?: Book[];
-}
 
 interface ErrorDisplay {
   message: string;
@@ -77,7 +70,7 @@ export default function BookDetail() {
   const [shelfSpace, setShelfSpace] = useState<number>();
   const [lastMonthSales, setLastMonthSales] = useState<number>();
   const [numOfRelatedBooks, setNumOfRelatedBooks] = useState<number>();
-  const [relatedBooks, setRelatedBooks] = useState<Book[]>();
+  const [relatedBooks, setRelatedBooks] = useState<RelatedBook[]>([]);
   const [lineItems, setLineItems] = useState<BookDetailLineItem[]>([]);
   // Leaving this line in case of future image browser side caching workaround is needed
   const [image, setImage] = useState<ImageUrlHashStruct>({
@@ -101,7 +94,7 @@ export default function BookDetail() {
   useEffect(() => {
     BOOKS_API.getBookDetail({ id: id! })
       .then((response) => {
-        const book = APIToInternalBookConversionwithRelatedBooks(response);
+        const book = APIToInternalBookConversion(response);
         setOriginalBookData(book);
         setTitle(book.title);
         setAuthors(book.author);
@@ -126,6 +119,8 @@ export default function BookDetail() {
           imageSrc: response.image_url,
           imageHash: Date.now().toString(),
         });
+        setNumOfRelatedBooks(book.numRelatedBooks);
+        setRelatedBooks(book.relatedBooks!);
       })
       .catch(() => showFailure(toast, "Could not fetch book data"));
   }, [stock]);

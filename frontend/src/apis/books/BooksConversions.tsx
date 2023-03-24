@@ -10,15 +10,15 @@ import {
   APIBook,
   APIBookLineItem,
   APIBookWithDBTag,
-  APIBookwithRelatedBooks,
   APILineItemType,
+  APIRelatedBook,
 } from "./BooksAPI";
 import {
   BookDetailLineItem,
   BookDetailLineItemType,
 } from "../../pages/books/BookDetailLineItems";
 import { DEFAULT_BOOK_IMAGE } from "../../components/uploaders/ImageFileUploader";
-import { BookwithRelatedBooks } from "../../pages/books/BookDetail";
+import { RelatedBook } from "../../pages/books/BookDetailRelatedBooks";
 
 export const APIBookSortFieldMap = new Map<string, string>([
   ["isbn13", "isbn_13"],
@@ -33,6 +33,7 @@ export const APIBookSortFieldMap = new Map<string, string>([
   ["lastMonthSales", "last_month_sales"],
   ["shelfSpace", "shelf_space"],
   ["daysOfSupply", "days_of_supply"],
+  ["numRelatedBooks", "num_related_books"],
 ]);
 
 // External line item -> Internal Line Item
@@ -62,6 +63,22 @@ function APIToInternalLineItemConversion(
   };
 }
 
+function APIToInternalRelatedBookConversion(
+  relatedBook: APIRelatedBook
+): RelatedBook {
+  return {
+    id: relatedBook.id.toString(),
+    author: ArrayToCommaSeparatedString(relatedBook.authors),
+    genres: ArrayToCommaSeparatedString(relatedBook.genres),
+    title: relatedBook.title,
+    isbn13: relatedBook.isbn_13,
+    publisher: relatedBook.publisher,
+    publishedYear: relatedBook.publishedDate,
+    retailPrice: relatedBook.retail_price,
+    imageUrl: relatedBook.image_url,
+  };
+}
+
 export function APIToInternalBookConversion(book: APIBook): Book {
   return {
     id: book.id!.toString(),
@@ -87,60 +104,9 @@ export function APIToInternalBookConversion(book: APIBook): Book {
       return APIToInternalLineItemConversion(lineItem);
     }),
     numRelatedBooks: book.num_related_books,
-  };
-}
-
-export function APIToInternalBookConversionwithRelatedBooks(
-  book: APIBookwithRelatedBooks
-): BookwithRelatedBooks {
-  return {
-    id: book.id!.toString(),
-    author: ArrayToCommaSeparatedString(book.authors),
-    genres: ArrayToCommaSeparatedString(book.genres),
-    title: book.title,
-    isbn13: book.isbn_13,
-    isbn10: book.isbn_10,
-    publisher: book.publisher,
-    publishedYear: book.publishedDate,
-    pageCount: book.pageCount,
-    width: book.width,
-    height: book.height,
-    thickness: book.thickness,
-    retailPrice: book.retail_price,
-    stock: book.stock,
-    thumbnailURL: book.image_url,
-    bestBuybackPrice: book.best_buyback_price,
-    lastMonthSales: book.last_month_sales,
-    daysOfSupply: book.days_of_supply,
-    shelfSpace: book.shelf_space,
-    lineItems: book.line_items?.map((lineItem) => {
-      return APIToInternalLineItemConversion(lineItem);
+    relatedBooks: book.related_books?.map((relatedBook) => {
+      return APIToInternalRelatedBookConversion(relatedBook);
     }),
-    numRelatedBooks: 1,
-    relatedBooks: [
-      {
-        id: "185",
-        author: "Hala",
-        genres: "all of them",
-        title: "The Great Beyond",
-        isbn13: "812345814124",
-        isbn10: "4512454151245",
-        publisher: "Thap",
-        publishedYear: 2019,
-        pageCount: 10,
-        width: 20.3,
-        height: 10.9,
-        thickness: 9.3,
-        retailPrice: 10.9,
-        stock: 10,
-        thumbnailURL: "",
-        bestBuybackPrice: 1.2,
-        lastMonthSales: 33,
-        daysOfSupply: 2,
-        shelfSpace: undefined,
-        numRelatedBooks: 30,
-      },
-    ],
   };
 }
 
@@ -194,29 +160,8 @@ export function APIToInternalBookConversionWithDB(
     shelfSpace: book.shelf_space,
     isGhost: book.isGhost,
     numRelatedBooks: book.num_related_books,
-    relatedBooks: [
-      {
-        id: "185",
-        author: "Hala",
-        genres: "all of them",
-        title: "The Great Beyond",
-        isbn13: "812345814124",
-        isbn10: "4512454151245",
-        publisher: "Thap",
-        publishedYear: 2019,
-        pageCount: 10,
-        width: 20.3,
-        height: 10.9,
-        thickness: 9.3,
-        retailPrice: 10.9,
-        stock: 10,
-        thumbnailURL: "",
-        bestBuybackPrice: 1.2,
-        lastMonthSales: 33,
-        daysOfSupply: 2,
-        shelfSpace: undefined,
-        numRelatedBooks: 30,
-      },
-    ],
+    relatedBooks: book.related_books?.map((relatedBook) => {
+      return APIToInternalRelatedBookConversion(relatedBook);
+    }),
   };
 }

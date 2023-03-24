@@ -4,18 +4,36 @@ import {
   TableColumn,
 } from "../../components/datatable/TableColumns";
 import PriceTemplate from "../../components/templates/PriceTemplate";
-import { Book } from "./BookList";
+import { ImageTemplate } from "../../components/templates/ImageTemplate";
 
 export interface BookDetailRelatedBooksProps {
-  relatedBooks?: Book[];
+  relatedBooks?: RelatedBook[];
   globalClassName?: string;
+}
+
+export interface RelatedBook {
+  id: string;
+  author: string;
+  genres: string;
+  title: string;
+  isbn13: string;
+  publisher: string;
+  publishedYear: number;
+  retailPrice: number;
+  imageUrl: string;
 }
 
 export default function BookDetailRelatedBooks(
   props: BookDetailRelatedBooksProps
 ) {
   // Filtering
-  const COLUMNS: TableColumn<Book>[] = [
+  const COLUMNS: TableColumn<RelatedBook>[] = [
+    {
+      field: "imageUrl",
+      header: "Cover Art",
+      customBody: (rowData: RelatedBook) => ImageTemplate(rowData.imageUrl),
+      style: { minWidth: "1rem", padding: "0.25rem" },
+    },
     {
       field: "title",
       header: "Title",
@@ -48,10 +66,16 @@ export default function BookDetailRelatedBooks(
       style: { minWidth: "8rem", width: "14rem" },
     },
     {
+      field: "publishedYear",
+      header: "Publish Year",
+      className: props.globalClassName,
+      style: { minWidth: "4rem", width: "4rem" },
+    },
+    {
       field: "retailPrice",
       header: "Retail Price ($)",
       className: props.globalClassName,
-      customBody: (rowData: Book) => PriceTemplate(rowData.retailPrice),
+      customBody: (rowData: RelatedBook) => PriceTemplate(rowData.retailPrice),
       style: { minWidth: "4rem", width: "8rem" },
     },
   ];
@@ -59,11 +83,7 @@ export default function BookDetailRelatedBooks(
   const columns = createColumns(COLUMNS);
   return (
     <div className="card pt-0 px-3">
-      <DataTable
-        size="small"
-        value={props.relatedBooks}
-        responsiveLayout="scroll"
-      >
+      <DataTable size="small" value={props.relatedBooks}>
         {columns}
       </DataTable>
     </div>

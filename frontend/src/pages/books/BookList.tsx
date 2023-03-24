@@ -31,6 +31,7 @@ import SelectSizeDropdown, {
 import ToggleColumnPopup from "../../components/popups/ToggleColumnPopup";
 import ToggleColumnButton from "../../components/buttons/ToggleColumnButton";
 import { CheckboxChangeEvent } from "primereact/checkbox";
+import { RelatedBook } from "./BookDetailRelatedBooks";
 
 export interface NewImageUploadData {
   imageFile: File;
@@ -62,6 +63,7 @@ export interface Book {
   lineItems?: BookDetailLineItem[];
   isGhost?: boolean;
   numRelatedBooks?: number;
+  relatedBooks?: RelatedBook[];
 }
 
 interface Filters {
@@ -108,6 +110,7 @@ export const columnsMeta: ColumnMeta[] = [
   { field: "isbn13", header: "ISBN 13" },
   { field: "isbn10", header: "ISBN 10" },
   { field: "publisher", header: "Publisher" },
+  { field: "publishedYear", header: "Published Year" },
   { field: "retailPrice", header: "Retail Price ($)" },
   { field: "bestBuybackPrice", header: "Best Buyback Price ($)" },
   { field: "stock", header: "Inventory Count" },
@@ -133,7 +136,7 @@ export default function BookList() {
   const [genreNamesList, setGenreNamesList] = useState<string[]>([]); // List of all genre names
 
   const [visibleColumns, setVisibleColumns] = useState<ColumnMeta[]>(
-    [0, 1, 2, 3, 6, 7, 8, 9, 10, 11, 12].map((x) => columnsMeta[x])
+    [0, 1, 2, 3, 7, 8, 9, 10, 11, 12].map((x) => columnsMeta[x])
   );
 
   const [toggleColumnPopupVisible, setToggleColumnPopupVisible] =
@@ -226,6 +229,16 @@ export default function BookList() {
       filterable: true,
       hidden: !(
         visibleColumns.filter((item) => item.field == "publisher").length > 0
+      ),
+    },
+    {
+      field: "publishedYear",
+      header: "Publisher Year",
+      sortable: true,
+      style: { minWidth: "6rem" },
+      hidden: !(
+        visibleColumns.filter((item) => item.field == "publishedYear").length >
+        0
       ),
     },
     {

@@ -38,11 +38,11 @@ import "../../css/TableCell.css";
 import DeleteColumn from "../../components/datatable/DeleteColumn";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { Column } from "primereact/column";
-import BookDetailRelatedBooks from "./BookDetailRelatedBooks";
+import BookDetailRelatedBooks, { RelatedBook } from "./BookDetailRelatedBooks";
 
 export interface BookWithDBTag extends Book {
   fromDB: boolean;
-  relatedBooks?: Book[];
+  relatedBooks?: RelatedBook[];
 }
 
 export default function BookAdd() {
@@ -531,8 +531,12 @@ export default function BookAdd() {
                 expandedRows={expandedRows}
                 header={collapseAllButton}
                 onRowToggle={(e: DataTableRowToggleEvent) =>
-                  setExpandedRows(e.data)
+                  setExpandedRows(e.data as DataTableExpandedRows)
                 }
+                // I think something is wrong with the PrimeReact library, because
+                // the code in the demo works, but TypeScript complains about it
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
                 rowExpansionTemplate={rowExpansionTemplate}
               >
                 {rowExpanderColumn}

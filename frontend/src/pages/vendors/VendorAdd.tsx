@@ -43,7 +43,7 @@ export default function VendorAdd() {
   const COLUMNS: TableColumn<VendorRow>[] = [
     {
       field: "vendorName",
-      header: "Vendor Name",
+      header: "Vendor Name (Required)",
       customBody: (rowData: VendorRow) =>
         TextEditor(rowData.vendorName, (newValue) => {
           setVendors((draft) => {
@@ -75,6 +75,12 @@ export default function VendorAdd() {
 
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
+
+  const areAllVendorsValid = (): boolean => {
+    return vendors.every((vendor: VendorRow) => {
+      return vendor.vendorName !== "";
+    });
+  };
 
   const onSubmit = (): void => {
     logger.debug("Add Vendor Submitted", vendors);
@@ -116,7 +122,7 @@ export default function VendorAdd() {
       onShowPopup={() => setIsConfirmationPopupVisible(true)}
       buttonLabel={"Submit"}
       className="p-button-success ml-2"
-      disabled={vendors.length == 0}
+      disabled={vendors.length == 0 || !areAllVendorsValid()}
     />
   );
 
@@ -134,7 +140,7 @@ export default function VendorAdd() {
       }}
       buttonLabel={"Submit and Go Back"}
       className="p-button-success ml-2"
-      disabled={vendors.length == 0}
+      disabled={vendors.length == 0 || !areAllVendorsValid()}
     />
   );
 

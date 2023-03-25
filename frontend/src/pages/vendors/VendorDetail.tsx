@@ -250,7 +250,7 @@ export default function VendorDetail() {
                     // do nothing
                   }}
                   onShowPopup={() => setIsConfirmationPopupVisible(true)}
-                  disabled={!isModifiable}
+                  disabled={!isModifiable || vendorName === ""}
                   buttonLabel={"Submit"}
                   className="p-button-success p-button-raised"
                 />

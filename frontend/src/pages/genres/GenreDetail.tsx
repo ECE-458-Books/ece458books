@@ -193,7 +193,7 @@ export default function GenreDetail() {
                     // do nothing
                   }}
                   onShowPopup={() => setIsConfirmationPopupVisible(true)}
-                  disabled={!isModifiable}
+                  disabled={!isModifiable || genreName === ""}
                   buttonLabel={"Submit"}
                   className="p-button-success p-button-raised"
                 />

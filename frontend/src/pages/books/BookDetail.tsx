@@ -127,7 +127,7 @@ export default function BookDetail() {
 
   const calculateDaysOfSupply = (book: Book) => {
     if (book.stock === 0) {
-      return "inf";
+      return "(inf)";
     } else {
       return Math.floor((book.stock / book.lastMonthSales!) * 30);
     }

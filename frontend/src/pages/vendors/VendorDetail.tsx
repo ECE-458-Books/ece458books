@@ -13,15 +13,14 @@ import DeleteButton from "../../components/buttons/DeleteButton";
 import DeletePopup from "../../components/popups/DeletePopup";
 import Restricted from "../../permissions/Restricted";
 import PercentTemplate from "../../components/templates/PercentTemplate";
+import { Vendor } from "./VendorList";
+import { APIToInternalVendorConversion } from "../../apis/vendors/VendorsConversions";
 
-interface BackupDataStoreVendor {
-  vendorName: string;
-  buybackRate: number | undefined;
-}
-
-const EMPTY_ORIGINAL_DATA: BackupDataStoreVendor = {
-  vendorName: "",
+const EMPTY_ORIGINAL_DATA: Vendor = {
+  id: "",
+  name: "",
   buybackRate: undefined,
+  numPO: 1,
 };
 
 export default function VendorDetail() {
@@ -33,8 +32,7 @@ export default function VendorDetail() {
   const [numPOFromVendor, setNumPOFromVendor] = useState<number>(0);
   const [buybackRate, setBuybackRate] = useState<number>();
 
-  const [originalData, setOriginalData] =
-    useState<BackupDataStoreVendor>(EMPTY_ORIGINAL_DATA);
+  const [originalData, setOriginalData] = useState<Vendor>(EMPTY_ORIGINAL_DATA);
 
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
@@ -77,13 +75,11 @@ export default function VendorDetail() {
   useEffect(() => {
     VENDORS_API.getVendorDetail({ id: id! })
       .then((response) => {
+        const vendor = APIToInternalVendorConversion(response);
         setVendorName(response.name);
         setNumPOFromVendor(response.num_purchase_orders);
         setBuybackRate(response.buyback_rate);
-        setOriginalData({
-          vendorName: response.name,
-          buybackRate: response.buyback_rate,
-        });
+        setOriginalData(vendor);
       })
       .catch(() => showFailure(toast, "Could not fetch vendor data"));
   }, []);
@@ -105,14 +101,21 @@ export default function VendorDetail() {
     };
 
     VENDORS_API.modifyVendor(modifiedVendor)
-      .then(() => {
+      .then((response) => {
+        const vendor = APIToInternalVendorConversion(response);
         showSuccess(toast, "Vendor modified");
-        setOriginalData({
-          vendorName: vendorName,
-          buybackRate: buybackRate,
-        });
+        setOriginalData(vendor);
       })
-      .catch(() => showFailure(toast, "Vendor could not be modified"));
+      .catch((error) => {
+        showFailure(
+          toast,
+          error.data.errors?.name?.[0]
+            ? "Vendor not modified, vendor with this name already exists"
+            : "Vendor could not be modified"
+        );
+        setVendorName(originalData.name);
+        setBuybackRate(originalData.buybackRate);
+      });
     setIsModifiable(false);
   };
 
@@ -223,7 +226,7 @@ export default function VendorDetail() {
                   className="p-button-warning"
                   onClick={() => {
                     setIsModifiable(!isModifiable);
-                    setVendorName(originalData.vendorName);
+                    setVendorName(originalData.name);
                     setBuybackRate(originalData.buybackRate);
                   }}
                 />
@@ -247,7 +250,7 @@ export default function VendorDetail() {
                     // do nothing
                   }}
                   onShowPopup={() => setIsConfirmationPopupVisible(true)}
-                  disabled={!isModifiable}
+                  disabled={!isModifiable || vendorName === ""}
                   buttonLabel={"Submit"}
                   className="p-button-success p-button-raised"
                 />

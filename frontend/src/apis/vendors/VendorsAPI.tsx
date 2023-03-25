@@ -93,7 +93,7 @@ export const VENDORS_API = {
     });
   },
 
-  modifyVendor: async function (req: ModifyVendorReq) {
+  modifyVendor: async function (req: ModifyVendorReq): Promise<APIVendor> {
     return await API.request({
       url: VENDORS_EXTENSION.concat("/".concat(req.id.toString())),
       method: METHOD_PATCH,

@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { logger } from "../../util/Logger";
 import { Toast } from "primereact/toast";
 import { useNavigate } from "react-router-dom";
-import { showFailure } from "../../components/Toast";
+import { showFailure, showSuccess } from "../../components/Toast";
 import { DataTable } from "primereact/datatable";
 import {
   TableColumn,
@@ -16,7 +16,7 @@ import React from "react";
 import { v4 as uuid } from "uuid";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
 import { Toolbar } from "primereact/toolbar";
-import { VENDORS_API, AddVendorReq } from "../../apis/vendors/VendorsAPI";
+import { VENDORS_API } from "../../apis/vendors/VendorsAPI";
 import axios from "axios";
 import AddRowButton from "../../components/buttons/AddRowButton";
 import BackButton from "../../components/buttons/BackButton";
@@ -35,7 +35,7 @@ export default function VendorAdd() {
     buybackRate: undefined,
   };
 
-  const [vendors, setVendors] = useImmer<VendorRow[]>([]);
+  const [vendors, setVendors] = useImmer<VendorRow[]>([emptyVendor]);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
   const [isGoBackActive, setIsGoBackActive] = useState<boolean>(false);
@@ -43,7 +43,7 @@ export default function VendorAdd() {
   const COLUMNS: TableColumn<VendorRow>[] = [
     {
       field: "vendorName",
-      header: "Vendor Name",
+      header: "Vendor Name (Required)",
       customBody: (rowData: VendorRow) =>
         TextEditor(rowData.vendorName, (newValue) => {
           setVendors((draft) => {
@@ -76,23 +76,34 @@ export default function VendorAdd() {
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
 
+  const areAllVendorsValid = (): boolean => {
+    return vendors.every((vendor: VendorRow) => {
+      return vendor.vendorName !== "";
+    });
+  };
+
   const onSubmit = (): void => {
     logger.debug("Add Vendor Submitted", vendors);
     const vendorRequests = vendors.map((vendor: VendorRow) => {
-      const newVendor: AddVendorReq = {
+      return VENDORS_API.addVendor({
         name: vendor.vendorName,
         buyback_rate: vendor.buybackRate,
-      };
-      VENDORS_API.addVendor(newVendor);
+      });
     });
 
     axios
       .all(vendorRequests)
       .then(() => {
+        showSuccess(toast, "Vendors added successfully");
         isGoBackActive ? navigate("/vendors") : resetPageInputFields();
       })
-      .catch(() => {
-        showFailure(toast, "One or more of the vendors failed to add");
+      .catch((error) => {
+        showFailure(
+          toast,
+          error.data.errors?.name?.[0]
+            ? "One or more of the vendors already exists"
+            : "One or more of the vendors failed to add"
+        );
       });
   };
 
@@ -116,7 +127,7 @@ export default function VendorAdd() {
       onShowPopup={() => setIsConfirmationPopupVisible(true)}
       buttonLabel={"Submit"}
       className="p-button-success ml-2"
-      disabled={vendors.length == 0}
+      disabled={vendors.length == 0 || !areAllVendorsValid()}
     />
   );
 
@@ -134,7 +145,7 @@ export default function VendorAdd() {
       }}
       buttonLabel={"Submit and Go Back"}
       className="p-button-success ml-2"
-      disabled={vendors.length == 0}
+      disabled={vendors.length == 0 || !areAllVendorsValid()}
     />
   );
 
@@ -172,21 +183,20 @@ export default function VendorAdd() {
           </h1>
         </div>
       </div>
-      <div className="col-11">
-        <form onSubmit={onSubmit}>
-          <Toolbar className="mb-4" left={leftToolbar} right={rightToolbar} />
+      <div className="col-6">
+        <Toolbar className="mb-4" left={leftToolbar} right={rightToolbar} />
 
-          <DataTable
-            showGridlines
-            value={vendors}
-            className="editable-cells-table"
-            responsiveLayout="scroll"
-            editMode="cell"
-          >
-            {columns}
-            {deleteColumn}
-          </DataTable>
-        </form>
+        <DataTable
+          emptyMessage={'Click "Add Vendor" to add a vendor'}
+          showGridlines
+          value={vendors}
+          className="editable-cells-table"
+          responsiveLayout="scroll"
+          editMode="cell"
+        >
+          {columns}
+          {deleteColumn}
+        </DataTable>
       </div>
     </div>
   );

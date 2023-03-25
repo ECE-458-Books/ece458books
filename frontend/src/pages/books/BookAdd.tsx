@@ -470,6 +470,7 @@ export default function BookAdd() {
           <div className="grid flex justify-content-center">
             <div className="col-12">
               <DataTable
+                emptyMessage={"Lookup books to add them to this table"}
                 value={books}
                 showGridlines
                 editMode="cell"

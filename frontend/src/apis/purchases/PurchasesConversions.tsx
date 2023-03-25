@@ -63,6 +63,8 @@ export function APIToInternalPurchasesCSVConversion(
   purchases: APIPurchaseCSVImportRow[]
 ): LineItem[] {
   return purchases.map((purchase) => {
+    const price = Number(purchase.unit_wholesale_price);
+    const quantity = Number(purchase.quantity);
     return {
       isNewRow: true,
       id: uuid(),
@@ -70,9 +72,9 @@ export function APIToInternalPurchasesCSVConversion(
       bookId: purchase.book,
       bookTitle: formatBookForDropdown(purchase.book_title, purchase.isbn_13),
       bookISBN: purchase.isbn_13,
-      quantity: purchase.quantity,
-      price: purchase.unit_wholesale_price,
-      errors: purchase.errors,
+      quantity: Number.isNaN(quantity) ? 0 : quantity,
+      price: Number.isNaN(price) ? 0 : price,
+      csvErrors: purchase.errors,
     } as LineItem;
   });
 }

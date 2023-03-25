@@ -189,6 +189,9 @@ export default function LineItemTableTemplate(
       rowHover={!props.isAddPage && !props.isModifiable}
       selectionMode={"single"}
       onRowClick={(event) => onRowClick(event)}
+      emptyMessage={
+        'Click "Add Book" or "Import CSV" to add line items to the table'
+      }
     >
       {columns}
       {deleteColumn}

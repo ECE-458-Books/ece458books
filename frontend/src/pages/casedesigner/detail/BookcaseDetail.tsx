@@ -41,6 +41,7 @@ const emptyBookcase: Bookcase = {
   creator: "",
   lastEditDate: new Date(),
   lastEditor: "",
+  // Default to 7 empty shelves for an add page
   shelves: Array(7)
     .fill(undefined)
     .map(() => {

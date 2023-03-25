@@ -199,12 +199,8 @@ class RetrieveSalesReportAPIView(APIView):
         total_profit = round(total_revenue - total_cost, 2)
 
         sales_data_by_book = list(
-            SalesReconciliation.objects.filter(date__range=(start_date, end_date)).values(book_id=F('sales__book')).annotate(num_books_sold=Sum('sales__quantity')).annotate(
+            SalesReconciliation.objects.filter(date__range=(start_date, end_date)).values(book_id=F('sales__book')).exclude(book_id=None).annotate(num_books_sold=Sum('sales__quantity')).annotate(
                 book_revenue=Sum('sales__revenue')).order_by('-num_books_sold'))[:10]
-
-        buybacks_data_by_book = list(
-            BuybackOrder.objects.filter(date__range=(start_date, end_date)).values(book_id=F('buybacks__book')).annotate(num_books_buyback=Sum('buybacks__quantity')).annotate(
-                book_revenue=Sum('buybacks__revenue')))[:10]
 
         for book_sale in list(sales_data_by_book):
             try:
@@ -212,19 +208,13 @@ class RetrieveSalesReportAPIView(APIView):
                     book_wholesale_price=Subquery(Purchase.objects.filter(purchase_order=OuterRef('id')).filter(
                         book=book_sale['book_id']).order_by('-id')[:1].values('unit_wholesale_price'))).values('book_wholesale_price').exclude(
                             book_wholesale_price=None).first()['book_wholesale_price']
-            except:  # A book should not be allowed to be sold before the first time it is purchased
-                return Response({"error": "Attempting to sell a book that has never previously been purchased."}, status=status.HTTP_400_BAD_REQUEST)
+            except:
+                # use 70% of retail price, since book has not been previously documented as being purchased
+                most_recent_unit_wholesale_price = .7 * Book.objects.get(id=book_sale['book_id']).retail_price
             book_sale['total_cost_most_recent'] = round(most_recent_unit_wholesale_price * book_sale['num_books_sold'], 2)
 
         for book_sale in sales_data_by_book:
             book_sale['book_title'] = Book.objects.filter(id=book_sale['book_id']).get().title
-
-            # Not needed because requirement says that for top ten selling books, 'total revenue should be based on a sum of sales reconciliations for the period' which means not include buybacks
-            # book_buyback_data = self.get_buyback_data_for_book(buybacks_data_by_book, book_sale['book_id'])
-            # if book_buyback_data:
-            #     buyback_revenue = book_buyback_data['book_revenue']
-            # else:
-            #     buyback_revenue = 0
 
             book_sale['book_profit'] = round(book_sale['book_revenue'] - book_sale['total_cost_most_recent'], 2)
 
@@ -248,12 +238,6 @@ class RetrieveSalesReportAPIView(APIView):
             "top_books":  # title, quantity, total_revenue, total_cost, total_profit
                 sales_data_by_book
         })
-
-    # Keeping for now in case the requirements are clarified to be including buybacks
-    # def get_buyback_data_for_book(self, buybacks_data_by_book: list, book_id: int):
-    #     for buyback_book_data in buybacks_data_by_book:
-    #         if buyback_book_data['book_id'] == book_id:
-    #             return buyback_book_data
 
     def get_daily_buybacks(self, daily_buybacks, date: str):
         buyback_orders = BuybackOrder.objects.filter(date=date)

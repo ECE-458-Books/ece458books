@@ -69,17 +69,13 @@ class UserRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 class ChangePasswordView(UpdateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ChangePasswordSerializer
-    queryset = User.objects.all()
-    lookup_field = 'id'
+    queryset = User.objects.filter(is_active=True)
+
 
     # Override Update for default behavior
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-
-        if request.user != instance:
-            # This means a user is trying to change another user's pw
-            raise ModifyUserError("Not allowed to change another user's password")
+        instance = request.user
 
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)

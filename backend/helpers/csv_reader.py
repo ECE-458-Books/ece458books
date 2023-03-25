@@ -23,6 +23,7 @@ class CSVReader:
         try:
             csv_df = pd.read_csv(csv, dtype=str, keep_default_na=False, index_col=False, encoding='utf-8-sig')
             csv_df = csv_df.apply(lambda x: x.str.strip()).rename(columns=lambda x: x.strip())
+            csv_df[csv_format_checker.price] = csv_df[csv_format_checker.price].map(lambda x: x.replace("$", ""))
             isbn_tools = ISBNTools()
             csv_df.loc[:, 'isbn'] = csv_df.loc[:, 'isbn'].apply(lambda x: isbn_tools.parse_isbn(x) if isbn_tools.is_valid_isbn(x) else x)
         except pd.errors.EmptyDataError:

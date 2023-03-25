@@ -38,11 +38,10 @@ import "../../css/TableCell.css";
 import DeleteColumn from "../../components/datatable/DeleteColumn";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { Column } from "primereact/column";
-import BookDetailRelatedBooks, { RelatedBook } from "./BookDetailRelatedBooks";
+import BookDetailRelatedBooks from "./BookDetailRelatedBooks";
 
 export interface BookWithDBTag extends Book {
   fromDB: boolean;
-  relatedBooks?: RelatedBook[];
 }
 
 export default function BookAdd() {

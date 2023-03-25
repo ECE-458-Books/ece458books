@@ -24,7 +24,6 @@ import { CSS } from "@dnd-kit/utilities";
 import { onDragEnd, onDragOver, onDragStart } from "./DndFunctions";
 import { Updater } from "use-immer";
 import { useState } from "react";
-import "../../../css/MiscellaneousCSS.css";
 import { roundToTwoDecimalPlaces } from "../../../util/NumberOps";
 import { Tooltip } from "primereact/tooltip";
 

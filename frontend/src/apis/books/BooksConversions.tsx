@@ -11,12 +11,14 @@ import {
   APIBookLineItem,
   APIBookWithDBTag,
   APILineItemType,
+  APIRelatedBook,
 } from "./BooksAPI";
 import {
   BookDetailLineItem,
   BookDetailLineItemType,
 } from "../../pages/books/BookDetailLineItems";
 import { DEFAULT_BOOK_IMAGE } from "../../components/uploaders/ImageFileUploader";
+import { RelatedBook } from "../../pages/books/BookDetailRelatedBooks";
 
 export const APIBookSortFieldMap = new Map<string, string>([
   ["isbn13", "isbn_13"],
@@ -31,6 +33,7 @@ export const APIBookSortFieldMap = new Map<string, string>([
   ["lastMonthSales", "last_month_sales"],
   ["shelfSpace", "shelf_space"],
   ["daysOfSupply", "days_of_supply"],
+  ["numRelatedBooks", "num_related_books"],
 ]);
 
 // External line item -> Internal Line Item
@@ -60,6 +63,22 @@ function APIToInternalLineItemConversion(
   };
 }
 
+function APIToInternalRelatedBookConversion(
+  relatedBook: APIRelatedBook
+): RelatedBook {
+  return {
+    id: relatedBook.id.toString(),
+    author: ArrayToCommaSeparatedString(relatedBook.authors),
+    genres: ArrayToCommaSeparatedString(relatedBook.genres),
+    title: relatedBook.title,
+    isbn13: relatedBook.isbn_13,
+    publisher: relatedBook.publisher,
+    publishedYear: relatedBook.publishedDate,
+    retailPrice: relatedBook.retail_price,
+    imageUrl: relatedBook.image_url,
+  };
+}
+
 export function APIToInternalBookConversion(book: APIBook): Book {
   return {
     id: book.id!.toString(),
@@ -83,6 +102,10 @@ export function APIToInternalBookConversion(book: APIBook): Book {
     shelfSpace: book.shelf_space,
     lineItems: book.line_items?.map((lineItem) => {
       return APIToInternalLineItemConversion(lineItem);
+    }),
+    numRelatedBooks: book.num_related_books,
+    relatedBooks: book.related_books?.map((relatedBook) => {
+      return APIToInternalRelatedBookConversion(relatedBook);
     }),
   };
 }
@@ -136,5 +159,9 @@ export function APIToInternalBookConversionWithDB(
     daysOfSupply: book.days_of_supply,
     shelfSpace: book.shelf_space,
     isGhost: book.isGhost,
+    numRelatedBooks: book.num_related_books,
+    relatedBooks: book.related_books?.map((relatedBook) => {
+      return APIToInternalRelatedBookConversion(relatedBook);
+    }),
   };
 }

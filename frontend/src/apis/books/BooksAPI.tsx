@@ -45,6 +45,20 @@ export interface APIBook {
   days_of_supply?: number | string;
   line_items?: APIBookLineItem[];
   isGhost?: boolean;
+  num_related_books?: number;
+  related_books?: APIRelatedBook[];
+}
+
+export interface APIRelatedBook {
+  id: number;
+  authors: string[];
+  genres: string[];
+  title: string;
+  isbn_13: string;
+  publisher: string;
+  publishedDate: number;
+  retail_price: number;
+  image_url: string;
 }
 
 export enum APILineItemType {

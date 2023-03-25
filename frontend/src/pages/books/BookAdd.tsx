@@ -1,7 +1,11 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Button } from "primereact/button";
-import { DataTable } from "primereact/datatable";
+import {
+  DataTable,
+  DataTableExpandedRows,
+  DataTableRowToggleEvent,
+} from "primereact/datatable";
 import { PriceEditor } from "../../components/editors/PriceEditor";
 import { NullableNumberEditor } from "../../components/editors/NumberEditor";
 import { NullableIntegerEditor } from "../../components/editors/IntegerEditor";
@@ -33,6 +37,8 @@ import BackButton from "../../components/buttons/BackButton";
 import "../../css/TableCell.css";
 import DeleteColumn from "../../components/datatable/DeleteColumn";
 import { ProgressSpinner } from "primereact/progressspinner";
+import { Column } from "primereact/column";
+import BookDetailRelatedBooks from "./BookDetailRelatedBooks";
 
 export interface BookWithDBTag extends Book {
   fromDB: boolean;
@@ -43,6 +49,10 @@ export default function BookAdd() {
   const [books, setBooks] = useImmer<BookWithDBTag[]>([]);
   const [genreNamesList, setGenreNamesList] = useState<string[]>([]);
   const [isLoadingButton, setIsLoadingButton] = useState<boolean>(false);
+
+  const [expandedRows, setExpandedRows] = useState<
+    DataTableExpandedRows | undefined
+  >(undefined);
 
   const statusTemplate = (rowData: BookWithDBTag) => {
     if (rowData.fromDB && !rowData.isGhost!) {
@@ -391,6 +401,47 @@ export default function BookAdd() {
   //First one is the submission of ISBNS that need to be added
   //Second one is the submission of the added books and their modified fields
 
+  const rowExpansionTemplate = (rowData: BookWithDBTag) => {
+    return (
+      <div>
+        <h5 className="p-2 m-0">Related Books for {rowData.title}</h5>
+        <div className="col-10 p-0 pb-3">
+          <BookDetailRelatedBooks
+            relatedBooks={rowData.relatedBooks}
+            globalClassName="text-sm"
+          />
+        </div>
+      </div>
+    );
+  };
+
+  const allowExpansion = (rowData: BookWithDBTag) => {
+    return rowData.relatedBooks!.length > 0;
+  };
+
+  const rowExpanderColumn = (
+    <Column
+      header="View Related Books"
+      expander={allowExpansion}
+      style={{ width: "2%", fontSize: 12 }}
+    />
+  );
+
+  const collapseAll = () => {
+    setExpandedRows(undefined);
+  };
+
+  const collapseAllButton = (
+    <div className="flex flex-wrap justify-content-end gap-2">
+      <Button
+        icon="pi pi-minus"
+        type="button"
+        label="Collapse All"
+        onClick={collapseAll}
+      />
+    </div>
+  );
+
   return (
     <div className="grid flex justify-content-center">
       <Toast ref={toast} />
@@ -477,7 +528,18 @@ export default function BookAdd() {
                 className="editable-cells-table py-5"
                 responsiveLayout="scroll"
                 size="small"
+                expandedRows={expandedRows}
+                header={collapseAllButton}
+                onRowToggle={(e: DataTableRowToggleEvent) =>
+                  setExpandedRows(e.data as DataTableExpandedRows)
+                }
+                // I think something is wrong with the PrimeReact library, because
+                // the code in the demo works, but TypeScript complains about it
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                rowExpansionTemplate={rowExpansionTemplate}
               >
+                {rowExpanderColumn}
                 {columns}
                 {deleteColumn}
               </DataTable>

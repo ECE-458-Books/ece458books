@@ -28,6 +28,7 @@ import TextLabel from "../../components/text/TextLabels";
 import { TextWrapperNullableNumberEditor } from "../../components/text/TextWrapperNullableNumberEditor";
 import { PriceEditor } from "../../components/editors/PriceEditor";
 import { Divider } from "primereact/divider";
+import BookDetailRelatedBooks, { RelatedBook } from "./BookDetailRelatedBooks";
 import { arrowColorDeterminer, colorDeterminer } from "../../util/CSSFunctions";
 import {
   InputNumber,
@@ -68,6 +69,8 @@ export default function BookDetail() {
   const [daysOfSupply, setDaysOfSupply] = useState<number | string>();
   const [shelfSpace, setShelfSpace] = useState<number>();
   const [lastMonthSales, setLastMonthSales] = useState<number>();
+  const [numOfRelatedBooks, setNumOfRelatedBooks] = useState<number>();
+  const [relatedBooks, setRelatedBooks] = useState<RelatedBook[]>([]);
   const [lineItems, setLineItems] = useState<BookDetailLineItem[]>([]);
   // Leaving this line in case of future image browser side caching workaround is needed
   const [image, setImage] = useState<ImageUrlHashStruct>({
@@ -86,7 +89,6 @@ export default function BookDetail() {
   const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false); // Whether the delete popup is visible
   const [isInventoryCorrectionVisible, setIsInventoryCorrectionVisible] =
     useState<boolean>(false);
-  const isMounted = useRef(false);
 
   // Load the book data on page load
   useEffect(() => {
@@ -113,11 +115,12 @@ export default function BookDetail() {
         updateShelfSpace(book.thickness);
         setInventoryAdjustment(0);
         setDaysOfSupply(calculateDaysOfSupply(book));
-        isMounted.current = true;
         setImage({
           imageSrc: response.image_url,
           imageHash: Date.now().toString(),
         });
+        setNumOfRelatedBooks(book.numRelatedBooks);
+        setRelatedBooks(book.relatedBooks!);
       })
       .catch(() => showFailure(toast, "Could not fetch book data"));
   }, [stock]);
@@ -368,6 +371,10 @@ export default function BookDetail() {
 
   // Line item table
   const lineItemsTable = <BookDetailLineItems lineItems={lineItems} />;
+
+  const relatedBooksTable = (
+    <BookDetailRelatedBooks relatedBooks={relatedBooks} />
+  );
 
   const backButton = (
     <div className="flex col-4">
@@ -746,6 +753,14 @@ export default function BookDetail() {
               )}
             </div>
           </div>
+          <div className="flex col-12 justify-content-start p-1">
+            <div className="flex p-0">
+              <TextLabel label="# of Related Books:" />
+              <p className="p-component p-text-secondary text-900 text-xl text-center my-0">
+                {numOfRelatedBooks}
+              </p>
+            </div>
+          </div>
         </form>
       </div>
       {deletePopupVisible && deletePopup}
@@ -755,6 +770,12 @@ export default function BookDetail() {
         </div>
       </Divider>
       <div className="flex justify-content-center col-10">{lineItemsTable}</div>
+      <Divider align="center">
+        <div className="inline-flex align-items-center">
+          <b>Related Books</b>
+        </div>
+      </Divider>
+      <div className="col-10">{relatedBooksTable}</div>
     </div>
   );
 }

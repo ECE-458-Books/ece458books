@@ -26,21 +26,28 @@ import { NumberEditor } from "../../../components/editors/NumberEditor";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { TextEditor } from "../../../components/editors/TextEditor";
-
-const emptyBookcase: Bookcase = {
-  id: "",
-  name: "",
-  width: 0,
-  creator: "",
-  lastEditDate: new Date(),
-  lastEditor: "",
-  shelves: [],
-};
+import { v4 as uuid } from "uuid";
 
 const emptyShelf: Shelf = {
   id: "",
   displayedBooks: [],
   shelfSpace: 0,
+};
+
+const emptyBookcase: Bookcase = {
+  id: "",
+  name: "",
+  width: 60,
+  creator: "",
+  lastEditDate: new Date(),
+  lastEditor: "",
+  shelves: Array(7)
+    .fill(undefined)
+    .map(() => {
+      const shelf = { ...emptyShelf };
+      shelf.id = uuid();
+      return shelf;
+    }),
 };
 
 export default function BookcaseDetail() {

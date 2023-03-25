@@ -4,8 +4,8 @@ import { logger } from "../util/Logger";
 
 // const TEST_ENDPOINT = "https://books-test.colab.duke.edu/api/v1/";
 // const DEV_ENDPOINT = "https://books-dev.colab.duke.edu/api/v1/";
-// const FRONT_ENDPOINT = "https://books-front.colab.duke.edu/api/v1/";
-export const BACKEND_ENDPOINT = process.env.REACT_APP_BACKEND_ENDPOINT;
+const FRONT_ENDPOINT = "https://books-front.colab.duke.edu/api/v1/";
+export const BACKEND_ENDPOINT = FRONT_ENDPOINT;
 export const JSON_HEADER = { "Content-Type": "application/json" };
 export const METHOD_POST = "POST";
 export const METHOD_GET = "GET";

@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { logger } from "../../util/Logger";
 import { Toast } from "primereact/toast";
 import { useNavigate } from "react-router-dom";
-import { showFailure } from "../../components/Toast";
+import { showFailure, showSuccess } from "../../components/Toast";
 import { DataTable } from "primereact/datatable";
 import {
   TableColumn,
@@ -16,7 +16,7 @@ import React from "react";
 import { v4 as uuid } from "uuid";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
 import { Toolbar } from "primereact/toolbar";
-import { VENDORS_API, AddVendorReq } from "../../apis/vendors/VendorsAPI";
+import { VENDORS_API } from "../../apis/vendors/VendorsAPI";
 import axios from "axios";
 import AddRowButton from "../../components/buttons/AddRowButton";
 import BackButton from "../../components/buttons/BackButton";
@@ -79,16 +79,16 @@ export default function VendorAdd() {
   const onSubmit = (): void => {
     logger.debug("Add Vendor Submitted", vendors);
     const vendorRequests = vendors.map((vendor: VendorRow) => {
-      const newVendor: AddVendorReq = {
+      return VENDORS_API.addVendor({
         name: vendor.vendorName,
         buyback_rate: vendor.buybackRate,
-      };
-      VENDORS_API.addVendor(newVendor);
+      });
     });
 
     axios
       .all(vendorRequests)
       .then(() => {
+        showSuccess(toast, "Vendors added successfully");
         isGoBackActive ? navigate("/vendors") : resetPageInputFields();
       })
       .catch(() => {
@@ -173,20 +173,18 @@ export default function VendorAdd() {
         </div>
       </div>
       <div className="col-11">
-        <form onSubmit={onSubmit}>
-          <Toolbar className="mb-4" left={leftToolbar} right={rightToolbar} />
+        <Toolbar className="mb-4" left={leftToolbar} right={rightToolbar} />
 
-          <DataTable
-            showGridlines
-            value={vendors}
-            className="editable-cells-table"
-            responsiveLayout="scroll"
-            editMode="cell"
-          >
-            {columns}
-            {deleteColumn}
-          </DataTable>
-        </form>
+        <DataTable
+          showGridlines
+          value={vendors}
+          className="editable-cells-table"
+          responsiveLayout="scroll"
+          editMode="cell"
+        >
+          {columns}
+          {deleteColumn}
+        </DataTable>
       </div>
     </div>
   );

@@ -78,7 +78,15 @@ export default function GenreDetail() {
         showSuccess(toast, "Genre modified");
         setOriginalGenreName(genreName);
       })
-      .catch(() => showFailure(toast, "Genre could not be modified"));
+      .catch((error) => {
+        showFailure(
+          toast,
+          error.data.errors?.name?.[0]
+            ? "Genre with this name already exists"
+            : "Genre could not be modified"
+        );
+        setGenreName(originalGenreName);
+      });
     setIsModifiable(false);
   };
 

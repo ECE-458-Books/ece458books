@@ -35,7 +35,7 @@ export default function VendorAdd() {
     buybackRate: undefined,
   };
 
-  const [vendors, setVendors] = useImmer<VendorRow[]>([]);
+  const [vendors, setVendors] = useImmer<VendorRow[]>([emptyVendor]);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
   const [isGoBackActive, setIsGoBackActive] = useState<boolean>(false);
@@ -178,10 +178,11 @@ export default function VendorAdd() {
           </h1>
         </div>
       </div>
-      <div className="col-11">
+      <div className="col-6">
         <Toolbar className="mb-4" left={leftToolbar} right={rightToolbar} />
 
         <DataTable
+          emptyMessage={'Click "Add Vendor" to add a vendor'}
           showGridlines
           value={vendors}
           className="editable-cells-table"

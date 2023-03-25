@@ -123,8 +123,10 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         except TokenError as e:
             raise InvalidToken(e.args[0])
         
+        case_insensitive_username = request.data.get('username').strip().lower()
+
         data = dict()
-        user = User.objects.filter(username=request.data.get('username'))[0]
+        user = User.objects.filter(username=case_insensitive_username)[0]
         data['id'] = user.id
         data['is_staff'] = user.is_staff
 

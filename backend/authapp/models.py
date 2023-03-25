@@ -8,6 +8,11 @@ class UserManager(BaseUserManager):
         """Create and return a `User` with an email, username and password."""
         if username is None:
             raise TypeError('Users must have a username.')
+        
+        """
+        Make Username case-insensitive
+        """
+        case_insensitive_username = username.strip().lower()
 
         
         """
@@ -17,7 +22,7 @@ class UserManager(BaseUserManager):
 
         user = self.model(username=username, email=self.normalize_email(email))
         """
-        user = self.model(username=username)
+        user = self.model(username=case_insensitive_username)
         user.set_password(password)  # from super class
         user.is_staff = is_staff
         user.save()  # from super class

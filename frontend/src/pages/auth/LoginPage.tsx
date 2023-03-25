@@ -48,7 +48,7 @@ export default function LoginPage(props: LoginPageProps) {
           {
             sticky: false,
             severity: "error",
-            summary: "Error: Incorrect Password",
+            summary: "Invalid Credentials",
             closable: false,
             life: 3000,
           },

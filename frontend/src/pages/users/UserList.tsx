@@ -3,11 +3,11 @@ import AddPageButton from "../../components/buttons/AddPageButton";
 import { Toast } from "primereact/toast";
 import { useRef, useState } from "react";
 
-import { GetUsersResp, USER_API } from "../../apis/users/UserAPI";
+import { GetUsersResp, AUTH_API } from "../../apis/auth/AuthAPI";
 import {
   APIToInternalUserConversion,
   APIUserSortFieldMap,
-} from "../../apis/users/UserConversion";
+} from "../../apis/auth/AuthConversions";
 import LabeledSwitch from "../../components/buttons/LabeledSwitch";
 import { scrollToTop } from "../../util/WindowViewportOps";
 import ListTemplate from "../../templates/list/ListTemplate";
@@ -56,7 +56,7 @@ export default function UserList() {
 
   // Calls the Users API
   const callAPI = (page: number, pageSize: number, sortField: string) => {
-    USER_API.getUsers({
+    AUTH_API.getUsers({
       page: page,
       page_size: pageSize,
       ordering: sortField,

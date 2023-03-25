@@ -1,5 +1,5 @@
 import { User } from "../../pages/users/UserList";
-import { APIUser } from "./UserAPI";
+import { APIUser } from "./AuthAPI";
 
 // User
 

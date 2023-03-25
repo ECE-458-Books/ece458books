@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Router from "./components/navigation/Router";
-import { USER_API } from "./apis/users/UserAPI";
+import { AUTH_API } from "./apis/auth/AuthAPI";
 import PermissionProvider from "./permissions/PermissionProvider";
 import { AccessType, administrator, user } from "./util/auth/UserTypes";
 import LoginPage from "./pages/auth/LoginPage";
@@ -20,7 +20,7 @@ function App() {
     if (!IsUserLoggedIn()) {
       navigate("/");
     } else {
-      USER_API.getUserType()
+      AUTH_API.getUserType()
         .then((response) => {
           if (response.is_staff) {
             setCurrentUser(administrator);

@@ -15,7 +15,7 @@ import { showFailure, showSuccess } from "../../components/Toast";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
 import DeletePopup from "../../components/popups/DeletePopup";
 import DeleteButton from "../../components/buttons/DeleteButton";
-import { USER_API } from "../../apis/users/UserAPI";
+import { AUTH_API } from "../../apis/auth/AuthAPI";
 
 export default function VendorAdd() {
   // From URL
@@ -43,7 +43,7 @@ export default function VendorAdd() {
   // Load the user data on page load
   useEffect(() => {
     if (!isUserAddPage) {
-      USER_API.getUserDetail({ id: id! })
+      AUTH_API.getUserDetail({ id: id! })
         .then((response) => {
           setIsModifiable(!checkForSelfEditandAdminEdit(response.username));
           setUserName(response.username);
@@ -64,7 +64,7 @@ export default function VendorAdd() {
   const deleteUserFinal = () => {
     logger.debug("Edit Purchase Order Finalized");
     setDeletePopupVisible(false);
-    USER_API.deleteUser({
+    AUTH_API.deleteUser({
       id: id!,
     })
       .then(() => {
@@ -81,7 +81,7 @@ export default function VendorAdd() {
     }
 
     if (pwCheckReturnValidandError[0]) {
-      USER_API.modifyUser({
+      AUTH_API.modifyUser({
         id: id!,
         password: password1,
         password2: password2,
@@ -101,7 +101,7 @@ export default function VendorAdd() {
   const tryToAddUser = () => {
     const pwCheckReturnValidandError = passwordValueCheck(password1, password2);
     if (pwCheckReturnValidandError[0]) {
-      USER_API.addUser({
+      AUTH_API.addUser({
         username: userName,
         password: password1,
         password2: password2,

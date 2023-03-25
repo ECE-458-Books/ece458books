@@ -71,8 +71,8 @@ export interface DeleteUserReq {
 // modifyGenre
 export interface ModifyUserReq {
   id: string;
-  password: string;
-  password2: string;
+  password?: string;
+  password2?: string;
   is_staff: boolean;
 }
 

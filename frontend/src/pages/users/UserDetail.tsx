@@ -83,8 +83,8 @@ export default function VendorAdd() {
     if (pwCheckReturnValidandError[0]) {
       AUTH_API.modifyUser({
         id: id!,
-        password: password1,
-        password2: password2,
+        password: password1 === "" ? undefined : password1,
+        password2: password2 === "" ? undefined : password2,
         is_staff: isAdmin,
       })
         .then(() => {
@@ -109,9 +109,15 @@ export default function VendorAdd() {
       })
         .then(() => {
           showSuccess(toast, "Successfully Added User");
+          navigate("/users");
         })
-        .catch(() => {
-          showFailure(toast, "Failed to Add User");
+        .catch((error) => {
+          showFailure(
+            toast,
+            error.data.errors?.username?.[0]
+              ? "User with this username already exists"
+              : "Failed to Add User"
+          );
         });
     } else {
       showFailure(toast, pwCheckReturnValidandError[1]);

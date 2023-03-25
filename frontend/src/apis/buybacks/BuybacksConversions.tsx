@@ -56,6 +56,8 @@ export function APIToInternalBuybackCSVConversion(
   buybacks: APIBBCSVImportRow[]
 ): LineItem[] {
   return buybacks.map((buyback) => {
+    const price = Number(buyback.unit_buyback_price);
+    const quantity = Number(buyback.quantity);
     return {
       isNewRow: true,
       id: uuid(),
@@ -63,9 +65,9 @@ export function APIToInternalBuybackCSVConversion(
       bookId: buyback.book,
       bookTitle: formatBookForDropdown(buyback.book_title, buyback.isbn_13),
       bookISBN: buyback.isbn_13,
-      quantity: buyback.quantity,
-      price: buyback.unit_buyback_price,
-      errors: buyback.errors,
+      quantity: Number.isNaN(quantity) ? 0 : quantity,
+      price: Number.isNaN(price) ? 0 : price,
+      csvErrors: buyback.errors,
     } as LineItem;
   });
 }

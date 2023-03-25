@@ -97,8 +97,13 @@ export default function VendorAdd() {
         showSuccess(toast, "Vendors added successfully");
         isGoBackActive ? navigate("/vendors") : resetPageInputFields();
       })
-      .catch(() => {
-        showFailure(toast, "One or more of the vendors failed to add");
+      .catch((error) => {
+        showFailure(
+          toast,
+          error.data.errors?.name?.[0]
+            ? "One or more of the vendors already exists"
+            : "One or more of the vendors failed to add"
+        );
       });
   };
 

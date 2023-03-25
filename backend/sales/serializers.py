@@ -59,6 +59,9 @@ class SalesReconciliationSerializer(TransactionGroupBaseSerializer):
         self.__update_sale(instance, transaction_data, transaction_id)
 
     def validate_before_creation(self, transaction_quantities, data):
+        pass
+
+    """ Code that has been removed because no longer functionality that we need
         date = data['date']
         # Currently just says first sale with issue, but can tell all sales with issues after Casey defines errors
         for book_id, sell_quantity in transaction_quantities.items():
@@ -80,6 +83,7 @@ class SalesReconciliationSerializer(TransactionGroupBaseSerializer):
                     prev_purchase=None).first()['prev_purchase'] != None
         except TypeError:
             return None
+    """
 
     def update_non_nested_fields(self, instance, validated_data):
         instance.date = validated_data.get('date', instance.date)

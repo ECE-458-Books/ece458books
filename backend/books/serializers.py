@@ -82,6 +82,8 @@ class BookListAddSerializer(serializers.ModelSerializer):
     def get_shelf_space(self, instance):
         default_thickness = 0.8
         thickness = default_thickness if instance.thickness is None else instance.thickness
+        if instance.stock <= 0:
+            return 0.00
         return round(thickness * instance.stock, 2)
 
     def get_days_of_supply(self, instance):
@@ -89,6 +91,8 @@ class BookListAddSerializer(serializers.ModelSerializer):
         last_month_sales = self.get_last_month_sales(instance)
         if (last_month_sales == 0):
             return "inf"
+        if stock <= 0:
+            return 0.00
         return round((stock / last_month_sales) * 30, 2)
 
 

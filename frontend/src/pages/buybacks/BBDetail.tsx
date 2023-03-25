@@ -246,7 +246,7 @@ export default function BBDetail() {
   const callAddBBAPI = () => {
     const apiSales = buybacks.map((sale) => {
       return {
-        book: Number(booksMap.get(sale.bookTitle)!.id),
+        book: Number(booksMap.get(sale.bookTitle)?.id),
         quantity: sale.quantity,
         unit_buyback_price: sale.price,
       } as APIBBSaleRow;

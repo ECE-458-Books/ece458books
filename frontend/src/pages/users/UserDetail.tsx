@@ -21,23 +21,29 @@ export default function VendorAdd() {
   // From URL
   const { id } = useParams();
   const isUserAddPage = id === undefined;
-  const [isModifiable, setIsModifiable] = useState<boolean>(true);
 
   const [userName, setUserName] = useState<string>("");
   const [password1, setPassword1] = useState<string>("");
   const [password2, setPassword2] = useState<string>("");
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [isDeletable, setIsDeletable] = useState<boolean>(false);
+  const [isAdminToggleModifiable, setIsAdminToggleModifiable] =
+    useState<boolean>(true);
+  const [isPasswordChangeModifiable, setIsPasswordChangeModifiable] =
+    useState<boolean>(true);
 
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
   const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false); // Whether the delete popup is visible
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [isPageDeleteable, setIsPageDeleteable] = useState<boolean>(true);
 
   const toast = useRef<Toast>(null);
 
-  const checkForSelfEditandAdminEdit = (username: string) => {
-    return id === localStorage.getItem("userID") || username === "admin";
+  const isSuperAdminDetail = (username: string) => {
+    return username === "admin";
+  };
+
+  const isCurrentlyLoggedInUserDetail = () => {
+    return id === localStorage.getItem("userID");
   };
 
   // Load the user data on page load
@@ -45,10 +51,17 @@ export default function VendorAdd() {
     if (!isUserAddPage) {
       AUTH_API.getUserDetail({ id: id! })
         .then((response) => {
-          setIsModifiable(!checkForSelfEditandAdminEdit(response.username));
           setUserName(response.username);
           setIsAdmin(response.is_staff);
-          setIsPageDeleteable(!checkForSelfEditandAdminEdit);
+          setIsAdminToggleModifiable(
+            !isSuperAdminDetail(response.username) &&
+              !isCurrentlyLoggedInUserDetail()
+          );
+          setIsPasswordChangeModifiable(true); // I believe this is always true, but should be easy to fix if not
+          setIsDeletable(
+            !isSuperAdminDetail(response.username) &&
+              !isCurrentlyLoggedInUserDetail()
+          );
         })
         .catch(() => showFailure(toast, "Could not fetch user data"));
     }
@@ -160,12 +173,12 @@ export default function VendorAdd() {
   // Right
   const submitButton = (
     <ConfirmPopup
-      isButtonVisible={isModifiable}
+      isButtonVisible={isPasswordChangeModifiable}
       isPopupVisible={isConfirmationPopupVisible}
       onHide={() => setIsConfirmationPopupVisible(false)}
       onFinalSubmission={onSubmit}
       onShowPopup={() => setIsConfirmationPopupVisible(true)}
-      disabled={!isModifiable}
+      disabled={!isPasswordChangeModifiable}
       buttonLabel={"Submit"}
       className="p-button-success ml-1 p-button-sm"
       classNameDiv="flex my-auto"
@@ -175,7 +188,7 @@ export default function VendorAdd() {
   const deleteButton = (
     <DeleteButton
       visible={!isUserAddPage}
-      disabled={!isPageDeleteable}
+      disabled={!isDeletable}
       onClick={deleteUserPopup}
       className={"ml-1 "}
     />
@@ -211,7 +224,7 @@ export default function VendorAdd() {
             {isUserAddPage && (
               <InputText
                 value={userName}
-                disabled={!isModifiable}
+                disabled={!isPasswordChangeModifiable}
                 onChange={(event: FormEvent<HTMLInputElement>) =>
                   setUserName(event.currentTarget.value)
                 }
@@ -241,7 +254,7 @@ export default function VendorAdd() {
               toggleMask
               header={pwCheckHeader}
               footer={pwCheckFooter}
-              disabled={!isModifiable}
+              disabled={!isPasswordChangeModifiable}
               promptLabel="Choose a password"
               weakLabel="Too simple"
               mediumLabel="Average complexity"
@@ -268,7 +281,7 @@ export default function VendorAdd() {
                 setPassword2(event.currentTarget.value)
               }
               toggleMask
-              disabled={!isModifiable}
+              disabled={!isPasswordChangeModifiable}
               feedback={false}
             />
           </div>
@@ -286,7 +299,7 @@ export default function VendorAdd() {
           <div className="col-6 flex">
             <InputSwitch
               checked={isAdmin}
-              disabled={!isModifiable}
+              disabled={!isAdminToggleModifiable}
               id="isAdmintoggle"
               name="isAdmintoggle"
               onChange={() => setIsAdmin(!isAdmin)}

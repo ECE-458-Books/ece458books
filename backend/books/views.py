@@ -133,7 +133,7 @@ class ListCreateBookAPIView(ListCreateAPIView, BookImageCreator):
     pagination_class = BookPagination
     filter_backends = [filters.OrderingFilter, CustomSearchFilter]
     ordering_fields = '__all__'
-    ordering = ['id']
+    ordering = ['title']
     search_fields = ['authors__name', 'title', '=publisher', '=isbn_10', '=isbn_13']
     isbn_toolbox = ISBNTools()
 

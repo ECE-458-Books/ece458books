@@ -19,7 +19,7 @@ class ListCreateGenreAPIView(ListCreateAPIView):
     pagination_class = GenrePagination
     filter_backends = [filters.OrderingFilter]
     ordering_fields = '__all__'
-    ordering = ['id']
+    ordering = ['name']
 
     def paginate_queryset(self, queryset):
         if 'no_pagination' in self.request.query_params:

@@ -24,6 +24,8 @@ import { CSS } from "@dnd-kit/utilities";
 import { onDragEnd, onDragOver, onDragStart } from "./DndFunctions";
 import { Updater } from "use-immer";
 import { useState } from "react";
+import { roundToTwoDecimalPlaces } from "../../../util/NumberOps";
+import { Tooltip } from "primereact/tooltip";
 
 // A droppable zone. The tag should be wrapped around the zone, and the id should be unique
 export interface DroppableProps {
@@ -79,28 +81,57 @@ export interface DraggableBookProps {
 export function DraggableBook(props: DraggableBookProps) {
   return (
     <SortableItem id={props.book.id} key={props.book.id}>
-      <Image
-        src={props.book.bookImageURL}
-        id={props.book.id}
-        alt="Image"
-        imageStyle={{
-          objectFit: "contain",
-          maxHeight: MAX_IMAGE_HEIGHT,
-          maxWidth: MAX_IMAGE_WIDTH,
-        }}
-        className="flex justify-content-center"
-        imageClassName="shadow-2 border-round"
-        onClick={() => {
-          if (
-            !props.setSelectedBook ||
-            !props.setIsBookPopupVisible ||
-            !props.isModifiable
-          )
-            return;
-          props.setSelectedBook(props.book);
-          props.setIsBookPopupVisible(true);
-        }}
-      />
+      <div className="pl-1">
+        <div className="flex col-12 justify-content-start p-1">
+          <Tooltip target=".custom-displaybook-tooltip" showDelay={700} />
+          <Image
+            src={props.book.bookImageURL}
+            id={props.book.id}
+            alt="Image"
+            imageStyle={{
+              objectFit: "contain",
+              maxHeight: MAX_IMAGE_HEIGHT,
+              maxWidth: MAX_IMAGE_WIDTH,
+            }}
+            className="flex justify-content-center custom-displaybook-tooltip"
+            imageClassName="shadow-2 border-round"
+            onClick={() => {
+              if (
+                !props.setSelectedBook ||
+                !props.setIsBookPopupVisible ||
+                !props.isModifiable
+              )
+                return;
+              props.setSelectedBook(props.book);
+              props.setIsBookPopupVisible(true);
+            }}
+            data-pr-tooltip={props.book.bookTitle}
+            data-pr-position="right"
+            data-pr-at="right+5 top"
+            data-pr-my="left center-2"
+          />
+        </div>
+        <div className="flex col-12 justify-content-start p-0">
+          <p style={{ fontSize: "0.6rem" }} className="m-0 p-0">
+            {props.book.displayMode}
+          </p>
+        </div>
+        <div className="flex col-12 justify-content-start p-0">
+          <p style={{ fontSize: "0.6rem" }} className="m-0 p-0">
+            Count: {props.book.displayCount}
+          </p>
+        </div>
+        <div className="flex col-12 justify-content-start p-0">
+          <p
+            style={{ fontSize: "0.6rem" }}
+            className={`m-0 p-0 ${
+              props.book.hasUnknownDimensions ? "font-bold" : ""
+            }`}
+          >
+            Space: {roundToTwoDecimalPlaces(props.book.shelfSpace)}
+          </p>
+        </div>
+      </div>
     </SortableItem>
   );
 }

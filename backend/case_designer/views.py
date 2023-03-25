@@ -13,7 +13,7 @@ class ListCreateBookcaseAPIView(ListCreateAPIView):
     pagination_class = BookcasePagination
     filter_backends = [filters.OrderingFilter]
     ordering_fields = '__all__'
-    ordering = ['last_edit_date']
+    ordering = ['-last_edit_date']
 
     def paginate_queryset(self, queryset):
         if 'no_pagination' in self.request.query_params:

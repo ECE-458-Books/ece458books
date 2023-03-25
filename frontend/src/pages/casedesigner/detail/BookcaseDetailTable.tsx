@@ -73,7 +73,7 @@ export default function BookcaseDetailTable(props: BookcaseDetailTableProps) {
     },
     {
       field: "shelfSpace",
-      header: "Shelf Space",
+      header: "Shelf Space (in)",
       customBody: (rowData: Shelf) =>
         AlteredTextTemplate(
           rowData.shelfSpace > props.shelfWidth ? "font-bold" : "",

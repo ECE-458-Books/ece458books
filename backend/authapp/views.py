@@ -33,7 +33,7 @@ class UserListAPIView(ListAPIView):
     pagination_class = UsersPagination
     filter_backends = [filters.OrderingFilter]
     ordering_fields = '__all__'
-    ordering = ['id']
+    ordering = ['username']
 
     def get_queryset(self):
         default_queryset = User.objects.filter(is_active=True)

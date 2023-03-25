@@ -44,7 +44,7 @@ class ListSalesRecordAPIView(ListAPIView):
     pagination_class = SalesReconciliationPagination
     filter_backends = [filters.OrderingFilter, filters.SearchFilter]
     ordering_fields = '__all__'
-    ordering = ['id']
+    ordering = ['-date']
 
     def paginate_queryset(self, queryset):
         if 'no_pagination' in self.request.query_params:

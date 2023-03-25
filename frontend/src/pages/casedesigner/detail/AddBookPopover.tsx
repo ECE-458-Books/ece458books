@@ -126,6 +126,12 @@ export default function AddEditDeleteDisplayBookPopup(
         <TextLabel label={"Display Count:"} />
         {numberEditor}
       </div>
+      <div className="flex col-12 justify-content-start p-1">
+        <TextLabel label={"Book Stock:"} />
+        <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
+          {props.selectedDisplayBook.stock}
+        </p>
+      </div>
       <div className="flex col-12 p-0">
         <div className="flex col-6 justify-content-end p-1">
           <div className="flex p-0 col-6">{deleteButton}</div>

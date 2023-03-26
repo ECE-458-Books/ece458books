@@ -331,7 +331,6 @@ export default function BookAdd() {
       if (!draft.some((book) => book.isbn13 === newBook.isbn13)) {
         draft.push(newBook);
       }
-      console.log(current(draft));
     });
   };
 

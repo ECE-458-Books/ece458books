@@ -13,6 +13,7 @@ import { LineItem } from "../../templates/inventorydetail/LineItemTableTemplate"
 import SelectSizeDropdown, {
   SelectSizeDropdownOptions,
 } from "../../components/dropdowns/SelectSizeDropdown";
+import { showFailure } from "../../components/Toast";
 
 export interface SalesRecord {
   id: string;
@@ -69,7 +70,11 @@ export default function SalesRecordList() {
       page: page,
       page_size: pageSize,
       ordering: sortField,
-    }).then((response) => onAPIResponse(response));
+    })
+      .then((response) => onAPIResponse(response))
+      .catch(() =>
+        showFailure(toast, "Sales Records Retrieval Error Occurred")
+      );
   };
 
   // Set state when response to API call is received

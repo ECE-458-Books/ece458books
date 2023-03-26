@@ -11,7 +11,6 @@ import {
   TableColumn,
 } from "../../components/datatable/TableColumns";
 import { filterById } from "../../util/IDOps";
-import AlteredTextTemplate from "../../components/templates/AlteredTextTemplate";
 import { NumberEditor } from "../../components/editors/NumberEditor";
 import { Book } from "../books/BookList";
 import AddRowButton from "../../components/buttons/AddRowButton";

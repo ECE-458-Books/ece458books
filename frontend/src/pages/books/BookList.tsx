@@ -14,7 +14,6 @@ import { APIBookSortFieldMap } from "../../apis/books/BooksConversions";
 import { APIToInternalBookConversion } from "../../apis/books/BooksConversions";
 import { TableColumn } from "../../components/datatable/TableColumns";
 import PriceTemplate from "../../components/templates/PriceTemplate";
-import AlteredTextTemplate from "../../components/templates/AlteredTextTemplate";
 import { ImageTemplate } from "../../components/templates/ImageTemplate";
 import GenreDropdown, {
   GenresDropdownData,

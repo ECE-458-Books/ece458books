@@ -94,6 +94,15 @@ export default function BookDetail() {
   useEffect(() => {
     BOOKS_API.getBookDetail({ id: id! })
       .then((response) => {
+        if (response.isGhost == true) {
+          showFailure(
+            toast,
+            `This book has been deleted from the database, and needs 
+            to be re-added before it can be viewed or edited (ISBN-13: ${response.isbn_13})`
+          );
+          return;
+        }
+
         const book = APIToInternalBookConversion(response);
         setOriginalBookData(book);
         setTitle(book.title);

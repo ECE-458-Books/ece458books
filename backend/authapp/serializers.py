@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from .models import User
-from .exceptions import ModifyUserError
-from .utils import can_modify
+from .utils import check_administrator_modify_restrictions
 
 class AdminUserModifySerializer(serializers.ModelSerializer):
     password = serializers.CharField(max_length=128, min_length=8, write_only=True, required=True)
@@ -24,10 +23,7 @@ class AdminUserModifySerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         """Updates a User."""
         request = self.context['request']
-        is_modifiable, error_msg = can_modify(request, instance)
-
-        if not is_modifiable:
-            raise ModifyUserError(error_msg)
+        check_administrator_modify_restrictions(request, instance)
 
         # Passwords shouldn't be handled with `setattr` because Django has function for hashing and salting passwords, so do it separately.
         password = validated_data.pop('password', None)

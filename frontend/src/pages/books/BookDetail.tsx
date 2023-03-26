@@ -687,9 +687,7 @@ export default function BookDetail() {
             <div className="flex p-0 col-6">
               <TextLabel label="Shelf Space (in):" />
               <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
-                <label className={thickness ? "" : "font-bold"}>
-                  {shelfSpace}
-                </label>
+                {`${shelfSpace}${thickness ? "" : "*"}`}
               </p>
             </div>
           </div>

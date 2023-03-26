@@ -11,7 +11,6 @@ import {
   TableColumn,
 } from "../../components/datatable/TableColumns";
 import { filterById } from "../../util/IDOps";
-import AlteredTextTemplate from "../../components/templates/AlteredTextTemplate";
 import { NumberEditor } from "../../components/editors/NumberEditor";
 import { Book } from "../books/BookList";
 import AddRowButton from "../../components/buttons/AddRowButton";
@@ -106,13 +105,10 @@ export default function ShelfCalculator() {
     },
     {
       field: "shelfSpace",
-      header: "Shelf Space (inches) (Bold=Estimation)",
+      header: "Shelf Space (inches)",
       style: { width: "10%" },
       customBody: (rowData: DisplayBook) =>
-        AlteredTextTemplate(
-          rowData.hasUnknownDimensions ? "font-bold" : "",
-          Math.round(rowData.shelfSpace * 100) / 100
-        ),
+        `${rowData.shelfSpace}${rowData.hasUnknownDimensions ? "*" : ""}`,
     },
   ];
 

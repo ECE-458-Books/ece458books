@@ -120,13 +120,9 @@ export function DraggableBook(props: DraggableBookProps) {
           </p>
         </div>
         <div className="flex col-12 justify-content-start p-0">
-          <p
-            style={{ fontSize: "0.6rem" }}
-            className={`m-0 p-0 ${
-              props.book.hasUnknownDimensions ? "font-bold" : ""
-            }`}
-          >
+          <p style={{ fontSize: "0.6rem" }} className={`m-0 p-0`}>
             Space: {roundToTwoDecimalPlaces(props.book.shelfSpace)}
+            {props.book.hasUnknownDimensions ? "*" : ""}
           </p>
         </div>
       </div>

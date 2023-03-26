@@ -55,7 +55,7 @@ export default function BookcaseDetail() {
   const navigate = useNavigate();
   // -------- STATE --------
   // From URL
-  const { id } = useParams();
+  let { id } = useParams();
   const isAddPage = id === undefined;
   const [isModifiable, setIsModifiable] = useState<boolean>(id === undefined);
 
@@ -74,7 +74,7 @@ export default function BookcaseDetail() {
   // Load the Bookcase data on page load
   useEffect(() => {
     if (!isAddPage) {
-      CASE_DESIGNER_API.getBookcaseDetail(id)
+      CASE_DESIGNER_API.getBookcaseDetail(id!)
         .then((response) => {
           const bookcase = APIToInternalBookcaseConversion(response);
           setOriginalData(bookcase);
@@ -108,6 +108,7 @@ export default function BookcaseDetail() {
           draft.name = bookcaseNameInSaveAsPopup;
         });
         setOriginalData(APIToInternalBookcaseConversion(response));
+        id = response.id!.toString();
         navigate("/bookcases/detail/" + response.id);
       })
       .catch((error) => {
@@ -124,6 +125,7 @@ export default function BookcaseDetail() {
 
   const callModifyBookcaseAPI = () => {
     const APIbookcase = InternalToAPIBookcaseConversion(bookcase);
+    APIbookcase.id = Number(id);
     CASE_DESIGNER_API.modifyBookcase(APIbookcase)
       .then(() => {
         showSuccess(toast, "Bookcase modified successfully");

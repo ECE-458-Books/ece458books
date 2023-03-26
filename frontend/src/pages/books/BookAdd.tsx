@@ -127,14 +127,13 @@ export default function BookAdd() {
     },
     {
       field: "isbn13",
-      header: "ISBN 13 & ISBN 10",
+      header: "ISBN 13",
       style: { width: "4%", fontSize: "small" },
-      customBody: (rowData: BookWithDBTag) => (
-        <>
-          <div>{rowData.isbn13}</div>
-          <div>{rowData.isbn10}</div>
-        </>
-      ),
+    },
+    {
+      field: "isbn10",
+      header: "ISBN 10",
+      style: { width: "4%", fontSize: "small" },
     },
     {
       field: "publisher",
@@ -441,7 +440,7 @@ export default function BookAdd() {
     <Column
       header="View Related Books"
       expander={allowExpansion}
-      style={{ width: "2%", fontSize: 12, padding: "0.1rem" }}
+      style={{ width: "2%", fontSize: 12 }}
     />
   );
 

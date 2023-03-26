@@ -209,7 +209,7 @@ export default function SalesReport() {
           </h1>
           <form onSubmit={onSubmit}>
             <div className="flex pb-2 justify-content-evenly card-container">
-              <div className="flex col-4 p-0 m-0">
+              <div className="flex col-5 p-0 m-0">
                 <label
                   htmlFor="date"
                   className="flex p-component p-text-secondary text-center text-teal-900 my-auto mr-2 p-0"

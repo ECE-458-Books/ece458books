@@ -31,6 +31,7 @@ export default function BookDetailRelatedBooks(
     {
       field: "imageUrl",
       header: "Cover Art",
+      className: props.globalClassName,
       customBody: (rowData: RelatedBook) => ImageTemplate(rowData.imageUrl),
       style: { minWidth: "1rem", padding: "0.25rem" },
     },

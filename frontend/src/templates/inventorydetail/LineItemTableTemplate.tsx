@@ -15,6 +15,7 @@ import { calculateTotal } from "../../util/LineItemOps";
 import { errorCellBody } from "../errors/CSVImportErrors";
 import { v4 as uuid } from "uuid";
 import { NormalTextDisplay } from "../../components/text/NormalTextDisplay";
+import { isHighlightingText } from "../../util/ClickCheck";
 
 export interface LineItem {
   isNewRow: boolean;
@@ -157,7 +158,7 @@ export default function LineItemTableTemplate(
 
   const onRowClick = (event: DataTableRowClickEvent) => {
     const lineItem = event.data as LineItem;
-    if (!props.isAddPage && !props.isModifiable) {
+    if (!props.isAddPage && !props.isModifiable && !isHighlightingText()) {
       navigate(`/books/detail/${lineItem.bookId}`);
     }
   };

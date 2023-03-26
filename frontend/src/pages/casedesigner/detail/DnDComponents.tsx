@@ -1,9 +1,6 @@
 import {
-  closestCenter,
-  closestCorners,
   DndContext,
   DragOverlay,
-  KeyboardSensor,
   PointerSensor,
   pointerWithin,
   useDroppable,
@@ -19,7 +16,6 @@ import { Bookcase, DisplayBook, Shelf } from "../BookcaseList";
 import {
   horizontalListSortingStrategy,
   SortableContext,
-  sortableKeyboardCoordinates,
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";

@@ -14,6 +14,7 @@ import ListTemplate from "../../templates/list/ListTemplate";
 import SelectSizeDropdown, {
   SelectSizeDropdownOptions,
 } from "../../components/dropdowns/SelectSizeDropdown";
+import { showFailure } from "../../components/Toast";
 
 // The Vendor Interface
 export interface Vendor {
@@ -59,7 +60,9 @@ export default function VendorList() {
       page: page,
       page_size: pageSize,
       ordering: sortField,
-    }).then((response) => onAPIResponse(response));
+    })
+      .then((response) => onAPIResponse(response))
+      .catch(() => showFailure(toast, "Vendor List Retrieval Error Occured"));
   };
 
   // Set state when response to API call is received

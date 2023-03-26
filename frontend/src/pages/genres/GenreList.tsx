@@ -15,6 +15,7 @@ import ListTemplate from "../../templates/list/ListTemplate";
 import SelectSizeDropdown, {
   SelectSizeDropdownOptions,
 } from "../../components/dropdowns/SelectSizeDropdown";
+import { showFailure } from "../../components/Toast";
 
 export interface Genre {
   id: string;
@@ -68,7 +69,9 @@ export default function GenreList() {
       page: page,
       page_size: pageSize,
       ordering: sortField,
-    }).then((response) => onAPIResponse(response));
+    })
+      .then((response) => onAPIResponse(response))
+      .catch(() => showFailure(toast, "Genre List Retrieval Error Occurred"));
   };
 
   // Set state when response to API call is received
@@ -136,7 +139,7 @@ export default function GenreList() {
   return (
     <div>
       <div className="flex justify-content-end">
-        <div className="card col-9 pt-0 px-3 justify-content-center;">
+        <div className="card col-9 pt-0 px-3 justify-content-center">
           <Toast ref={toast} />
           {dataTable}
         </div>

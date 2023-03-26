@@ -15,6 +15,7 @@ import { LineItem } from "../../templates/inventorydetail/LineItemTableTemplate"
 import SelectSizeDropdown, {
   SelectSizeDropdownOptions,
 } from "../../components/dropdowns/SelectSizeDropdown";
+import { showFailure } from "../../components/Toast";
 
 export interface PurchaseOrder {
   id: string;
@@ -89,9 +90,13 @@ export default function PurchaseOrderList() {
       page: page,
       page_size: pageSize,
       ordering: sortField,
-    }).then((response) => {
-      return onAPIResponse(response);
-    });
+    })
+      .then((response) => {
+        return onAPIResponse(response);
+      })
+      .catch(() =>
+        showFailure(toast, "Purchase Order List Retrieval Error Occurred")
+      );
   };
 
   // Set state when response to API call is received

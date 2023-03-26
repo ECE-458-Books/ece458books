@@ -16,6 +16,7 @@ import { LineItem } from "../../templates/inventorydetail/LineItemTableTemplate"
 import SelectSizeDropdown, {
   SelectSizeDropdownOptions,
 } from "../../components/dropdowns/SelectSizeDropdown";
+import { showFailure } from "../../components/Toast";
 
 export interface BuyBack {
   id: string;
@@ -88,7 +89,9 @@ export default function BuyBackList() {
       page: page,
       page_size: pageSize,
       ordering: sortField,
-    }).then((response) => onAPIResponse(response));
+    })
+      .then((response) => onAPIResponse(response))
+      .catch(() => showFailure(toast, "Buyback List Retrieval Error Occurred"));
   };
 
   // Set state when response to API call is received

@@ -185,7 +185,7 @@ export default function SalesReport() {
             end: moment(dates[1]).format("YYYY-MM-DD"),
           })
             .then((response) => onAPIResponse(response))
-            .catch(() => showFailure("Error retrieving sales report"));
+            .catch(() => showFailure("Error Retrieving Sales Report"));
         } else {
           showFailure("Select end date");
         }

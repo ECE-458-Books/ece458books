@@ -382,9 +382,9 @@ export default function BookList() {
 
   // Calls the Books API
   const callAPI = (page: number, pageSize: number, sortField: string) => {
-    BOOKS_API.getBooks(createAPIRequest(page, pageSize, sortField)).then(
-      (response) => onAPIResponse(response)
-    );
+    BOOKS_API.getBooks(createAPIRequest(page, pageSize, sortField))
+      .then((response) => onAPIResponse(response))
+      .catch(() => showFailure(toast, "Book List Retrieval Error Occurred."));
   };
 
   // Set state when response to API call is received
@@ -458,15 +458,6 @@ export default function BookList() {
     />
   );
 
-  const shelfCalculator = (
-    <Button
-      label="Shelf Calculator"
-      icon="pi pi-calculator"
-      className="p-button-sm my-auto mr-1"
-      onClick={() => navigate("/books/shelf-calculator")}
-    />
-  );
-
   const addBookButton = (
     <AddPageButton
       onClick={() => navigate("/books/add")}
@@ -477,7 +468,6 @@ export default function BookList() {
 
   const rightSideButtons = (
     <>
-      {shelfCalculator}
       {csvExportButton}
       {addBookButton}
     </>

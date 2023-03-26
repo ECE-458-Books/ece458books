@@ -15,6 +15,7 @@ import { TableColumn } from "../../components/datatable/TableColumns";
 import SelectSizeDropdown, {
   SelectSizeDropdownOptions,
 } from "../../components/dropdowns/SelectSizeDropdown";
+import { showFailure } from "../../components/Toast";
 
 export interface User {
   id: string;
@@ -60,7 +61,9 @@ export default function UserList() {
       page: page,
       page_size: pageSize,
       ordering: sortField,
-    }).then((response) => onAPIResponse(response));
+    })
+      .then((response) => onAPIResponse(response))
+      .catch(() => showFailure(toast, "User List Retrieval Error Occurred"));
   };
 
   // Set state when response to API call is received

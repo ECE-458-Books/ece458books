@@ -15,6 +15,7 @@ import {
 } from "../../apis/casedesigner/CaseDesignerAPI";
 import { APIToInternalBookcaseConversion } from "../../apis/casedesigner/CaseDesignerConversions";
 import { DateTimeTemplate } from "../../components/templates/DateTemplate";
+import { Button } from "primereact/button";
 
 export interface Bookcase {
   id: string;
@@ -83,7 +84,9 @@ export default function BookcaseList() {
     CASE_DESIGNER_API.getBookcases({
       page: page,
       page_size: pageSize,
-    }).then((response) => onAPIResponse(response));
+    })
+      .then((response) => onAPIResponse(response))
+      .catch(() => "Bookcase List Retrieval Error Occurred");
   };
 
   // Set state when response to API call is received
@@ -115,6 +118,15 @@ export default function BookcaseList() {
     />
   );
 
+  const shelfCalculator = (
+    <Button
+      label="Shelf Calculator"
+      icon="pi pi-calculator"
+      className="p-button-sm my-auto mr-1"
+      onClick={() => navigate("/books/shelf-calculator")}
+    />
+  );
+
   const dataTable = (
     <ListTemplate
       columns={COLUMNS}
@@ -136,19 +148,23 @@ export default function BookcaseList() {
     />
   );
 
+  const rightSideButtons = (
+    <>
+      {shelfCalculator}
+      {addBookcaseButton}
+    </>
+  );
+
   return (
     <div>
-      <div className="flex justify-content-end">
-        <div className="card col-9 pt-0 px-3 justify-content-center">
-          <Toast ref={toast} />
-          {dataTable}
+      <div className="grid justify-content-end flex my-2">
+        <div className="flex justify-content-end m-0 p-0 col-5">
+          {rightSideButtons}
         </div>
-        <div
-          className="flex justify-content-end align-items-start mr-1 my-2"
-          style={{ width: "12.4%" }}
-        >
-          {addBookcaseButton}
-        </div>
+      </div>
+      <div className="flex col-12 pt-0 px-3 justify-content-center">
+        <Toast ref={toast} />
+        {dataTable}
       </div>
     </div>
   );

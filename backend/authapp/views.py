@@ -13,7 +13,7 @@ from .serializers import AdminUserModifySerializer, UserListSerializer, Registra
 from .models import User
 from .paginations import UsersPagination
 from books.utils import str2bool
-from .utils import can_modify
+from .utils import check_administrator_delete_restrictions
 
 class UserAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -55,10 +55,7 @@ class UserRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        is_modifiable, error_msg = can_modify(request, instance)
-
-        if not is_modifiable:
-            raise ModifyUserError(error_msg)
+        check_administrator_delete_restrictions(request, instance)
         
         # Deleting a User means setting is_active to False
         instance.is_active = False

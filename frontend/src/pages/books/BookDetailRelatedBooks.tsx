@@ -67,7 +67,7 @@ export default function BookDetailRelatedBooks(
     },
     {
       field: "publishedYear",
-      header: "Publish Year",
+      header: "Publication Year",
       className: props.globalClassName,
       style: { minWidth: "4rem", width: "4rem" },
     },

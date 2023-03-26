@@ -593,13 +593,13 @@ export default function BookDetail() {
           </div>
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex p-0 col-6">
-              <TextLabel label="ISBN13:" />
+              <TextLabel label="ISBN 13:" />
               <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
                 {isbn13}
               </p>
             </div>
             <div className="flex p-0 col-6">
-              <TextLabel label="ISBN10:" />
+              <TextLabel label="ISBN 10:" />
               <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
                 {isbn10}
               </p>

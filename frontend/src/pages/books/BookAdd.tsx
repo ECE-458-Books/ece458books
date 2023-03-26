@@ -225,6 +225,11 @@ export default function BookAdd() {
           "retailNumberBookAdd"
         ),
     },
+    {
+      field: "numRelatedBooks",
+      header: "Number of Related Books",
+      style: { width: "4%", fontSize: "small" },
+    },
   ];
 
   // Image event handlers

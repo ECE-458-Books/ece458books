@@ -50,6 +50,7 @@ function App() {
           localStorage.removeItem("userID");
           localStorage.removeItem("loginTime");
           localStorage.removeItem("refreshToken");
+          localStorage.removeItem("currentUsername");
           setCurrentUser(undefined);
         }}
         currentUser={currentUser}

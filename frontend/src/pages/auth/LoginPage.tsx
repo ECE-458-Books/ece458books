@@ -41,6 +41,7 @@ export default function LoginPage(props: LoginPageProps) {
         localStorage.setItem("accessToken", response.access);
         localStorage.setItem("loginTime", new Date().toString());
         localStorage.setItem("userID", response.id.toString());
+        localStorage.setItem("currentUsername", userName);
         navigate("/books");
       })
       .catch(() => {

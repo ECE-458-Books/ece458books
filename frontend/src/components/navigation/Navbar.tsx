@@ -102,8 +102,16 @@ function NavigationBar(props: NavigationBarProps) {
       onClick={() => navigateIfLoggedIn("/books")}
     ></img>
   );
+  const end = (
+    <div>
+      <div className="font-bold">{props.currentUser?.userType}</div>
+      <div>{localStorage.getItem("currentUsername")}</div>
+    </div>
+  );
 
-  return <Menubar model={items} start={start} className="navbarItems" />;
+  return (
+    <Menubar model={items} start={start} end={end} className="navbarItems" />
+  );
 }
 
 export default NavigationBar;

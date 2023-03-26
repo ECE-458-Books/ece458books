@@ -241,13 +241,6 @@ class ListCreateBookAPIView(ListCreateAPIView, BookImageCreator):
 
         default_query_set = default_query_set.annotate(genre=Subquery(Genre.objects.filter(book=OuterRef('pk')).order_by('name').values('name')[:1]))
 
-        # Filter for a specific genre
-        # If a genre exists, the default query_set needs to be filtered by that specific genre
-        if genre := self.request.query_params.get('genre'):
-            # The requirements for Evolution 1 requires filtering by genre.
-            # Thus if a query key 'genre' exists, we only consider the query_set having that specific genre
-            return default_query_set.filter(genres__name=genre)
-
         # Search for books that a specific vendor has sold
         vendor = self.request.GET.get('vendor')
         if vendor is not None:
@@ -259,6 +252,13 @@ class ListCreateBookAPIView(ListCreateAPIView, BookImageCreator):
         default_query_set = self.annotate_last_month_sales(default_query_set)
         default_query_set = self.annotate_shelf_space(default_query_set)
         default_query_set = self.annotate_days_of_supply(default_query_set)
+
+        # Filter for a specific genre
+        # If a genre exists, the default query_set needs to be filtered by that specific genre
+        if genre := self.request.query_params.get('genre'):
+            # The requirements for Evolution 1 requires filtering by genre.
+            # Thus if a query key 'genre' exists, we only consider the query_set having that specific genre
+            return default_query_set.filter(genres__name=genre)
 
         return default_query_set
 

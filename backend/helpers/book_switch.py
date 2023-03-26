@@ -14,7 +14,7 @@ class BookSwitch:
         return self.book.get('isbn_13')
 
     def case_isbn_10(self):
-        return self.book.get('isbn_10')
+        return self.book.get('isbn_10', '')
 
     def case_publisher(self):
         return self.book.get('publisher')
@@ -53,4 +53,7 @@ class BookSwitch:
         return self.book.get('days_of_supply')
 
     def case_best_buyback_price(self):
-        return self.book.get('best_buyback_price')
+        return self.book.get('best_buyback_price', 0)
+
+    def case_num_related_books(self):
+        return self.book.get('num_related_books')

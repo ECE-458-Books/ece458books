@@ -1,9 +1,8 @@
 import {
-  closestCorners,
   DndContext,
   DragOverlay,
-  KeyboardSensor,
   PointerSensor,
+  pointerWithin,
   useDroppable,
   useSensor,
   useSensors,
@@ -17,7 +16,6 @@ import { Bookcase, DisplayBook, Shelf } from "../BookcaseList";
 import {
   horizontalListSortingStrategy,
   SortableContext,
-  sortableKeyboardCoordinates,
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -122,13 +120,9 @@ export function DraggableBook(props: DraggableBookProps) {
           </p>
         </div>
         <div className="flex col-12 justify-content-start p-0">
-          <p
-            style={{ fontSize: "0.6rem" }}
-            className={`m-0 p-0 ${
-              props.book.hasUnknownDimensions ? "font-bold" : ""
-            }`}
-          >
+          <p style={{ fontSize: "0.6rem" }} className={`m-0 p-0`}>
             Space: {roundToTwoDecimalPlaces(props.book.shelfSpace)}
+            {props.book.hasUnknownDimensions ? "*" : ""}
           </p>
         </div>
       </div>
@@ -207,9 +201,6 @@ export function DragAndDropContext(props: DragAndDropContextProps) {
       activationConstraint: {
         distance: 8,
       },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
     })
   );
 
@@ -219,7 +210,7 @@ export function DragAndDropContext(props: DragAndDropContextProps) {
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCorners}
+      collisionDetection={pointerWithin}
       onDragStart={(e) =>
         onDragStart(e, props.shelves, setCurrentlyDraggedBook)
       }

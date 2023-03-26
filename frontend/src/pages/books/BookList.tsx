@@ -14,7 +14,6 @@ import { APIBookSortFieldMap } from "../../apis/books/BooksConversions";
 import { APIToInternalBookConversion } from "../../apis/books/BooksConversions";
 import { TableColumn } from "../../components/datatable/TableColumns";
 import PriceTemplate from "../../components/templates/PriceTemplate";
-import AlteredTextTemplate from "../../components/templates/AlteredTextTemplate";
 import { ImageTemplate } from "../../components/templates/ImageTemplate";
 import GenreDropdown, {
   GenresDropdownData,
@@ -304,10 +303,8 @@ export default function BookList() {
       header: "Shelf Space (in)",
       sortable: true,
       customBody: (rowData: Book) =>
-        AlteredTextTemplate(
-          rowData.thickness ? "" : "font-bold",
-          rowData.shelfSpace
-        ),
+        `${rowData.shelfSpace}${rowData.thickness ? "" : "*"}`,
+
       style: { minWidth: "3rem" },
       hidden: !(
         visibleColumns.filter((item) => item.field == "shelfSpace").length > 0

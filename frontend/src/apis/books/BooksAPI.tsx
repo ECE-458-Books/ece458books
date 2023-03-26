@@ -220,7 +220,7 @@ export const BOOKS_API = {
     });
   },
 
-  addBookFinal: async function (req: AddBookFinalReq) {
+  addBookFinal: async function (req: AddBookFinalReq): Promise<APIBook> {
     const formData = new FormData();
     formData.append("title", req.book.title);
     formData.append("isbn_13", req.book.isbn_13.toString());

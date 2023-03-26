@@ -1,7 +1,7 @@
 import { Toast } from "primereact/toast";
 
 export const showSuccess = (toast: React.RefObject<Toast>, message: string) => {
-  toast.current?.show({ severity: "success", summary: message });
+  toast.current?.show({ severity: "success", summary: message, life: 2000 });
 };
 
 export const showWarning = (toast: React.RefObject<Toast>, message: string) => {

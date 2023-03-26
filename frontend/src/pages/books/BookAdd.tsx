@@ -39,12 +39,15 @@ import DeleteColumn from "../../components/datatable/DeleteColumn";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { Column } from "primereact/column";
 import BookDetailRelatedBooks from "./BookDetailRelatedBooks";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export interface BookWithDBTag extends Book {
   fromDB: boolean;
 }
 
 export default function BookAdd() {
+  const navigate = useNavigate();
   const [textBox, setTextBox] = useState<string>("");
   const [books, setBooks] = useImmer<BookWithDBTag[]>([]);
   const [genreNamesList, setGenreNamesList] = useState<string[]>([]);
@@ -112,7 +115,7 @@ export default function BookAdd() {
     },
     {
       field: "genres",
-      header: "Genre",
+      header: "Genre (Required)",
       style: { width: "10%", fontSize: "small" },
       customBody: (rowData: BookWithDBTag) =>
         genresDropdownEditor(rowData.genres, (newValue) => {
@@ -208,7 +211,7 @@ export default function BookAdd() {
     },
     {
       field: "retailPrice",
-      header: "Retail Price",
+      header: "Retail Price (Required)",
       style: { width: "2%", fontSize: "small" },
       customBody: (rowData: BookWithDBTag) =>
         PriceEditor(
@@ -221,6 +224,11 @@ export default function BookAdd() {
           },
           "retailNumberBookAdd"
         ),
+    },
+    {
+      field: "numRelatedBooks",
+      header: "Number of Related Books",
+      style: { width: "4%", fontSize: "small" },
     },
   ];
 
@@ -287,7 +295,6 @@ export default function BookAdd() {
 
   const onISBNInitialSubmit = (event: FormEvent<HTMLFormElement>): void => {
     logger.debug("Submitting Initial Book Lookup", textBox);
-    setBooks([]);
     setIsLoadingButton(true);
     BOOKS_API.addBookInitialLookup({ isbns: textBox })
       .then((response) => {
@@ -323,7 +330,11 @@ export default function BookAdd() {
         imageFile: new File([], "blank"),
       };
       newBook.newImageData = newImageUploadData;
-      draft.push(newBook);
+
+      // Only add book if ISBN 13 is unique
+      if (!draft.some((book) => book.isbn13 === newBook.isbn13)) {
+        draft.push(newBook);
+      }
     });
   };
 
@@ -350,29 +361,39 @@ export default function BookAdd() {
 
     logger.debug("Submitting Final Book Add", books);
 
+    const bookRequests = [];
+
     for (const book of books) {
       if (!book.fromDB || (book.isGhost && book.fromDB)) {
-        BOOKS_API.addBookFinal({
-          book: InternalToAPIBookConversion(book),
-          image: book.newImageData!.imageFile,
-          isImageUploaded: book.newImageData!.isImageUpload!,
-          isImageRemoved: book.newImageData!.isImageDelete!,
-        })
-          .then(() => showSuccess(toast, "Book Added ".concat(book.title)))
-          .catch(() => showFailure(toast, "Could not add ".concat(book.title)));
+        bookRequests.push(
+          BOOKS_API.addBookFinal({
+            book: InternalToAPIBookConversion(book),
+            image: book.newImageData!.imageFile,
+            isImageUploaded: book.newImageData!.isImageUpload!,
+            isImageRemoved: book.newImageData!.isImageDelete!,
+          })
+        );
       } else {
-        BOOKS_API.modifyBook({
-          book: InternalToAPIBookConversion(book),
-          image: book.newImageData!.imageFile!,
-          isImageUploaded: book.newImageData!.isImageUpload!,
-          isImageRemoved: book.newImageData!.isImageDelete!,
-        })
-          .then(() => showSuccess(toast, "Book Modified ".concat(book.title)))
-          .catch(() => {
-            showFailure(toast, "Could not modify ".concat(book.title));
-          });
+        bookRequests.push(
+          BOOKS_API.modifyBook({
+            book: InternalToAPIBookConversion(book),
+            image: book.newImageData!.imageFile!,
+            isImageUploaded: book.newImageData!.isImageUpload!,
+            isImageRemoved: book.newImageData!.isImageDelete!,
+          })
+        );
       }
     }
+
+    axios
+      .all(bookRequests)
+      .then(() => {
+        showSuccess(toast, "Books added successfully");
+        navigate("/books");
+      })
+      .catch(() => {
+        showFailure(toast, "One or more of the books failed to add");
+      });
     event.preventDefault();
   };
 
@@ -396,10 +417,6 @@ export default function BookAdd() {
       <BackButton className="ml-1" />
     </div>
   );
-
-  //Two Forms exist in order for the seperate submission of two seperate types of data.
-  //First one is the submission of ISBNS that need to be added
-  //Second one is the submission of the added books and their modified fields
 
   const rowExpansionTemplate = (rowData: BookWithDBTag) => {
     return (
@@ -556,7 +573,7 @@ export default function BookAdd() {
               <Button
                 id="confirmbooks"
                 name="confirmbooks"
-                label="Submit"
+                label="Submit & Go Back"
                 disabled={books.length == 0}
                 className="p-button-success p-button-raised"
                 type="submit"

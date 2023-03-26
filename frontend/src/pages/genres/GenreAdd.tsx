@@ -99,14 +99,14 @@ export default function GenreAdd() {
             className="p-button-info"
           />
           <Button
-            label="Submit"
+            label="Submit & Add More"
             type="button"
             onClick={() => onSubmit(false)}
             disabled={textBox.length == 0}
             className="p-button-success p-button-raised"
           />
           <Button
-            label="Submit and Go Back"
+            label="Submit & Go Back"
             type="button"
             disabled={textBox.length == 0}
             onClick={() => {

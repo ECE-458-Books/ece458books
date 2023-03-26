@@ -125,7 +125,7 @@ export default function VendorAdd() {
       onHide={() => setIsConfirmationPopupVisible(false)}
       onFinalSubmission={onSubmit}
       onShowPopup={() => setIsConfirmationPopupVisible(true)}
-      buttonLabel={"Submit"}
+      buttonLabel={"Submit & Add More"}
       className="p-button-success ml-2"
       disabled={vendors.length == 0 || !areAllVendorsValid()}
     />
@@ -143,7 +143,7 @@ export default function VendorAdd() {
         setIsConfirmationPopupVisible(true);
         setIsGoBackActive(true);
       }}
-      buttonLabel={"Submit and Go Back"}
+      buttonLabel={"Submit & Go Back"}
       className="p-button-success ml-2"
       disabled={vendors.length == 0 || !areAllVendorsValid()}
     />

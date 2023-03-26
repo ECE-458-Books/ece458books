@@ -399,7 +399,7 @@ export default function BBDetail() {
       onFinalSubmission={onSubmit}
       onShowPopup={() => setIsConfirmationPopupVisible(true)}
       disabled={!isModifiable || checkForNecessaryValues()}
-      buttonLabel={"Submit"}
+      buttonLabel={"Submit & Add More"}
       className="p-button-success ml-2"
     />
   );
@@ -418,7 +418,7 @@ export default function BBDetail() {
         setIsGoBackActive(true);
       }}
       disabled={!isModifiable || checkForNecessaryValues()}
-      buttonLabel={"Submit and Go Back"}
+      buttonLabel={"Submit & Go Back"}
       className="p-button-success ml-2"
     />
   );

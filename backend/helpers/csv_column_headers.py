@@ -3,7 +3,7 @@ shared_headers = ["isbn", "quantity"]
 csv_column_headers = {"purchases": ["unit_wholesale_price"], "sales": ["unit_retail_price"], "buybacks": ["unit_buyback_price"]}
 
 csv_export_column_headers = {
-    'books': ['title', 'authors', 'isbn_13', 'isbn_10', 'publisher', 'publication_year', 'page_count', 'height', 'width', 'thickness', 'retail_price', 'genre', 'inventory_count', 'shelf_space_inches', 'last_month_sales', 'days_of_supply', 'best_buyback_price']
+    'books': ['title', 'authors', 'isbn_13', 'isbn_10', 'publisher', 'publication_year', 'page_count', 'height', 'width', 'thickness', 'retail_price', 'genre', 'inventory_count', 'shelf_space_inches', 'last_month_sales', 'days_of_supply', 'best_buyback_price', 'num_related_books']
 }
 
 def get_csv_headers(csv_import_type: str) -> list:

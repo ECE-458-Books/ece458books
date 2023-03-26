@@ -25,6 +25,12 @@ class CSVWriter:
         filter_kwargs = generate_filter_from_query_params(request.query_params.dict())
         books = Book.objects.filter(**filter_kwargs)
 
+        # Order queryset by given ordering default is title
+        ordering = request.query_params.dict().get('ordering', 'title')
+        if ordering == '': ordering = 'title'
+
+        books = books.order_by(ordering)
+
         response = HttpResponse(
             content_type='text/csv',
             headers={'Content-Disposition': 'attachment; filename="books.csv"'}

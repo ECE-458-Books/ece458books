@@ -7,11 +7,12 @@ interface EditCancelButtonProps {
   isAddPage: boolean;
   isModifiable: boolean;
   className?: string;
+  disableUserRestriction?: boolean;
 }
 
 export default function EditCancelButton(props: EditCancelButtonProps) {
   return (
-    <Restricted to={"modify"}>
+    <Restricted to={"modify"} disabled={props.disableUserRestriction}>
       {!props.isAddPage && !props.isModifiable && (
         <Button
           id="modifyBBToggle"

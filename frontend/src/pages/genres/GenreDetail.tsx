@@ -77,6 +77,7 @@ export default function GenreDetail() {
       .then(() => {
         showSuccess(toast, "Genre modified");
         setOriginalGenreName(genreName);
+        setIsModifiable(false);
       })
       .catch((error) => {
         showFailure(
@@ -87,7 +88,6 @@ export default function GenreDetail() {
         );
         setGenreName(originalGenreName);
       });
-    setIsModifiable(false);
   };
 
   // The navigator to switch pages

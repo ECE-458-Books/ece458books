@@ -7,9 +7,14 @@ import PermissionContext from "./PermissionContext";
 interface ConsumerProps {
   to: string;
   children: React.ReactNode;
+  disabled?: boolean;
 }
 
 export default function Restricted(props: ConsumerProps) {
+  if (props.disabled) {
+    return <>{props.children}</>;
+  }
+
   const { isAllowedTo } = useContext(PermissionContext);
 
   if (isAllowedTo(props.to)) {

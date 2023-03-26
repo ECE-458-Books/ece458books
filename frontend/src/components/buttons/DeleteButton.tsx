@@ -6,11 +6,12 @@ interface DeleteButtonProps {
   onClick: () => void;
   visible?: boolean;
   disabled?: boolean;
+  disableUserRestriction?: boolean;
 }
 
 export default function DeleteButton(props: DeleteButtonProps) {
   return (
-    <Restricted to={"delete"}>
+    <Restricted to={"delete"} disabled={props.disableUserRestriction}>
       <Button
         type="button"
         label="Delete"

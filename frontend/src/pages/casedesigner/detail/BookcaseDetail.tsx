@@ -180,6 +180,7 @@ export default function BookcaseDetail() {
       isAddPage={isAddPage}
       isModifiable={isModifiable}
       className="my-auto p-button-sm mr-1"
+      disableUserRestriction={true}
     />
   );
 
@@ -187,6 +188,7 @@ export default function BookcaseDetail() {
     <DeleteButton
       visible={!isAddPage}
       onClick={() => setIsDeletePopupVisible(true)}
+      disableUserRestriction={true}
     />
   );
 
@@ -263,12 +265,10 @@ export default function BookcaseDetail() {
   );
 
   const rightToolbar = (
-    <Restricted to={"modify"}>
-      <div className="flex justify-content-end">
-        {saveAsButton}
-        {saveButton}
-      </div>
-    </Restricted>
+    <div className="flex justify-content-end">
+      {saveAsButton}
+      {saveButton}
+    </div>
   );
 
   // Components that are attached to the table
@@ -285,12 +285,10 @@ export default function BookcaseDetail() {
 
   const bookcaseName = (
     <div className="flex">
-      {isAddPage ? (
-        ""
-      ) : (
+      {!isAddPage && (
         <>
           <TextLabel label={"Name: "} />
-          <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
+          <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
             {bookcase.name}
           </p>
         </>

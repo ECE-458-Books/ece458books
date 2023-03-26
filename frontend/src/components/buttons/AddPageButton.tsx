@@ -5,11 +5,12 @@ interface AddPageButtonProps {
   label: string;
   onClick: () => void;
   className?: string;
+  disableUserRestriction?: boolean;
 }
 
 export default function AddPageButton(props: AddPageButtonProps) {
   return (
-    <Restricted to={"add"}>
+    <Restricted to={"add"} disabled={props.disableUserRestriction}>
       <Button
         type="button"
         label={props.label}

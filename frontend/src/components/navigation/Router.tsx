@@ -59,6 +59,7 @@ export default function Router(props: RouterProps) {
         <Route path="sales-records/detail/:id" element={<ModifySR />} />
         <Route path="book-buybacks/detail/:id" element={<ModifyBB />} />
         <Route path="vendors/detail/:id" element={<VendorDetail />} />
+        <Route path="bookcases/add" element={<BookcaseDetail />} />
         <Route path="bookcases/detail/:id" element={<BookcaseDetail />} />
         <Route path="change-password" element={<PasswordChangePage />} />
         <Route path="sales-report" element={<SalesReportPage />} />
@@ -69,7 +70,6 @@ export default function Router(props: RouterProps) {
             <Route path="purchase-orders/add" element={<ModifyPO />} />
             <Route path="book-buybacks/add" element={<ModifyBB />} />
             <Route path="vendors/add" element={<VendorAdd />} />
-            <Route path="bookcases/add" element={<BookcaseDetail />} />
             <Route path="users" element={<UserList />} />
             <Route path="users/add" element={<UserDetail />} />
             <Route path="users/detail/:id" element={<UserDetail />} />

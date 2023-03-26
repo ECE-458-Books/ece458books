@@ -1,6 +1,5 @@
 import { Toast } from "primereact/toast";
 import { useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   APISRSortFieldMap,
   APIToInternalSRConversion,
@@ -9,7 +8,6 @@ import { GetSRsResp, SALES_API } from "../../apis/sales/SalesAPI";
 import { TableColumn } from "../../components/datatable/TableColumns";
 import { DateTemplate } from "../../components/templates/DateTemplate";
 import PriceTemplate from "../../components/templates/PriceTemplate";
-import AddPageButton from "../../components/buttons/AddPageButton";
 import ListTemplate from "../../templates/list/ListTemplate";
 import { LineItem } from "../../templates/inventorydetail/LineItemTableTemplate";
 import SelectSizeDropdown, {
@@ -57,7 +55,6 @@ const COLUMNS: TableColumn<SalesRecord>[] = [
 
 export default function SalesRecordList() {
   // ----------------- STATE -----------------
-  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState<boolean>(false); // Whether we show that the table is loading or not
   const [numberOfSalesRecords, setNumberOfSalesRecords] = useState(0); // The number of elements that match the query
   const [salesRecords, setSalesRecords] = useState<SalesRecord[]>([]); // The data displayed in the table
@@ -87,14 +84,6 @@ export default function SalesRecordList() {
   // ----------------- TEMPLATES/VISIBLE COMPONENTS -----------------
   const toast = useRef<Toast>(null);
 
-  const addSRButton = (
-    <AddPageButton
-      onClick={() => navigate("/sales-records/add")}
-      label="Add Sale"
-      className="mr-2"
-    />
-  );
-
   const selectSizeButton = (
     <SelectSizeDropdown
       value={tableWhitespaceSize}
@@ -123,16 +112,10 @@ export default function SalesRecordList() {
 
   return (
     <div>
-      <div className="flex justify-content-end">
+      <div className="flex justify-content-center">
         <div className="card col-9 pt-0 px-3 justify-content-center">
           <Toast ref={toast} />
           {dataTable}
-        </div>
-        <div
-          className="flex justify-content-end align-items-start mr-1 my-2"
-          style={{ width: "12.4%" }}
-        >
-          {addSRButton}
         </div>
       </div>
     </div>

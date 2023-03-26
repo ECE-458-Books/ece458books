@@ -39,6 +39,7 @@ import DeleteColumn from "../../components/datatable/DeleteColumn";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { Column } from "primereact/column";
 import BookDetailRelatedBooks from "./BookDetailRelatedBooks";
+import { current } from "immer";
 
 export interface BookWithDBTag extends Book {
   fromDB: boolean;
@@ -112,7 +113,7 @@ export default function BookAdd() {
     },
     {
       field: "genres",
-      header: "Genre",
+      header: "Genre (Required)",
       style: { width: "10%", fontSize: "small" },
       customBody: (rowData: BookWithDBTag) =>
         genresDropdownEditor(rowData.genres, (newValue) => {
@@ -208,7 +209,7 @@ export default function BookAdd() {
     },
     {
       field: "retailPrice",
-      header: "Retail Price",
+      header: "Retail Price (Required)",
       style: { width: "2%", fontSize: "small" },
       customBody: (rowData: BookWithDBTag) =>
         PriceEditor(
@@ -287,7 +288,6 @@ export default function BookAdd() {
 
   const onISBNInitialSubmit = (event: FormEvent<HTMLFormElement>): void => {
     logger.debug("Submitting Initial Book Lookup", textBox);
-    setBooks([]);
     setIsLoadingButton(true);
     BOOKS_API.addBookInitialLookup({ isbns: textBox })
       .then((response) => {
@@ -323,7 +323,12 @@ export default function BookAdd() {
         imageFile: new File([], "blank"),
       };
       newBook.newImageData = newImageUploadData;
-      draft.push(newBook);
+
+      // Only add book if ISBN 13 is unique
+      if (!draft.some((book) => book.isbn13 === newBook.isbn13)) {
+        draft.push(newBook);
+      }
+      console.log(current(draft));
     });
   };
 

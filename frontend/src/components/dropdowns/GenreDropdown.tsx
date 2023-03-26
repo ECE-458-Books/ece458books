@@ -17,9 +17,11 @@ export interface GenreDropdownProps {
 }
 
 export function GenresDropdownData(props: GenreDropdownDataProps) {
-  GENRES_API.getGenresNoPagination().then((response) => {
-    props.setGenreNamesList(response.map((genre) => genre.name));
-  });
+  GENRES_API.getGenresNoPagination()
+    .then((response) => {
+      props.setGenreNamesList(response.map((genre) => genre.name));
+    })
+    .catch();
 }
 
 export default function GenresDropdown(props: GenreDropdownProps) {

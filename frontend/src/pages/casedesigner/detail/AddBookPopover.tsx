@@ -86,7 +86,7 @@ export default function AddEditDeleteDisplayBookPopup(
         props.setIsVisible(false);
       }}
       visible={!props.isAddPopup}
-      className={"ml-1 "}
+      className={"mr-2 "}
     />
   );
 
@@ -103,6 +103,7 @@ export default function AddEditDeleteDisplayBookPopup(
         }
         props.setIsVisible(false);
       }}
+      disabled={props.selectedDisplayBook.bookTitle === ""}
       iconPos="right"
       className={"p-button-sm"}
     />
@@ -132,11 +133,9 @@ export default function AddEditDeleteDisplayBookPopup(
           {props.selectedDisplayBook.stock}
         </p>
       </div>
-      <div className="flex col-12 p-0">
-        <div className="flex col-6 justify-content-end p-1">
-          <div className="flex p-0 col-6">{deleteButton}</div>
-          <div className="flex p-0 col-6">{addSaveButton}</div>
-        </div>
+      <div className="flex col-12 justify-content-end p-0">
+        {deleteButton}
+        {addSaveButton}
       </div>
     </Dialog>
   );

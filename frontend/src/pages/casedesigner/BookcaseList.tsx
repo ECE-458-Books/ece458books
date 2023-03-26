@@ -105,6 +105,7 @@ export default function BookcaseList() {
       onClick={() => navigate("/bookcases/add")}
       label="Add Bookcase"
       className="mr-2"
+      disableUserRestriction={true}
     />
   );
 

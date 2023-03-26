@@ -75,7 +75,7 @@ export default function BookDetailLineItems(props: BookDetailLineItemsProps) {
       style: { minWidth: "6rem", width: "8rem" },
     },
     {
-      header: "Stock",
+      header: "On Hand",
       field: "stock",
       style: { minWidth: "6rem", width: "8rem" },
     },

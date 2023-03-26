@@ -1,9 +1,8 @@
 import {
-  closestCorners,
   DndContext,
   DragOverlay,
-  KeyboardSensor,
   PointerSensor,
+  pointerWithin,
   useDroppable,
   useSensor,
   useSensors,
@@ -17,7 +16,6 @@ import { Bookcase, DisplayBook, Shelf } from "../BookcaseList";
 import {
   horizontalListSortingStrategy,
   SortableContext,
-  sortableKeyboardCoordinates,
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -207,9 +205,6 @@ export function DragAndDropContext(props: DragAndDropContextProps) {
       activationConstraint: {
         distance: 8,
       },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
     })
   );
 
@@ -219,7 +214,7 @@ export function DragAndDropContext(props: DragAndDropContextProps) {
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCorners}
+      collisionDetection={pointerWithin}
       onDragStart={(e) =>
         onDragStart(e, props.shelves, setCurrentlyDraggedBook)
       }

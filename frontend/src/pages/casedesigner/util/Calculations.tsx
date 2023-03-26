@@ -19,7 +19,7 @@ export function calculateSingleBookShelfSpace(
   if (displayMode == DisplayMode.SPINE_OUT) {
     return calcThickness * displayCount;
   } else {
-    return calcWidth;
+    return displayCount == 0 ? 0 : calcWidth;
   }
 }
 

@@ -87,6 +87,7 @@ export default function AddEditDeleteDisplayBookPopup(
       }}
       visible={!props.isAddPopup}
       className={"mr-2 "}
+      disableUserRestriction={true}
     />
   );
 
@@ -94,7 +95,6 @@ export default function AddEditDeleteDisplayBookPopup(
     <Button
       type="button"
       label={props.isAddPopup ? "Add" : "Save"}
-      icon="pi pi-plus"
       onClick={() => {
         if (props.isAddPopup) {
           props.addBookToShelf();

@@ -222,6 +222,7 @@ export default function BookcaseDetail() {
       disabled={!isModifiable}
       buttonLabel={"Save"}
       className="p-button-success ml-2"
+      icons={"pi pi-save"}
     />
   );
 

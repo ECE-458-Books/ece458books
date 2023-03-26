@@ -20,15 +20,15 @@ function App() {
     if (!IsUserLoggedIn()) {
       navigate("/");
     } else {
+      if (location.pathname == "/") {
+        navigate("/books");
+      }
       AUTH_API.getUserType()
         .then((response) => {
           if (response.is_staff) {
             setCurrentUser(administrator);
           } else {
             setCurrentUser(user);
-          }
-          if (location.pathname == "/") {
-            navigate("/books");
           }
         })
         .catch(() => {
@@ -39,7 +39,7 @@ function App() {
 
   // Decide what to render based on the state of authentication.
   // This assumes that all access tokens less than 1 day old are valid
-  if (!IsUserLoggedIn()) {
+  if (!IsUserLoggedIn() || location.pathname == "/") {
     return <LoginPage onLogin={setCurrentUser} />;
   }
   return (

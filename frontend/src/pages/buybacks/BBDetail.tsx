@@ -132,7 +132,7 @@ export default function BBDetail() {
         setBookTitlesList: setBooksDropdownTitles,
         vendor: vendorMap.get(selectedVendorName)!,
       }),
-    [selectedVendorName]
+    [selectedVendorName, vendorMap]
   );
 
   useEffect(() => {

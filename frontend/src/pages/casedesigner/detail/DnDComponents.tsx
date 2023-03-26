@@ -1,9 +1,11 @@
 import {
+  closestCenter,
   closestCorners,
   DndContext,
   DragOverlay,
   KeyboardSensor,
   PointerSensor,
+  pointerWithin,
   useDroppable,
   useSensor,
   useSensors,
@@ -207,9 +209,6 @@ export function DragAndDropContext(props: DragAndDropContextProps) {
       activationConstraint: {
         distance: 8,
       },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
     })
   );
 
@@ -219,7 +218,7 @@ export function DragAndDropContext(props: DragAndDropContextProps) {
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCorners}
+      collisionDetection={pointerWithin}
       onDragStart={(e) =>
         onDragStart(e, props.shelves, setCurrentlyDraggedBook)
       }

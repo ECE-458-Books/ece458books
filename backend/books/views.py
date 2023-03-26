@@ -314,6 +314,13 @@ class ListCreateBookAPIView(ListCreateAPIView, BookImageCreator):
         return query_set.annotate(shelf_space=F('null_defaulted_thickness') * F('stock'))
     
     def annotate_num_related_books(self, query_set):
+        query_set = query_set.annotate(
+            num_related_books=Case(When(related_book_group_id__isnull=False, then=Count('related_book_group_id')), default=Value(0))
+        )
+        from pprint import pprint
+        pprint([(book.title, book.num_related_books) for book in query_set])
+        test = RelatedBookGroup.objects.all().annotate(num_related_books=Count('related_books'))
+        pprint([(rb.title, rb.num_related_books) for rb in test])
         # subquery = Case(When(related_book_group_id__isnull=False, then=Count('related_book_group_id')-1), default=Value(0))
         # subquery = RelatedBookGroup.objects.filter(book=OuterRef('pk'))Case(When(related_book_group_id__isnull=False, then=Count('related_books')), default=Value(0))
         # query_set = query_set.annotate(num_related_books=subquery)
@@ -326,7 +333,7 @@ class ListCreateBookAPIView(ListCreateAPIView, BookImageCreator):
         # subquery = RelatedBookGroup.objects.filter(related_books=OuterRef('pk'))
         # query_set.annotate(num_related_books=subquery)
         # test = [book for book in query_set if book.related_book_group_id == 2]
-        # breakpoint()
+        breakpoint()
 
         return query_set
 

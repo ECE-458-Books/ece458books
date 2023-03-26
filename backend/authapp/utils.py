@@ -13,15 +13,15 @@ def check_administrator_modify_restrictions(request, instance):
     modifying_user = request.user.username
     modified_user = instance.username
 
-    modifying_user_is_staff = str2bool(request.data.get('is_staff', 'true'))
+    modified_user_is_staff = str2bool(request.data.get('is_staff', 'true'))
 
     # Case 1
-    if modified_user == 'admin' and modifying_user_is_staff == False:
+    if modified_user == 'admin' and modified_user_is_staff == False:
         error_msg = "Cannot modify admin(SuperUser) account privileges"
         raise ModifyUserError(error_msg)
     
     # Case 2
-    if modifying_user == modified_user and modifying_user_is_staff == False:
+    if modifying_user == modified_user and modified_user_is_staff == False:
         error_msg = "Cannot modify self account privileges"
         raise ModifyUserError(error_msg)
 

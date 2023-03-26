@@ -106,13 +106,10 @@ export default function ShelfCalculator() {
     },
     {
       field: "shelfSpace",
-      header: "Shelf Space (inches) (Bold=Estimation)",
+      header: "Shelf Space (inches)",
       style: { width: "10%" },
       customBody: (rowData: DisplayBook) =>
-        AlteredTextTemplate(
-          rowData.hasUnknownDimensions ? "font-bold" : "",
-          Math.round(rowData.shelfSpace * 100) / 100
-        ),
+        `${rowData.shelfSpace}${rowData.hasUnknownDimensions ? "*" : ""}`,
     },
   ];
 

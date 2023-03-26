@@ -304,10 +304,8 @@ export default function BookList() {
       header: "Shelf Space (in)",
       sortable: true,
       customBody: (rowData: Book) =>
-        AlteredTextTemplate(
-          rowData.thickness ? "" : "font-bold",
-          rowData.shelfSpace
-        ),
+        `${rowData.shelfSpace}${rowData.thickness ? "" : "*"}`,
+
       style: { minWidth: "3rem" },
       hidden: !(
         visibleColumns.filter((item) => item.field == "shelfSpace").length > 0

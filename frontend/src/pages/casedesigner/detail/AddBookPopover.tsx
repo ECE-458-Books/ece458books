@@ -87,6 +87,7 @@ export default function AddEditDeleteDisplayBookPopup(
       }}
       visible={!props.isAddPopup}
       className={"mr-2 "}
+      disableUserRestriction={true}
     />
   );
 

@@ -95,7 +95,6 @@ export default function AddEditDeleteDisplayBookPopup(
     <Button
       type="button"
       label={props.isAddPopup ? "Add" : "Save"}
-      icon="pi pi-plus"
       onClick={() => {
         if (props.isAddPopup) {
           props.addBookToShelf();

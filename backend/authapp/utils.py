@@ -1,5 +1,3 @@
-from utils.general import str2bool
-
 from .exceptions import ModifyUserError
 
 def check_administrator_modify_restrictions(request, instance):
@@ -13,7 +11,7 @@ def check_administrator_modify_restrictions(request, instance):
     modifying_user = request.user.username
     modified_user = instance.username
 
-    attempting_to_demote = not str2bool(request.data.get('is_staff', 'true'))
+    attempting_to_demote = not request.data.get('is_staff', True)
 
     # Case 1
     if modified_user == 'admin' and attempting_to_demote:

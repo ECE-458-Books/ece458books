@@ -66,7 +66,7 @@ export default function VendorAdd() {
   ];
 
   const resetPageInputFields = () => {
-    setVendors([]);
+    setVendors([emptyVendor]);
     setIsGoBackActive(false);
   };
 

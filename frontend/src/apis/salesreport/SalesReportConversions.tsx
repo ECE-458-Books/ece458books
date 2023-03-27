@@ -32,6 +32,7 @@ export function APIToInternalSalesReportConversion(
         bookProfit: book.book_profit,
         numBooksSold: book.num_books_sold,
         totalCostMostRecent: book.total_cost_most_recent,
+        isEstimatedCostMostRecent: book.is_estimated_cost_most_recent,
       };
     }
   );

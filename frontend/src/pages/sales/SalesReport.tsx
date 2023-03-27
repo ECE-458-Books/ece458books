@@ -45,6 +45,7 @@ export interface SalesReportTopBooksRow {
   totalCostMostRecent: number;
   bookTitle: string;
   bookProfit: number;
+  isEstimatedCostMostRecent: boolean;
 }
 
 const COLUMNS_TOTAL: TableColumn<SalesReportTotalRow>[] = [
@@ -132,7 +133,9 @@ const COLUMNS_TOP_BOOKS: TableColumn<SalesReportTopBooksRow>[] = [
     header: "Book Cost - Most Recent",
     style: { width: "25%" },
     customBody: (rowData: SalesReportTopBooksRow) =>
-      PriceTemplate(rowData.totalCostMostRecent),
+      `${PriceTemplate(rowData.totalCostMostRecent)}${
+        rowData.isEstimatedCostMostRecent ? "*" : ""
+      }`,
   },
   {
     field: "bookProfit",
@@ -266,6 +269,12 @@ export default function SalesReport() {
           </h1>
         </div>
         <div className="col-offset-2 col-8">
+          <div className="pt-6 col-12 justify-content-left">
+            <label className="p-component p-text-secondary text-center text-900 color: var(--surface-800)">
+              * indicates an estimated cost most recent of 70% of the retail
+              price of the book
+            </label>
+          </div>
           <DataTable value={topBooksData} className="">
             {columnsTopBooks}
           </DataTable>

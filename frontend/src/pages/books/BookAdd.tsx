@@ -175,7 +175,9 @@ export default function BookAdd() {
               book.width = newValue;
             });
           },
-          "decimalNumberBookAdd"
+          "decimalNumberBookAdd",
+          false,
+          0.01
         ),
     },
     {
@@ -191,7 +193,9 @@ export default function BookAdd() {
               book.height = newValue;
             });
           },
-          "decimalNumberBookAdd"
+          "decimalNumberBookAdd",
+          false,
+          0.01
         ),
     },
     {
@@ -207,7 +211,9 @@ export default function BookAdd() {
               book.thickness = newValue;
             });
           },
-          "decimalNumberBookAdd"
+          "decimalNumberBookAdd",
+          false,
+          0.01
         ),
     },
     {

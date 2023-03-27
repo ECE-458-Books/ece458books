@@ -64,6 +64,8 @@ class ListCreateBuybackAPIView(ListCreateAPIView):
 
         default_query_set = default_query_set.annotate(vendor_name=F('vendor__name'))
 
+        default_query_set = default_query_set.annotate(username=F('user__username'))
+
         # Filter by vendor
         vendor = self.request.GET.get('vendor')
         if vendor is not None:

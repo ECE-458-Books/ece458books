@@ -61,6 +61,8 @@ class ListCreatePurchaseOrderAPIView(ListCreateAPIView):
 
         default_query_set = default_query_set.annotate(vendor_name=F('vendor__name'))
 
+        default_query_set = default_query_set.annotate(username=F('user__username'))
+
         # Filter by date
         start_date = self.request.GET.get('start')
         end_date = self.request.GET.get('end')

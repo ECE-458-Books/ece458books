@@ -1,7 +1,7 @@
 import re, datetime
 import threading
 
-from django.db.models import OuterRef, Subquery, F, Case, When, Value, Func, ExpressionWrapper, FloatField
+from django.db.models import OuterRef, Subquery, F, Case, When, Value, Func, ExpressionWrapper, FloatField, Count
 from django.db.models.functions import Coalesce, Cast, Round
 
 from rest_framework import status, filters
@@ -259,6 +259,7 @@ class ListCreateBookAPIView(ListCreateAPIView, BookImageCreator):
         default_query_set = self.annotate_last_month_sales(default_query_set)
         default_query_set = self.annotate_shelf_space(default_query_set)
         default_query_set = self.annotate_days_of_supply(default_query_set)
+        default_query_set = self.annotate_num_related_books(default_query_set)
 
         return default_query_set
 
@@ -311,6 +312,10 @@ class ListCreateBookAPIView(ListCreateAPIView, BookImageCreator):
         query_set = query_set.annotate(null_defaulted_thickness=Case(When(thickness__isnull=False, then=F('thickness')), default=Value(default_thickness)))
 
         return query_set.annotate(shelf_space=F('null_defaulted_thickness') * F('stock'))
+
+    def annotate_num_related_books(self, query_set):
+        query_set = query_set.annotate(num_related_books=Count('related_book_group__related_books') - 1)
+        return query_set
 
 
 class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView, BookImageCreator):

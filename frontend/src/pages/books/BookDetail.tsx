@@ -66,8 +66,8 @@ export default function BookDetail() {
   const [thickness, setThickness] = useState<number>();
   const [stock, setStock] = useState<number>(0);
   const [bestBuybackPrice, setBestBuybackPrice] = useState<number>();
-  const [daysOfSupply, setDaysOfSupply] = useState<number | string>();
-  const [shelfSpace, setShelfSpace] = useState<number>();
+  const [daysOfSupply, setDaysOfSupply] = useState<number | string>(0);
+  const [shelfSpace, setShelfSpace] = useState<number>(0);
   const [lastMonthSales, setLastMonthSales] = useState<number>();
   const [numOfRelatedBooks, setNumOfRelatedBooks] = useState<number>();
   const [relatedBooks, setRelatedBooks] = useState<RelatedBook[]>([]);
@@ -687,7 +687,7 @@ export default function BookDetail() {
             <div className="flex p-0 col-6">
               <TextLabel label="Shelf Space (in):" />
               <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
-                {`${shelfSpace}${thickness ? "" : "*"}`}
+                {shelfSpace < 0 ? 0 : `${shelfSpace}${thickness ? "" : "*"}`}
               </p>
             </div>
           </div>
@@ -727,7 +727,7 @@ export default function BookDetail() {
             <div className="flex p-0 col-6">
               <TextLabel label="Days of Supply:" />
               <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
-                {daysOfSupply}
+                {daysOfSupply < 0 ? 0 : daysOfSupply}
               </p>
             </div>
           </div>

@@ -82,7 +82,7 @@ export default function BookcaseDetail() {
         })
         .catch(() => showFailure(toast, "Could not fetch bookcase data"));
     }
-  }, []);
+  }, [id]);
 
   // Call to delete the bookcase
   const deleteBookcaseFinal = () => {

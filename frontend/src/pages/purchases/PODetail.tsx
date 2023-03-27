@@ -381,7 +381,7 @@ export default function PODetail() {
       onFinalSubmission={onSubmit}
       onShowPopup={() => setIsConfirmationPopupVisible(true)}
       disabled={!isModifiable || checkForNecessaryValues()}
-      buttonLabel={"Submit & Add More"}
+      buttonLabel={isPOAddPage ? "Submit & Add More" : "Submit"}
       className="p-button-success ml-2"
     />
   );

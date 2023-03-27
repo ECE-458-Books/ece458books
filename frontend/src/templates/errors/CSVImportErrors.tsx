@@ -7,7 +7,7 @@ import { ReactElement } from "react";
 export const CSVImport400Errors = new Map<string, string>([
   ["isbn_13", "ISBN 13 Column Missing from the CSV"],
   ["quantity", "Quantity Column Missing from the CSV"],
-  ["unit_price", "Unit Buyback Price Column Missing from the CSV"],
+  ["unit_price", "Unit Price Column Missing from the CSV"],
   ["duplicate_valid_headers", "Duplicate headers are present in the CSV"],
   ["empty_csv", "CSV file is empty"],
 ]);

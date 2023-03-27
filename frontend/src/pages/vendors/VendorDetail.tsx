@@ -105,6 +105,7 @@ export default function VendorDetail() {
         const vendor = APIToInternalVendorConversion(response);
         showSuccess(toast, "Vendor modified");
         setOriginalData(vendor);
+        setIsModifiable(false);
       })
       .catch((error) => {
         showFailure(
@@ -116,7 +117,6 @@ export default function VendorDetail() {
         setVendorName(originalData.name);
         setBuybackRate(originalData.buybackRate);
       });
-    setIsModifiable(false);
   };
 
   // The fields

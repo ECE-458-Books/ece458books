@@ -8,7 +8,6 @@ import { useImmer } from "use-immer";
 import { logger } from "../../../util/Logger";
 import DeletePopup from "../../../components/popups/DeletePopup";
 import AddDetailModifyTitle from "../../../components/text/AddDetailModifyTitle";
-import BackButton from "../../../components/buttons/BackButton";
 import DeleteButton from "../../../components/buttons/DeleteButton";
 import AddRowButton from "../../../components/buttons/AddRowButton";
 import EditCancelButton from "../../../components/buttons/EditCancelDetailButton";

@@ -2,7 +2,6 @@ import BooksDropdown from "../../../components/dropdowns/BookDropdown";
 import DisplayModeDropdown, {
   DisplayMode,
 } from "../../../components/dropdowns/DisplayModeDropdown";
-import { NumberEditor } from "../../../components/editors/NumberEditor";
 import { DisplayBook } from "../BookcaseList";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
@@ -15,6 +14,7 @@ import {
   updateDisplayBookOnModeChange,
   updateDisplayBookOnTitleChange,
 } from "../util/Updaters";
+import { IntegerEditor } from "../../../components/editors/IntegerEditor";
 
 export interface AddEditDeleteDisplayBookPopupProps {
   isAddPopup: boolean;
@@ -64,7 +64,7 @@ export default function AddEditDeleteDisplayBookPopup(
     />
   );
 
-  const numberEditor = NumberEditor(
+  const numberEditor = IntegerEditor(
     props.selectedDisplayBook?.displayCount ?? 0,
     (newValue) =>
       updateDisplayBookOnCountChange(

@@ -168,7 +168,13 @@ export default function BookcaseDetail() {
 
   const backButton = (
     <div className="flex col-4">
-      <BackButton className="ml-1" />
+      <Button
+        type="button"
+        label="Back"
+        icon="pi pi-arrow-left"
+        onClick={() => navigate("/bookcases")}
+        className={"p-button-sm my-auto ml-1"}
+      />
     </div>
   );
 

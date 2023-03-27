@@ -11,7 +11,6 @@ import {
   TableColumn,
 } from "../../components/datatable/TableColumns";
 import { filterById } from "../../util/IDOps";
-import { NumberEditor } from "../../components/editors/NumberEditor";
 import { Book } from "../books/BookList";
 import AddRowButton from "../../components/buttons/AddRowButton";
 import { DataTable } from "primereact/datatable";
@@ -25,6 +24,7 @@ import {
   updateDisplayBookOnModeChange,
 } from "./util/Updaters";
 import DeleteColumn from "../../components/datatable/DeleteColumn";
+import { IntegerEditor } from "../../components/editors/IntegerEditor";
 
 const emptyRow: DisplayBook = {
   id: "",
@@ -72,7 +72,7 @@ export default function ShelfCalculator() {
       field: "displayCount",
       header: "Display Count",
       customBody: (rowData: DisplayBook) =>
-        NumberEditor(
+        IntegerEditor(
           rowData.displayCount,
           (newValue) => {
             updateDisplayBookOnCountChange(

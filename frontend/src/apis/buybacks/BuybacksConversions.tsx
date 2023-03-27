@@ -15,8 +15,7 @@ export const APIBBSortFieldMap = new Map<string, string>([
   ["totalBooks", "num_books"],
   ["totalRevenue", "total_revenue"],
   ["date", "date"],
-  ["creatorName", "user"],
-  ["creatorId", "user"],
+  ["creatorName", "username"],
 ]);
 function APIToInternalBBSaleConversion(sale: APIBBSaleRow): LineItem {
   return {

@@ -7,9 +7,7 @@ import { ReactElement } from "react";
 export const CSVImport400Errors = new Map<string, string>([
   ["isbn_13", "ISBN 13 Column Missing from the CSV"],
   ["quantity", "Quantity Column Missing from the CSV"],
-  ["unit_buyback_price", "Unit Buyback Price Column Missing from the CSV"],
-  ["unit_retail_price", "Unit Retail Price Column Missing from the CSV"],
-  ["unit_wholesale_price", "Unit Wholesale Price Column Missing from the CSV"],
+  ["unit_price", "Unit Buyback Price Column Missing from the CSV"],
   ["duplicate_valid_headers", "Duplicate headers are present in the CSV"],
   ["empty_csv", "CSV file is empty"],
 ]);
@@ -20,12 +18,8 @@ export function CSVImport400OverallErrors(error: string): string {
       return "ISBN 13 Column Missing from the CSV";
     case error.includes("quantity"):
       return "Quantity Column Missing from the CSV";
-    case error.includes("unit_buyback_price"):
-      return "Unit Buyback Price Column Missing from the CSV";
-    case error.includes("unit_retail_price"):
-      return "Unit Retail Price Column Missing from the CSV";
     case error.includes("unit_wholesale_price"):
-      return "Unit Wholesale Price Column Missing from the CSV";
+      return "Unit Price Column Missing from the CSV";
     case error.includes("duplicate_valid_headers"):
       return "Duplicate headers are present in the CSV";
     case error.includes("empty_csv"):

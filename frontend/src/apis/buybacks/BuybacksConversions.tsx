@@ -56,7 +56,7 @@ export function APIToInternalBuybackCSVConversion(
   buybacks: APIBBCSVImportRow[]
 ): LineItem[] {
   return buybacks.map((buyback) => {
-    const price = Number(buyback.unit_buyback_price);
+    const price = Number(buyback.unit_price);
     const quantity = Number(buyback.quantity);
     return {
       isNewRow: true,

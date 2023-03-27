@@ -71,7 +71,13 @@ export interface BBCSVImportReq {
   vendor: string;
 }
 
-export interface APIBBCSVImportRow extends APIBBSaleRow {
+export interface APIBBCSVImportRow {
+  id?: number; // ID only for new rows, not already existing ones
+  book: number;
+  book_title: string;
+  book_isbn: string;
+  quantity: number;
+  unit_price: number;
   isbn_13: string;
   errors: { [key: string]: string };
 }

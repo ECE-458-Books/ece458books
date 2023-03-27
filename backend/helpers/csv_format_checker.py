@@ -13,6 +13,7 @@ class CSVFormatChecker:
     def __init__(self, csv_import_type: str) -> None:
         self.expected_headers = get_csv_headers(csv_import_type)
         self.price = csv_column_headers.get(csv_import_type)[0]
+        self.csv_import_type = csv_import_type
 
     def are_headers_correct(self, csv_file) -> None:
         csv_headers = []
@@ -64,7 +65,7 @@ class CSVFormatChecker:
         self.is_number(quantity)
         self.is_int(quantity)
         self.is_int_negative(quantity)
-        if "unit_wholesale_price" not in row.index:
+        if self.csv_import_type != "purchases":
             self.check_for_sufficient_inventory(quantity, isbn)
 
     def check_for_sufficient_inventory(self, quantity, isbn):

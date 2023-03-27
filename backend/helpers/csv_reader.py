@@ -62,14 +62,14 @@ class CSVReader:
                 if len(Purchase.objects.filter(Q(book__isbn_13=isbn) & Q(purchase_order__vendor=request.data['vendor']))) == 0:  # Vendor doesn't sell the book
                     errors_dict['isbn'] = 'book_not_sold_by_vendor'
                 else:  # vendor does the sell the book, so if we need to put the default value, we can do so
-                    if "unit_buyback_price" in errors_dict.keys() and errors_dict["unit_buyback_price"] == "empty_value":  # Replace empty value with default
+                    if "unit_price" in errors_dict.keys() and errors_dict["unit_price"] == "empty_value":  # Replace empty value with default
                         vendor_id = request.data['vendor']
                         book_id = buyback["book"]
                         most_recent_purchase = Purchase.objects.filter(purchase_order__vendor=vendor_id).filter(book=book_id).order_by('-purchase_order__date').first()
                         cost_most_recent = most_recent_purchase.unit_wholesale_price
                         vendor_buyback_rate = Vendor.objects.get(id=vendor_id).buyback_rate
                         default_unit_buyback_price = round(cost_most_recent * vendor_buyback_rate * .01, 2)
-                        buyback["unit_buyback_price"] = default_unit_buyback_price
-                        del buyback["errors"]["unit_buyback_price"]
+                        buyback["unit_price"] = default_unit_buyback_price
+                        del buyback["errors"]["unit_price"]
 
         return Response(response_data, status=status.HTTP_200_OK)

@@ -63,7 +63,7 @@ export function APIToInternalPurchasesCSVConversion(
   purchases: APIPurchaseCSVImportRow[]
 ): LineItem[] {
   return purchases.map((purchase) => {
-    const price = Number(purchase.unit_wholesale_price);
+    const price = Number(purchase.unit_price);
     const quantity = Number(purchase.quantity);
     return {
       isNewRow: true,

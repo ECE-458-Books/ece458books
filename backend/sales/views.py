@@ -208,9 +208,11 @@ class RetrieveSalesReportAPIView(APIView):
                     book_wholesale_price=Subquery(Purchase.objects.filter(purchase_order=OuterRef('id')).filter(
                         book=book_sale['book_id']).order_by('-id')[:1].values('unit_wholesale_price'))).values('book_wholesale_price').exclude(
                             book_wholesale_price=None).first()['book_wholesale_price']
+                book_sale['is_estimated_cost_most_recent'] = False
             except:
                 # use 70% of retail price, since book has not been previously documented as being purchased
                 most_recent_unit_wholesale_price = .7 * Book.objects.get(id=book_sale['book_id']).retail_price
+                book_sale['is_estimated_cost_most_recent'] = True
             book_sale['total_cost_most_recent'] = round(most_recent_unit_wholesale_price * book_sale['num_books_sold'], 2)
 
         for book_sale in sales_data_by_book:

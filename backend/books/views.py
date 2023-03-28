@@ -24,6 +24,7 @@ from .search_filters import *
 from .utils import str2bool
 from .book_images import BookImageCreator
 from .exceptions import *
+from .related_books import standardize_title
 
 
 class ISBNSearchView(APIView):
@@ -196,7 +197,7 @@ class ListCreateBookAPIView(ListCreateAPIView, BookImageCreator):
         return Response(res, status=status.HTTP_201_CREATED, headers=headers)
 
     def get_or_create_related_books_group(self, data):
-        obj, created = RelatedBookGroup.objects.get_or_create(title="".join(data['title'].lower().split()))
+        obj, created = RelatedBookGroup.objects.get_or_create(title=standardize_title(data['title']))
         data['related_book_group'] = obj.pk
         return data
 
@@ -373,7 +374,7 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView, BookImageCr
         return Response(res)
 
     def get_or_create_related_books_group(self, data, instance):
-        obj, created = RelatedBookGroup.objects.get_or_create(title="".join(instance.title.lower().split()))
+        obj, created = RelatedBookGroup.objects.get_or_create(title=standardize_title(instance.title))
         data['related_book_group'] = obj.pk
         return data
 

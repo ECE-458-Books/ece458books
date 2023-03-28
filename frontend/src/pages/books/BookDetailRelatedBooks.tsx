@@ -1,14 +1,17 @@
-import { DataTable } from "primereact/datatable";
+import { DataTable, DataTableRowClickEvent } from "primereact/datatable";
 import {
   createColumns,
   TableColumn,
 } from "../../components/datatable/TableColumns";
 import PriceTemplate from "../../components/templates/PriceTemplate";
 import { ImageTemplate } from "../../components/templates/ImageTemplate";
+import { useNavigate } from "react-router-dom";
+import { logger } from "../../util/Logger";
 
 export interface BookDetailRelatedBooksProps {
   relatedBooks?: RelatedBook[];
   globalClassName?: string;
+  disableNavigation?: boolean;
 }
 
 export interface RelatedBook {
@@ -26,6 +29,8 @@ export interface RelatedBook {
 export default function BookDetailRelatedBooks(
   props: BookDetailRelatedBooksProps
 ) {
+  const navigate = useNavigate();
+
   // Filtering
   const COLUMNS: TableColumn<RelatedBook>[] = [
     {
@@ -81,10 +86,23 @@ export default function BookDetailRelatedBooks(
     },
   ];
 
+  const onRowClick = (event: DataTableRowClickEvent) => {
+    if (!props.disableNavigation ?? true) {
+      const lineItem = event.data as RelatedBook;
+      logger.debug("Line Item Clicked (Book Detail View)", lineItem);
+      navigate(`/books/detail/${lineItem.id}`);
+    }
+  };
+
   const columns = createColumns(COLUMNS);
   return (
     <div className="card pt-0 px-3">
-      <DataTable size="small" value={props.relatedBooks}>
+      <DataTable
+        size="small"
+        rowHover={!props.disableNavigation}
+        value={props.relatedBooks}
+        onRowClick={onRowClick}
+      >
         {columns}
       </DataTable>
     </div>

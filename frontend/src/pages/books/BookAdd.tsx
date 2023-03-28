@@ -433,6 +433,7 @@ export default function BookAdd() {
           <BookDetailRelatedBooks
             relatedBooks={rowData.relatedBooks}
             globalClassName="text-sm"
+            disableNavigation={true}
           />
         </div>
       </div>

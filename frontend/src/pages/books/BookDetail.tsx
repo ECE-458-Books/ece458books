@@ -132,7 +132,7 @@ export default function BookDetail() {
         setRelatedBooks(book.relatedBooks!);
       })
       .catch(() => showFailure(toast, "Could not fetch book data"));
-  }, [stock]);
+  }, [stock, id]);
 
   const calculateDaysOfSupply = (book: Book) => {
     if (book.stock === 0) {

@@ -19,8 +19,7 @@ export const APIPOSortFieldMap = new Map<string, string>([
   ["totalBooks", "num_books"],
   ["totalCost", "total_cost"],
   ["date", "date"],
-  ["creatorName", "user"],
-  ["creatorId", "user"],
+  ["creatorName", "username"],
 ]);
 
 export function APIToInternalPOPurchaseConversion(

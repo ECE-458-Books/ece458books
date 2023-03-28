@@ -399,7 +399,7 @@ export default function BBDetail() {
       onFinalSubmission={onSubmit}
       onShowPopup={() => setIsConfirmationPopupVisible(true)}
       disabled={!isModifiable || checkForNecessaryValues()}
-      buttonLabel={"Submit & Add More"}
+      buttonLabel={isBBAddPage ? "Submit & Add More" : "Submit"}
       className="p-button-success ml-2"
     />
   );

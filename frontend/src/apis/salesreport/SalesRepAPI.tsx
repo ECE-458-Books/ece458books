@@ -30,6 +30,7 @@ export interface APISalesReportTopBooksRow {
   total_cost_most_recent: number;
   book_title: string;
   book_profit: number;
+  is_estimated_cost_most_recent: boolean;
 }
 
 export interface APISalesReportDailyRow {

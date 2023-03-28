@@ -26,6 +26,7 @@ import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { TextEditor } from "../../../components/editors/TextEditor";
 import { v4 as uuid } from "uuid";
+import BackButton from "../../../components/buttons/BackButton";
 
 const emptyShelf: Shelf = {
   id: "",
@@ -167,13 +168,7 @@ export default function BookcaseDetail() {
 
   const backButton = (
     <div className="flex col-4">
-      <Button
-        type="button"
-        label="Back"
-        icon="pi pi-arrow-left"
-        onClick={() => navigate("/bookcases")}
-        className={"p-button-sm my-auto ml-1"}
-      />
+      <BackButton className="ml-1" />
     </div>
   );
 

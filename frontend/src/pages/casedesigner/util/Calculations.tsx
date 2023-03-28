@@ -1,4 +1,5 @@
 import { DisplayMode } from "../../../components/dropdowns/DisplayModeDropdown";
+import { roundToTwoDecimalPlaces } from "../../../util/NumberOps";
 import { Book } from "../../books/BookList";
 import { DisplayBook } from "../BookcaseList";
 
@@ -17,9 +18,9 @@ export function calculateSingleBookShelfSpace(
   const calcThickness = thickness ?? DEFAULT_THICKNESS;
 
   if (displayMode == DisplayMode.SPINE_OUT) {
-    return calcThickness * displayCount;
+    return roundToTwoDecimalPlaces(calcThickness * displayCount);
   } else {
-    return displayCount == 0 ? 0 : calcWidth;
+    return roundToTwoDecimalPlaces(displayCount == 0 ? 0 : calcWidth);
   }
 }
 
@@ -70,5 +71,5 @@ export function calculateCurrentDisplayCountOnBookChange(
 
 export function calculateTotalShelfSpace(rows: DisplayBook[]) {
   const total = rows.reduce((total, item) => total + item.shelfSpace, 0);
-  return Math.round(total * 100) / 100;
+  return roundToTwoDecimalPlaces(total);
 }

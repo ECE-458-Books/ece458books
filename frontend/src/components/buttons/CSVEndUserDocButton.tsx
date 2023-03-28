@@ -2,8 +2,7 @@ import { showFailure } from "../Toast";
 import { Button } from "primereact/button";
 import { Toast } from "primereact/toast";
 
-const END_USER_CSV_URL =
-  "https://books-test.colab.duke.edu/media/books/csv.pdf";
+const END_USER_CSV_URL = "https://books.colab.duke.edu/media/books/csv.pdf";
 
 interface CSVEndUserDocButtonProps {
   toast: React.RefObject<Toast>;

@@ -644,6 +644,7 @@ export default function BookDetail() {
                 onValueChange={(newValue) => setHeight(newValue ?? undefined)}
                 defaultValue={undefined}
                 valueClassName="flex 2rem"
+                min={0.01}
               />
             </div>
             <div className="flex p-0 col-4">
@@ -655,6 +656,7 @@ export default function BookDetail() {
                 onValueChange={(newValue) => setWidth(newValue ?? undefined)}
                 defaultValue={undefined}
                 valueClassName="flex 2rem"
+                min={0.01}
               />
             </div>
             <div className="flex p-0 col-4">
@@ -668,6 +670,7 @@ export default function BookDetail() {
                 }
                 defaultValue={undefined}
                 valueClassName="flex 2rem"
+                min={0.01}
               />
             </div>
           </div>

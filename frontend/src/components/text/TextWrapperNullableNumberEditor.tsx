@@ -7,6 +7,7 @@ interface TextWrapperNullableNumberEditorProps {
   onValueChange: (newValue: number | undefined) => void;
   valueClassName?: string;
   defaultValue: number | undefined;
+  min?: number;
 }
 
 export function TextWrapperNullableNumberEditor(
@@ -25,7 +26,8 @@ export function TextWrapperNullableNumberEditor(
             (newValue: number | undefined) =>
               props.onValueChange(newValue ?? props.defaultValue),
             "w-4",
-            props.disabled
+            props.disabled,
+            props.min
           )}
         </div>
       )}

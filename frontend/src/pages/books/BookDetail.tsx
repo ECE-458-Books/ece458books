@@ -41,11 +41,6 @@ interface ErrorDisplay {
   message: string;
 }
 
-enum ViewScrollType {
-  Instant = "instant",
-  Smooth = "smooth",
-}
-
 // Leaving this line in case of future image browser side caching workaround is needed
 interface ImageUrlHashStruct {
   imageSrc: string;
@@ -138,7 +133,7 @@ export default function BookDetail() {
         setRelatedBooks(book.relatedBooks!);
       })
       .catch(() => showFailure(toast, "Could not fetch book data"));
-    scrollToTop(ViewScrollType.Instant);
+    scrollToTop("instant");
   }, [stock, id]);
 
   const calculateDaysOfSupply = (book: Book) => {

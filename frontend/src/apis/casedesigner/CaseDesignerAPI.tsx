@@ -88,4 +88,11 @@ export const CASE_DESIGNER_API = {
       data: req,
     });
   },
+
+  getPlanogram: async function (id: string): Promise<string> {
+    return await API.request({
+      url: CASE_DESIGNER_EXTENSION.concat("/planogram/".concat(id.toString())),
+      method: METHOD_GET,
+    });
+  },
 };

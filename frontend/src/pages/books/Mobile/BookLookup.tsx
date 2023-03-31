@@ -3,23 +3,16 @@ import { Button } from "primereact/button";
 import { Toast } from "primereact/toast";
 import { useNavigate } from "react-router-dom";
 import { InputText } from "primereact/inputtext";
-import {
-  AddBooksInitialLookupResp,
-  BOOKS_API,
-} from "../../../apis/books/BooksAPI";
+import { BOOKS_API, GetBooksResp } from "../../../apis/books/BooksAPI";
 import { showFailure, showSuccess } from "../../../components/Toast";
-import { APIToInternalBookConversionWithDB } from "../../../apis/books/BooksConversions";
-import { TextResult } from "dynamsoft-javascript-barcode";
-import { BarcodeScanner } from "react-barcode-qrcode-scanner";
+import { APIToInternalBookConversion } from "../../../apis/books/BooksConversions";
+import BarcodeScannerComponent from "react-qr-barcode-scanner";
+import { Result } from "@zxing/library";
 
 export default function BookLookup() {
   const [textBox, setTextBox] = useState<string>("");
   const [isVideoVisible, setIsVideoVisible] = useState<boolean>(false);
-  const [isCameraActive, setIsCameraActive] = useState<boolean>(false);
   const [isVideoPaused, setIsVideoPaused] = useState<boolean>(false);
-  const [runtimeSettings, setRuntimeSettings] = useState<string>(
-    '{"ImageParameter":{"BarcodeFormatIds":["BF_QR_CODE"],"Description":"","Name":"Settings"},"Version":"3.0"}'
-  ); //use JSON template to decode QR codes only
 
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
@@ -27,50 +20,35 @@ export default function BookLookup() {
   const navigate = useNavigate();
 
   const searchButtonClick = () => {
-    BOOKS_API.addBookInitialLookup({ isbns: textBox })
-      .then((resposne) => onAPIResponse(resposne))
+    BOOKS_API.getBooks({ isbn_only: true, search: textBox })
+      .then((response) => onAPIResponse(response))
       .catch(() => showFailure(toast, "Book Search Failed"));
   };
 
-  const onAPIResponse = (response: AddBooksInitialLookupResp) => {
+  const onAPIResponse = (response: GetBooksResp) => {
     showSuccess(toast, "Message Recieved");
-    if (response.books.length > 0) {
-      const book = APIToInternalBookConversionWithDB(response.books[0]);
+    if (response.results.length > 0) {
+      const book = APIToInternalBookConversion(response.results[0]);
       navigate(`${"/books/detail/"}${book.id}`);
     } else {
       showFailure(toast, "Could Not Find Book with ISBN: " + textBox);
     }
   };
 
-  // Camera Stuff
-
-  const onOpened = (cam: HTMLVideoElement, camLabel: string) => {
-    // You can access the video element in the onOpened event
-    console.log("opened");
-  };
-
-  const onClosed = () => {
-    console.log("closed");
-  };
-
-  const onDeviceListLoaded = (devices: MediaDeviceInfo[]) => {
-    console.log(devices);
-  };
-
-  const onScanned = (results: TextResult[]) => {
-    // barcode results
-    setTextBox(results[0].barcodeText);
-  };
-
-  const onClicked = (result: TextResult) => {
-    // when a barcode overlay is clicked
-    alert(result.barcodeText);
+  const onUpdateScreen = (err: unknown, result: Result | undefined) => {
+    if (result) {
+      setTextBox(result.text);
+      setIsVideoPaused(false);
+      setIsVideoVisible(false);
+    } else {
+      setTextBox(textBox);
+    }
   };
 
   return (
     <div className="grid flex justify-content-center">
       <Toast ref={toast} position="top-center" />
-      <div className="col-12 py-5">
+      <div className="col-12 py-2">
         <h1 className="p-component p-text-secondary text-3xl text-center text-900 color: var(--surface-800);">
           Book Lookup
         </h1>
@@ -93,29 +71,32 @@ export default function BookLookup() {
       </div>
 
       {isVideoVisible && (
-        <BarcodeScanner
-          isActive={isCameraActive}
-          isPause={isVideoPaused}
-          license="license key for Dynamsoft Barcode Reader"
-          drawOverlay={true}
-          desiredCamera="back"
+        <BarcodeScannerComponent
+          width={350}
+          height={350}
           facingMode="environment"
-          desiredResolution={{ width: 300, height: 300 }}
-          runtimeSettings={runtimeSettings}
-          onScanned={onScanned}
-          onClicked={onClicked}
-          onOpened={onOpened}
-          onClosed={onClosed}
-          onDeviceListLoaded={onDeviceListLoaded}
+          onUpdate={(err: unknown, result: Result | undefined) =>
+            onUpdateScreen(err, result)
+          }
+          stopStream={isVideoPaused}
         />
       )}
 
-      <div className="flex justify-content-center col-12 pt-5">
+      <div
+        className={
+          isVideoVisible
+            ? "flex justify-content-center col-12"
+            : "flex justify-content-center col-12 pt-6"
+        }
+      >
         <Button
           icon="pi pi-camera"
-          label="Scan Barcode"
+          label={isVideoVisible ? "Turn Off Camera" : "Scan Barcode"}
           className="p-button-lg p-button-info"
-          onClick={() => setIsVideoVisible(!isVideoVisible)}
+          onClick={() => {
+            setIsVideoPaused(!isVideoPaused);
+            setIsVideoVisible(!isVideoVisible);
+          }}
         />
       </div>
     </div>

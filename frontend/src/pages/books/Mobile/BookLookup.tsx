@@ -9,12 +9,17 @@ import {
 } from "../../../apis/books/BooksAPI";
 import { showFailure, showSuccess } from "../../../components/Toast";
 import { APIToInternalBookConversionWithDB } from "../../../apis/books/BooksConversions";
-//import BarcodeScannerComponent from "react-qr-barcode-scanner";
-//import { Result } from "@zxing/library";
+import { TextResult } from "dynamsoft-javascript-barcode";
+import { BarcodeScanner } from "react-barcode-qrcode-scanner";
 
 export default function BookLookup() {
   const [textBox, setTextBox] = useState<string>("");
-  const [isVideoVisible, setIsVideoVisible] = useState(false);
+  const [isVideoVisible, setIsVideoVisible] = useState<boolean>(false);
+  const [isCameraActive, setIsCameraActive] = useState<boolean>(false);
+  const [isVideoPaused, setIsVideoPaused] = useState<boolean>(false);
+  const [runtimeSettings, setRuntimeSettings] = useState<string>(
+    '{"ImageParameter":{"BarcodeFormatIds":["BF_QR_CODE"],"Description":"","Name":"Settings"},"Version":"3.0"}'
+  ); //use JSON template to decode QR codes only
 
   // Toast is used for showing success/error messages
   const toast = useRef<Toast>(null);
@@ -37,14 +42,30 @@ export default function BookLookup() {
     }
   };
 
-  // const onUpdateScreen = (err: unknown, result: Result | undefined) => {
-  //   if (result) {
-  //     setTextBox(result.text);
-  //     setIsVideoVisible(false);
-  //   } else {
-  //     setTextBox("");
-  //   }
-  // };
+  // Camera Stuff
+
+  const onOpened = (cam: HTMLVideoElement, camLabel: string) => {
+    // You can access the video element in the onOpened event
+    console.log("opened");
+  };
+
+  const onClosed = () => {
+    console.log("closed");
+  };
+
+  const onDeviceListLoaded = (devices: MediaDeviceInfo[]) => {
+    console.log(devices);
+  };
+
+  const onScanned = (results: TextResult[]) => {
+    // barcode results
+    setTextBox(results[0].barcodeText);
+  };
+
+  const onClicked = (result: TextResult) => {
+    // when a barcode overlay is clicked
+    alert(result.barcodeText);
+  };
 
   return (
     <div className="grid flex justify-content-center">
@@ -71,22 +92,30 @@ export default function BookLookup() {
         />
       </div>
 
-      {/* {isVideoVisible && (
-        <BarcodeScannerComponent
-          width={400}
-          height={400}
-          onUpdate={(err: unknown, result: Result | undefined) =>
-            onUpdateScreen(err, result)
-          }
+      {isVideoVisible && (
+        <BarcodeScanner
+          isActive={isCameraActive}
+          isPause={isVideoPaused}
+          license="license key for Dynamsoft Barcode Reader"
+          drawOverlay={true}
+          desiredCamera="back"
+          facingMode="environment"
+          desiredResolution={{ width: 300, height: 300 }}
+          runtimeSettings={runtimeSettings}
+          onScanned={onScanned}
+          onClicked={onClicked}
+          onOpened={onOpened}
+          onClosed={onClosed}
+          onDeviceListLoaded={onDeviceListLoaded}
         />
-      )} */}
+      )}
 
       <div className="flex justify-content-center col-12 pt-5">
         <Button
           icon="pi pi-camera"
           label="Scan Barcode"
           className="p-button-lg p-button-info"
-          onClick={() => searchButtonClick()}
+          onClick={() => setIsVideoVisible(!isVideoVisible)}
         />
       </div>
     </div>

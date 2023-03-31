@@ -63,7 +63,8 @@ export interface APIRelatedBook {
 
 export enum APILineItemType {
   PURCHASE_ORDER = "purchase order",
-  SALES_RECORD = "sales reconciliation",
+  SALES_RECORD = "sales record",
+  SALES_RECONCILIATION = "sales reconciliation",
   BOOK_BUYBACK = "buyback order",
   INVENTORY_CORRECTION = "inventory corrections",
 }

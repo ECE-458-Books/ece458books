@@ -69,6 +69,7 @@ export default function Router(props: RouterProps) {
             <Route path="genres/add" element={<GenreAdd />} />
             <Route path="purchase-orders/add" element={<ModifyPO />} />
             <Route path="book-buybacks/add" element={<ModifyBB />} />
+            <Route path="sales-records/add" element={<ModifySR />} />
             <Route path="vendors/add" element={<VendorAdd />} />
             <Route path="users" element={<UserList />} />
             <Route path="users/add" element={<UserDetail />} />

@@ -1,8 +1,9 @@
 import { SalesRecord } from "../../pages/sales/SRList";
+import { v4 as uuid } from "uuid";
 import { externalToInternalDate } from "../../util/DateOps";
-import * as SalesAPI from "./SalesAPI";
 import { formatBookForDropdown } from "../../components/dropdowns/BookDropdown";
 import { LineItem } from "../../templates/inventorydetail/LineItemTableTemplate";
+import { APISR, APISRSaleRow, APISaleCSVImportRow } from "./SalesAPI";
 
 // Sales Records
 // Internal data type -> ordering required for book get API
@@ -12,8 +13,11 @@ export const APISRSortFieldMap = new Map<string, string>([
   ["totalBooks", "num_books"],
   ["totalRevenue", "total_revenue"],
   ["date", "date"],
+  ["isSalesReconciliation", "is_reconciliation"],
+  ["creatorName", "username"],
 ]);
-function APIToInternalSRSaleConversion(sale: SalesAPI.APISRSaleRow): LineItem {
+
+function APIToInternalSRSaleConversion(sale: APISRSaleRow): LineItem {
   return {
     isNewRow: false,
     // (id is always defined from API)
@@ -27,7 +31,7 @@ function APIToInternalSRSaleConversion(sale: SalesAPI.APISRSaleRow): LineItem {
   };
 }
 
-export function APIToInternalSRConversion(sr: SalesAPI.APISR): SalesRecord {
+export function APIToInternalSRConversion(sr: APISR): SalesRecord {
   const sales: LineItem[] = sr.sales.map((sale) =>
     APIToInternalSRSaleConversion(sale)
   );
@@ -40,5 +44,25 @@ export function APIToInternalSRConversion(sr: SalesAPI.APISR): SalesRecord {
     totalRevenue: sr.total_revenue,
     sales: sales,
     isDeletable: sr.is_deletable,
+    isSalesReconciliation: sr.is_reconciliation,
+    creatorName: sr.username,
   };
+}
+
+export function APIToInternalSalesCSVConversion(
+  sales: APISaleCSVImportRow[]
+): LineItem[] {
+  return sales.map((sale) => {
+    return {
+      isNewRow: true,
+      id: uuid(),
+      subtotal: 0,
+      bookId: sale.book,
+      bookTitle: formatBookForDropdown(sale.book_title, sale.isbn_13),
+      bookISBN: sale.isbn_13,
+      quantity: sale.quantity,
+      price: sale.unit_retail_price,
+      errors: sale.errors,
+    } as LineItem;
+  });
 }

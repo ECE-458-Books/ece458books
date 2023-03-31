@@ -8,6 +8,7 @@ interface EditCancelButtonProps {
   isModifiable: boolean;
   className?: string;
   disableUserRestriction?: boolean;
+  visible?: boolean;
 }
 
 export default function EditCancelButton(props: EditCancelButtonProps) {
@@ -22,6 +23,7 @@ export default function EditCancelButton(props: EditCancelButtonProps) {
           disabled={props.isAddPage}
           onClick={props.onClickEdit}
           className={props.className}
+          visible={props.visible}
         />
       )}
       {!props.isAddPage && props.isModifiable && (
@@ -33,6 +35,7 @@ export default function EditCancelButton(props: EditCancelButtonProps) {
           className={"p-button-warning " + props.className}
           disabled={props.isAddPage}
           onClick={props.onClickCancel}
+          visible={props.visible}
         />
       )}
     </Restricted>

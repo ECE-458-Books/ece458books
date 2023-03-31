@@ -150,6 +150,7 @@ export default function BookcaseDetail() {
       draft.shelves = shelves;
     });
   };
+
   const callPlanogramGenerationAPI = () => {
     CASE_DESIGNER_API.getPlanogram(id!)
       .then((response) => {

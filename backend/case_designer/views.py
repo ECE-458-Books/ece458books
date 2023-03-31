@@ -1,15 +1,16 @@
-import io
+
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.response import Response
 from rest_framework import status, filters
-from .models import Bookcase, DisplayedBook
+
+from .planogram import PlanogramGenerator
+from .models import Bookcase
 from .paginations import BookcasePagination
 from .serializers import BookcaseSerializer
 from rest_framework.views import APIView
 from utils.permissions import CustomBasePermission
-from django.http import FileResponse
-from reportlab.pdfgen import canvas
+
 
 class ListCreateBookcaseAPIView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
@@ -81,10 +82,6 @@ class PlanogramPDFView(APIView):
     permission_classes = [CustomBasePermission]
 
     def get(self, request, *args, **kwargs):
-        buffer = io.BytesIO()
-        p = canvas.Canvas(buffer)
-        p.drawString(100, 100, "Hello world.")
-        p.showPage()
-        p.save()
-        buffer.seek(0)
-        return FileResponse(buffer, as_attachment=True, filename="planogram.pdf")
+        bookcase = Bookcase.objects.get(id=self.kwargs['id'])
+        planogram_generator = PlanogramGenerator(bookcase)
+        return planogram_generator.generate_planogram()

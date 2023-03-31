@@ -35,6 +35,7 @@ import {
   InputNumberValueChangeEvent,
 } from "primereact/inputnumber";
 import "../../css/MiscellaneousCSS.css";
+import { scrollToTop } from "../../util/WindowViewportOps";
 
 interface ErrorDisplay {
   message: string;
@@ -132,6 +133,7 @@ export default function BookDetail() {
         setRelatedBooks(book.relatedBooks!);
       })
       .catch(() => showFailure(toast, "Could not fetch book data"));
+    scrollToTop("instant");
   }, [stock, id]);
 
   const calculateDaysOfSupply = (book: Book) => {

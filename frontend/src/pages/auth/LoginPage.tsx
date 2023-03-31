@@ -9,6 +9,7 @@ import { AccessType, administrator, user } from "../../util/auth/UserTypes";
 
 interface LoginPageProps {
   onLogin: (user: AccessType | undefined) => void;
+  IsMobileDevice: boolean;
 }
 
 export default function LoginPage(props: LoginPageProps) {
@@ -42,7 +43,7 @@ export default function LoginPage(props: LoginPageProps) {
         localStorage.setItem("loginTime", new Date().toString());
         localStorage.setItem("userID", response.id.toString());
         localStorage.setItem("currentUsername", userName);
-        navigate("/books");
+        navigate(props.IsMobileDevice ? "/books/lookup" : "/books");
       })
       .catch(() => {
         wrongPasswordRef.current?.show([
@@ -83,43 +84,35 @@ export default function LoginPage(props: LoginPageProps) {
           Imaginary Software
         </h1>
       </div>
-      <form onSubmit={onSubmit} className="col-8">
-        <div className="flex justify-content-center col-12">
-          <div className="flex pr-2 col-5 justify-content-end my-auto">
-            <label
-              className="text-xl p-component text-teal-900 p-text-secondary"
-              htmlFor="genre"
-            >
-              Username:
-            </label>
-          </div>
-          <div className="col-7">
-            <InputText
-              value={userName}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setUserName(e.target.value)
-              }
-            />
-          </div>
+      <form onSubmit={onSubmit} className="grid justify-content-center col-8">
+        <div className="flex flex-wrap col-12 justify-content-center my-auto">
+          <label
+            className="text-xl p-component text-teal-900 p-text-secondary my-auto mr-2"
+            htmlFor="genre"
+          >
+            Username:
+          </label>
+          <InputText
+            value={userName}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setUserName(e.target.value)
+            }
+          />
         </div>
 
-        <div className="flex justify-content-center col-12">
-          <div className="flex pr-2 col-5 justify-content-end my-auto">
-            <label
-              className="text-xl p-component text-teal-900 p-text-secondary"
-              htmlFor="genre"
-            >
-              Password:
-            </label>
-          </div>
-          <div className="col-7">
-            <Password
-              value={password}
-              onChange={onChange}
-              toggleMask
-              feedback={false}
-            />
-          </div>
+        <div className="flex flex-wrap col-12 justify-content-center my-auto">
+          <label
+            className="text-xl p-component text-teal-900 p-text-secondary my-auto mr-2"
+            htmlFor="genre"
+          >
+            Password:
+          </label>
+          <Password
+            value={password}
+            onChange={onChange}
+            toggleMask
+            feedback={false}
+          />
         </div>
 
         <div className="flex justify-content-center col-12">

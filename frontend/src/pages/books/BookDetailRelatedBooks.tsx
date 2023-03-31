@@ -11,7 +11,7 @@ import { logger } from "../../util/Logger";
 export interface BookDetailRelatedBooksProps {
   relatedBooks?: RelatedBook[];
   globalClassName?: string;
-  disableNavigation?: boolean;
+  disableRowClick?: boolean;
 }
 
 export interface RelatedBook {
@@ -87,7 +87,7 @@ export default function BookDetailRelatedBooks(
   ];
 
   const onRowClick = (event: DataTableRowClickEvent) => {
-    if (!props.disableNavigation ?? true) {
+    if (!props.disableRowClick ?? true) {
       const lineItem = event.data as RelatedBook;
       logger.debug("Line Item Clicked (Book Detail View)", lineItem);
       navigate(`/books/detail/${lineItem.id}`);
@@ -99,7 +99,7 @@ export default function BookDetailRelatedBooks(
     <div className="card pt-0 px-3">
       <DataTable
         size="small"
-        rowHover={!props.disableNavigation}
+        rowHover={!props.disableRowClick}
         value={props.relatedBooks}
         onRowClick={onRowClick}
       >

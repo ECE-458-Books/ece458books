@@ -9,8 +9,8 @@ import {
 } from "../../../apis/books/BooksAPI";
 import { showFailure, showSuccess } from "../../../components/Toast";
 import { APIToInternalBookConversionWithDB } from "../../../apis/books/BooksConversions";
-import BarcodeScannerComponent from "react-qr-barcode-scanner";
-import { Result } from "@zxing/library";
+//import BarcodeScannerComponent from "react-qr-barcode-scanner";
+//import { Result } from "@zxing/library";
 
 export default function BookLookup() {
   const [textBox, setTextBox] = useState<string>("");
@@ -37,14 +37,14 @@ export default function BookLookup() {
     }
   };
 
-  const onUpdateScreen = (err: unknown, result: Result | undefined) => {
-    if (result) {
-      setTextBox(result.text);
-      setIsVideoVisible(false);
-    } else {
-      setTextBox("");
-    }
-  };
+  // const onUpdateScreen = (err: unknown, result: Result | undefined) => {
+  //   if (result) {
+  //     setTextBox(result.text);
+  //     setIsVideoVisible(false);
+  //   } else {
+  //     setTextBox("");
+  //   }
+  // };
 
   return (
     <div className="grid flex justify-content-center">
@@ -71,7 +71,7 @@ export default function BookLookup() {
         />
       </div>
 
-      {isVideoVisible && (
+      {/* {isVideoVisible && (
         <BarcodeScannerComponent
           width={400}
           height={400}
@@ -79,7 +79,7 @@ export default function BookLookup() {
             onUpdateScreen(err, result)
           }
         />
-      )}
+      )} */}
 
       <div className="flex justify-content-center col-12 pt-5">
         <Button

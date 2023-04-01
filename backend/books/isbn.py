@@ -5,7 +5,7 @@ from dateutil import parser
 import PIL.Image as Image
 
 import threading
-from books.related_books import standardize_title, get_related_isbns
+from books.related_books import standardize_title, get_related_isbns, get_related_books_data
 
 from books.models import Book, RelatedBookGroup
 from books.serializers import RelatedBookSerializer
@@ -145,18 +145,8 @@ class ISBNTools:
     def check_for_related_book_group(self, data):
         # If this book has related books, then add related books
         try:
-            # related_book_group = RelatedBookGroup.objects.get(title=standardize_title(data['title']))
-            # data['related_books'] = RelatedBookSerializer(related_book_group.related_books.all(), many=True).data
-            related_book_isbns_list = get_related_isbns(data['isbn_13'])
-            print(related_book_isbns_list)
-            data['related_books'] = RelatedBookSerializer(
-                Book.objects.filter(related_book_group__in=Book.objects.filter(Q(isbn_13__in=related_book_isbns_list) | Q(isbn_10__in=related_book_isbns_list)).values('related_book_group')),
-                many=True).data
+            data['related_books'] = get_related_books_data(data['isbn_13'])
             data['num_related_books'] = len(data['related_books'])
-            # related_book_group = related_books[0].related_book_group
-            # print(related_books.annotate(related_books_list='related_book_group__related_books'))
-            # data['related_books'] = RelatedBookSerializer(related_book_group.related_books.all(), many=True).data
-            # data['num_related_books'] = len(Book.objects.filter(related_book_group=related_book_group))
         except RelatedBookGroup.DoesNotExist:
             data['related_books'] = []
             data['num_related_books'] = 0

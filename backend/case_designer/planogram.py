@@ -7,12 +7,13 @@ import requests
 from .models import Bookcase
 
 class PlanogramGenerator:
-    # Style used for all tables, it creates grid lines and centers the elements
+    # Style used for the display books and shelf tables, it creates grid lines and centers the elements
     table_style = [
         ('GRID', (0, 0), (-1, -1), 1, colors.black),
         ('ALIGN',(0,0),(-1,-1),'CENTER'),
         ('VALIGN',(0,0),(-1,-1),'MIDDLE'),
     ]
+    # Used for creating vertical space between document elements
     default_spacer = Spacer(300, 20)
 
     def __init__(self, bookcase: Bookcase) -> None:
@@ -65,8 +66,9 @@ class PlanogramGenerator:
         img = self.get_display_book_image(display_book)
         return [img, Paragraph(display_book.book.title), Paragraph(authors), display_book.book.isbn_13, display_book.display_count]
 
-    # Layout table, showing information about the books and the order they should be displayed in
+    # Layout tables, showing information about the books and the order they should be displayed in
     # (similar to the case designer page)
+    # Each shelf is a separate table
     def create_bookcase_layout_tables_and_headers(self):
         tables = []
         for idx, shelf in enumerate(self.shelves):

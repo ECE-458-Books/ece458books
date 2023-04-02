@@ -1,10 +1,16 @@
+
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.response import Response
 from rest_framework import status, filters
-from .models import Bookcase, DisplayedBook
+
+from .planogram import PlanogramGenerator
+from .models import Bookcase
 from .paginations import BookcasePagination
 from .serializers import BookcaseSerializer
+from rest_framework.views import APIView
+from utils.permissions import CustomBasePermission
+
 
 class ListCreateBookcaseAPIView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
@@ -71,3 +77,11 @@ class RetrieveUpdateDestroyBookcaseAPIView(RetrieveUpdateDestroyAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     # the default destroy method is used for deleting a bookcase
+
+class PlanogramPDFView(APIView):
+    permission_classes = [CustomBasePermission]
+
+    def get(self, request, *args, **kwargs):
+        bookcase = Bookcase.objects.get(id=self.kwargs['id'])
+        planogram_generator = PlanogramGenerator(bookcase)
+        return planogram_generator.generate_planogram()

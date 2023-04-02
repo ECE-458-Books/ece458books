@@ -202,15 +202,11 @@ class ListCreateBookAPIView(ListCreateAPIView, BookImageCreator):
         related_books_in_db = Book.objects.filter(isbn_13__in=related_books_list)
         related_book_group_ids = {related_book_group_obj['related_book_group'] for related_book_group_obj in related_books_in_db.values('related_book_group')}
         if len(related_book_group_ids) == 0:  # No existing related books for this new book, so create new group
-            print("No pre-existing relations")
             related_book_group_id = RelatedBookGroup.objects.create(title=standardize_title(data['title'])).id
         elif len(related_book_group_ids) == 1:  # One unified related books group for this book, so add this book to the group
-            print("one group related")
             (related_book_group_id,) = related_book_group_ids
         else:  # multiple related book groups, so must combine them first
-            print("multiple related groups")
             related_book_group_id = combine_related_books_groups(related_book_group_ids)
-        # obj, created = RelatedBookGroup.objects.get_or_create(id=)
         data['related_book_group'] = related_book_group_id
         return data
 
@@ -365,8 +361,8 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView, BookImageCr
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
 
-        # add primary key of related books group
-        data = self.get_or_create_related_books_group(data, instance)
+        # add primary key of related books group. The related books group shouldn't update because user cannot update the isbn, and related books is solely based on isbn.
+        data['related_book_group'] = instance.related_book_group.id
 
         serializer = self.get_serializer(instance, data=data, partial=partial)
         serializer.is_valid(raise_exception=True)
@@ -385,11 +381,6 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView, BookImageCr
         res['image_url'] = url
 
         return Response(res)
-
-    def get_or_create_related_books_group(self, data, instance):
-        obj, created = RelatedBookGroup.objects.get_or_create(title=standardize_title(instance.title))
-        data['related_book_group'] = obj.pk
-        return data
 
     def convert_zero_to_null(self, data):
         possible_zero_fields = ['pageCount', 'width', 'height', 'thickness']

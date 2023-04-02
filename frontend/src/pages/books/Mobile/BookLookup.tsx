@@ -1,4 +1,4 @@
-import { FormEvent, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { Button } from "primereact/button";
 import { Toast } from "primereact/toast";
 import { useNavigate } from "react-router-dom";
@@ -18,6 +18,10 @@ export default function BookLookup() {
   const toast = useRef<Toast>(null);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setTextBox("");
+  }, []);
 
   const searchButtonClick = () => {
     BOOKS_API.getBooks({ isbn_only: true, search: textBox })
@@ -56,6 +60,7 @@ export default function BookLookup() {
       <div className="flex justify-content-center col-12 py-5">
         <InputText
           value={textBox}
+          keyfilter="int"
           onChange={(e: FormEvent<HTMLInputElement>) =>
             setTextBox(e.currentTarget.value)
           }

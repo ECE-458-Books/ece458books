@@ -37,7 +37,7 @@ export default function BookLookup() {
 
   const onUpdateScreen = (err: unknown, result: Result | undefined) => {
     if (result) {
-      setTextBox(result.text);
+      setTextBox(result.getText());
       setIsVideoPaused(false);
       setIsVideoVisible(false);
     } else {

@@ -13,8 +13,10 @@ import { Image } from "primereact/image";
 import TextLabel from "../../../components/text/TextLabels";
 import PriceTemplate from "../../../components/templates/PriceTemplate";
 import { Divider } from "primereact/divider";
-import { Book } from "../BookList";
-import { DEFAULT_THICKNESS } from "../../casedesigner/util/Calculations";
+import {
+  calculateDaysOfSupply,
+  updateShelfSpace,
+} from "../../../util/NumberOps";
 
 // Leaving this line in case of future image browser side caching workaround is needed
 interface ImageUrlHashStruct {
@@ -83,7 +85,7 @@ export default function BookDetailMobile() {
         setLineItems(book.lineItems!);
         setBestBuybackPrice(book.bestBuybackPrice);
         setLastMonthSales(book.lastMonthSales);
-        updateShelfSpace(book.thickness);
+        setShelfSpace(updateShelfSpace(book.thickness, book.stock));
         setDaysOfSupply(calculateDaysOfSupply(book));
         setImage({
           imageSrc: response.image_url,
@@ -94,21 +96,6 @@ export default function BookDetailMobile() {
       })
       .catch(() => showFailure(toast, "Could not fetch book data"));
   }, [stock, id]);
-
-  const calculateDaysOfSupply = (book: Book) => {
-    if (book.stock === 0) {
-      return "(inf)";
-    } else {
-      return Math.floor((book.stock / book.lastMonthSales!) * 30);
-    }
-  };
-
-  const updateShelfSpace = (thickness: number | undefined) => {
-    const calcThickness = thickness ? thickness : DEFAULT_THICKNESS;
-    setShelfSpace(
-      Math.round((calcThickness * stock + Number.EPSILON) * 100) / 100
-    );
-  };
 
   const toast = useRef<Toast>(null);
 

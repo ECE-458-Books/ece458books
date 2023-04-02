@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 
 export function externalToInternalDate(date: string) {
-  return new Date(date.replace("-", "/"));
+  return new Date(date);
 }
 
 export function internalToExternalDate(date: Date) {

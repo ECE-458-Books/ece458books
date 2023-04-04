@@ -1,11 +1,11 @@
 import { Routes, Route, Outlet, useNavigate } from "react-router-dom";
 import { AccessType } from "../../util/auth/UserTypes";
-import BookLookup from "../../pages/books/mobile/BookLookup";
+import BookLookup from "../../pages/books/Mobile/BookLookup";
 import { MenuItem } from "primereact/menuitem";
 import { Menubar } from "primereact/menubar";
 import IsUserLoggedIn from "../../util/auth/CheckLoginStatus";
 import { Button } from "primereact/button";
-import BookDetailMobile from "../../pages/books/mobile/BookDetailMobile";
+import BookDetailMobile from "../../pages/books/Mobile/BookDetailMobile";
 
 interface RouterProps {
   onLogout: () => void;

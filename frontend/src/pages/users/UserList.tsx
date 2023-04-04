@@ -8,8 +8,6 @@ import {
   APIToInternalUserConversion,
   APIUserSortFieldMap,
 } from "../../apis/auth/AuthConversions";
-import LabeledSwitch from "../../components/buttons/LabeledSwitch";
-import { scrollToTop } from "../../util/WindowViewportOps";
 import ListTemplate from "../../templates/list/ListTemplate";
 import { TableColumn } from "../../components/datatable/TableColumns";
 import SelectSizeDropdown, {
@@ -81,19 +79,6 @@ export default function UserList() {
     />
   );
 
-  const noPaginationSwitch = (
-    <LabeledSwitch
-      label="Show All"
-      onChange={() => {
-        if (!isNoPagination) {
-          scrollToTop();
-        }
-        setIsNoPagination(!isNoPagination);
-      }}
-      value={isNoPagination}
-    />
-  );
-
   const selectSizeButton = (
     <SelectSizeDropdown
       value={tableWhitespaceSize}
@@ -115,7 +100,6 @@ export default function UserList() {
       rows={users}
       APISortFieldMap={APIUserSortFieldMap}
       callGetAPI={callAPI}
-      paginatorLeft={noPaginationSwitch}
       paginatorRight={selectSizeButton}
     />
   );

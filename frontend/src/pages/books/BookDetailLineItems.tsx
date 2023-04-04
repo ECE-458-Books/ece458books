@@ -10,6 +10,7 @@ import PriceTemplate from "../../components/templates/PriceTemplate";
 
 export interface BookDetailLineItemsProps {
   lineItems: BookDetailLineItem[];
+  disableRowClick?: boolean;
 }
 
 export interface BookDetailLineItem {
@@ -82,11 +83,13 @@ export default function BookDetailLineItems(props: BookDetailLineItemsProps) {
   ];
 
   const onRowClick = (event: DataTableRowClickEvent) => {
-    const lineItem = event.data as BookDetailLineItem;
-    logger.debug("Line Item Clicked (Book Detail View)", lineItem);
-    const urlExtension = LineItemURLMapper.get(lineItem.type);
-    if (urlExtension) {
-      navigate(`/${urlExtension}/detail/${lineItem.id}`);
+    if (!props.disableRowClick ?? true) {
+      const lineItem = event.data as BookDetailLineItem;
+      logger.debug("Line Item Clicked (Book Detail View)", lineItem);
+      const urlExtension = LineItemURLMapper.get(lineItem.type);
+      if (urlExtension) {
+        navigate(`/${urlExtension}/detail/${lineItem.id}`);
+      }
     }
   };
 
@@ -94,7 +97,7 @@ export default function BookDetailLineItems(props: BookDetailLineItemsProps) {
   return (
     <DataTable
       onRowClick={onRowClick}
-      rowHover
+      rowHover={!props.disableRowClick}
       size="small"
       value={props.lineItems}
     >

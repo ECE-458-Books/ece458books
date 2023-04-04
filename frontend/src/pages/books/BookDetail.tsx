@@ -22,7 +22,6 @@ import DeleteButton from "../../components/buttons/DeleteButton";
 import BackButton from "../../components/buttons/BackButton";
 import PriceTemplate from "../../components/templates/PriceTemplate";
 import DeletePopup from "../../components/popups/DeletePopup";
-import { DEFAULT_THICKNESS } from "../casedesigner/util/Calculations";
 import Restricted from "../../permissions/Restricted";
 import TextLabel from "../../components/text/TextLabels";
 import { TextWrapperNullableNumberEditor } from "../../components/text/TextWrapperNullableNumberEditor";
@@ -35,6 +34,7 @@ import {
   InputNumberValueChangeEvent,
 } from "primereact/inputnumber";
 import "../../css/MiscellaneousCSS.css";
+import { calculateDaysOfSupply, updateShelfSpace } from "../../util/NumberOps";
 import { scrollToTop } from "../../util/WindowViewportOps";
 
 interface ErrorDisplay {
@@ -122,7 +122,7 @@ export default function BookDetail() {
         setLineItems(book.lineItems!);
         setBestBuybackPrice(book.bestBuybackPrice);
         setLastMonthSales(book.lastMonthSales);
-        updateShelfSpace(book.thickness);
+        setShelfSpace(updateShelfSpace(book.thickness, book.stock));
         setInventoryAdjustment(0);
         setDaysOfSupply(calculateDaysOfSupply(book));
         setImage({
@@ -135,21 +135,6 @@ export default function BookDetail() {
       .catch(() => showFailure(toast, "Could not fetch book data"));
     scrollToTop();
   }, [stock, id]);
-
-  const calculateDaysOfSupply = (book: Book) => {
-    if (book.stock === 0) {
-      return "(inf)";
-    } else {
-      return Math.floor((book.stock / book.lastMonthSales!) * 30);
-    }
-  };
-
-  const updateShelfSpace = (thickness: number | undefined) => {
-    const calcThickness = thickness ? thickness : DEFAULT_THICKNESS;
-    setShelfSpace(
-      Math.round((calcThickness * stock + Number.EPSILON) * 100) / 100
-    );
-  };
 
   const bookModifyAPIRequest = (book: APIBook) => {
     BOOKS_API.modifyBook({
@@ -193,7 +178,7 @@ export default function BookDetail() {
   // Update shelf space
 
   useEffect(() => {
-    updateShelfSpace(thickness);
+    setShelfSpace(updateShelfSpace(thickness, stock));
   }, [thickness]);
 
   const toast = useRef<Toast>(null);

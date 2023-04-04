@@ -1,9 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import BookDetailRelatedBooks, { RelatedBook } from "../BookDetailRelatedBooks";
-import BookDetailLineItems, {
-  BookDetailLineItem,
-} from "../BookDetailLineItems";
 import { BOOKS_API } from "../../../apis/books/BooksAPI";
 import { showFailure } from "../../../components/Toast";
 import { APIToInternalBookConversion } from "../../../apis/books/BooksConversions";
@@ -12,7 +8,6 @@ import BackButton from "../../../components/buttons/BackButton";
 import { Image } from "primereact/image";
 import TextLabel from "../../../components/text/TextLabels";
 import PriceTemplate from "../../../components/templates/PriceTemplate";
-import { Divider } from "primereact/divider";
 import {
   calculateDaysOfSupply,
   updateShelfSpace,
@@ -46,8 +41,6 @@ export default function BookDetailMobile() {
   const [shelfSpace, setShelfSpace] = useState<number>(0);
   const [lastMonthSales, setLastMonthSales] = useState<number>();
   const [numOfRelatedBooks, setNumOfRelatedBooks] = useState<number>();
-  const [relatedBooks, setRelatedBooks] = useState<RelatedBook[]>([]);
-  const [lineItems, setLineItems] = useState<BookDetailLineItem[]>([]);
   // Leaving this line in case of future image browser side caching workaround is needed
   const [image, setImage] = useState<ImageUrlHashStruct>({
     imageSrc: "",
@@ -82,7 +75,6 @@ export default function BookDetailMobile() {
         setHeight(book.height);
         setThickness(book.thickness);
         setStock(book.stock);
-        setLineItems(book.lineItems!);
         setBestBuybackPrice(book.bestBuybackPrice);
         setLastMonthSales(book.lastMonthSales);
         setShelfSpace(updateShelfSpace(book.thickness, book.stock));
@@ -92,24 +84,11 @@ export default function BookDetailMobile() {
           imageHash: Date.now().toString(),
         });
         setNumOfRelatedBooks(book.numRelatedBooks);
-        setRelatedBooks(book.relatedBooks!);
       })
       .catch(() => showFailure(toast, "Could not fetch book data"));
   }, [stock, id]);
 
   const toast = useRef<Toast>(null);
-
-  // Line item table
-  const lineItemsTable = (
-    <BookDetailLineItems lineItems={lineItems} disableRowClick={true} />
-  );
-
-  const relatedBooksTable = (
-    <BookDetailRelatedBooks
-      relatedBooks={relatedBooks}
-      disableRowClick={true}
-    />
-  );
 
   const backButton = (
     <div className="flex col-4">
@@ -332,18 +311,6 @@ export default function BookDetailMobile() {
           </div>
         </div>
       </div>
-      <Divider align="center">
-        <div className="inline-flex align-items-center">
-          <b>Book Related Transactions and Adjustments</b>
-        </div>
-      </Divider>
-      <div className="flex justify-content-center col-10">{lineItemsTable}</div>
-      <Divider align="center">
-        <div className="inline-flex align-items-center">
-          <b>Related Books</b>
-        </div>
-      </Divider>
-      <div className="col-10">{relatedBooksTable}</div>
     </div>
   );
 }

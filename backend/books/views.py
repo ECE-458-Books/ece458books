@@ -8,7 +8,7 @@ from rest_framework import status, filters
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView, CreateAPIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, AllowAny
 
 from genres.models import Genre
 from purchase_orders.models import Purchase
@@ -17,12 +17,12 @@ from helpers.csv_writer import CSVWriter
 from utils.permissions import CustomBasePermission
 from .related_books import get_related_isbns
 
-from .serializers import BookListAddSerializer, BookSerializer, ISBNSerializer, BookImageSerializer, BookInventoryCorrectionSerializer, RelatedBookSerializer
+from .serializers import BookListAddSerializer, BookSerializer, ISBNSerializer, BookImageSerializer, BookInventoryCorrectionSerializer, RelatedBookSerializer, RemoteBookSearchSerializer, RemoteBookBodySerializer
 from .isbn import ISBNTools
 from .models import Book, Author, BookImage, BookInventoryCorrection, RelatedBookGroup
 from .paginations import BookPagination
 from .search_filters import *
-from .utils import str2bool
+from .utils import str2bool, RemoteAPIRepresentationSwitch
 from .book_images import BookImageCreator
 from .exceptions import *
 from .related_books import standardize_title, combine_related_books_groups
@@ -477,3 +477,63 @@ class CreateBookInventoryCorrectionAPIView(CreateAPIView):
             raise InventoryAdjustmentBelowZeroException(adjustment, stock)
 
         return book_id, adjustment
+
+
+class RemoteBookSearchView(APIView):
+    permission_classes = [AllowAny]
+    isbn_toolbox = ISBNTools()
+
+    def post(self, request):
+        serializer = RemoteBookBodySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        raw_isbn_list = serializer.data['isbns']
+
+        # Delete all empty strings
+        raw_isbn_list = [raw_isbn for raw_isbn in raw_isbn_list if raw_isbn != '']
+
+        # Convert all ISBN to ISBN-13
+        parsed_isbn_list = self.isbn_toolbox.parse_raw_isbn_list(raw_isbn_list)
+
+        json_response = self.generate_json_response_from_isbn_list(parsed_isbn_list)
+
+        return Response(json_response)
+    
+    def generate_json_response_from_isbn_list(self, isbns):
+        return [self.get_book_data_from_db(isbn) for isbn in isbns]
+
+    def get_book_data_from_db(self, isbn):
+        query_set = Book.objects.filter(isGhost=False, isbn_13=isbn)
+
+        # No book is found with the following ISBN_13
+        if len(query_set) == 0:
+            return {isbn: None}
+
+        # Serialize the found book with the requested format
+        book_instance = query_set[0]
+
+        # Book instance to get all the related fields
+        serializer = BookSerializer(book_instance)
+
+        # Reformat the data so it agrees with the remote book search serializer
+        data = self.reformat_internal_book_representation(serializer.data)
+    
+        # Serializes the book internal representation to remote API contract representation
+        remote_serializer = RemoteBookSearchSerializer(data=data)
+        remote_serializer.is_valid(raise_exception=True)
+
+        return {isbn: remote_serializer.data}
+    
+    def reformat_internal_book_representation(self, book):
+        switch = RemoteAPIRepresentationSwitch()
+
+        # This conversion is needed because book is initially an OrderedDict which is immutable
+        book = dict(book)
+        key_list = list(book.keys())
+
+        for old_key in key_list:
+            new_key = switch.reformat(old_key)
+            book[new_key] = book.pop(old_key)
+        
+        return book
+        

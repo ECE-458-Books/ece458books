@@ -27,6 +27,7 @@ import { Dialog } from "primereact/dialog";
 import { TextEditor } from "../../../components/editors/TextEditor";
 import { v4 as uuid } from "uuid";
 import BackButton from "../../../components/buttons/BackButton";
+import saveAs from "file-saver";
 
 const emptyShelf: Shelf = {
   id: "",
@@ -150,6 +151,19 @@ export default function BookcaseDetail() {
     });
   };
 
+  const callPlanogramGenerationAPI = () => {
+    CASE_DESIGNER_API.getPlanogram(id!)
+      .then((response) => {
+        const blob = new Blob([response], {
+          type: "application/pdf;charset=utf-8",
+        });
+        saveAs(blob, "planogram.pdf");
+      })
+      .catch(() => {
+        showFailure(toast, "Could not generate planogram");
+      });
+  };
+
   // -------- TEMPLATES/VISUAL ELEMENTS --------
   const toast = useRef<Toast>(null);
 
@@ -186,6 +200,16 @@ export default function BookcaseDetail() {
     />
   );
 
+  const downloadPlanogramButton = (
+    <Button
+      type="button"
+      label="Download Planogram"
+      icon="pi pi-download"
+      onClick={callPlanogramGenerationAPI}
+      className={"p-button-sm my-auto mr-1"}
+    />
+  );
+
   const deleteButton = (
     <DeleteButton
       visible={!isAddPage}
@@ -204,6 +228,7 @@ export default function BookcaseDetail() {
 
   const rightButtons = (
     <div className="flex col-4 justify-content-end">
+      {downloadPlanogramButton}
       {editCancelButton}
       {deleteButton}
     </div>

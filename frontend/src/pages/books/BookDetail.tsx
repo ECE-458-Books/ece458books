@@ -35,6 +35,7 @@ import {
 } from "primereact/inputnumber";
 import "../../css/MiscellaneousCSS.css";
 import { calculateDaysOfSupply, updateShelfSpace } from "../../util/NumberOps";
+import { scrollToTop } from "../../util/WindowViewportOps";
 
 interface ErrorDisplay {
   message: string;
@@ -132,6 +133,7 @@ export default function BookDetail() {
         setRelatedBooks(book.relatedBooks!);
       })
       .catch(() => showFailure(toast, "Could not fetch book data"));
+    scrollToTop();
   }, [stock, id]);
 
   const bookModifyAPIRequest = (book: APIBook) => {

@@ -15,6 +15,7 @@ from purchase_orders.models import Purchase
 from sales.models import Sale
 from helpers.csv_writer import CSVWriter
 from utils.permissions import CustomBasePermission
+from .related_books import get_related_isbns
 
 from .serializers import BookListAddSerializer, BookSerializer, ISBNSerializer, BookImageSerializer, BookInventoryCorrectionSerializer, RelatedBookSerializer
 from .isbn import ISBNTools
@@ -24,7 +25,7 @@ from .search_filters import *
 from .utils import str2bool
 from .book_images import BookImageCreator
 from .exceptions import *
-from .related_books import standardize_title
+from .related_books import standardize_title, combine_related_books_groups
 
 
 class ISBNSearchView(APIView):
@@ -197,8 +198,16 @@ class ListCreateBookAPIView(ListCreateAPIView, BookImageCreator):
         return Response(res, status=status.HTTP_201_CREATED, headers=headers)
 
     def get_or_create_related_books_group(self, data):
-        obj, created = RelatedBookGroup.objects.get_or_create(title=standardize_title(data['title']))
-        data['related_book_group'] = obj.pk
+        related_books_list = get_related_isbns(data['isbn_13'])
+        related_books_in_db = Book.objects.filter(isbn_13__in=related_books_list)
+        related_book_group_ids = {related_book_group_obj['related_book_group'] for related_book_group_obj in related_books_in_db.values('related_book_group')}
+        if len(related_book_group_ids) == 0:  # No existing related books for this new book, so create new group
+            related_book_group_id = RelatedBookGroup.objects.create(title=standardize_title(data['title'])).id
+        elif len(related_book_group_ids) == 1:  # One unified related books group for this book, so add this book to the group
+            (related_book_group_id,) = related_book_group_ids
+        else:  # multiple related book groups, so must combine them first
+            related_book_group_id = combine_related_books_groups(related_book_group_ids)
+        data['related_book_group'] = related_book_group_id
         return data
 
     def convert_zero_to_null(self, data):
@@ -352,8 +361,8 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView, BookImageCr
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
 
-        # add primary key of related books group
-        data = self.get_or_create_related_books_group(data, instance)
+        # add primary key of related books group. The related books group shouldn't update because user cannot update the isbn, and related books is solely based on isbn.
+        data['related_book_group'] = instance.related_book_group.id
 
         serializer = self.get_serializer(instance, data=data, partial=partial)
         serializer.is_valid(raise_exception=True)
@@ -372,11 +381,6 @@ class RetrieveUpdateDestroyBookAPIView(RetrieveUpdateDestroyAPIView, BookImageCr
         res['image_url'] = url
 
         return Response(res)
-
-    def get_or_create_related_books_group(self, data, instance):
-        obj, created = RelatedBookGroup.objects.get_or_create(title=standardize_title(instance.title))
-        data['related_book_group'] = obj.pk
-        return data
 
     def convert_zero_to_null(self, data):
         possible_zero_fields = ['pageCount', 'width', 'height', 'thickness']

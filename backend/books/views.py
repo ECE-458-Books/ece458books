@@ -533,7 +533,3 @@ class RemoteBookSearchView(APIView):
         
         return book
         
-
-
-        
-    

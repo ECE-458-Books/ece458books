@@ -111,3 +111,27 @@ class ImageTools:
             os.remove(image_file['full_path'])
 
         return destroyed_files
+
+
+class RemoteAPIRepresentationSwitch:
+    def reformat(self, key):
+        default = key
+        return getattr(self, 'key_' + key, lambda: default)()
+    
+    def key_isbn_13(self):
+        return "isbn13"
+
+    def key_isbn_10(self):
+        return "isbn10"
+
+    def key_publishedDate(self):
+        return "publicationYear"
+    
+    def key_image_url(self):
+        return "imageUrl"
+    
+    def key_stock(self):
+        return "inventoryCount"
+    
+    def key_retail_price(self):
+        return "retailPrice"

@@ -259,3 +259,27 @@ class BookInventoryCorrectionSerializer(serializers.ModelSerializer):
 
     def get_username(self, instance):
         return instance.user.username
+
+
+class RemoteBookSearchSerializer(serializers.Serializer):
+    title = serializers.CharField()
+    authors = serializers.ListField(
+        child = serializers.CharField()
+    )
+    isbn13 = serializers.CharField(max_length=13, min_length=13)
+    isbn10 = serializers.CharField(max_length=10, min_length=10)
+    publisher = serializers.CharField()
+    publicationYear = serializers.IntegerField()
+    pageCount = serializers.IntegerField(default=None)
+    height = serializers.FloatField(default=None)
+    weight = serializers.FloatField(default=None)
+    thickness = serializers.FloatField(default=None)
+    imageUrl = serializers.URLField()
+    inventoryCount = serializers.IntegerField()
+    retailPrice = serializers.FloatField()
+
+class RemoteBookBodySerializer(serializers.Serializer):
+    isbns = serializers.ListField(
+        child = serializers.CharField()
+    )
+

@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import ISBNSearchView, ListCreateBookAPIView, RetrieveUpdateDestroyBookAPIView, RetrieveExternalBookImageAPIView, CSVExportBookAPIView, CreateBookInventoryCorrectionAPIView
+from .views import ISBNSearchView, ListCreateBookAPIView, RetrieveUpdateDestroyBookAPIView, RetrieveExternalBookImageAPIView, CSVExportBookAPIView, CreateBookInventoryCorrectionAPIView, RemoteBookSearchView
 
 app_name = 'books'
 
@@ -9,5 +9,6 @@ urlpatterns = [
     path('/image/<book_id>', RetrieveExternalBookImageAPIView.as_view()),
     path('/correction/<book_id>', CreateBookInventoryCorrectionAPIView.as_view()),
     path('/isbns', ISBNSearchView.as_view()),
+    path('/remote/lookup', RemoteBookSearchView.as_view()),
     path('/<id>', RetrieveUpdateDestroyBookAPIView.as_view()),
 ]

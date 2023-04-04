@@ -212,7 +212,7 @@ class BookSerializer(serializers.ModelSerializer):
 
         # Final Sanity check if stock equals the stock recorded in DB
         if stock != instance.stock:
-            raise InventoryCountUnMatchedException(stock, instance.stock)
+            raise InventoryCountUnMatchedException(instance.title, stock, instance.stock)
 
         return sorted_items
 
@@ -267,7 +267,7 @@ class RemoteBookSearchSerializer(serializers.Serializer):
         child = serializers.CharField()
     )
     isbn13 = serializers.CharField(max_length=13, min_length=13)
-    isbn10 = serializers.CharField(max_length=10, min_length=10)
+    isbn10 = serializers.CharField(max_length=10)
     publisher = serializers.CharField()
     publicationYear = serializers.IntegerField()
     pageCount = serializers.IntegerField(default=None)

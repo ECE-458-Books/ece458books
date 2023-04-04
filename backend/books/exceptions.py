@@ -26,6 +26,6 @@ class InventoryAdjustmentBelowZeroException(APIException):
 class InventoryCountUnMatchedException(APIException):
     status_code = 400
 
-    def __init__(self, running_stock, db_stock):
-        default_detail = f"InventoryCountUnMatchedError: DB stock ({db_stock}) is inconsistent with running stock ({running_stock})"
+    def __init__(self, book_name, running_stock, db_stock):
+        default_detail = f"InventoryCountUnMatchedError: Book ({book_name}) DB stock ({db_stock}) is inconsistent with running stock ({running_stock})"
         super().__init__(detail=default_detail, code=self.status_code)

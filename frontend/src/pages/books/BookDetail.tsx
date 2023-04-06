@@ -618,6 +618,103 @@ export default function BookDetail() {
               )}
             </div>
           </div>
+          <div className="flex col-12 justify-content-start p-1">
+            <div className="flex p-0 col-6">
+              <TextLabel label="Page Count:" />
+              <TextWrapperNullableNumberEditor
+                disabled={!isModifiable}
+                textValue={pageCount}
+                value={pageCount}
+                onValueChange={(newValue) =>
+                  setPageCount(newValue ?? undefined)
+                }
+                defaultValue={undefined}
+              />
+            </div>
+            <div className="flex p-0 col-6">
+              <TextLabel label="Shelf Space (in):" />
+              <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
+                {shelfSpace < 0 ? 0 : `${shelfSpace}${thickness ? "" : "*"}`}
+              </p>
+            </div>
+          </div>
+          <div className="flex col-12 justify-content-start p-1">
+            <div className="flex col-6 p-0">
+              <div className="my-auto">
+                <TextLabel label="Inventory Count:" />
+              </div>
+              <div className="flex flex-wrap" style={{ width: "25%" }}>
+                <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
+                  {stock}
+                </p>
+                {isModifiable && inventoryAdjustment !== 0 && (
+                  <>
+                    <span
+                      className="pi pi-arrow-right my-auto font-semibold px-1"
+                      style={arrowColorDeterminer(inventoryAdjustment)}
+                    ></span>
+                    <p
+                      className={
+                        "p-component p-text-secondary text-xl text-center my-0 text-center my-auto " +
+                        colorDeterminer(inventoryAdjustment)
+                      }
+                    >
+                      {stock + inventoryAdjustment}
+                    </p>
+                  </>
+                )}
+              </div>
+              <div className="flex" style={{ width: "47%" }}>
+                {isInventoryCorrectionVisible &&
+                  isModifiable &&
+                  inventoryCorrectionEditLine}
+                {inventoryCorrectionButton}
+              </div>
+            </div>
+            <div className="flex p-0 col-6">
+              <TextLabel label="Days of Supply:" />
+              <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
+                {daysOfSupply < 0 ? 0 : daysOfSupply}
+              </p>
+            </div>
+          </div>
+          <div className="flex col-12 justify-content-start p-1">
+            <div className="flex p-0 col-6">
+              <TextLabel label="Last Month Sales:" />
+              <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
+                {lastMonthSales}
+              </p>
+            </div>
+            <div className="flex p-0 col-6">
+              <TextLabel label="Best Buyback Price:" />
+              <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
+                {PriceTemplate(bestBuybackPrice)}
+              </p>
+            </div>
+          </div>
+          <div className="flex col-12 justify-content-start p-1">
+            <div className="flex col-6 p-0">
+              <TextLabel label="# of Related Books:" />
+              <p className="p-component p-text-secondary text-900 text-xl text-center my-0">
+                {numOfRelatedBooks}
+              </p>
+            </div>
+            <div className="flex col-6 p-0">
+              <TextLabel label="Retail Price:" />
+              {!isModifiable ? (
+                <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
+                  {PriceTemplate(price)}
+                </p>
+              ) : (
+                PriceEditor(
+                  price,
+                  (newValue: number) => setPrice(newValue ?? 0),
+                  "w-4",
+                  !isModifiable
+                )
+              )}
+            </div>
+          </div>
           <h1 className="col-9 p-component p-text-secondary mb-1 mt-2 p-0 text-xl text-center text-900 color: var(--surface-800);">
             Dimensions (in)
           </h1>
@@ -659,103 +756,6 @@ export default function BookDetail() {
                 valueClassName="flex 2rem"
                 min={0.01}
               />
-            </div>
-          </div>
-          <div className="flex col-12 justify-content-start p-1">
-            <div className="flex p-0 col-6">
-              <TextLabel label="Page Count:" />
-              <TextWrapperNullableNumberEditor
-                disabled={!isModifiable}
-                textValue={pageCount}
-                value={pageCount}
-                onValueChange={(newValue) =>
-                  setPageCount(newValue ?? undefined)
-                }
-                defaultValue={undefined}
-              />
-            </div>
-            <div className="flex p-0 col-6">
-              <TextLabel label="Shelf Space (in):" />
-              <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
-                {shelfSpace < 0 ? 0 : `${shelfSpace}${thickness ? "" : "*"}`}
-              </p>
-            </div>
-          </div>
-          <div className="flex col-12 justify-content-start p-1">
-            <div className="flex col-6 p-0">
-              <div className="my-auto" style={{ width: "28%" }}>
-                <TextLabel label="Inventory Count:" />
-              </div>
-              <div className="flex flex-wrap" style={{ width: "25%" }}>
-                <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
-                  {stock}
-                </p>
-                {isModifiable && inventoryAdjustment !== 0 && (
-                  <>
-                    <span
-                      className="pi pi-arrow-right my-auto font-semibold px-1"
-                      style={arrowColorDeterminer(inventoryAdjustment)}
-                    ></span>
-                    <p
-                      className={
-                        "p-component p-text-secondary text-xl text-center my-0 text-center my-auto " +
-                        colorDeterminer(inventoryAdjustment)
-                      }
-                    >
-                      {stock + inventoryAdjustment}
-                    </p>
-                  </>
-                )}
-              </div>
-              <div className="flex" style={{ width: "47%" }}>
-                {isInventoryCorrectionVisible &&
-                  isModifiable &&
-                  inventoryCorrectionEditLine}
-                {inventoryCorrectionButton}
-              </div>
-            </div>
-            <div className="flex p-0 col-6">
-              <TextLabel label="Days of Supply:" />
-              <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
-                {daysOfSupply < 0 ? 0 : daysOfSupply}
-              </p>
-            </div>
-          </div>
-          <div className="flex col-12 justify-content-start p-1">
-            <div className="flex p-0 col-4">
-              <TextLabel label="Last Month Sales:" />
-              <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
-                {lastMonthSales}
-              </p>
-            </div>
-            <div className="flex p-0 col-4">
-              <TextLabel label="Best Buyback Price:" />
-              <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
-                {PriceTemplate(bestBuybackPrice)}
-              </p>
-            </div>
-            <div className="flex col-4 p-0">
-              <TextLabel label="Retail Price:" />
-              {!isModifiable ? (
-                <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
-                  {PriceTemplate(price)}
-                </p>
-              ) : (
-                PriceEditor(
-                  price,
-                  (newValue: number) => setPrice(newValue ?? 0),
-                  "w-4",
-                  !isModifiable
-                )
-              )}
-            </div>
-          </div>
-          <div className="flex col-12 justify-content-start p-1">
-            <div className="flex p-0">
-              <TextLabel label="# of Related Books:" />
-              <p className="p-component p-text-secondary text-900 text-xl text-center my-0">
-                {numOfRelatedBooks}
-              </p>
             </div>
           </div>
         </form>

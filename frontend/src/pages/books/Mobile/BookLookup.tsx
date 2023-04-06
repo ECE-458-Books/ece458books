@@ -24,9 +24,11 @@ export default function BookLookup() {
   }, []);
 
   const searchButtonClick = () => {
-    BOOKS_API.getBooks({ isbn_only: true, search: textBox })
-      .then((response) => onAPIResponse(response))
-      .catch(() => showFailure(toast, "Book Search Failed"));
+    if (textBox !== "") {
+      BOOKS_API.getBooks({ isbn_only: true, search: textBox })
+        .then((response) => onAPIResponse(response))
+        .catch(() => showFailure(toast, "Book Search Failed"));
+    }
   };
 
   const onAPIResponse = (response: GetBooksResp) => {

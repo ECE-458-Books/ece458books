@@ -205,6 +205,7 @@ export default function BookcaseDetail() {
       type="button"
       label="Download Planogram"
       icon="pi pi-download"
+      visible={!isModifiable}
       onClick={callPlanogramGenerationAPI}
       className={"p-button-sm my-auto mr-1"}
     />

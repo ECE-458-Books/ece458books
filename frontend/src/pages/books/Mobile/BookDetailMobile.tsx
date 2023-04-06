@@ -135,7 +135,6 @@ export default function BookDetailMobile() {
     <BookDetailRelatedBooks
       relatedBooks={relatedBooks}
       columnsOverride={RELATED_BOOKS_COLUMN}
-      showGridLines={true}
     />
   );
 

@@ -500,7 +500,13 @@ class RemoteBookSearchView(APIView):
         return Response(json_response)
     
     def generate_json_response_from_isbn_list(self, isbns):
-        return [self.get_book_data_from_db(isbn) for isbn in isbns]
+        ret = dict()
+
+        for isbn in isbns:
+            d = self.get_book_data_from_db(isbn)
+            ret.update(d)
+
+        return ret
 
     def get_book_data_from_db(self, isbn):
         query_set = Book.objects.filter(isGhost=False, isbn_13=isbn)

@@ -95,7 +95,7 @@ export default function BookDetailRelatedBooks(
     }
   };
 
-  const columns = createColumns( props.columnsOverride ?? COLUMNS);
+  const columns = createColumns(props.columnsOverride ?? COLUMNS);
   return (
     <div className="card pt-0 px-3">
       <DataTable

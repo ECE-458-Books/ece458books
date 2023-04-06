@@ -1,6 +1,6 @@
 import { Column } from "primereact/column";
 import "primereact/resources/themes/lara-light-indigo/theme.css";
-import { Style } from "../../css/Style";
+import { CSSProperties } from "react";
 
 // The base column interface, all columns should implement this interface
 export interface TableColumn<T> {
@@ -8,7 +8,7 @@ export interface TableColumn<T> {
   field: string; // The key of the field. If the column is hidden, this is the only required field
   header?: string; // Displayed header on table
   hidden?: boolean; // Set to true if hiding column
-  style?: Style; // Used for setting width
+  style?: CSSProperties; // Used for setting width
   className?: string; // Used for setting specific settings
 
   // Filter Information

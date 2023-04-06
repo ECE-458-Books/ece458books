@@ -1,13 +1,23 @@
 import io
 from django.http import HttpResponse
 from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Table, Paragraph, Image, Spacer
+from reportlab.platypus import SimpleDocTemplate, Table, Paragraph, Image, Spacer, PageBreak
 import requests
+from reportlab.lib.styles import ParagraphStyle
 
 from .models import Bookcase
 
 class PlanogramGenerator:
-    # Style used for the display books and shelf tables, it creates grid lines and centers the elements
+    # Text Styles
+    header_style = ParagraphStyle(
+        name="Header",
+        fontSize = 24
+    )
+    subheader_style = ParagraphStyle(
+        name="Subheader",
+        fontSize = 16
+    )
+    # Used for the display books and shelf tables, it creates grid lines and centers the elements
     table_style = [
         ('GRID', (0, 0), (-1, -1), 1, colors.black),
         ('ALIGN',(0,0),(-1,-1),'CENTER'),
@@ -46,8 +56,8 @@ class PlanogramGenerator:
     def create_display_books_table_and_header(self):
         data = [("Image", "Title", "Author(s)", "ISBN13", Paragraph("Total Display Count"))]
         data.extend(self.create_display_books_data())
-        table = Table(data, colWidths=[50, 250, 100, 100, 50], style=self.table_style)
-        return [Paragraph("Displayed Books Information and Total Count"), self.default_spacer, table, self.default_spacer]
+        table = Table(data, colWidths=[70, 200, 100, 100, 50], style=self.table_style)
+        return [Paragraph("Displayed Books Totals", style=self.header_style), self.default_spacer, table, self.default_spacer, PageBreak()]
 
     def create_display_books_data(self):
         display_books_dict = {}
@@ -73,9 +83,9 @@ class PlanogramGenerator:
         tables = []
         for idx, shelf in enumerate(self.shelves):
             tables.extend(self.create_shelf_layout_table_and_headers(shelf, idx+1))
-        headers = [Paragraph("""Bookcase Shelves. Each table shows a shelf on the bookcase
-                             with the books organized from left to right."""), 
-                             self.default_spacer]
+        headers = [Paragraph("Bookcase Shelves", style=self.header_style),
+                             self.default_spacer, Paragraph("""Each table shows a shelf on the bookcase
+                             with the books organized from left to right""")]
         headers.extend(tables)
         return headers
     
@@ -84,7 +94,7 @@ class PlanogramGenerator:
         for display_book in shelf.displayed_books.all():
             rows.append(self.create_layout_book(display_book))
         table = Table(rows, colWidths=[50, 300, 100, 100], style=self.table_style)
-        return [Paragraph(f"Shelf {shelf_num}"), self.default_spacer, table, self.default_spacer]
+        return [Paragraph(f"Shelf {shelf_num}"), self.default_spacer, table, self.default_spacer, PageBreak()]
     
     def create_layout_book(self, display_book):
         img = self.get_display_book_image(display_book)
@@ -93,5 +103,5 @@ class PlanogramGenerator:
     def get_display_book_image(self, display_book):
         resp = requests.get(display_book.book.image_url)
         img = Image(io.BytesIO(resp.content))
-        img._restrictSize(30, 30)
+        img._restrictSize(50, 50)
         return img

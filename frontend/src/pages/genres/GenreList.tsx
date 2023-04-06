@@ -90,9 +90,15 @@ export default function GenreList() {
       <>
         <div className="flex justify-content-center">
           <Button
-            icon="pi pi-align-justify"
-            className="p-button-rounded p-button-info"
-            style={{ height: 40, width: 40 }}
+            icon="pi pi-fw pi-book"
+            className="p-button-info"
+            style={
+              tableWhitespaceSize === SelectSizeDropdownOptions.Large
+                ? { height: 50, width: 50 }
+                : tableWhitespaceSize === SelectSizeDropdownOptions.Normal
+                ? { height: 40, width: 40 }
+                : { height: 30, width: 30 }
+            }
             onClick={() => goToFilteredBookList(rowData)}
           />
         </div>

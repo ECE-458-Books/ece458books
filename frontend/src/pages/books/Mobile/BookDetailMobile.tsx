@@ -327,7 +327,12 @@ export default function BookDetailMobile() {
                 labelClassName="p-component p-text-secondary text-teal-900 m-auto"
               />
             </div>
-            
+            <div className="flex w-5 justify-content-center">
+              <TextLabel
+                label="Last Month Sales"
+                labelClassName="p-component p-text-secondary text-teal-900 m-auto"
+              />
+            </div>
           </div>
           <div className="flex justify-content-evenly">
             <div className="flex w-5 justify-content-center border-round surface-100">
@@ -347,12 +352,6 @@ export default function BookDetailMobile() {
             <div className="flex w-5 justify-content-center">
               <TextLabel
                 label="# of Related Books"
-                labelClassName="p-component p-text-secondary text-teal-900 m-auto"
-              />
-            </div>
-            <div className="flex w-5 justify-content-center">
-              <TextLabel
-                label="Last Month Sales"
                 labelClassName="p-component p-text-secondary text-teal-900 m-auto"
               />
             </div>

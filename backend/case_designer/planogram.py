@@ -38,7 +38,7 @@ class PlanogramGenerator:
     
     # Bookcase information table
     def create_bookcase_info(self):
-        data = [("Name = " + self.bookcase.name, "Width (in) = " + str(self.bookcase.width))]
+        data = [("Name: " + self.bookcase.name, "Width (in): " + str(self.bookcase.width))]
         table = Table(data, colWidths=[200, 200])
         return [table, self.default_spacer]
 
@@ -47,7 +47,7 @@ class PlanogramGenerator:
         data = [("Image", "Title", "Author(s)", "ISBN13", Paragraph("Total Display Count"))]
         data.extend(self.create_display_books_data())
         table = Table(data, colWidths=[50, 250, 100, 100, 50], style=self.table_style)
-        return [Paragraph("Displayed Books Informationa and Total Count"), self.default_spacer, table, self.default_spacer]
+        return [Paragraph("Displayed Books Information and Total Count"), self.default_spacer, table, self.default_spacer]
 
     def create_display_books_data(self):
         display_books_dict = {}
@@ -73,7 +73,11 @@ class PlanogramGenerator:
         tables = []
         for idx, shelf in enumerate(self.shelves):
             tables.extend(self.create_shelf_layout_table_and_headers(shelf, idx+1))
-        return tables
+        headers = [Paragraph("""Bookcase Shelves. Each table shows a shelf on the bookcase
+                             with the books organized from left to right."""), 
+                             self.default_spacer]
+        headers.extend(tables)
+        return headers
     
     def create_shelf_layout_table_and_headers(self, shelf, shelf_num):
         rows = [("Image", "Title", "Display Count", "Display Mode")]

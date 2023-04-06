@@ -157,7 +157,7 @@ export default function BookcaseDetail() {
         const blob = new Blob([response], {
           type: "application/pdf;charset=utf-8",
         });
-        saveAs(blob, "planogram.pdf");
+        saveAs(blob, bookcase.name + " planogram.pdf");
       })
       .catch(() => {
         showFailure(toast, "Could not generate planogram");

@@ -88,6 +88,11 @@ export default function BookLookup() {
           onUpdate={(err: unknown, result: Result | undefined) =>
             onUpdateScreen(err, result)
           }
+          onError={() => {
+            showFailure(toast, "Camera Access May Be Disabled");
+            setIsVideoPaused(false);
+            setIsVideoVisible(false);
+          }}
           stopStream={isVideoPaused}
         />
       )}

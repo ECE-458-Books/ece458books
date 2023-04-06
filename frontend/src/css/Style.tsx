@@ -7,4 +7,5 @@ export interface Style {
   height?: string | number;
   paddingLeft?: string | number;
   fontSize?: string;
+  textAlign?: string;
 }

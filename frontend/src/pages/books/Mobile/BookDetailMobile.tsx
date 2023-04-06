@@ -99,8 +99,8 @@ export default function BookDetailMobile() {
   return (
     <div className="grid flex justify-content-center">
       <Toast ref={toast} />
-      <div className="col-12 justify-content-start">{backButton}</div>
-      <div className="jusity-content-center col-12">
+      <div className="col-12 pb-0 justify-content-start">{backButton}</div>
+      <div className="jusity-content-center col-12 p-1">
         <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800); p-0 m-0">
           Book Details
         </h1>
@@ -124,105 +124,121 @@ export default function BookDetailMobile() {
       </div>
 
       <div className="col-11">
-        <div className="col-12 justify-content-center p-1 pb-2">
+        <div className="col-12 justify-content-center p-1 my-2">
           <div>
             <TextLabel label="Title" />
           </div>
-          <div>
+          <div className="border-round surface-100">
             <p className="p-component p-text-secondary text-900 text-3xl text-center my-0">
               {title}
             </p>
           </div>
         </div>
-        <div className="col-12 justify-content-center p-1 pb-2">
+        <div className="col-12 justify-content-center p-1 my-2">
           <div>
             <TextLabel label="Author(s)" />
           </div>
-          <p className="p-component p-text-secondary text-900 text-2xl text-center m-0">
-            {authors}
-          </p>
+          <div className="border-round surface-100">
+            <p className="p-component p-text-secondary text-900 text-2xl text-center m-0">
+              {authors}
+            </p>
+          </div>
         </div>
-        <div className="col-12 justify-content-center p-1 pb-2">
+        <div className="col-12 justify-content-center p-1 my-2">
           <div className="flex justify-content-between">
             <TextLabel label="ISBN 13" />
             <TextLabel label="ISBN 10" />
           </div>
           <div className="flex justify-content-between">
-            <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
-              {isbn13}
-            </p>
-            <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
-              {isbn10}
-            </p>
+            <div className="border-round surface-100">
+              <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
+                {isbn13}
+              </p>
+            </div>
+            <div className="border-round surface-100">
+              <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
+                {isbn10}
+              </p>
+            </div>
           </div>
         </div>
-        <div className="col-12 justify-content-center p-1 pb-2">
+        <div className="col-12 justify-content-center p-1 my-2">
           <div>
             <TextLabel label="Publisher" />
           </div>
-          <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
-            {publisher}
-          </p>
+          <div className="border-round surface-100">
+            <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
+              {publisher}
+            </p>
+          </div>
+        </div>
+        <div className="col-12 justify-content-center p-1 my-2">
           <div>
             <TextLabel label="Publication Year" />
           </div>
-          <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
-            {pubYear}
-          </p>
+          <div className="border-round surface-100">
+            <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
+              {pubYear}
+            </p>
+          </div>
         </div>
-        <div className="col-12 justify-content-center p-1">
+        <div className="col-12 justify-content-center p-1 mt-2 mb-3">
           <div>
             <TextLabel label="Genre" />
           </div>
-          <p className="p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
-            {genre}
-          </p>
+          <div className="border-round surface-100">
+            <p className="p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
+              {genre}
+            </p>
+          </div>
         </div>
-        <div className="justify-content-center p-1">
-          <h1 className="p-component p-text-secondary text-xl text-center text-teal-900 color: var(--surface-800); mb-2">
-            Dimensions (in)
-          </h1>
-        </div>
-        <div className="col-12 justify-content-center p-1 mb-3">
-          <div className="flex justify-content-between">
-            <div className="flex w-4 justify-content-center">
-              <TextLabel
-                label="Height"
-                labelClassName="p-component p-text-secondary text-teal-900 my-auto"
-              />
-            </div>
-            <div className="flex w-4 justify-content-center">
-              <TextLabel
-                label="Width"
-                labelClassName="p-component p-text-secondary text-teal-900 my-auto"
-              />
-            </div>
-            <div className="flex w-4 justify-content-center">
-              <TextLabel
-                label="Thickness"
-                labelClassName="p-component p-text-secondary text-teal-900 my-auto"
-              />
+        <div className="shadow-2 border-round">
+          <div className="justify-content-center p-1">
+            <h1 className="p-component p-text-secondary text-xl text-center text-teal-900 color: var(--surface-800); m-2">
+              Dimensions (in)
+            </h1>
+          </div>
+          <div className="col-12 justify-content-center p-1">
+            <div className="flex justify-content-between">
+              <div className="flex w-4 justify-content-center">
+                <TextLabel
+                  label="Height"
+                  labelClassName="p-component p-text-secondary text-teal-900 my-auto"
+                />
+              </div>
+              <div className="flex w-4 justify-content-center">
+                <TextLabel
+                  label="Width"
+                  labelClassName="p-component p-text-secondary text-teal-900 my-auto"
+                />
+              </div>
+              <div className="flex w-4 justify-content-center">
+                <TextLabel
+                  label="Thickness"
+                  labelClassName="p-component p-text-secondary text-teal-900 my-auto"
+                />
+              </div>
             </div>
           </div>
-          <div className="flex justify-content-between">
-            <div className="flex w-4 justify-content-center">
+          <div className="col-12 flex justify-content-between p-1">
+            <div className="flex w-4 justify-content-center mb-2">
               <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
                 {height ?? "None"}
               </p>
             </div>
-            <div className="flex w-4 justify-content-center">
+            <div className="flex w-4 justify-content-center mb-2">
               <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
                 {width ?? "None"}
               </p>
             </div>
-            <div className="flex w-4 justify-content-center">
+            <div className="flex w-4 justify-content-center mb-2">
               <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
                 {width ?? "None"}
               </p>
             </div>
           </div>
         </div>
-        <div className="col-12 justify-content-center p-1">
+        <div className="col-12 justify-content-center p-1 mt-4">
           <div className="flex justify-content-between">
             <div className="flex w-6 justify-content-center">
               <TextLabel label="Page Count" />
@@ -244,7 +260,7 @@ export default function BookDetailMobile() {
             </div>
           </div>
         </div>
-        <div className="col-12 justify-content-start p-1">
+        <div className="col-12 justify-content-start p-1 my-2">
           <div className="flex justify-content-between">
             <div className="flex w-6 justify-content-center">
               <TextLabel label="Inventory Count" />
@@ -266,7 +282,7 @@ export default function BookDetailMobile() {
             </div>
           </div>
         </div>
-        <div className="col-12 justify-content-start p-1">
+        <div className="col-12 justify-content-start p-1 my-2">
           <div className="flex justify-content-between">
             <div className="flex w-6 justify-content-center">
               <TextLabel label="Best Buyback Price" />
@@ -288,7 +304,7 @@ export default function BookDetailMobile() {
             </div>
           </div>
         </div>
-        <div className="col-12 justify-content-start p-1">
+        <div className="col-12 justify-content-start p-1 my-2">
           <div className="flex justify-content-between">
             <div className="flex w-6 justify-content-center">
               <TextLabel label="# of Related Books" />

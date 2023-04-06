@@ -150,13 +150,19 @@ export default function BookDetailMobile() {
             <TextLabel label="ISBN 10" />
           </div>
           <div className="flex justify-content-between">
-            <div className="border-round surface-100">
-              <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
+            <div
+              className="flex border-round surface-100 justify-content-start"
+              style={{ width: "45%" }}
+            >
+              <p className="p-component p-text-secondary text-900 text-xl text-right m-0">
                 {isbn13}
               </p>
             </div>
-            <div className="border-round surface-100">
-              <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
+            <div
+              className="flex border-round surface-100 justify-content-end"
+              style={{ width: "45%" }}
+            >
+              <p className="p-component p-text-secondary text-900 text-xl text-left m-0">
                 {isbn10}
               </p>
             </div>
@@ -199,20 +205,29 @@ export default function BookDetailMobile() {
             </h1>
           </div>
           <div className="col-12 justify-content-center p-1">
-            <div className="flex justify-content-between">
-              <div className="flex w-4 justify-content-center">
+            <div className="flex justify-content-evenly">
+              <div
+                className="flex justify-content-center"
+                style={{ width: "30%" }}
+              >
                 <TextLabel
                   label="Height"
                   labelClassName="p-component p-text-secondary text-teal-900 my-auto"
                 />
               </div>
-              <div className="flex w-4 justify-content-center">
+              <div
+                className="flex justify-content-center"
+                style={{ width: "30%" }}
+              >
                 <TextLabel
                   label="Width"
                   labelClassName="p-component p-text-secondary text-teal-900 my-auto"
                 />
               </div>
-              <div className="flex w-4 justify-content-center">
+              <div
+                className="flex justify-content-center"
+                style={{ width: "30%" }}
+              >
                 <TextLabel
                   label="Thickness"
                   labelClassName="p-component p-text-secondary text-teal-900 my-auto"
@@ -220,18 +235,27 @@ export default function BookDetailMobile() {
               </div>
             </div>
           </div>
-          <div className="col-12 flex justify-content-between p-1">
-            <div className="flex w-4 justify-content-center mb-2">
+          <div className="col-12 flex justify-content-evenly p-1">
+            <div
+              className="flex justify-content-center mb-2 border-round surface-100"
+              style={{ width: "30%" }}
+            >
               <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
                 {height ?? "None"}
               </p>
             </div>
-            <div className="flex w-4 justify-content-center mb-2">
+            <div
+              className="flex justify-content-center mb-2 border-round surface-100"
+              style={{ width: "30%" }}
+            >
               <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
                 {width ?? "None"}
               </p>
             </div>
-            <div className="flex w-4 justify-content-center mb-2">
+            <div
+              className="flex justify-content-center mb-2 border-round surface-100"
+              style={{ width: "30%" }}
+            >
               <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
                 {width ?? "None"}
               </p>
@@ -239,21 +263,27 @@ export default function BookDetailMobile() {
           </div>
         </div>
         <div className="col-12 justify-content-center p-1 mt-4">
-          <div className="flex justify-content-between">
-            <div className="flex w-6 justify-content-center">
-              <TextLabel label="Page Count" />
+          <div className="flex justify-content-evenly">
+            <div className="flex w-5 justify-content-center">
+              <TextLabel
+                label="Page Count"
+                labelClassName="p-component p-text-secondary text-teal-900 m-auto"
+              />
             </div>
-            <div className="flex w-6 justify-content-center">
-              <TextLabel label="Shelf Space (in)" />
+            <div className="flex w-5 justify-content-center">
+              <TextLabel
+                label="Shelf Space (in)"
+                labelClassName="p-component p-text-secondary text-teal-900 m-auto"
+              />
             </div>
           </div>
-          <div className="flex justify-content-between">
-            <div className="flex w-6 justify-content-center">
+          <div className="flex justify-content-evenly">
+            <div className="flex w-5 justify-content-center border-round surface-100">
               <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
                 {pageCount}
               </p>
             </div>
-            <div className="flex w-6 justify-content-center">
+            <div className="flex w-5 justify-content-center border-round surface-100">
               <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
                 {shelfSpace < 0 ? 0 : `${shelfSpace}${thickness ? "" : "*"}`}
               </p>
@@ -261,21 +291,27 @@ export default function BookDetailMobile() {
           </div>
         </div>
         <div className="col-12 justify-content-start p-1 my-2">
-          <div className="flex justify-content-between">
-            <div className="flex w-6 justify-content-center">
-              <TextLabel label="Inventory Count" />
+          <div className="flex justify-content-evenly">
+            <div className="flex w-5 justify-content-center">
+              <TextLabel
+                label="Inventory Count"
+                labelClassName="p-component p-text-secondary text-teal-900 m-auto"
+              />
             </div>
-            <div className="flex w-6 justify-content-center">
-              <TextLabel label="Days of Supply" />
+            <div className="flex w-5 justify-content-center">
+              <TextLabel
+                label="Days of Supply"
+                labelClassName="p-component p-text-secondary text-teal-900 m-auto"
+              />
             </div>
           </div>
-          <div className="flex justify-content-between">
-            <div className="flex w-6 justify-content-center">
+          <div className="flex justify-content-evenly">
+            <div className="flex w-5 justify-content-center border-round surface-100">
               <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
                 {stock}
               </p>
             </div>
-            <div className="flex w-6 justify-content-center">
+            <div className="flex w-5 justify-content-center border-round surface-100">
               <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
                 {daysOfSupply < 0 ? 0 : daysOfSupply}
               </p>
@@ -283,21 +319,27 @@ export default function BookDetailMobile() {
           </div>
         </div>
         <div className="col-12 justify-content-start p-1 my-2">
-          <div className="flex justify-content-between">
-            <div className="flex w-6 justify-content-center">
-              <TextLabel label="Best Buyback Price" />
+          <div className="flex justify-content-evenly">
+            <div className="flex w-5 justify-content-center">
+              <TextLabel
+                label="Best Buyback Price"
+                labelClassName="p-component p-text-secondary text-teal-900 m-auto"
+              />
             </div>
-            <div className="flex w-6 justify-content-center">
-              <TextLabel label="Retail Price" />
+            <div className="flex w-5 justify-content-center">
+              <TextLabel
+                label="Retail Price"
+                labelClassName="p-component p-text-secondary text-teal-900 m-auto"
+              />
             </div>
           </div>
-          <div className="flex justify-content-between">
-            <div className="flex w-6 justify-content-center">
+          <div className="flex justify-content-evenly">
+            <div className="flex w-5 justify-content-center border-round surface-100">
               <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
                 {PriceTemplate(bestBuybackPrice)}
               </p>
             </div>
-            <div className="flex w-6 justify-content-center">
+            <div className="flex w-5 justify-content-center border-round surface-100">
               <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
                 {PriceTemplate(price)}
               </p>
@@ -305,21 +347,27 @@ export default function BookDetailMobile() {
           </div>
         </div>
         <div className="col-12 justify-content-start p-1 my-2">
-          <div className="flex justify-content-between">
-            <div className="flex w-6 justify-content-center">
-              <TextLabel label="# of Related Books" />
+          <div className="flex justify-content-evenly">
+            <div className="flex w-5 justify-content-center">
+              <TextLabel
+                label="# of Related Books"
+                labelClassName="p-component p-text-secondary text-teal-900 m-auto"
+              />
             </div>
-            <div className="flex w-6 justify-content-center">
-              <TextLabel label="Last Month Sales" />
+            <div className="flex w-5 justify-content-center">
+              <TextLabel
+                label="Last Month Sales"
+                labelClassName="p-component p-text-secondary text-teal-900 m-auto"
+              />
             </div>
           </div>
-          <div className="flex justify-content-between">
-            <div className="flex w-6 justify-content-center">
+          <div className="flex justify-content-evenly">
+            <div className="flex w-5 justify-content-center border-round surface-100">
               <p className="p-component p-text-secondary text-900 text-xl text-center my-0">
                 {numOfRelatedBooks}
               </p>
             </div>
-            <div className="flex w-6 justify-content-center">
+            <div className="flex w-5 justify-content-center border-round surface-100">
               <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
                 {lastMonthSales}
               </p>

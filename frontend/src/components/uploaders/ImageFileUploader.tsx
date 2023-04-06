@@ -1,5 +1,5 @@
 import { FileUpload, FileUploadHandlerEvent } from "primereact/fileupload";
-import { Style } from "../../css/Style";
+import { CSSProperties } from "react";
 
 export const DEFAULT_BOOK_IMAGE =
   "https://books-test.colab.duke.edu/media/books/default.jpeg";
@@ -8,7 +8,7 @@ interface ImageUploaderProps {
   uploadHandler: (e: FileUploadHandlerEvent) => void;
   disabled?: boolean;
   className?: string;
-  style?: Style;
+  style?: CSSProperties;
 }
 
 export default function ImageUploader(props: ImageUploaderProps) {

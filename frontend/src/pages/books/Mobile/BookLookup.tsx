@@ -23,21 +23,24 @@ export default function BookLookup() {
     setTextBox("");
   }, []);
 
-  const searchButtonClick = () => {
+  const searchButtonClick = (isbnSearch?: string) => {
     if (textBox !== "") {
-      BOOKS_API.getBooks({ isbn_only: true, search: textBox })
-        .then((response) => onAPIResponse(response))
+      BOOKS_API.getBooks({ isbn_only: true, search: isbnSearch ?? textBox })
+        .then((response) => onAPIResponse(response, isbnSearch))
         .catch(() => showFailure(toast, "Book Search Failed"));
     }
   };
 
-  const onAPIResponse = (response: GetBooksResp) => {
+  const onAPIResponse = (response: GetBooksResp, isbnSearch?: string) => {
     showSuccess(toast, "Message Recieved");
     if (response.results.length > 0) {
       const book = APIToInternalBookConversion(response.results[0]);
       navigate(`${"/books/detail/"}${book.id}`);
     } else {
-      showFailure(toast, "Could Not Find Book with ISBN: " + textBox);
+      showFailure(
+        toast,
+        "Could Not Find Book with ISBN: " + isbnSearch ?? textBox
+      );
     }
   };
 
@@ -46,6 +49,7 @@ export default function BookLookup() {
       setTextBox(result.getText());
       setIsVideoPaused(false);
       setIsVideoVisible(false);
+      searchButtonClick(result.getText());
     } else {
       setTextBox(textBox);
     }
@@ -73,6 +77,7 @@ export default function BookLookup() {
           icon="pi pi-search"
           iconPos="right"
           label="Search"
+          disabled={textBox === ""}
           onClick={() => searchButtonClick()}
         />
       </div>
@@ -85,6 +90,11 @@ export default function BookLookup() {
           onUpdate={(err: unknown, result: Result | undefined) =>
             onUpdateScreen(err, result)
           }
+          onError={() => {
+            showFailure(toast, "Camera Access May Be Disabled");
+            setIsVideoPaused(false);
+            setIsVideoVisible(false);
+          }}
           stopStream={isVideoPaused}
         />
       )}

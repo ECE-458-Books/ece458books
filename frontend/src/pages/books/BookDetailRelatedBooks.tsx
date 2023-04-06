@@ -12,6 +12,7 @@ export interface BookDetailRelatedBooksProps {
   relatedBooks?: RelatedBook[];
   globalClassName?: string;
   disableRowClick?: boolean;
+  columnsOverride?: TableColumn<RelatedBook>[];
 }
 
 export interface RelatedBook {
@@ -94,7 +95,7 @@ export default function BookDetailRelatedBooks(
     }
   };
 
-  const columns = createColumns(COLUMNS);
+  const columns = createColumns(props.columnsOverride ?? COLUMNS);
   return (
     <div className="card pt-0 px-3">
       <DataTable

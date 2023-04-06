@@ -12,6 +12,9 @@ import {
   calculateDaysOfSupply,
   updateShelfSpace,
 } from "../../../util/NumberOps";
+import { Divider } from "primereact/divider";
+import BookDetailRelatedBooks, { RelatedBook } from "../BookDetailRelatedBooks";
+import { TableColumn } from "../../../components/datatable/TableColumns";
 
 // Leaving this line in case of future image browser side caching workaround is needed
 interface ImageUrlHashStruct {
@@ -41,6 +44,7 @@ export default function BookDetailMobile() {
   const [shelfSpace, setShelfSpace] = useState<number>(0);
   const [lastMonthSales, setLastMonthSales] = useState<number>();
   const [numOfRelatedBooks, setNumOfRelatedBooks] = useState<number>();
+  const [relatedBooks, setRelatedBooks] = useState<RelatedBook[]>([]);
   // Leaving this line in case of future image browser side caching workaround is needed
   const [image, setImage] = useState<ImageUrlHashStruct>({
     imageSrc: "",
@@ -84,6 +88,7 @@ export default function BookDetailMobile() {
           imageHash: Date.now().toString(),
         });
         setNumOfRelatedBooks(book.numRelatedBooks);
+        setRelatedBooks(book.relatedBooks!);
       })
       .catch(() => showFailure(toast, "Could not fetch book data"));
   }, [stock, id]);
@@ -96,13 +101,50 @@ export default function BookDetailMobile() {
     </div>
   );
 
+  const RELATED_BOOKS_COLUMN: TableColumn<RelatedBook>[] = [
+    {
+      field: "title",
+      header: "Title",
+      style: {
+        minWidth: "11rem",
+        width: "22rem",
+        textAlign: "right",
+      },
+    },
+    {
+      field: "publisher",
+      header: "Publisher",
+      style: {
+        minWidth: "8rem",
+        width: "14rem",
+        textAlign: "right",
+      },
+    },
+    {
+      field: "publishedYear",
+      header: "Publication Year",
+      style: {
+        minWidth: "4rem",
+        width: "4rem",
+        textAlign: "right",
+      },
+    },
+  ];
+
+  const relatedBooksTable = (
+    <BookDetailRelatedBooks
+      relatedBooks={relatedBooks}
+      columnsOverride={RELATED_BOOKS_COLUMN}
+    />
+  );
+
   return (
     <div className="grid flex justify-content-center">
       <Toast ref={toast} />
-      <div className="col-12 justify-content-start">{backButton}</div>
-      <div className="jusity-content-center col-12">
-        <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800); p-0 m-0">
-          Book Details
+      <div className="col-12 pb-0 justify-content-start">{backButton}</div>
+      <div className="jusity-content-center col-12 p-1">
+        <h1 className="p-component p-text-secondary text-3xl text-center text-900 color: var(--surface-800); p-0 m-0">
+          {title}
         </h1>
       </div>
       <div className="flex justify-content-center col-10">
@@ -124,191 +166,252 @@ export default function BookDetailMobile() {
       </div>
 
       <div className="col-11">
-        <div className="col-12 justify-content-center p-1 pb-2">
+        <div className="col-12 justify-content-center p-1 my-2">
           <div>
-            <TextLabel label="Title" />
+            <TextLabel label="Price" />
           </div>
-          <div>
+          <div className="border-round surface-100">
             <p className="p-component p-text-secondary text-900 text-3xl text-center my-0">
-              {title}
+              {PriceTemplate(price)}
             </p>
           </div>
         </div>
-        <div className="col-12 justify-content-center p-1 pb-2">
-          <div>
-            <TextLabel label="Author(s)" />
-          </div>
-          <p className="p-component p-text-secondary text-900 text-2xl text-center m-0">
-            {authors}
-          </p>
-        </div>
-        <div className="col-12 justify-content-center p-1 pb-2">
+        <div className="col-12 justify-content-center p-1 my-2">
           <div className="flex justify-content-between">
             <TextLabel label="ISBN 13" />
             <TextLabel label="ISBN 10" />
           </div>
           <div className="flex justify-content-between">
-            <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
-              {isbn13}
-            </p>
-            <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
-              {isbn10}
-            </p>
+            <div
+              className="flex border-round surface-100 justify-content-start"
+              style={{ width: "45%" }}
+            >
+              <p className="p-component p-text-secondary text-900 text-xl text-right m-0">
+                {isbn13}
+              </p>
+            </div>
+            <div
+              className="flex border-round surface-100 justify-content-end"
+              style={{ width: "45%" }}
+            >
+              <p className="p-component p-text-secondary text-900 text-xl text-left m-0">
+                {isbn10}
+              </p>
+            </div>
           </div>
         </div>
-        <div className="col-12 justify-content-center p-1 pb-2">
-          <div>
-            <TextLabel label="Publisher" />
-          </div>
-          <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
-            {publisher}
-          </p>
-          <div>
-            <TextLabel label="Publication Year" />
-          </div>
-          <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
-            {pubYear}
-          </p>
-        </div>
-        <div className="col-12 justify-content-center p-1">
-          <div>
-            <TextLabel label="Genre" />
-          </div>
-          <p className="p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
-            {genre}
-          </p>
-        </div>
-        <div className="justify-content-center p-1">
-          <h1 className="p-component p-text-secondary text-xl text-center text-teal-900 color: var(--surface-800); mb-2">
-            Dimensions (in)
-          </h1>
-        </div>
-        <div className="col-12 justify-content-center p-1 mb-3">
-          <div className="flex justify-content-between">
-            <div className="flex w-4 justify-content-center">
+        <div className="col-12 justify-content-start p-1 my-2">
+          <div className="flex justify-content-around">
+            <div className="flex w-5 justify-content-center">
               <TextLabel
-                label="Height"
-                labelClassName="p-component p-text-secondary text-teal-900 my-auto"
+                label="Inventory Count"
+                labelClassName="p-component p-text-secondary text-teal-900 m-auto text-center"
               />
             </div>
-            <div className="flex w-4 justify-content-center">
+            <div className="flex w-5 justify-content-center">
               <TextLabel
-                label="Width"
-                labelClassName="p-component p-text-secondary text-teal-900 my-auto"
-              />
-            </div>
-            <div className="flex w-4 justify-content-center">
-              <TextLabel
-                label="Thickness"
-                labelClassName="p-component p-text-secondary text-teal-900 my-auto"
+                label="Days of Supply"
+                labelClassName="p-component p-text-secondary text-teal-900 m-auto text-center"
               />
             </div>
           </div>
-          <div className="flex justify-content-between">
-            <div className="flex w-4 justify-content-center">
-              <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
-                {height ?? "None"}
-              </p>
-            </div>
-            <div className="flex w-4 justify-content-center">
-              <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
-                {width ?? "None"}
-              </p>
-            </div>
-            <div className="flex w-4 justify-content-center">
-              <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
-                {width ?? "None"}
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="col-12 justify-content-center p-1">
-          <div className="flex justify-content-between">
-            <div className="flex w-6 justify-content-center">
-              <TextLabel label="Page Count" />
-            </div>
-            <div className="flex w-6 justify-content-center">
-              <TextLabel label="Shelf Space (in)" />
-            </div>
-          </div>
-          <div className="flex justify-content-between">
-            <div className="flex w-6 justify-content-center">
-              <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
-                {pageCount}
-              </p>
-            </div>
-            <div className="flex w-6 justify-content-center">
-              <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
-                {shelfSpace < 0 ? 0 : `${shelfSpace}${thickness ? "" : "*"}`}
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="col-12 justify-content-start p-1">
-          <div className="flex justify-content-between">
-            <div className="flex w-6 justify-content-center">
-              <TextLabel label="Inventory Count" />
-            </div>
-            <div className="flex w-6 justify-content-center">
-              <TextLabel label="Days of Supply" />
-            </div>
-          </div>
-          <div className="flex justify-content-between">
-            <div className="flex w-6 justify-content-center">
+          <div className="flex justify-content-around">
+            <div className="flex w-5 justify-content-center border-round surface-100">
               <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
                 {stock}
               </p>
             </div>
-            <div className="flex w-6 justify-content-center">
+            <div className="flex w-5 justify-content-center border-round surface-100">
               <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
                 {daysOfSupply < 0 ? 0 : daysOfSupply}
               </p>
             </div>
           </div>
         </div>
-        <div className="col-12 justify-content-start p-1">
-          <div className="flex justify-content-between">
-            <div className="flex w-6 justify-content-center">
-              <TextLabel label="Best Buyback Price" />
+        <div className="col-12 justify-content-center p-1 mt-2 mb-3">
+          <div>
+            <TextLabel label="Genre" />
+          </div>
+          <div className="border-round surface-100">
+            <p className="p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
+              {genre}
+            </p>
+          </div>
+        </div>
+        <Divider />
+        <div className="col-12 justify-content-center p-1 mb-2 mt-4">
+          <div>
+            <TextLabel label="Author(s)" />
+          </div>
+          <div className="border-round surface-100">
+            <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
+              {authors}
+            </p>
+          </div>
+        </div>
+        <div className="col-12 justify-content-center p-1 my-2">
+          <div>
+            <TextLabel label="Publisher" />
+          </div>
+          <div className="border-round surface-100">
+            <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
+              {publisher}
+            </p>
+          </div>
+        </div>
+        <div className="col-12 justify-content-center p-1 my-2">
+          <div>
+            <TextLabel label="Publication Year" />
+          </div>
+          <div className="border-round surface-100">
+            <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
+              {pubYear}
+            </p>
+          </div>
+        </div>
+        <div className="col-12 justify-content-center p-1 my-2">
+          <div className="flex justify-content-around">
+            <div className="flex w-5 justify-content-center">
+              <TextLabel
+                label="Page Count"
+                labelClassName="p-component p-text-secondary text-teal-900 m-auto text-center"
+              />
             </div>
-            <div className="flex w-6 justify-content-center">
-              <TextLabel label="Retail Price" />
+            <div className="flex w-5 justify-content-center">
+              <TextLabel
+                label="Shelf Space (in)"
+                labelClassName="p-component p-text-secondary text-teal-900 m-auto text-center"
+              />
             </div>
           </div>
-          <div className="flex justify-content-between">
-            <div className="flex w-6 justify-content-center">
-              <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
-                {PriceTemplate(bestBuybackPrice)}
+          <div className="flex justify-content-around">
+            <div className="flex w-5 justify-content-center border-round surface-100">
+              <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
+                {pageCount}
               </p>
             </div>
-            <div className="flex w-6 justify-content-center">
-              <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
-                {PriceTemplate(price)}
+            <div className="flex w-5 justify-content-center border-round surface-100">
+              <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
+                {shelfSpace < 0 ? 0 : `${shelfSpace}${thickness ? "" : "*"}`}
               </p>
             </div>
           </div>
         </div>
-        <div className="col-12 justify-content-start p-1">
-          <div className="flex justify-content-between">
-            <div className="flex w-6 justify-content-center">
-              <TextLabel label="# of Related Books" />
+        <div className="col-12 justify-content-start p-1 my-2">
+          <div className="flex justify-content-around">
+            <div className="flex w-5 justify-content-center">
+              <TextLabel
+                label="Best Buyback Price"
+                labelClassName="p-component p-text-secondary text-teal-900 m-auto text-center"
+              />
             </div>
-            <div className="flex w-6 justify-content-center">
-              <TextLabel label="Last Month Sales" />
+            <div className="flex w-5 justify-content-center">
+              <TextLabel
+                label="Last Month Sales"
+                labelClassName="p-component p-text-secondary text-teal-900 m-auto text-center"
+              />
             </div>
           </div>
-          <div className="flex justify-content-between">
-            <div className="flex w-6 justify-content-center">
-              <p className="p-component p-text-secondary text-900 text-xl text-center my-0">
-                {numOfRelatedBooks}
+          <div className="flex justify-content-around">
+            <div className="flex w-5 justify-content-center border-round surface-100">
+              <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
+                {PriceTemplate(bestBuybackPrice)}
               </p>
             </div>
-            <div className="flex w-6 justify-content-center">
+            <div className="flex w-5 justify-content-center border-round surface-100">
               <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
                 {lastMonthSales}
               </p>
             </div>
           </div>
+        </div>
+        <div className="col-12 justify-content-start p-1 my-2">
+          <div className="flex justify-content-around">
+            <div className="flex w-5 justify-content-center">
+              <TextLabel
+                label="# of Related Books"
+                labelClassName="p-component p-text-secondary text-teal-900 m-auto text-center"
+              />
+            </div>
+          </div>
+          <div className="flex justify-content-around">
+            <div className="flex w-5 justify-content-center border-round surface-100">
+              <p className="p-component p-text-secondary text-900 text-xl text-center my-0">
+                {numOfRelatedBooks}
+              </p>
+            </div>
+          </div>
+        </div>
+        <Divider />
+        <div className="justify-content-center p-1">
+          <h1 className="p-component p-text-secondary text-xl text-center text-teal-900 color: var(--surface-800); m-2">
+            Dimensions (in)
+          </h1>
+        </div>
+        <div className="col-12 justify-content-center p-1">
+          <div className="flex justify-content-evenly">
+            <div
+              className="flex justify-content-center"
+              style={{ width: "30%" }}
+            >
+              <TextLabel
+                label="Height"
+                labelClassName="p-component p-text-secondary text-teal-900 my-auto text-center"
+              />
+            </div>
+            <div
+              className="flex justify-content-center"
+              style={{ width: "30%" }}
+            >
+              <TextLabel
+                label="Width"
+                labelClassName="p-component p-text-secondary text-teal-900 my-auto text-center"
+              />
+            </div>
+            <div
+              className="flex justify-content-center"
+              style={{ width: "30%" }}
+            >
+              <TextLabel
+                label="Thickness"
+                labelClassName="p-component p-text-secondary text-teal-900 my-auto text-center"
+              />
+            </div>
+          </div>
+        </div>
+        <div className="col-12 flex justify-content-evenly p-1">
+          <div
+            className="flex justify-content-center mb-2 border-round surface-100"
+            style={{ width: "30%" }}
+          >
+            <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
+              {height ?? "None"}
+            </p>
+          </div>
+          <div
+            className="flex justify-content-center mb-2 border-round surface-100"
+            style={{ width: "30%" }}
+          >
+            <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
+              {width ?? "None"}
+            </p>
+          </div>
+          <div
+            className="flex justify-content-center mb-2 border-round surface-100"
+            style={{ width: "30%" }}
+          >
+            <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
+              {width ?? "None"}
+            </p>
+          </div>
+        </div>
+        <Divider align="center">
+          <div className="inline-flex align-items-center">
+            <b>Related Books</b>
+          </div>
+        </Divider>
+        <div className="flex w-12 justify-content-center">
+          {relatedBooksTable}
         </div>
       </div>
     </div>

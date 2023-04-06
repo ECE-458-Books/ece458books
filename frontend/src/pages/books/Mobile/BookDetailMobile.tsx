@@ -12,6 +12,7 @@ import {
   calculateDaysOfSupply,
   updateShelfSpace,
 } from "../../../util/NumberOps";
+import { Divider } from "primereact/divider";
 
 // Leaving this line in case of future image browser side caching workaround is needed
 interface ImageUrlHashStruct {
@@ -198,70 +199,70 @@ export default function BookDetailMobile() {
             </p>
           </div>
         </div>
-        <div className="shadow-2 border-round">
-          <div className="justify-content-center p-1">
-            <h1 className="p-component p-text-secondary text-xl text-center text-teal-900 color: var(--surface-800); m-2">
-              Dimensions (in)
-            </h1>
-          </div>
-          <div className="col-12 justify-content-center p-1">
-            <div className="flex justify-content-evenly">
-              <div
-                className="flex justify-content-center"
-                style={{ width: "30%" }}
-              >
-                <TextLabel
-                  label="Height"
-                  labelClassName="p-component p-text-secondary text-teal-900 my-auto"
-                />
-              </div>
-              <div
-                className="flex justify-content-center"
-                style={{ width: "30%" }}
-              >
-                <TextLabel
-                  label="Width"
-                  labelClassName="p-component p-text-secondary text-teal-900 my-auto"
-                />
-              </div>
-              <div
-                className="flex justify-content-center"
-                style={{ width: "30%" }}
-              >
-                <TextLabel
-                  label="Thickness"
-                  labelClassName="p-component p-text-secondary text-teal-900 my-auto"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="col-12 flex justify-content-evenly p-1">
+        <Divider />
+        <div className="justify-content-center p-1">
+          <h1 className="p-component p-text-secondary text-xl text-center text-teal-900 color: var(--surface-800); m-2">
+            Dimensions (in)
+          </h1>
+        </div>
+        <div className="col-12 justify-content-center p-1">
+          <div className="flex justify-content-evenly">
             <div
-              className="flex justify-content-center mb-2 border-round surface-100"
+              className="flex justify-content-center"
               style={{ width: "30%" }}
             >
-              <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
-                {height ?? "None"}
-              </p>
+              <TextLabel
+                label="Height"
+                labelClassName="p-component p-text-secondary text-teal-900 my-auto"
+              />
             </div>
             <div
-              className="flex justify-content-center mb-2 border-round surface-100"
+              className="flex justify-content-center"
               style={{ width: "30%" }}
             >
-              <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
-                {width ?? "None"}
-              </p>
+              <TextLabel
+                label="Width"
+                labelClassName="p-component p-text-secondary text-teal-900 my-auto"
+              />
             </div>
             <div
-              className="flex justify-content-center mb-2 border-round surface-100"
+              className="flex justify-content-center"
               style={{ width: "30%" }}
             >
-              <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
-                {width ?? "None"}
-              </p>
+              <TextLabel
+                label="Thickness"
+                labelClassName="p-component p-text-secondary text-teal-900 my-auto"
+              />
             </div>
           </div>
         </div>
+        <div className="col-12 flex justify-content-evenly p-1">
+          <div
+            className="flex justify-content-center mb-2 border-round surface-100"
+            style={{ width: "30%" }}
+          >
+            <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
+              {height ?? "None"}
+            </p>
+          </div>
+          <div
+            className="flex justify-content-center mb-2 border-round surface-100"
+            style={{ width: "30%" }}
+          >
+            <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
+              {width ?? "None"}
+            </p>
+          </div>
+          <div
+            className="flex justify-content-center mb-2 border-round surface-100"
+            style={{ width: "30%" }}
+          >
+            <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
+              {width ?? "None"}
+            </p>
+          </div>
+        </div>
+        <Divider />
         <div className="col-12 justify-content-center p-1 mt-4">
           <div className="flex justify-content-evenly">
             <div className="flex w-5 justify-content-center">

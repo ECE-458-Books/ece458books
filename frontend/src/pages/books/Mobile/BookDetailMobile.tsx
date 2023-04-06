@@ -102,8 +102,8 @@ export default function BookDetailMobile() {
       <Toast ref={toast} />
       <div className="col-12 pb-0 justify-content-start">{backButton}</div>
       <div className="jusity-content-center col-12 p-1">
-        <h1 className="p-component p-text-secondary text-5xl text-center text-900 color: var(--surface-800); p-0 m-0">
-          Book Details
+        <h1 className="p-component p-text-secondary text-3xl text-center text-900 color: var(--surface-800); p-0 m-0">
+          {title}
         </h1>
       </div>
       <div className="flex justify-content-center col-10">
@@ -127,11 +127,11 @@ export default function BookDetailMobile() {
       <div className="col-11">
         <div className="col-12 justify-content-center p-1 my-2">
           <div>
-            <TextLabel label="Title" />
+            <TextLabel label="Price" />
           </div>
           <div className="border-round surface-100">
             <p className="p-component p-text-secondary text-900 text-3xl text-center my-0">
-              {title}
+              {PriceTemplate(price)}
             </p>
           </div>
         </div>
@@ -327,12 +327,7 @@ export default function BookDetailMobile() {
                 labelClassName="p-component p-text-secondary text-teal-900 m-auto"
               />
             </div>
-            <div className="flex w-5 justify-content-center">
-              <TextLabel
-                label="Retail Price"
-                labelClassName="p-component p-text-secondary text-teal-900 m-auto"
-              />
-            </div>
+            
           </div>
           <div className="flex justify-content-evenly">
             <div className="flex w-5 justify-content-center border-round surface-100">
@@ -341,8 +336,8 @@ export default function BookDetailMobile() {
               </p>
             </div>
             <div className="flex w-5 justify-content-center border-round surface-100">
-              <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
-                {PriceTemplate(price)}
+              <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
+                {lastMonthSales}
               </p>
             </div>
           </div>
@@ -366,11 +361,6 @@ export default function BookDetailMobile() {
             <div className="flex w-5 justify-content-center border-round surface-100">
               <p className="p-component p-text-secondary text-900 text-xl text-center my-0">
                 {numOfRelatedBooks}
-              </p>
-            </div>
-            <div className="flex w-5 justify-content-center border-round surface-100">
-              <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
-                {lastMonthSales}
               </p>
             </div>
           </div>

@@ -5,6 +5,7 @@ from django.core.validators import MinValueValidator
 
 class SalesReconciliation(models.Model):
     date = models.DateField()
+    is_sales_record = models.BooleanField()
 
 
 class Sale(models.Model):

@@ -12,6 +12,7 @@ from buybacks.models import Buyback
 
 from .models import Book, Author, BookImage, BookInventoryCorrection
 from .exceptions import InventoryCountUnMatchedException
+from .remote_books import RemoteSubsidiaryTools
 
 
 class BookListAddSerializer(serializers.ModelSerializer):
@@ -33,12 +34,13 @@ class BookListAddSerializer(serializers.ModelSerializer):
     last_month_sales = serializers.SerializerMethodField()
     shelf_space = serializers.SerializerMethodField()
     days_of_supply = serializers.SerializerMethodField()
+    remote_book = serializers.SerializerMethodField()
 
     class Meta:
         model = Book
         fields = [
             'id', 'title', 'authors', 'genres', 'isbn_13', 'isbn_10', 'publisher', 'publishedDate', 'pageCount', 'width', 'height', 'thickness', 'retail_price', 'isGhost', 'stock', 'image_url',
-            'best_buyback_price', 'last_month_sales', 'shelf_space', 'days_of_supply', 'num_related_books', 'related_books', 'related_book_group'
+            'best_buyback_price', 'last_month_sales', 'shelf_space', 'days_of_supply', 'num_related_books', 'related_books', 'related_book_group', 'remote_book'
         ]
 
     def to_representation(self, instance):
@@ -95,6 +97,12 @@ class BookListAddSerializer(serializers.ModelSerializer):
             return 0.00
         return round((stock / last_month_sales) * 30, 2)
 
+    def get_remote_book(self, instance):
+        remote_api_caller = RemoteSubsidiaryTools()
+        isbn_13 = instance.isbn_13
+        response = remote_api_caller.get_remote_book_data(isbn_13)
+        return response
+
 
 class RelatedBookSerializer(serializers.ModelSerializer):
     authors = serializers.SlugRelatedField(queryset=Author.objects.all(), many=True, slug_field='name')
@@ -121,11 +129,12 @@ class BookSerializer(serializers.ModelSerializer):
     num_related_books = serializers.SerializerMethodField()
     related_books = serializers.SerializerMethodField()
     related_book_group = serializers.PrimaryKeyRelatedField(queryset=RelatedBookGroup.objects.all(), write_only=True, allow_null=True)
+    remote_book = serializers.SerializerMethodField()
 
     class Meta:
         model = Book
         fields = '__all__'
-        read_only_fields = ['title', 'authors', 'isbn_13', 'isbn_10', 'publisher', 'publishedDate', 'image_url', 'best_buyback_price', 'last_month_sales', 'num_related_books', 'related_books']
+        read_only_fields = ['title', 'authors', 'isbn_13', 'isbn_10', 'publisher', 'publishedDate', 'image_url', 'best_buyback_price', 'last_month_sales', 'num_related_books', 'related_books', 'remote_book']
 
     def to_representation(self, instance):
         result = super(BookSerializer, self).to_representation(instance)
@@ -229,6 +238,12 @@ class BookSerializer(serializers.ModelSerializer):
 
         def case_sales_reconciliation(self):
             return -self.default
+    
+    def get_remote_book(self, instance):
+        remote_api_caller = RemoteSubsidiaryTools()
+        isbn_13 = instance.isbn_13
+        response = remote_api_caller.get_remote_book_data(isbn_13)
+        return response
 
 
 class AuthorSerializer(serializers.ModelSerializer):
@@ -272,7 +287,7 @@ class RemoteBookSearchSerializer(serializers.Serializer):
     publicationYear = serializers.IntegerField()
     pageCount = serializers.IntegerField(default=None)
     height = serializers.FloatField(default=None)
-    weight = serializers.FloatField(default=None)
+    width = serializers.FloatField(default=None)
     thickness = serializers.FloatField(default=None)
     imageUrl = serializers.URLField()
     inventoryCount = serializers.IntegerField()

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import ConfirmPopup from "../../components/popups/ConfirmPopup";
 import { useNavigate, useParams } from "react-router-dom";
-import { Book, emptyBook } from "./BookList";
+import { Book, emptyBook, RemoteBook } from "./BookList";
 import { APIBook, BOOKS_API } from "../../apis/books/BooksAPI";
 import { FormikErrors, useFormik } from "formik";
 import { Toast } from "primereact/toast";
@@ -83,6 +83,7 @@ export default function BookDetail() {
   const [isImageUploaded, setIsImageUploaded] = useState<boolean>(false);
   const [isImageRemoved, setIsImageRemoved] = useState<boolean>(false);
   const [inventoryAdjustment, setInventoryAdjustment] = useState<number>(0);
+  const [remoteBook, setRemoteBook] = useState<RemoteBook>();
 
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
@@ -131,6 +132,7 @@ export default function BookDetail() {
         });
         setNumOfRelatedBooks(book.numRelatedBooks);
         setRelatedBooks(book.relatedBooks!);
+        setRemoteBook(book.remoteBook);
       })
       .catch(() => showFailure(toast, "Could not fetch book data"));
     scrollToTop();
@@ -567,6 +569,9 @@ export default function BookDetail() {
               <TextLabel label="Title:" />
               <p className="p-component p-text-secondary text-900 text-3xl text-center my-0">
                 {title}
+                {remoteBook && remoteBook.title != title
+                  ? `\xa0 (${remoteBook.title})`
+                  : ""}
               </p>
             </div>
           </div>
@@ -575,6 +580,9 @@ export default function BookDetail() {
               <TextLabel label="Author(s):" />
               <p className="p-component p-text-secondary text-900 text-2xl text-center m-0">
                 {authors}
+                {remoteBook && remoteBook.authors != authors
+                  ? `\xa0 (${remoteBook.authors})`
+                  : ""}
               </p>
             </div>
           </div>
@@ -583,12 +591,18 @@ export default function BookDetail() {
               <TextLabel label="ISBN 13:" />
               <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
                 {isbn13}
+                {remoteBook && remoteBook.isbn13 != isbn13
+                  ? `\xa0 (${remoteBook.isbn13})`
+                  : ""}
               </p>
             </div>
             <div className="flex p-0 col-6">
               <TextLabel label="ISBN 10:" />
               <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
                 {isbn10}
+                {remoteBook && remoteBook.isbn10 != isbn10
+                  ? `\xa0 (${remoteBook.isbn10})`
+                  : ""}
               </p>
             </div>
           </div>
@@ -597,12 +611,18 @@ export default function BookDetail() {
               <TextLabel label="Publisher:" />
               <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
                 {publisher}
+                {remoteBook && remoteBook.publisher != publisher
+                  ? `\xa0 (${remoteBook.publisher})`
+                  : ""}
               </p>
             </div>
             <div className="flex p-0 col-6">
               <TextLabel label="Publication Year:" />
               <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
                 {pubYear}
+                {remoteBook && remoteBook.publishedYear != pubYear
+                  ? `\xa0 (${remoteBook.publishedYear})`
+                  : ""}
               </p>
             </div>
           </div>
@@ -630,6 +650,11 @@ export default function BookDetail() {
                 }
                 defaultValue={undefined}
               />
+              <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
+                {remoteBook?.pageCount && remoteBook?.pageCount != pageCount
+                  ? `\xa0 (${remoteBook.pageCount})`
+                  : ""}
+              </p>
             </div>
             <div className="flex p-0 col-6">
               <TextLabel label="Shelf Space (in):" />
@@ -715,6 +740,20 @@ export default function BookDetail() {
               )}
             </div>
           </div>
+          <div className="flex col-12 justify-content-start p-1">
+            <div className="flex col-6 p-0">
+              <TextLabel label="Remote Inventory Count: " />
+              <p className="p-component p-text-secondary text-900 text-xl text-center my-0">
+                {remoteBook?.stock ?? "-"}
+              </p>
+            </div>
+            <div className="flex col-6 p-0">
+              <TextLabel label="Remote Retail Price ($): " />
+              <p className="p-component p-text-secondary text-900 text-xl text-center my-0">
+                {remoteBook?.retailPrice ?? "-"}
+              </p>
+            </div>
+          </div>
           <h1 className="col-9 p-component p-text-secondary mb-1 mt-2 p-0 text-xl text-center text-900 color: var(--surface-800);">
             Dimensions (in)
           </h1>
@@ -730,6 +769,11 @@ export default function BookDetail() {
                 valueClassName="flex 2rem"
                 min={0.01}
               />
+              <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
+                {remoteBook?.height && remoteBook?.height != height
+                  ? `\xa0 (${remoteBook.height})`
+                  : ""}
+              </p>
             </div>
             <div className="flex p-0 col-4">
               <TextLabel label="Width:" />
@@ -742,6 +786,11 @@ export default function BookDetail() {
                 valueClassName="flex 2rem"
                 min={0.01}
               />
+              <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
+                {remoteBook?.width && remoteBook?.width != width
+                  ? `\xa0 (${remoteBook.width})`
+                  : ""}
+              </p>
             </div>
             <div className="flex p-0 col-4">
               <TextLabel label="Thickness:" />
@@ -756,6 +805,11 @@ export default function BookDetail() {
                 valueClassName="flex 2rem"
                 min={0.01}
               />
+              <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
+                {remoteBook?.thickness && remoteBook?.thickness != thickness
+                  ? `\xa0 (${remoteBook.thickness})`
+                  : ""}
+              </p>
             </div>
           </div>
         </form>

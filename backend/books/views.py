@@ -153,6 +153,39 @@ class ListCreateBookAPIView(ListCreateAPIView, BookImageCreator):
     search_fields = ['authors__name', 'title', '=publisher', '=isbn_10', '=isbn_13']
     isbn_toolbox = ISBNTools()
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            # make a request for the page
+            serializer = self.get_serializer(page, many=True)
+            data = self.add_remote_book_data(page, serializer.data)
+            return self.get_paginated_response(data)
+
+        # make a request for all books in queryset
+        serializer = self.get_serializer(queryset, many=True)
+        data = self.add_remote_book_data(queryset, serializer.data)
+        return Response(data)
+    
+    def queryset_to_isbns(self, queryset):
+        return [book.isbn_13 for book in queryset]
+
+    def add_remote_book_data(self, queryset, data):
+        isbns = self.queryset_to_isbns(queryset)
+        remote_data = self.get_remote_books(isbns)
+        for book in data:
+            key_isbn_13 = book.get('isbn_13')
+            if remote_data.get(key_isbn_13):
+                book['remote_book'] = remote_data.get(key_isbn_13)
+
+        return data
+
+    def get_remote_books(self, isbns):
+        remote_api_caller = RemoteSubsidiaryTools()
+        response = remote_api_caller.get_remote_book_data(isbns)
+        return response
+    
     def preprocess_multipart_form_data(self, request):
         data = request.data.dict()
 

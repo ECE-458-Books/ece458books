@@ -15,13 +15,20 @@ class RemoteSubsidiaryTools:
         response = requests.request("POST", url, headers=headers, data=payload)
 
         ret = response.json()
-        ret = ret[isbn]
 
+        if isinstance(isbn, list):
+            return ret
+
+        ret = ret[isbn]
         return ret
     
     def create_headers(self):
         return {'Content-Type': 'application/json'}
     
     def create_payload(self, isbn):
-        return json.dumps({'isbns': [isbn]})
+        payload = isbn
+        if not isinstance(payload, list):
+            payload = [isbn]
+
+        return json.dumps({'isbns': payload})
 

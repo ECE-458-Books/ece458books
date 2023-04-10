@@ -36,6 +36,7 @@ import {
 import "../../css/MiscellaneousCSS.css";
 import { calculateDaysOfSupply, updateShelfSpace } from "../../util/NumberOps";
 import { scrollToTop } from "../../util/WindowViewportOps";
+import ImportFieldButton from "../../components/buttons/ImportFieldButton";
 
 interface ErrorDisplay {
   message: string;
@@ -524,6 +525,13 @@ export default function BookDetail() {
     </Restricted>
   );
 
+  const importPageCountButton = (
+    <ImportFieldButton
+      onClick={() => setPageCount(remoteBook?.pageCount)}
+      isVisible={remoteBook?.pageCount != null && isModifiable}
+    />
+  );
+
   return (
     <div className="grid flex justify-content-center">
       <Toast ref={toast} />
@@ -655,6 +663,7 @@ export default function BookDetail() {
                   ? `\xa0 (${remoteBook.pageCount})`
                   : ""}
               </p>
+              <p className=" vertical-align-middle">{importPageCountButton}</p>
             </div>
             <div className="flex p-0 col-6">
               <TextLabel label="Shelf Space (in):" />

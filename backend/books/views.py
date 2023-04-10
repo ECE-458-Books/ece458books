@@ -26,6 +26,7 @@ from .utils import str2bool, RemoteAPIRepresentationSwitch
 from .book_images import BookImageCreator
 from .exceptions import *
 from .related_books import standardize_title, combine_related_books_groups
+from .remote_books import RemoteSubsidiaryTools
 
 
 class ISBNSearchView(APIView):
@@ -36,6 +37,7 @@ class ISBNSearchView(APIView):
     """
     permission_classes = [IsAdminUser]
     isbn_toolbox = ISBNTools()
+    remote_api_caller = RemoteSubsidiaryTools()
 
     def post(self, request):
         serializer = ISBNSerializer(data=request.data)
@@ -76,18 +78,30 @@ class ISBNSearchView(APIView):
 
     def isbn_search_task(self, isbn, shared_dict, query_set):
         isbn_query_set = [book.isbn_13 for book in query_set]
+        remote_book_data = self.get_remote_book(isbn)
+        book_data = {}
 
         if isbn in isbn_query_set:
-            shared_dict['books'].append(self.parseDBBookModel(query_set[isbn_query_set.index(isbn)]))
+            book_data = self.parseDBBookModel(query_set[isbn_query_set.index(isbn)])
         else:
-            self.populate_shared_dict_with_isbn_data(isbn, shared_dict)
+            book_data = self.populate_shared_dict_with_isbn_data(isbn, shared_dict)
+        
+        if remote_book_data:
+            book_data['remote_book'] = remote_book_data
+        
+        shared_dict['books'].append(book_data)
 
     def populate_shared_dict_with_isbn_data(self, isbn, shared_dict):
         external_data = self.isbn_toolbox.fetch_isbn_data(isbn)
         if "Invalid ISBN" in external_data:
             shared_dict['invalid_isbns'].append(isbn)
         else:
-            shared_dict['books'].append(external_data)
+            return external_data
+    
+    def get_remote_book(self, isbn):
+        response = self.remote_api_caller.get_remote_book_data(isbn)
+        return response
+
 
     def parseDBBookModel(self, book):
         # Returns a parsed Book json from Book Model

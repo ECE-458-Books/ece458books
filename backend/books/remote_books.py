@@ -14,8 +14,7 @@ class RemoteSubsidiaryTools:
         payload = self.create_payload(isbn)
         response = requests.request("POST", url, headers=headers, data=payload)
 
-        # The first index will be removed if the reponse is only a dictionary
-        ret = response.json()[0]
+        ret = response.json()
         ret = ret[isbn]
 
         return ret

@@ -13,7 +13,7 @@ export const APISRSortFieldMap = new Map<string, string>([
   ["totalBooks", "num_books"],
   ["totalRevenue", "total_revenue"],
   ["date", "date"],
-  ["isSalesReconciliation", "is_reconciliation"],
+  ["isSalesRecord", "is_sales_record"],
   ["creatorName", "username"],
 ]);
 

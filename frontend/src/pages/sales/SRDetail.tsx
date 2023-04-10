@@ -45,6 +45,18 @@ import ConfirmPopup from "../../components/popups/ConfirmPopup";
 import EditCancelButton from "../../components/buttons/EditCancelDetailButton";
 import Restricted from "../../permissions/Restricted";
 
+interface BackupDataStoreSR {
+  date: Date;
+  sales: LineItem[];
+  totalRevenue: number;
+}
+
+const EMPTY_ORIGINAL_DATA: BackupDataStoreSR = {
+  date: new Date(),
+  sales: [],
+  totalRevenue: 0,
+};
+
 export default function SRDetail() {
   // From URL
   const { id } = useParams();
@@ -61,6 +73,9 @@ export default function SRDetail() {
   const [sales, setSales] = useImmer<LineItem[]>([]);
   const [creatorName, setCreatorName] = useState<string>("");
 
+  const [originalData, setOriginalData] =
+    useState<BackupDataStoreSR>(EMPTY_ORIGINAL_DATA);
+
   const [totalRevenue, setTotalRevenue] = useState<number>(0);
   const [isConfirmationPopupVisible, setIsConfirmationPopupVisible] =
     useState<boolean>(false);
@@ -68,9 +83,7 @@ export default function SRDetail() {
   const [deletePopupVisible, setDeletePopupVisible] = useState<boolean>(false); // Whether the delete popup is shown
   const [isGoBackActive, setIsGoBackActive] = useState<boolean>(false);
   const [isPageDeleteable, setIsPageDeleteable] = useState<boolean>(true);
-  const [isSalesReconciliation, setIsSalesReconciliation] = useState<boolean>(
-    id === undefined
-  );
+  const [isSalesRecord, setIsSalesRecord] = useState<boolean>(id !== undefined);
 
   // Load the SR data on page load
   useEffect(() => {
@@ -79,11 +92,16 @@ export default function SRDetail() {
         .then((response) => {
           const salesRecord = APIToInternalSRConversion(response);
           setDate(salesRecord.date);
-          setIsSalesReconciliation(salesRecord.isSalesReconciliation);
+          setIsSalesRecord(salesRecord.isSalesRecord);
           setSales(salesRecord.sales);
           setTotalRevenue(salesRecord.totalRevenue);
           setIsPageDeleteable(salesRecord.isDeletable);
           setCreatorName(salesRecord.creatorName);
+          setOriginalData({
+            date: salesRecord.date,
+            totalRevenue: salesRecord.totalRevenue,
+            sales: salesRecord.sales,
+          });
         })
         .catch(() => showFailure(toast, "Could not fetch sales data"));
     }
@@ -115,18 +133,18 @@ export default function SRDetail() {
       .then(() => {
         showSuccess(
           toast,
-          isSalesReconciliation
-            ? "Sales Reconciliation Deleted"
-            : "Sales Record Deleted"
+          isSalesRecord
+            ? "Sales Record Deleted"
+            : "Sales Reconciliation Deleted"
         );
         navigate("/sales-records");
       })
       .catch(() =>
         showFailure(
           toast,
-          isSalesReconciliation
-            ? "Sales Reconciliation Failed to Delete"
-            : "Sales Record Failed to Delete"
+          isSalesRecord
+            ? "Sales Record Failed to Delete"
+            : "Sales Reconciliation Failed to Delete"
         )
       );
   };
@@ -178,6 +196,14 @@ export default function SRDetail() {
     return true;
   };
 
+  const resetPageInputFields = () => {
+    setSales([]);
+    setDate(new Date());
+    setTotalRevenue(0);
+    setHasUploadedCSV(false);
+    setIsGoBackActive(false);
+  };
+
   const onSubmit = (): void => {
     if (!validateSubmission()) {
       return;
@@ -209,9 +235,7 @@ export default function SRDetail() {
     SALES_API.addSalesReconciliation(salesReconciliation)
       .then(() => {
         showSuccess(toast, "Sales reconciliation added successfully");
-        isGoBackActive
-          ? navigate("/sales-reconciliations")
-          : window.location.reload();
+        isGoBackActive ? navigate("/sales-records") : resetPageInputFields();
       })
       .catch((error) => {
         showFailure(
@@ -243,6 +267,11 @@ export default function SRDetail() {
       .then(() => {
         showSuccess(toast, "Sales reconciliation modified successfully");
         setIsModifiable(!isModifiable);
+        setOriginalData({
+          date: date,
+          totalRevenue: totalRevenue,
+          sales: sales,
+        });
       })
       .catch(() => showFailure(toast, "Could not modify sales reconciliation"));
   };
@@ -258,9 +287,9 @@ export default function SRDetail() {
         isModifyPage={isModifiable}
         isAddPage={isSRAddPage}
         detailTitle={
-          isSalesReconciliation
-            ? "Sales Reconciliation Details"
-            : "Sales Record Details"
+          isSalesRecord
+            ? "Sales Record Details"
+            : "Sales Reconciliation Details"
         }
         addTitle={"Add Sales Reconciliation"}
         modifyTitle={"Modify Sales Reconciliation"}
@@ -320,11 +349,13 @@ export default function SRDetail() {
       onClickEdit={() => setIsModifiable(!isModifiable)}
       onClickCancel={() => {
         setIsModifiable(!isModifiable);
-        window.location.reload();
+        setDate(originalData.date);
+        setTotalRevenue(originalData.totalRevenue);
+        setSales(originalData.sales);
       }}
       isAddPage={isSRAddPage}
       isModifiable={isModifiable}
-      visible={isSalesReconciliation || isSRAddPage}
+      visible={!isSalesRecord || isSRAddPage}
       className="my-auto p-button-sm mr-1"
     />
   );
@@ -394,7 +425,7 @@ export default function SRDetail() {
 
   const tableHeader = (
     <Restricted to={"modify"}>
-      {isSalesReconciliation && (
+      {!isSalesRecord && (
         <div className="flex">
           {addRowButton}
           {csvImportButton}
@@ -433,7 +464,7 @@ export default function SRDetail() {
         <div className="col-11">
           <form id="localForm">
             <div className="flex col-12 justify-content-evenly mb-3">
-              {!isSRAddPage && (
+              {!isSRAddPage && !isSalesRecord && (
                 <div className="flex">
                   <label
                     htmlFor="creatorname"
@@ -448,7 +479,7 @@ export default function SRDetail() {
               )}
               {totalDollars}
               {calendar}
-              {isModifiable && isSalesReconciliation && rightToolbar}
+              {isModifiable && !isSalesRecord && rightToolbar}
             </div>
             {dataTable}
           </form>

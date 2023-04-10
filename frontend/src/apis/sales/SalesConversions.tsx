@@ -44,7 +44,7 @@ export function APIToInternalSRConversion(sr: APISR): SalesRecord {
     totalRevenue: sr.total_revenue,
     sales: sales,
     isDeletable: sr.is_deletable,
-    isSalesReconciliation: sr.is_reconciliation,
+    isSalesRecord: sr.is_sales_record,
     creatorName: sr.username,
   };
 }

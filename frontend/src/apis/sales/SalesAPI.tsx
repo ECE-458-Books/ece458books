@@ -26,7 +26,7 @@ export interface APISRSaleRow {
 
 export interface APISR {
   username: string;
-  is_reconciliation: boolean;
+  is_sales_record: boolean;
   id: number;
   date: string;
   sales: APISRSaleRow[];
@@ -110,7 +110,7 @@ export const SALES_API = {
 
   addSalesReconciliation: async function (req: AddSRReq) {
     return await API.request({
-      url: SALES_EXTENSION,
+      url: SALES_EXTENSION.concat("/create"),
       method: METHOD_POST,
       data: req,
     });

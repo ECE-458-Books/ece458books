@@ -19,7 +19,7 @@ import { useNavigate } from "react-router-dom";
 
 export interface SalesRecord {
   id: string;
-  isSalesReconciliation: boolean;
+  isSalesRecord: boolean;
   creatorName: string;
   date: Date;
   sales: LineItem[];
@@ -63,9 +63,11 @@ const COLUMNS: TableColumn<SalesRecord>[] = [
     style: { minWidth: "8rem", width: "10rem" },
   },
   {
-    field: "isSalesReconciliation",
+    field: "isSalesRecord",
     header: "Sale Type",
     sortable: true,
+    customBody: (rowData: SalesRecord) =>
+      rowData.isSalesRecord ? "Record" : "Reconciliation",
     style: { minWidth: "8rem", width: "12rem" },
   },
 ];

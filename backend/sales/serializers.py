@@ -18,10 +18,11 @@ class SalesReconciliationSerializer(TransactionGroupBaseSerializer):
     sales = SaleSerializer(many=True)
     total_revenue = serializers.SerializerMethodField()
     is_deletable = serializers.SerializerMethodField()
+    is_sales_record = serializers.BooleanField(required=False, default=False)
 
     class Meta:
         model = SalesReconciliation
-        fields = ['id', 'date', 'sales', 'num_books', 'num_unique_books', 'total_revenue', 'is_deletable']
+        fields = ['id', 'date', 'sales', 'num_books', 'num_unique_books', 'total_revenue', 'is_deletable', 'is_sales_record']
         read_only_fields = ['id']
 
     def get_is_deletable(self, instance):
@@ -59,9 +60,6 @@ class SalesReconciliationSerializer(TransactionGroupBaseSerializer):
         self.__update_sale(instance, transaction_data, transaction_id)
 
     def validate_before_creation(self, transaction_quantities, data):
-        pass
-
-    """ Code that has been removed because no longer functionality that we need
         date = data['date']
         # Currently just says first sale with issue, but can tell all sales with issues after Casey defines errors
         for book_id, sell_quantity in transaction_quantities.items():
@@ -83,7 +81,6 @@ class SalesReconciliationSerializer(TransactionGroupBaseSerializer):
                     prev_purchase=None).first()['prev_purchase'] != None
         except TypeError:
             return None
-    """
 
     def update_non_nested_fields(self, instance, validated_data):
         instance.date = validated_data.get('date', instance.date)
@@ -95,3 +92,10 @@ class SalesReconciliationSerializer(TransactionGroupBaseSerializer):
         sale.quantity = sale_data.get('quantity', sale.quantity)
         sale.unit_retail_price = sale_data.get('unit_retail_price', sale.unit_retail_price)
         sale.save()
+
+
+class SalesRecordSerializer(SalesReconciliationSerializer):
+    is_sales_record = serializers.BooleanField(required=False, default=True)
+
+    def validate_before_creation(self, transaction_quantities, data):
+        pass

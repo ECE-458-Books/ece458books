@@ -1,5 +1,5 @@
 from rest_framework.permissions import IsAuthenticated
-from .serializers import SalesReconciliationSerializer
+from .serializers import SalesReconciliationSerializer, SalesRecordSerializer
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework import status, filters
@@ -21,11 +21,14 @@ from .parsers import XMLParser
 from .sales_record_permissions import SalesRecordsWhitelistPermission, BodySizePermission
 
 
-class CreateSalesRecordAPIView(CreateAPIView):
-    permission_classes = [SalesRecordsWhitelistPermission, BodySizePermission]
-    authentication_classes = []
+class CreateSalesReconciliationAPIView(CreateAPIView):
+    permission_classes = [CustomBasePermission]
     serializer_class = SalesReconciliationSerializer
-    parser_classes = [XMLParser]
+    queryset = SalesReconciliation.objects.all()
+    pagination_class = SalesReconciliationPagination
+    filter_backends = [filters.OrderingFilter, filters.SearchFilter]
+    ordering_fields = '__all__'
+    ordering = ['id']
 
     def create(self, request, *args, **kwargs):
         serializer = SalesReconciliationSerializer(data=request.data)
@@ -37,9 +40,25 @@ class CreateSalesRecordAPIView(CreateAPIView):
         return Response(response_data, status=status.HTTP_201_CREATED)
 
 
+class CreateSalesRecordAPIView(CreateAPIView):
+    permission_classes = [SalesRecordsWhitelistPermission, BodySizePermission]
+    authentication_classes = []
+    serializer_class = SalesRecordSerializer
+    parser_classes = [XMLParser]
+
+    def create(self, request, *args, **kwargs):
+        serializer = SalesRecordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        saved_sales_reconciliation = serializer.save()
+
+        response_data = serializer.data
+        response_data['id'] = saved_sales_reconciliation.id
+        return Response(response_data, status=status.HTTP_201_CREATED)
+
+
 class ListSalesRecordAPIView(ListAPIView):
     permission_classes = [CustomBasePermission]
-    serializer_class = SalesReconciliationSerializer
+    serializer_class = SalesRecordSerializer
     queryset = SalesReconciliation.objects.all()
     pagination_class = SalesReconciliationPagination
     filter_backends = [filters.OrderingFilter, filters.SearchFilter]

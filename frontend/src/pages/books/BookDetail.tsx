@@ -464,7 +464,7 @@ export default function BookDetail() {
     <ImageUploader
       disabled={!isModifiable}
       uploadHandler={onImageUpload}
-      className="p-button-sm my-auto"
+      className="p-button-sm my-auto ml-2"
     />
   );
 
@@ -492,7 +492,7 @@ export default function BookDetail() {
   const remoteImageButton = (
     <Button
       type="button"
-      label="Import Remote"
+      label="Remote"
       icon="pi pi-file-import"
       onClick={onImageImport}
       className={"p-button-sm my-auto ml-2"}

@@ -32,6 +32,10 @@
     width: 80px;
 }
 
+.addPageImportIcon .pi {
+    font-size: 0.8rem;
+}
+
 /* BB PO SR detail */
 .integernumberPODetail .p-inputtext {
     width: 100px;

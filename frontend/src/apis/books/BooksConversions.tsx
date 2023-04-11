@@ -190,6 +190,10 @@ export function APIToInternalRemoteBookConversion(
     thickness: book.thickness,
     retailPrice: book.retailPrice,
     stock: book.inventoryCount,
-    thumbnailURL: book.imageUrl,
+    // Temporary workaround because subsidiary gives http instead of https
+    thumbnailURL:
+      book.imageUrl?.substring(0, 4) === "http"
+        ? book.imageUrl.slice(0, 4) + "s" + book.imageUrl.slice(4)
+        : book.imageUrl,
   };
 }

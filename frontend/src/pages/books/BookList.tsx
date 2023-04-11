@@ -154,7 +154,7 @@ export default function BookList() {
   const [genreNamesList, setGenreNamesList] = useState<string[]>([]); // List of all genre names
 
   const [visibleColumns, setVisibleColumns] = useState<ColumnMeta[]>(
-    [0, 1, 2, 3, 7, 8, 9, 10, 11, 12].map((x) => columnsMeta[x])
+    [0, 1, 2, 3, 7, 8, 9, 10, 11, 12, 14, 15].map((x) => columnsMeta[x])
   );
 
   const [toggleColumnPopupVisible, setToggleColumnPopupVisible] =

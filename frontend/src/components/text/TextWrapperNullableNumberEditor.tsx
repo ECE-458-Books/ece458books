@@ -22,14 +22,16 @@ export function TextWrapperNullableNumberEditor(
         </p>
       ) : (
         <div className={props.valueClassName ?? ""}>
-          {NullableNumberEditor(
-            props.value,
-            (newValue: number | undefined) =>
-              props.onValueChange(newValue ?? props.defaultValue),
-            "w-4 editorBookDetail",
-            props.disabled,
-            props.min
-          )}
+          <p className="vertical-align-middle">
+            {NullableNumberEditor(
+              props.value,
+              (newValue: number | undefined) =>
+                props.onValueChange(newValue ?? props.defaultValue),
+              "w-4 editorBookDetail",
+              props.disabled,
+              props.min
+            )}
+          </p>
         </div>
       )}
     </>

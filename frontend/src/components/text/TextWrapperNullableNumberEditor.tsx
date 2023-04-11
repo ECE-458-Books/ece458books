@@ -1,4 +1,5 @@
 import { NullableNumberEditor } from "../editors/NumberEditor";
+import "../../css/TableCell.css";
 
 interface TextWrapperNullableNumberEditorProps {
   disabled: boolean;
@@ -25,7 +26,7 @@ export function TextWrapperNullableNumberEditor(
             props.value,
             (newValue: number | undefined) =>
               props.onValueChange(newValue ?? props.defaultValue),
-            "w-4",
+            "w-4 editorBookDetail",
             props.disabled,
             props.min
           )}

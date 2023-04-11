@@ -37,6 +37,7 @@ import "../../css/MiscellaneousCSS.css";
 import { calculateDaysOfSupply, updateShelfSpace } from "../../util/NumberOps";
 import { scrollToTop } from "../../util/WindowViewportOps";
 import ImportFieldButton from "../../components/buttons/ImportFieldButton";
+import axios from "axios";
 
 interface ErrorDisplay {
   message: string;
@@ -83,6 +84,7 @@ export default function BookDetail() {
   const [imageFile, setImageFile] = useState<File>(new File([""], "filename"));
   const [isImageUploaded, setIsImageUploaded] = useState<boolean>(false);
   const [isImageRemoved, setIsImageRemoved] = useState<boolean>(false);
+  const [isImageImported, setIsImageImported] = useState(false);
   const [inventoryAdjustment, setInventoryAdjustment] = useState<number>(0);
   const [remoteBook, setRemoteBook] = useState<RemoteBook>();
 
@@ -338,6 +340,26 @@ export default function BookDetail() {
     event.options.clear();
   };
 
+  // For the import Button
+  const onImageImport = () => {
+    const newURL = remoteBook!.thumbnailURL!;
+    axios
+      .get(newURL, {
+        responseType: "blob",
+      })
+      .then((r) => {
+        const blob = new Blob([r.data]);
+        const file = new File([blob], "imageFile" + id);
+        setImage({ imageSrc: URL.createObjectURL(file), imageHash: "" });
+        setImageFile(file);
+        setIsImageUploaded(true);
+        setIsImageRemoved(false);
+      })
+      .catch(() => {
+        showFailure(toast, "Could not import image");
+      });
+  };
+
   const deleteBookPopup = () => {
     logger.debug("Delete Book Clicked");
     setDeletePopupVisible(true);
@@ -467,8 +489,21 @@ export default function BookDetail() {
     />
   );
 
+  const remoteImageButton = (
+    <Button
+      type="button"
+      label="Import Remote"
+      icon="pi pi-file-import"
+      onClick={onImageImport}
+      className={"p-button-sm my-auto ml-2"}
+      visible={isModifiable && remoteBook?.thumbnailURL != null}
+      disabled={isImageImported}
+    />
+  );
+
   const imageUploaderButtons = (
     <div className="flex justify-content-center">
+      {remoteImageButton}
       {isModifiable && imageUploadButton}
       {imageCancelButton}
       {imageDeleteButton}
@@ -529,6 +564,31 @@ export default function BookDetail() {
     <ImportFieldButton
       onClick={() => setPageCount(remoteBook?.pageCount)}
       isVisible={remoteBook?.pageCount != null && isModifiable}
+      isDisabled={remoteBook?.pageCount == pageCount || !remoteBook?.pageCount}
+    />
+  );
+
+  const importWidthButton = (
+    <ImportFieldButton
+      onClick={() => setWidth(remoteBook?.width)}
+      isVisible={remoteBook?.width != null && isModifiable}
+      isDisabled={remoteBook?.width == width || !remoteBook?.width}
+    />
+  );
+
+  const importHeightButton = (
+    <ImportFieldButton
+      onClick={() => setHeight(remoteBook?.height)}
+      isVisible={remoteBook?.height != null && isModifiable}
+      isDisabled={remoteBook?.height == height || !remoteBook?.height}
+    />
+  );
+
+  const importThicknessButton = (
+    <ImportFieldButton
+      onClick={() => setThickness(remoteBook?.thickness)}
+      isVisible={remoteBook?.thickness != null && isModifiable}
+      isDisabled={remoteBook?.thickness == thickness || !remoteBook?.thickness}
     />
   );
 
@@ -575,10 +635,10 @@ export default function BookDetail() {
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex p-0">
               <TextLabel label="Title:" />
-              <p className="p-component p-text-secondary text-900 text-3xl text-center my-0">
+              <p className="p-component p-text-secondary text-900 text-m text-center my-0">
                 {title}
                 {remoteBook && remoteBook.title != title
-                  ? `\xa0 (${remoteBook.title})`
+                  ? `\xa0 (Remote: ${remoteBook.title})`
                   : ""}
               </p>
             </div>
@@ -586,10 +646,10 @@ export default function BookDetail() {
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex p-0">
               <TextLabel label="Author(s):" />
-              <p className="p-component p-text-secondary text-900 text-2xl text-center m-0">
+              <p className="p-component p-text-secondary text-900 text-m text-center m-0">
                 {authors}
                 {remoteBook && remoteBook.authors != authors
-                  ? `\xa0 (${remoteBook.authors})`
+                  ? `\xa0 (Remote: ${remoteBook.authors})`
                   : ""}
               </p>
             </div>
@@ -597,19 +657,19 @@ export default function BookDetail() {
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex p-0 col-6">
               <TextLabel label="ISBN 13:" />
-              <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
+              <p className="p-component p-text-secondary text-900 text-m text-center m-0">
                 {isbn13}
                 {remoteBook && remoteBook.isbn13 != isbn13
-                  ? `\xa0 (${remoteBook.isbn13})`
+                  ? `\xa0 (Remote: ${remoteBook.isbn13})`
                   : ""}
               </p>
             </div>
             <div className="flex p-0 col-6">
               <TextLabel label="ISBN 10:" />
-              <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
+              <p className="p-component p-text-secondary text-900 text-m text-center m-0">
                 {isbn10}
                 {remoteBook && remoteBook.isbn10 != isbn10
-                  ? `\xa0 (${remoteBook.isbn10})`
+                  ? `\xa0 (Remote: ${remoteBook.isbn10})`
                   : ""}
               </p>
             </div>
@@ -617,19 +677,19 @@ export default function BookDetail() {
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex p-0 col-6">
               <TextLabel label="Publisher:" />
-              <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
+              <p className="p-component p-text-secondary text-900 text-m text-center m-0">
                 {publisher}
                 {remoteBook && remoteBook.publisher != publisher
-                  ? `\xa0 (${remoteBook.publisher})`
+                  ? `\xa0 (Remote: ${remoteBook.publisher})`
                   : ""}
               </p>
             </div>
             <div className="flex p-0 col-6">
               <TextLabel label="Publication Year:" />
-              <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
+              <p className="p-component p-text-secondary text-900 text-m text-center m-0">
                 {pubYear}
                 {remoteBook && remoteBook.publishedYear != pubYear
-                  ? `\xa0 (${remoteBook.publishedYear})`
+                  ? `\xa0 (Remote: ${remoteBook.publishedYear})`
                   : ""}
               </p>
             </div>
@@ -658,9 +718,9 @@ export default function BookDetail() {
                 }
                 defaultValue={undefined}
               />
-              <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
+              <p className="flex p-component p-text-secondary text-900 text-m text-center mx-0 my-auto">
                 {remoteBook?.pageCount && remoteBook?.pageCount != pageCount
-                  ? `\xa0 (${remoteBook.pageCount})`
+                  ? `\xa0 (Remote: ${remoteBook.pageCount})`
                   : ""}
               </p>
               <p className=" vertical-align-middle">{importPageCountButton}</p>
@@ -743,7 +803,7 @@ export default function BookDetail() {
                 PriceEditor(
                   price,
                   (newValue: number) => setPrice(newValue ?? 0),
-                  "w-4",
+                  "w-4 editorBookDetail",
                   !isModifiable
                 )
               )}
@@ -778,11 +838,12 @@ export default function BookDetail() {
                 valueClassName="flex 2rem"
                 min={0.01}
               />
-              <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
+              <p className="flex p-component p-text-secondary text-900 text-m text-center mx-0 my-auto">
                 {remoteBook?.height && remoteBook?.height != height
-                  ? `\xa0 (${remoteBook.height})`
+                  ? `\xa0 (Remote: ${remoteBook.height})`
                   : ""}
               </p>
+              <p className=" vertical-align-middle">{importHeightButton}</p>
             </div>
             <div className="flex p-0 col-4">
               <TextLabel label="Width:" />
@@ -795,11 +856,12 @@ export default function BookDetail() {
                 valueClassName="flex 2rem"
                 min={0.01}
               />
-              <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
+              <p className="flex p-component p-text-secondary text-900 text-m text-center mx-0 my-auto">
                 {remoteBook?.width && remoteBook?.width != width
-                  ? `\xa0 (${remoteBook.width})`
+                  ? `\xa0 (Remote: ${remoteBook.width})`
                   : ""}
               </p>
+              <p className=" vertical-align-middle">{importWidthButton}</p>
             </div>
             <div className="flex p-0 col-4">
               <TextLabel label="Thickness:" />
@@ -814,11 +876,12 @@ export default function BookDetail() {
                 valueClassName="flex 2rem"
                 min={0.01}
               />
-              <p className="flex p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
+              <p className="flex p-component p-text-secondary text-900 text-m text-center mx-0 my-auto">
                 {remoteBook?.thickness && remoteBook?.thickness != thickness
-                  ? `\xa0 (${remoteBook.thickness})`
+                  ? `\xa0 (Remote: ${remoteBook.thickness})`
                   : ""}
               </p>
+              <p className=" vertical-align-middle">{importThicknessButton}</p>
             </div>
           </div>
         </form>

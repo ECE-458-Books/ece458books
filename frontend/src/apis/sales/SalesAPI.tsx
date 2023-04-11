@@ -128,7 +128,7 @@ export const SALES_API = {
     const formData = new FormData();
     formData.append("file", req.file);
     const request = {
-      url: SALES_EXTENSION.concat("/csv/import"), // TODO: This will eventually go back to sales/sales_reconciliation/...
+      url: SALES_EXTENSION.concat("/csv/import"),
       method: METHOD_POST,
       headers: {
         "Content-Type": "multipart/form-data",

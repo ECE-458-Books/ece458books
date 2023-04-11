@@ -282,7 +282,7 @@ export default function SRDetail() {
   // Top Line
 
   const titleText = (
-    <div className="pt-2 col-4">
+    <div className="pt-2" style={{ width: "40%" }}>
       <AddDetailModifyTitle
         isModifyPage={isModifiable}
         isAddPage={isSRAddPage}
@@ -298,7 +298,7 @@ export default function SRDetail() {
   );
 
   const backButton = (
-    <div className="flex col-4">
+    <div className="flex" style={{ width: "30%" }}>
       <BackButton className="ml-1" />
     </div>
   );
@@ -403,7 +403,7 @@ export default function SRDetail() {
   );
 
   const rightButtons = (
-    <div className="flex col-4 justify-content-end">
+    <div className="flex justify-content-end" style={{ width: "30%" }}>
       {editCancelButton}
       {deleteButton}
     </div>

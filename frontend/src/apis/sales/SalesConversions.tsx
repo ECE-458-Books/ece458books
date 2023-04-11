@@ -53,6 +53,8 @@ export function APIToInternalSalesCSVConversion(
   sales: APISaleCSVImportRow[]
 ): LineItem[] {
   return sales.map((sale) => {
+    const price = Number(sale.unit_price);
+    const quantity = Number(sale.quantity);
     return {
       isNewRow: true,
       id: uuid(),
@@ -60,9 +62,9 @@ export function APIToInternalSalesCSVConversion(
       bookId: sale.book,
       bookTitle: formatBookForDropdown(sale.book_title, sale.isbn_13),
       bookISBN: sale.isbn_13,
-      quantity: sale.quantity,
-      price: sale.unit_retail_price,
-      errors: sale.errors,
+      quantity: Number.isNaN(quantity) ? 0 : quantity,
+      price: Number.isNaN(price) ? 0 : price,
+      csvErrors: sale.errors,
     } as LineItem;
   });
 }

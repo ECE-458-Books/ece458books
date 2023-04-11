@@ -67,7 +67,13 @@ export interface SRCSVImportReq {
   file: File;
 }
 
-export interface APISaleCSVImportRow extends APISRSaleRow {
+export interface APISaleCSVImportRow {
+  id?: number; // ID only for new rows, not already existing ones
+  book: number;
+  book_title: string;
+  book_isbn: string;
+  quantity: number;
+  unit_price: number;
   isbn_13: string;
   errors: { [key: string]: string };
 }

@@ -642,9 +642,9 @@ export default function BookDetail() {
               <TextLabel label="Title:" />
               <p className="p-component p-text-secondary text-900 text-m text-center my-0">
                 {title}
-                <label className="text-blue-800">
+                <label className="text-blue-800 pl-1">
                   {remoteBook && remoteBook.title != title
-                    ? `\xa0 (Remote: ${remoteBook.title})`
+                    ? `(Remote: ${remoteBook.title})`
                     : ""}
                 </label>
               </p>
@@ -655,9 +655,9 @@ export default function BookDetail() {
               <TextLabel label="Author(s):" />
               <p className="p-component p-text-secondary text-900 text-m text-center m-0">
                 {authors}
-                <label className="text-blue-800">
+                <label className="text-blue-800 pl-1">
                   {remoteBook && remoteBook.authors != authors
-                    ? `\xa0 (Remote: ${remoteBook.authors})`
+                    ? `(Remote: ${remoteBook.authors})`
                     : ""}
                 </label>
               </p>
@@ -668,9 +668,9 @@ export default function BookDetail() {
               <TextLabel label="ISBN 13:" />
               <p className="p-component p-text-secondary text-900 text-m text-center m-0">
                 {isbn13}
-                <label className="text-blue-800">
+                <label className="text-blue-800 pl-1">
                   {remoteBook && remoteBook.isbn13 != isbn13
-                    ? `\xa0 (Remote: ${remoteBook.isbn13})`
+                    ? `(Remote: ${remoteBook.isbn13})`
                     : ""}
                 </label>
               </p>
@@ -679,9 +679,9 @@ export default function BookDetail() {
               <TextLabel label="ISBN 10:" />
               <p className="p-component p-text-secondary text-900 text-m text-center m-0">
                 {isbn10}
-                <label className="text-blue-800">
+                <label className="text-blue-800 pl-1">
                   {remoteBook && remoteBook.isbn10 != isbn10
-                    ? `\xa0 (Remote: ${remoteBook.isbn10})`
+                    ? `(Remote: ${remoteBook.isbn10})`
                     : ""}
                 </label>
               </p>
@@ -692,9 +692,9 @@ export default function BookDetail() {
               <TextLabel label="Publisher:" />
               <p className="p-component p-text-secondary text-900 text-m text-center m-0">
                 {publisher}
-                <label className="text-blue-800">
+                <label className="text-blue-800 pl-1">
                   {remoteBook && remoteBook.publisher != publisher
-                    ? `\xa0 (Remote: ${remoteBook.publisher})`
+                    ? `(Remote: ${remoteBook.publisher})`
                     : ""}
                 </label>
               </p>
@@ -703,9 +703,9 @@ export default function BookDetail() {
               <TextLabel label="Publication Year:" />
               <p className="p-component p-text-secondary text-900 text-m text-center m-0">
                 {pubYear}
-                <label className="text-blue-800">
+                <label className="text-blue-800 pl-1">
                   {remoteBook && remoteBook.publishedYear != pubYear
-                    ? `\xa0 (Remote: ${remoteBook.publishedYear})`
+                    ? `(Remote: ${remoteBook.publishedYear})`
                     : ""}
                 </label>
               </p>
@@ -737,9 +737,9 @@ export default function BookDetail() {
               />
               <p className=" vertical-align-middle">{importPageCountButton}</p>
               <p className="flex p-component p-text-secondary text-900 text-m text-center mx-0 my-auto">
-                <label className="text-blue-800">
+                <label className="text-blue-800 pl-1">
                   {remoteBook?.pageCount && remoteBook?.pageCount != pageCount
-                    ? `\xa0 (Remote: ${remoteBook.pageCount})`
+                    ? `(Remote: ${remoteBook.pageCount})`
                     : ""}
                 </label>
               </p>
@@ -858,9 +858,9 @@ export default function BookDetail() {
                 min={0.01}
               />
               <p className=" vertical-align-middle">{importHeightButton}</p>
-              <p className="flex p-component p-text-secondary text-900 text-m text-center mx-0 my-auto text-blue-800">
+              <p className="flex p-component p-text-secondary text-900 text-m text-center mx-0 my-auto text-blue-800 pl-1">
                 {remoteBook?.height && remoteBook?.height != height
-                  ? `\xa0 (Remote: ${remoteBook.height})`
+                  ? `(Remote: ${remoteBook.height})`
                   : ""}
               </p>
             </div>
@@ -876,9 +876,9 @@ export default function BookDetail() {
                 min={0.01}
               />
               <p className=" vertical-align-middle">{importWidthButton}</p>
-              <p className="flex p-component p-text-secondary text-900 text-m text-center mx-0 my-auto text-blue-800">
+              <p className="flex p-component p-text-secondary text-900 text-m text-center mx-0 my-auto text-blue-800 pl-1">
                 {remoteBook?.width && remoteBook?.width != width
-                  ? `\xa0 (Remote: ${remoteBook.width})`
+                  ? `(Remote: ${remoteBook.width})`
                   : ""}
               </p>
             </div>
@@ -896,9 +896,9 @@ export default function BookDetail() {
                 min={0.01}
               />
               <p className=" vertical-align-middle">{importThicknessButton}</p>
-              <p className="flex p-component p-text-secondary text-900 text-m text-center mx-0 my-auto text-blue-800">
+              <p className="flex p-component p-text-secondary text-900 text-m text-center mx-0 my-auto text-blue-800 pl-1">
                 {remoteBook?.thickness && remoteBook?.thickness != thickness
-                  ? `\xa0 (Remote: ${remoteBook.thickness})`
+                  ? `(Remote: ${remoteBook.thickness})`
                   : ""}
               </p>
             </div>

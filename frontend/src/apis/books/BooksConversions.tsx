@@ -192,7 +192,7 @@ export function APIToInternalRemoteBookConversion(
     stock: book.inventoryCount,
     // Temporary workaround because subsidiary gives http instead of https
     thumbnailURL:
-      book.imageUrl?.substring(0, 4) === "http"
+      book.imageUrl?.substring(0, 5) === "http:"
         ? book.imageUrl.slice(0, 4) + "s" + book.imageUrl.slice(4)
         : book.imageUrl,
   };

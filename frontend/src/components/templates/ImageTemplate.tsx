@@ -27,6 +27,7 @@ export function ImageTemplate(imageURL: string) {
 }
 
 export default function ImageTemplateWithButtons(
+  importButton: JSX.Element,
   deleteButton: JSX.Element,
   uploadButton: JSX.Element,
   thumbnailURL: string
@@ -53,6 +54,7 @@ export default function ImageTemplateWithButtons(
         />
       </div>
       <div className="flex justify-content-between">
+        {importButton}
         {uploadButton}
         {deleteButton}
       </div>

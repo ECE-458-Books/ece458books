@@ -8,6 +8,7 @@ interface DeleteColumnProps<T> {
   hidden?: boolean;
   style?: CSSProperties;
   buttonStyle?: CSSProperties;
+  hideHeader?: boolean;
 }
 
 export default function DeleteColumn<T>(props: DeleteColumnProps<T>) {
@@ -21,7 +22,7 @@ export default function DeleteColumn<T>(props: DeleteColumnProps<T>) {
   return (
     <Column
       body={rowDeleteButton}
-      header={"Delete"}
+      header={props.hideHeader ? "" : "Delete"}
       exportable={false}
       style={props.style ?? { width: "2rem" }}
       hidden={props.hidden}

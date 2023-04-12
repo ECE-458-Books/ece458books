@@ -358,6 +358,7 @@ export default function BookDetail() {
         setIsImageUploaded(true);
         setIsImageRemoved(false);
         setIsImageImported(true);
+        showSuccess(toast, "Image imported successfully");
       })
       .catch(() => {
         showFailure(toast, "Could not import image");

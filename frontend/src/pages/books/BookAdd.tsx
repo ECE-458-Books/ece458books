@@ -153,181 +153,25 @@ export default function BookAdd() {
       field: "pageCount",
       header: "Page Count",
       style: { width: "2%", fontSize: "small" },
-      customBody: (rowData: BookWithDBTag) => (
-        <>
-          <div>
-            {NullableIntegerEditor(
-              rowData.pageCount,
-              (newValue) => {
-                setBooks((draft) => {
-                  const book = findById(draft, rowData.id)!;
-                  book.pageCount = newValue;
-                });
-              },
-              "integerNumbeBookAdd"
-            )}
-          </div>
-          <div>
-            <label style={{ fontSize: "0.7rem" }}>
-              {rowData.remoteBook &&
-              rowData.remoteBook.pageCount != rowData.pageCount
-                ? `(R: ${rowData.remoteBook.pageCount})`
-                : ""}
-            </label>
-            <ImportFieldButton
-              onClick={() => {
-                setBooks((draft) => {
-                  const book = findById(draft, rowData.id)!;
-                  book.pageCount = book.remoteBook!.pageCount;
-                });
-              }}
-              isDisabled={
-                rowData.remoteBook?.pageCount == rowData.pageCount ||
-                !rowData.remoteBook?.pageCount
-              }
-              isVisible={rowData.remoteBook?.pageCount != null}
-              className="mt-1 ml-1 addPageImportIcon"
-              style={{ height: 20, width: 20 }}
-            />
-          </div>
-        </>
-      ),
+      customBody: (rowData: BookWithDBTag) => pageCountBody(rowData),
     },
     {
       field: "width",
       header: "Width",
       style: { width: "2%", fontSize: "small" },
-      customBody: (rowData: BookWithDBTag) => (
-        <>
-          <div>
-            {NullableNumberEditor(
-              rowData.width,
-              (newValue) => {
-                setBooks((draft) => {
-                  const book = findById(draft, rowData.id)!;
-                  book.width = newValue;
-                });
-              },
-              "decimalNumberBookAdd",
-              false,
-              0.01
-            )}
-          </div>
-          <div>
-            <label style={{ fontSize: "0.7rem" }}>
-              {rowData.remoteBook && rowData.remoteBook.width != rowData.width
-                ? `(R: ${rowData.remoteBook.width})`
-                : ""}
-            </label>
-            <ImportFieldButton
-              onClick={() => {
-                setBooks((draft) => {
-                  const book = findById(draft, rowData.id)!;
-                  book.width = book.remoteBook!.width;
-                });
-              }}
-              isDisabled={
-                rowData.remoteBook?.width == rowData.width ||
-                !rowData.remoteBook?.width
-              }
-              isVisible={rowData.remoteBook?.width != null}
-              className="mt-1 ml-1 addPageImportIcon"
-              style={{ height: 20, width: 20 }}
-            />
-          </div>
-        </>
-      ),
+      customBody: (rowData: BookWithDBTag) => widthBody(rowData),
     },
     {
       field: "height",
       header: "Height",
       style: { width: "2%", fontSize: "small" },
-      customBody: (rowData: BookWithDBTag) => (
-        <>
-          <div>
-            {NullableNumberEditor(
-              rowData.height,
-              (newValue) => {
-                setBooks((draft) => {
-                  const book = findById(draft, rowData.id)!;
-                  book.height = newValue;
-                });
-              },
-              "decimalNumberBookAdd",
-              false,
-              0.01
-            )}
-          </div>
-          <div>
-            <label style={{ fontSize: "0.7rem" }}>
-              {rowData.remoteBook && rowData.remoteBook.height != rowData.height
-                ? `(R: ${rowData.remoteBook.height})`
-                : ""}
-            </label>
-            <ImportFieldButton
-              onClick={() => {
-                setBooks((draft) => {
-                  const book = findById(draft, rowData.id)!;
-                  book.height = book.remoteBook!.height;
-                });
-              }}
-              isDisabled={
-                rowData.remoteBook?.height == rowData.height ||
-                !rowData.remoteBook?.height
-              }
-              isVisible={rowData.remoteBook?.height != null}
-              className="mt-1 ml-1 addPageImportIcon"
-              style={{ height: 20, width: 20 }}
-            />
-          </div>
-        </>
-      ),
+      customBody: (rowData: BookWithDBTag) => heightBody(rowData),
     },
     {
       field: "thickness",
       header: "Thickness",
       style: { width: "2%", fontSize: "small" },
-      customBody: (rowData: BookWithDBTag) => (
-        <>
-          <div>
-            {NullableNumberEditor(
-              rowData.thickness,
-              (newValue) => {
-                setBooks((draft) => {
-                  const book = findById(draft, rowData.id)!;
-                  book.thickness = newValue;
-                });
-              },
-              "decimalNumberBookAdd",
-              false,
-              0.01
-            )}
-          </div>
-          <div>
-            <label style={{ fontSize: "0.7rem" }}>
-              {rowData.remoteBook &&
-              rowData.remoteBook.thickness != rowData.thickness
-                ? `(R: ${rowData.remoteBook.thickness})`
-                : ""}
-            </label>
-            <ImportFieldButton
-              onClick={() => {
-                setBooks((draft) => {
-                  const book = findById(draft, rowData.id)!;
-                  book.thickness = book.remoteBook!.thickness;
-                });
-              }}
-              isDisabled={
-                rowData.remoteBook?.thickness == rowData.thickness ||
-                !rowData.remoteBook?.thickness
-              }
-              isVisible={rowData.remoteBook?.thickness != null}
-              className="mt-1 ml-1 addPageImportIcon"
-              style={{ height: 20, width: 20 }}
-            />
-          </div>
-        </>
-      ),
+      customBody: (rowData: BookWithDBTag) => thicknessBody(rowData),
     },
     {
       field: "retailPrice",
@@ -351,6 +195,178 @@ export default function BookAdd() {
       style: { width: "4%", fontSize: "small" },
     },
   ];
+
+  const pageCountBody = (rowData: BookWithDBTag) => {
+    return (
+      <>
+        <div>
+          {NullableIntegerEditor(
+            rowData.pageCount,
+            (newValue) => {
+              setBooks((draft) => {
+                const book = findById(draft, rowData.id)!;
+                book.pageCount = newValue;
+              });
+            },
+            "integerNumbeBookAdd"
+          )}
+        </div>
+        <div>
+          <label style={{ fontSize: "0.7rem" }}>
+            {rowData.remoteBook &&
+            rowData.remoteBook.pageCount != rowData.pageCount
+              ? `(R: ${rowData.remoteBook.pageCount})`
+              : ""}
+          </label>
+          <ImportFieldButton
+            onClick={() => {
+              setBooks((draft) => {
+                const book = findById(draft, rowData.id)!;
+                book.pageCount = book.remoteBook!.pageCount;
+              });
+            }}
+            isDisabled={
+              rowData.remoteBook?.pageCount == rowData.pageCount ||
+              !rowData.remoteBook?.pageCount
+            }
+            isVisible={rowData.remoteBook?.pageCount != null}
+            className="mt-1 ml-1 addPageImportIcon"
+            style={{ height: 20, width: 20 }}
+          />
+        </div>
+      </>
+    );
+  };
+
+  const widthBody = (rowData: BookWithDBTag) => {
+    return (
+      <>
+        <div>
+          {NullableNumberEditor(
+            rowData.width,
+            (newValue) => {
+              setBooks((draft) => {
+                const book = findById(draft, rowData.id)!;
+                book.width = newValue;
+              });
+            },
+            "decimalNumberBookAdd",
+            false,
+            0.01
+          )}
+        </div>
+        <div>
+          <label style={{ fontSize: "0.7rem" }}>
+            {rowData.remoteBook && rowData.remoteBook.width != rowData.width
+              ? `(R: ${rowData.remoteBook.width})`
+              : ""}
+          </label>
+          <ImportFieldButton
+            onClick={() => {
+              setBooks((draft) => {
+                const book = findById(draft, rowData.id)!;
+                book.width = book.remoteBook!.width;
+              });
+            }}
+            isDisabled={
+              rowData.remoteBook?.width == rowData.width ||
+              !rowData.remoteBook?.width
+            }
+            isVisible={rowData.remoteBook?.width != null}
+            className="mt-1 ml-1 addPageImportIcon"
+            style={{ height: 20, width: 20 }}
+          />
+        </div>
+      </>
+    );
+  };
+
+  const heightBody = (rowData: BookWithDBTag) => {
+    return (
+      <>
+        <div>
+          {NullableNumberEditor(
+            rowData.height,
+            (newValue) => {
+              setBooks((draft) => {
+                const book = findById(draft, rowData.id)!;
+                book.height = newValue;
+              });
+            },
+            "decimalNumberBookAdd",
+            false,
+            0.01
+          )}
+        </div>
+        <div>
+          <label style={{ fontSize: "0.7rem" }}>
+            {rowData.remoteBook && rowData.remoteBook.height != rowData.height
+              ? `(R: ${rowData.remoteBook.height})`
+              : ""}
+          </label>
+          <ImportFieldButton
+            onClick={() => {
+              setBooks((draft) => {
+                const book = findById(draft, rowData.id)!;
+                book.height = book.remoteBook!.height;
+              });
+            }}
+            isDisabled={
+              rowData.remoteBook?.height == rowData.height ||
+              !rowData.remoteBook?.height
+            }
+            isVisible={rowData.remoteBook?.height != null}
+            className="mt-1 ml-1 addPageImportIcon"
+            style={{ height: 20, width: 20 }}
+          />
+        </div>
+      </>
+    );
+  };
+
+  const thicknessBody = (rowData: BookWithDBTag) => {
+    return (
+      <>
+        <div>
+          {NullableNumberEditor(
+            rowData.thickness,
+            (newValue) => {
+              setBooks((draft) => {
+                const book = findById(draft, rowData.id)!;
+                book.thickness = newValue;
+              });
+            },
+            "decimalNumberBookAdd",
+            false,
+            0.01
+          )}
+        </div>
+        <div>
+          <label style={{ fontSize: "0.7rem" }}>
+            {rowData.remoteBook &&
+            rowData.remoteBook.thickness != rowData.thickness
+              ? `(R: ${rowData.remoteBook.thickness})`
+              : ""}
+          </label>
+          <ImportFieldButton
+            onClick={() => {
+              setBooks((draft) => {
+                const book = findById(draft, rowData.id)!;
+                book.thickness = book.remoteBook!.thickness;
+              });
+            }}
+            isDisabled={
+              rowData.remoteBook?.thickness == rowData.thickness ||
+              !rowData.remoteBook?.thickness
+            }
+            isVisible={rowData.remoteBook?.thickness != null}
+            className="mt-1 ml-1 addPageImportIcon"
+            style={{ height: 20, width: 20 }}
+          />
+        </div>
+      </>
+    );
+  };
 
   // Image event handlers
 
@@ -404,6 +420,7 @@ export default function BookAdd() {
           const newBook = findById(draft, book.id)!;
           newBook.newImageData = newImageData;
           newBook.thumbnailURL = URL.createObjectURL(file);
+          showSuccess(toast, "Image imported successfully");
         });
       })
       .catch(() => {
@@ -580,7 +597,6 @@ export default function BookAdd() {
     },
     style: { width: "2%", fontSize: 12 },
     buttonStyle: { width: 30, height: 30 },
-    hideHeader: true,
   });
 
   const columns = createColumns(COLUMNS);

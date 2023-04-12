@@ -317,6 +317,7 @@ export default function BookDetail() {
     setImageFile(new File([""], "filename"));
     setIsImageUploaded(false);
     setIsImageRemoved(true);
+    setIsImageImported(false);
   };
 
   // For the cancel button (revert to original)
@@ -328,6 +329,7 @@ export default function BookDetail() {
     setImageFile(new File([""], "filename"));
     setIsImageUploaded(false);
     setIsImageRemoved(false);
+    setIsImageImported(false);
   };
 
   // For the upload button
@@ -337,6 +339,7 @@ export default function BookDetail() {
     setImageFile(file);
     setIsImageUploaded(true);
     setIsImageRemoved(false);
+    setIsImageImported(false);
     event.options.clear();
   };
 
@@ -354,6 +357,7 @@ export default function BookDetail() {
         setImageFile(file);
         setIsImageUploaded(true);
         setIsImageRemoved(false);
+        setIsImageImported(true);
       })
       .catch(() => {
         showFailure(toast, "Could not import image");

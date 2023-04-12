@@ -416,14 +416,18 @@ export default function BookAdd() {
     return (
       <>
         <Tooltip target=".custom-bookadd-tooltip" showDelay={100} />
-        <ImageUploader
-          uploadHandler={(e: FileUploadHandlerEvent) =>
-            onImageChange(e, rowData.id)
-          }
-          className="addPageImportIcon"
-          style={{ height: 20, width: 20, paddingLeft: 3, paddingRight: 3 }}
+        <div
+          className="custom-bookadd-tooltip"
           data-pr-tooltip={"Upload Custom Image"}
-        />
+        >
+          <ImageUploader
+            uploadHandler={(e: FileUploadHandlerEvent) =>
+              onImageChange(e, rowData.id)
+            }
+            className="addPageImportIcon"
+            style={{ height: 20, width: 20, paddingLeft: 3, paddingRight: 3 }}
+          />
+        </div>
       </>
     );
   };

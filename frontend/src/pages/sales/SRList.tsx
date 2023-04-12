@@ -14,9 +14,13 @@ import SelectSizeDropdown, {
   SelectSizeDropdownOptions,
 } from "../../components/dropdowns/SelectSizeDropdown";
 import { showFailure } from "../../components/Toast";
+import AddPageButton from "../../components/buttons/AddPageButton";
+import { useNavigate } from "react-router-dom";
 
 export interface SalesRecord {
   id: string;
+  isSalesRecord: boolean;
+  creatorName: string;
   date: Date;
   sales: LineItem[];
   uniqueBooks: number;
@@ -50,6 +54,20 @@ const COLUMNS: TableColumn<SalesRecord>[] = [
     header: "Total Revenue ($)",
     sortable: true,
     customBody: (rowData: SalesRecord) => PriceTemplate(rowData.totalRevenue),
+    style: { minWidth: "8rem", width: "12rem" },
+  },
+  {
+    field: "creatorName",
+    header: "Associated User",
+    sortable: true,
+    style: { minWidth: "8rem", width: "10rem" },
+  },
+  {
+    field: "isSalesRecord",
+    header: "Sale Type",
+    sortable: true,
+    customBody: (rowData: SalesRecord) =>
+      rowData.isSalesRecord ? "Record" : "Reconciliation",
     style: { minWidth: "8rem", width: "12rem" },
   },
 ];
@@ -89,6 +107,16 @@ export default function SalesRecordList() {
   // ----------------- TEMPLATES/VISIBLE COMPONENTS -----------------
   const toast = useRef<Toast>(null);
 
+  const navigate = useNavigate();
+
+  const addSRButton = (
+    <AddPageButton
+      onClick={() => navigate("/sales-records/add")}
+      label="Add Sale"
+      className="mr-2"
+    />
+  );
+
   const selectSizeButton = (
     <SelectSizeDropdown
       value={tableWhitespaceSize}
@@ -117,10 +145,16 @@ export default function SalesRecordList() {
 
   return (
     <div>
-      <div className="flex justify-content-center">
+      <div className="flex justify-content-end">
         <div className="card col-9 pt-0 px-3 justify-content-center">
           <Toast ref={toast} />
           {dataTable}
+        </div>
+        <div
+          className="flex justify-content-end align-items-start mr-1 my-2"
+          style={{ width: "12.4%" }}
+        >
+          {addSRButton}
         </div>
       </div>
     </div>

@@ -637,9 +637,11 @@ export default function BookDetail() {
               <TextLabel label="Title:" />
               <p className="p-component p-text-secondary text-900 text-m text-center my-0">
                 {title}
-                {remoteBook && remoteBook.title != title
-                  ? `\xa0 (Remote: ${remoteBook.title})`
-                  : ""}
+                <label className="text-blue-800">
+                  {remoteBook && remoteBook.title != title
+                    ? `\xa0 (Remote: ${remoteBook.title})`
+                    : ""}
+                </label>
               </p>
             </div>
           </div>
@@ -648,9 +650,11 @@ export default function BookDetail() {
               <TextLabel label="Author(s):" />
               <p className="p-component p-text-secondary text-900 text-m text-center m-0">
                 {authors}
-                {remoteBook && remoteBook.authors != authors
-                  ? `\xa0 (Remote: ${remoteBook.authors})`
-                  : ""}
+                <label className="text-blue-800">
+                  {remoteBook && remoteBook.authors != authors
+                    ? `\xa0 (Remote: ${remoteBook.authors})`
+                    : ""}
+                </label>
               </p>
             </div>
           </div>
@@ -659,18 +663,22 @@ export default function BookDetail() {
               <TextLabel label="ISBN 13:" />
               <p className="p-component p-text-secondary text-900 text-m text-center m-0">
                 {isbn13}
-                {remoteBook && remoteBook.isbn13 != isbn13
-                  ? `\xa0 (Remote: ${remoteBook.isbn13})`
-                  : ""}
+                <label className="text-blue-800">
+                  {remoteBook && remoteBook.isbn13 != isbn13
+                    ? `\xa0 (Remote: ${remoteBook.isbn13})`
+                    : ""}
+                </label>
               </p>
             </div>
             <div className="flex p-0 col-6">
               <TextLabel label="ISBN 10:" />
               <p className="p-component p-text-secondary text-900 text-m text-center m-0">
                 {isbn10}
-                {remoteBook && remoteBook.isbn10 != isbn10
-                  ? `\xa0 (Remote: ${remoteBook.isbn10})`
-                  : ""}
+                <label className="text-blue-800">
+                  {remoteBook && remoteBook.isbn10 != isbn10
+                    ? `\xa0 (Remote: ${remoteBook.isbn10})`
+                    : ""}
+                </label>
               </p>
             </div>
           </div>
@@ -679,18 +687,22 @@ export default function BookDetail() {
               <TextLabel label="Publisher:" />
               <p className="p-component p-text-secondary text-900 text-m text-center m-0">
                 {publisher}
-                {remoteBook && remoteBook.publisher != publisher
-                  ? `\xa0 (Remote: ${remoteBook.publisher})`
-                  : ""}
+                <label className="text-blue-800">
+                  {remoteBook && remoteBook.publisher != publisher
+                    ? `\xa0 (Remote: ${remoteBook.publisher})`
+                    : ""}
+                </label>
               </p>
             </div>
             <div className="flex p-0 col-6">
               <TextLabel label="Publication Year:" />
               <p className="p-component p-text-secondary text-900 text-m text-center m-0">
                 {pubYear}
-                {remoteBook && remoteBook.publishedYear != pubYear
-                  ? `\xa0 (Remote: ${remoteBook.publishedYear})`
-                  : ""}
+                <label className="text-blue-800">
+                  {remoteBook && remoteBook.publishedYear != pubYear
+                    ? `\xa0 (Remote: ${remoteBook.publishedYear})`
+                    : ""}
+                </label>
               </p>
             </div>
           </div>
@@ -718,12 +730,14 @@ export default function BookDetail() {
                 }
                 defaultValue={undefined}
               />
-              <p className="flex p-component p-text-secondary text-900 text-m text-center mx-0 my-auto">
-                {remoteBook?.pageCount && remoteBook?.pageCount != pageCount
-                  ? `\xa0 (Remote: ${remoteBook.pageCount})`
-                  : ""}
-              </p>
               <p className=" vertical-align-middle">{importPageCountButton}</p>
+              <p className="flex p-component p-text-secondary text-900 text-m text-center mx-0 my-auto">
+                <label className="text-blue-800">
+                  {remoteBook?.pageCount && remoteBook?.pageCount != pageCount
+                    ? `\xa0 (Remote: ${remoteBook.pageCount})`
+                    : ""}
+                </label>
+              </p>
             </div>
             <div className="flex p-0 col-6">
               <TextLabel label="Shelf Space (in):" />
@@ -838,12 +852,12 @@ export default function BookDetail() {
                 valueClassName="flex 2rem"
                 min={0.01}
               />
-              <p className="flex p-component p-text-secondary text-900 text-m text-center mx-0 my-auto">
+              <p className=" vertical-align-middle">{importHeightButton}</p>
+              <p className="flex p-component p-text-secondary text-900 text-m text-center mx-0 my-auto text-blue-800">
                 {remoteBook?.height && remoteBook?.height != height
                   ? `\xa0 (Remote: ${remoteBook.height})`
                   : ""}
               </p>
-              <p className=" vertical-align-middle">{importHeightButton}</p>
             </div>
             <div className="flex p-0 col-4">
               <TextLabel label="Width:" />
@@ -856,12 +870,12 @@ export default function BookDetail() {
                 valueClassName="flex 2rem"
                 min={0.01}
               />
-              <p className="flex p-component p-text-secondary text-900 text-m text-center mx-0 my-auto">
+              <p className=" vertical-align-middle">{importWidthButton}</p>
+              <p className="flex p-component p-text-secondary text-900 text-m text-center mx-0 my-auto text-blue-800">
                 {remoteBook?.width && remoteBook?.width != width
                   ? `\xa0 (Remote: ${remoteBook.width})`
                   : ""}
               </p>
-              <p className=" vertical-align-middle">{importWidthButton}</p>
             </div>
             <div className="flex p-0 col-4">
               <TextLabel label="Thickness:" />
@@ -876,12 +890,12 @@ export default function BookDetail() {
                 valueClassName="flex 2rem"
                 min={0.01}
               />
-              <p className="flex p-component p-text-secondary text-900 text-m text-center mx-0 my-auto">
+              <p className=" vertical-align-middle">{importThicknessButton}</p>
+              <p className="flex p-component p-text-secondary text-900 text-m text-center mx-0 my-auto text-blue-800">
                 {remoteBook?.thickness && remoteBook?.thickness != thickness
                   ? `\xa0 (Remote: ${remoteBook.thickness})`
                   : ""}
               </p>
-              <p className=" vertical-align-middle">{importThicknessButton}</p>
             </div>
           </div>
         </form>

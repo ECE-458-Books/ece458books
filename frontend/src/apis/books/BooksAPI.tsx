@@ -47,6 +47,7 @@ export interface APIBook {
   isGhost?: boolean;
   num_related_books?: number;
   related_books?: APIRelatedBook[];
+  remote_book?: APIRemoteBook;
 }
 
 export interface APIRelatedBook {
@@ -138,6 +139,22 @@ export interface InvnCorrResp {
   adjustment: number;
   username: string;
   date: string;
+}
+
+export interface APIRemoteBook {
+  title: string;
+  authors: string[];
+  isbn13: string;
+  isbn10: string;
+  publisher: string;
+  publicationYear: number;
+  pageCount?: number;
+  height?: number;
+  width?: number;
+  thickness?: number;
+  retailPrice: number;
+  inventoryCount: number;
+  imageUrl?: string;
 }
 
 export const BOOKS_API = {

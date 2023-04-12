@@ -63,6 +63,23 @@ export interface Book {
   isGhost?: boolean;
   numRelatedBooks?: number;
   relatedBooks?: RelatedBook[];
+  remoteBook?: RemoteBook;
+}
+
+export interface RemoteBook {
+  title: string;
+  authors: string;
+  isbn13: string;
+  isbn10: string;
+  publisher: string;
+  publishedYear: number;
+  pageCount?: number;
+  width?: number;
+  height?: number;
+  thickness?: number;
+  retailPrice: number;
+  stock: number;
+  thumbnailURL?: string;
 }
 
 interface Filters {
@@ -117,6 +134,8 @@ export const columnsMeta: ColumnMeta[] = [
   { field: "numRelatedBooks", header: "# of Related Books" },
   { field: "lastMonthSales", header: "Last Month Sales" },
   { field: "shelfSpace", header: "Shelf Space" },
+  { field: "remoteInventoryCount", header: "Remote Inventory Count" },
+  { field: "remoteRetailPrice", header: "Remote Retail Price" },
 ];
 
 export default function BookList() {
@@ -135,7 +154,7 @@ export default function BookList() {
   const [genreNamesList, setGenreNamesList] = useState<string[]>([]); // List of all genre names
 
   const [visibleColumns, setVisibleColumns] = useState<ColumnMeta[]>(
-    [0, 1, 2, 3, 7, 8, 9, 10, 11, 12].map((x) => columnsMeta[x])
+    [0, 1, 2, 3, 7, 8, 9, 10, 11, 12, 14, 15].map((x) => columnsMeta[x])
   );
 
   const [toggleColumnPopupVisible, setToggleColumnPopupVisible] =
@@ -308,6 +327,26 @@ export default function BookList() {
       style: { minWidth: "3rem" },
       hidden: !(
         visibleColumns.filter((item) => item.field == "shelfSpace").length > 0
+      ),
+    },
+    {
+      field: "remoteInventoryCount",
+      header: "Remote Inventory Count",
+      customBody: (rowData: Book) => rowData.remoteBook?.stock ?? "-",
+      style: { minWidth: "3rem" },
+      hidden: !(
+        visibleColumns.filter((item) => item.field == "remoteInventoryCount")
+          .length > 0
+      ),
+    },
+    {
+      field: "remoteRetailPrice",
+      header: "Remote Retail Price ($)",
+      customBody: (rowData: Book) => rowData.remoteBook?.retailPrice ?? "-",
+      style: { minWidth: "3rem" },
+      hidden: !(
+        visibleColumns.filter((item) => item.field == "remoteRetailPrice")
+          .length > 0
       ),
     },
   ];

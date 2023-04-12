@@ -1,6 +1,6 @@
 import { v4 as uuid } from "uuid";
 import { BookWithDBTag } from "../../pages/books/BookAdd";
-import { Book } from "../../pages/books/BookList";
+import { Book, RemoteBook } from "../../pages/books/BookList";
 import { externalToInternalDate } from "../../util/DateOps";
 import {
   ArrayToCommaSeparatedString,
@@ -12,6 +12,7 @@ import {
   APIBookWithDBTag,
   APILineItemType,
   APIRelatedBook,
+  APIRemoteBook,
 } from "./BooksAPI";
 import {
   BookDetailLineItem,
@@ -112,6 +113,9 @@ export function APIToInternalBookConversion(book: APIBook): Book {
     relatedBooks: book.related_books?.map((relatedBook) => {
       return APIToInternalRelatedBookConversion(relatedBook);
     }),
+    remoteBook: book.remote_book
+      ? APIToInternalRemoteBookConversion(book.remote_book)
+      : undefined,
   };
 }
 
@@ -168,5 +172,32 @@ export function APIToInternalBookConversionWithDB(
     relatedBooks: book.related_books?.map((relatedBook) => {
       return APIToInternalRelatedBookConversion(relatedBook);
     }),
+    remoteBook: book.remote_book
+      ? APIToInternalRemoteBookConversion(book.remote_book)
+      : undefined,
+  };
+}
+
+export function APIToInternalRemoteBookConversion(
+  book: APIRemoteBook
+): RemoteBook {
+  return {
+    title: book.title,
+    authors: ArrayToCommaSeparatedString(book.authors),
+    isbn13: book.isbn13,
+    isbn10: book.isbn10,
+    publisher: book.publisher,
+    publishedYear: book.publicationYear,
+    pageCount: book.pageCount,
+    width: book.width,
+    height: book.height,
+    thickness: book.thickness,
+    retailPrice: book.retailPrice,
+    stock: book.inventoryCount,
+    // Converts http: to https: if necessary
+    thumbnailURL:
+      book.imageUrl?.substring(0, 5) === "http:"
+        ? book.imageUrl.slice(0, 4) + "s" + book.imageUrl.slice(4)
+        : book.imageUrl,
   };
 }

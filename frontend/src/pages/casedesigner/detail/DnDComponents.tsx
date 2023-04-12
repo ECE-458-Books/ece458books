@@ -81,7 +81,7 @@ export function DraggableBook(props: DraggableBookProps) {
     <SortableItem id={props.book.id} key={props.book.id}>
       <div className="pl-1">
         <div className="flex col-12 justify-content-start p-1">
-          <Tooltip target=".custom-displaybook-tooltip" showDelay={700} />
+          <Tooltip target=".custom-displaybook-tooltip" showDelay={400} />
           <Image
             src={props.book.bookImageURL}
             id={props.book.id}

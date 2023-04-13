@@ -19,7 +19,7 @@ from buybacks.models import BuybackOrder
 from utils.permissions import CustomBasePermission
 from .parsers import XMLParser
 from .sales_record_permissions import SalesRecordsWhitelistPermission, BodySizePermission
-
+from .ordering_filters import CustomOrderingFilter
 
 class CreateSalesReconciliationAPIView(CreateAPIView):
     permission_classes = [CustomBasePermission]
@@ -31,6 +31,9 @@ class CreateSalesReconciliationAPIView(CreateAPIView):
     ordering = ['id']
 
     def create(self, request, *args, **kwargs):
+        # Add User to SalesReconciliation
+        request.data['user'] = request.user.id
+
         serializer = SalesReconciliationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         saved_sales_reconciliation = serializer.save()
@@ -61,7 +64,7 @@ class ListSalesRecordAPIView(ListAPIView):
     serializer_class = SalesRecordSerializer
     queryset = SalesReconciliation.objects.all()
     pagination_class = SalesReconciliationPagination
-    filter_backends = [filters.OrderingFilter, filters.SearchFilter]
+    filter_backends = [CustomOrderingFilter, filters.SearchFilter]
     ordering_fields = '__all__'
     ordering = ['-date']
 
@@ -88,6 +91,8 @@ class ListSalesRecordAPIView(ListAPIView):
         default_query_set = default_query_set.annotate(num_books=Subquery(num_books_subquery))
 
         default_query_set = default_query_set.annotate(num_unique_books=Count('sales__book', distinct=True))
+
+        default_query_set = default_query_set.annotate(username=F('user__username'))
 
         # Filter by date
         start_date = self.request.GET.get('start')

@@ -1,11 +1,13 @@
 from django.db import models
 from books.models import Book
+from authapp.models import User
 from django.core.validators import MinValueValidator
 
 
 class SalesReconciliation(models.Model):
     date = models.DateField()
     is_sales_record = models.BooleanField()
+    user = models.ForeignKey(User, related_name='sr_users', on_delete=models.CASCADE, default=None, blank=True, null=True)
 
 
 class Sale(models.Model):

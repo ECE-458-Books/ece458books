@@ -1,11 +1,14 @@
-from rest_framework import serializers
-from .models import Sale, SalesReconciliation
-from helpers.base_serializers import TransactionBaseSerializer, TransactionGroupBaseSerializer
+from collections import OrderedDict
+
 from django.db import models
 from django.db.models import Subquery, OuterRef
+from rest_framework import serializers
+
+from helpers.base_serializers import TransactionBaseSerializer, TransactionGroupBaseSerializer
 from books.models import Book
 from purchase_orders.models import PurchaseOrder, Purchase
 
+from .models import Sale, SalesReconciliation
 
 class SaleSerializer(TransactionBaseSerializer):
 
@@ -16,14 +19,19 @@ class SaleSerializer(TransactionBaseSerializer):
 
 class SalesReconciliationSerializer(TransactionGroupBaseSerializer):
     sales = SaleSerializer(many=True)
+    username = serializers.SerializerMethodField()
     total_revenue = serializers.SerializerMethodField()
     is_deletable = serializers.SerializerMethodField()
     is_sales_record = serializers.BooleanField(required=False, default=False)
 
     class Meta:
         model = SalesReconciliation
-        fields = ['id', 'date', 'sales', 'num_books', 'num_unique_books', 'total_revenue', 'is_deletable', 'is_sales_record']
+        fields = ['id', 'date', 'user', 'username', 'sales', 'num_books', 'num_unique_books', 'total_revenue', 'is_deletable', 'is_sales_record']
         read_only_fields = ['id']
+
+    def to_representation(self, instance):
+        result = super(SalesReconciliationSerializer, self).to_representation(instance)
+        return OrderedDict([(key, result[key]) for key in result if result[key] is not None])
 
     def get_is_deletable(self, instance):
         # only way you can't delete is a sale is if the book is ghost
@@ -52,6 +60,12 @@ class SalesReconciliationSerializer(TransactionGroupBaseSerializer):
     def get_transaction_name(self, plural=False) -> str:
         transaction_name = "sale"
         return f'{transaction_name}s' if plural else transaction_name
+
+    def get_username(self, instance):
+        if instance.user:
+            return instance.user.username
+
+        return None
 
     def get_total_revenue(self, instance):
         return super().get_total_of_transactions(instance)

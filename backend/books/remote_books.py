@@ -12,7 +12,9 @@ class RemoteSubsidiaryTools:
         url = self._remote_store_api_url
         headers = self.create_headers()
         payload = self.create_payload(isbn)
-        response = requests.request("POST", url, headers=headers, data=payload)
+        # It’s a good practice to set connect timeouts to slightly larger than a multiple of 3, which is the default TCP packet retransmission window.
+        # https://www.hjp.at/doc/rfc/rfc2988.txt
+        response = requests.request("POST", url, headers=headers, data=payload, timeout=(3.05, 9.05))
 
         ret = response.json()
 

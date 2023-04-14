@@ -15,7 +15,6 @@ from purchase_orders.models import Purchase
 from sales.models import Sale
 from helpers.csv_writer import CSVWriter
 from utils.permissions import CustomBasePermission
-from .related_books import get_related_isbns
 
 from .serializers import BookListAddSerializer, BookSerializer, ISBNSerializer, BookImageSerializer, BookInventoryCorrectionSerializer, RelatedBookSerializer, RemoteBookSearchSerializer, RemoteBookBodySerializer
 from .isbn import ISBNTools
@@ -25,7 +24,7 @@ from .search_filters import *
 from .utils import str2bool, RemoteAPIRepresentationSwitch
 from .book_images import BookImageCreator
 from .exceptions import *
-from .related_books import standardize_title, combine_related_books_groups
+from .related_books import standardize_title, combine_related_books_groups, get_related_isbns
 from .remote_books import RemoteSubsidiaryTools
 
 

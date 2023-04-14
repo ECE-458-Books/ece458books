@@ -35,7 +35,6 @@ import ToggleColumnButton from "../../components/buttons/ToggleColumnButton";
 import { CheckboxChangeEvent } from "primereact/checkbox";
 import { RelatedBook } from "./BookDetailRelatedBooks";
 import { useImmer } from "use-immer";
-import { current } from "immer";
 
 export interface NewImageUploadData {
   imageFile: File;

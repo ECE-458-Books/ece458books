@@ -11,6 +11,7 @@ from books.models import Book, RelatedBookGroup
 from books.serializers import RelatedBookSerializer
 
 from django.db.models import Q
+from .price_suggestion import get_price_suggestion
 
 
 class ISBNTools:
@@ -48,6 +49,11 @@ class ISBNTools:
 
         kwargs = {"isbn": parsed_isbn, "shared_dict": metadata}
 
+        # get retail price suggestion from Abebooks scraping
+        retail_price_suggestion_thread = threading.Thread(target=self.get_retail_price_suggestion, kwargs=kwargs, daemon=True)
+        threads.append(retail_price_suggestion_thread)
+        retail_price_suggestion_thread.start()
+
         # get book metadata from Google Books API
         book_metadata_thread = threading.Thread(target=self.get_external_book_metadata, kwargs=kwargs, daemon=True)
         threads.append(book_metadata_thread)
@@ -62,6 +68,13 @@ class ISBNTools:
             thread.join()
 
         return metadata
+
+    def get_retail_price_suggestion(
+        self,
+        isbn,
+        shared_dict,
+    ):
+        shared_dict.update({"retail_price_suggestion": get_price_suggestion(isbn)})
 
     def get_external_book_metadata(
         self,

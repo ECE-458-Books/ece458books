@@ -100,6 +100,7 @@ export default function BookDetail() {
 
   // Load the book data on page load
   useEffect(() => {
+    scrollToTop();
     BOOKS_API.getBookDetail({ id: id! })
       .then((response) => {
         if (response.isGhost == true) {
@@ -147,7 +148,6 @@ export default function BookDetail() {
           .catch(() => showWarning(toast, "Could not fetch remote book data"));
       })
       .catch(() => showFailure(toast, "Could not fetch book data"));
-    scrollToTop();
   }, [stock, id]);
 
   const bookModifyAPIRequest = (book: APIBook) => {
@@ -845,9 +845,9 @@ export default function BookDetail() {
               </p>
             </div>
             <div className="flex col-6 p-0">
-              <TextLabel label="Remote Retail Price ($): " />
+              <TextLabel label="Remote Retail Price: " />
               <p className="p-component p-text-secondary text-900 text-xl text-center my-0">
-                {remoteBook?.retailPrice ?? "-"}
+                {PriceTemplate(remoteBook?.retailPrice) ?? "-"}
               </p>
             </div>
           </div>

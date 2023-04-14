@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { BOOKS_API } from "../../../apis/books/BooksAPI";
-import { showFailure } from "../../../components/Toast";
-import { APIToInternalBookConversion } from "../../../apis/books/BooksConversions";
+import { showFailure, showWarning } from "../../../components/Toast";
+import {
+  APIToInternalBookConversion,
+  APIToInternalRemoteBookConversion,
+} from "../../../apis/books/BooksConversions";
 import { Toast } from "primereact/toast";
 import BackButton from "../../../components/buttons/BackButton";
 import { Image } from "primereact/image";
@@ -15,6 +18,8 @@ import {
 import { Divider } from "primereact/divider";
 import BookDetailRelatedBooks, { RelatedBook } from "../BookDetailRelatedBooks";
 import { TableColumn } from "../../../components/datatable/TableColumns";
+import { RemoteBook } from "../BookList";
+import { scrollToTop } from "../../../util/WindowViewportOps";
 
 // Leaving this line in case of future image browser side caching workaround is needed
 interface ImageUrlHashStruct {
@@ -45,6 +50,7 @@ export default function BookDetailMobile() {
   const [lastMonthSales, setLastMonthSales] = useState<number>();
   const [numOfRelatedBooks, setNumOfRelatedBooks] = useState<number>();
   const [relatedBooks, setRelatedBooks] = useState<RelatedBook[]>([]);
+  const [remoteBook, setRemoteBook] = useState<RemoteBook>();
   // Leaving this line in case of future image browser side caching workaround is needed
   const [image, setImage] = useState<ImageUrlHashStruct>({
     imageSrc: "",
@@ -54,6 +60,7 @@ export default function BookDetailMobile() {
 
   // Load the book data on page load
   useEffect(() => {
+    scrollToTop();
     BOOKS_API.getBookDetail({ id: id! })
       .then((response) => {
         if (response.isGhost == true) {
@@ -89,6 +96,13 @@ export default function BookDetailMobile() {
         });
         setNumOfRelatedBooks(book.numRelatedBooks);
         setRelatedBooks(book.relatedBooks!);
+        BOOKS_API.getRemoteBooks({ isbns: [book.isbn13] })
+          .then((response) => {
+            if (response.length > 0) {
+              setRemoteBook(APIToInternalRemoteBookConversion(response[0]));
+            }
+          })
+          .catch(() => showWarning(toast, "Could not fetch remote book data"));
       })
       .catch(() => showFailure(toast, "Could not fetch book data"));
   }, [stock, id]);
@@ -158,8 +172,8 @@ export default function BookDetailMobile() {
           alt="Image"
           imageStyle={{
             objectFit: "contain",
-            maxHeight: 350,
-            maxWidth: 300,
+            maxHeight: 250,
+            maxWidth: 250,
           }}
           imageClassName="shadow-2 border-round"
         />
@@ -184,7 +198,7 @@ export default function BookDetailMobile() {
           <div className="flex justify-content-between">
             <div
               className="flex border-round surface-100 justify-content-start"
-              style={{ width: "45%" }}
+              style={{ width: "47%" }}
             >
               <p className="p-component p-text-secondary text-900 text-xl text-right m-0">
                 {isbn13}
@@ -192,7 +206,7 @@ export default function BookDetailMobile() {
             </div>
             <div
               className="flex border-round surface-100 justify-content-end"
-              style={{ width: "45%" }}
+              style={{ width: "47%" }}
             >
               <p className="p-component p-text-secondary text-900 text-xl text-left m-0">
                 {isbn10}
@@ -321,6 +335,34 @@ export default function BookDetailMobile() {
             <div className="flex w-5 justify-content-center border-round surface-100">
               <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
                 {lastMonthSales}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="col-12 justify-content-start p-1 my-2">
+          <div className="flex justify-content-around">
+            <div className="flex w-5 justify-content-center">
+              <TextLabel
+                label="Remote Inventory Count"
+                labelClassName="p-component p-text-secondary text-teal-900 m-auto text-center"
+              />
+            </div>
+            <div className="flex w-5 justify-content-center">
+              <TextLabel
+                label="Remote Retail Price"
+                labelClassName="p-component p-text-secondary text-teal-900 m-auto text-center"
+              />
+            </div>
+          </div>
+          <div className="flex justify-content-around">
+            <div className="flex w-5 justify-content-center border-round surface-100">
+              <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
+                {remoteBook?.stock ?? "-"}
+              </p>
+            </div>
+            <div className="flex w-5 justify-content-center border-round surface-100">
+              <p className="p-component p-text-secondary text-900 text-xl text-center my-auto">
+                {PriceTemplate(remoteBook?.retailPrice) ?? "-"}
               </p>
             </div>
           </div>

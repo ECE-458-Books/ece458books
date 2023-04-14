@@ -24,10 +24,12 @@ export default function BookLookup() {
   }, []);
 
   const searchButtonClick = (isbnSearch?: string) => {
-    if (textBox !== "") {
+    if ((isbnSearch ?? textBox).length == 13) {
       BOOKS_API.getBooks({ isbn_only: true, search: isbnSearch ?? textBox })
         .then((response) => onAPIResponse(response, isbnSearch))
         .catch(() => showFailure(toast, "Book Search Failed"));
+    } else {
+      showFailure(toast, "ISBN 13 Not Correct Length");
     }
   };
 
@@ -39,7 +41,7 @@ export default function BookLookup() {
     } else {
       showFailure(
         toast,
-        "Could Not Find Book with ISBN: " + isbnSearch ?? textBox
+        "Could Not Find Book with ISBN: " + (isbnSearch ?? textBox)
       );
     }
   };

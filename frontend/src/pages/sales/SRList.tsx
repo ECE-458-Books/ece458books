@@ -20,7 +20,8 @@ import { useNavigate } from "react-router-dom";
 export interface SalesRecord {
   id: string;
   isSalesRecord: boolean;
-  creatorName: string;
+  creatorId?: number;
+  creatorName?: string;
   date: Date;
   sales: LineItem[];
   uniqueBooks: number;

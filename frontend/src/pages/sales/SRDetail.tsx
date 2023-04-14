@@ -71,7 +71,7 @@ export default function SRDetail() {
   const [date, setDate] = useState<Date>(new Date());
   // useImmer is used to set state for nested data in a simplified format
   const [sales, setSales] = useImmer<LineItem[]>([]);
-  const [creatorName, setCreatorName] = useState<string>("");
+  const [creatorName, setCreatorName] = useState<string | undefined>("");
 
   const [originalData, setOriginalData] =
     useState<BackupDataStoreSR>(EMPTY_ORIGINAL_DATA);

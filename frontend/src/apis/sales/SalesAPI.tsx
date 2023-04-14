@@ -25,7 +25,8 @@ export interface APISRSaleRow {
 }
 
 export interface APISR {
-  username: string;
+  user?: number;
+  username?: string;
   is_sales_record: boolean;
   id: number;
   date: string;

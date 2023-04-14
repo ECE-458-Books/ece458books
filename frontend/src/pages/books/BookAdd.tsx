@@ -180,31 +180,7 @@ export default function BookAdd() {
       field: "retailPrice",
       header: "Retail Price (Required)",
       style: { width: "2%", fontSize: "small" },
-      customBody: (rowData: BookWithDBTag) => (
-        <>
-          <div>
-            {PriceEditor(
-              rowData.retailPrice,
-              (newValue) => {
-                setBooks((draft) => {
-                  const book = findById(draft, rowData.id)!;
-                  book.retailPrice = newValue;
-                });
-              },
-              "retailNumberBookAdd"
-            )}
-          </div>
-          <div>
-            <label style={{ fontSize: "0.7rem" }}>
-              {rowData.retailPriceSuggestion
-                ? `(Suggestion: ` +
-                  PriceTemplate(rowData.retailPriceSuggestion) +
-                  ")"
-                : ""}
-            </label>
-          </div>
-        </>
-      ),
+      customBody: (rowData: BookWithDBTag) => retailPriceBody(rowData),
     },
     {
       field: "numRelatedBooks",
@@ -212,6 +188,34 @@ export default function BookAdd() {
       style: { width: "4%", fontSize: "small" },
     },
   ];
+
+  const retailPriceBody = (rowData: BookWithDBTag) => {
+    return (
+      <>
+        <div>
+          {PriceEditor(
+            rowData.retailPrice,
+            (newValue) => {
+              setBooks((draft) => {
+                const book = findById(draft, rowData.id)!;
+                book.retailPrice = newValue;
+              });
+            },
+            "retailNumberBookAdd"
+          )}
+        </div>
+        <div>
+          <label style={{ fontSize: "0.7rem" }}>
+            {rowData.retailPriceSuggestion
+              ? `(Suggestion: ` +
+                PriceTemplate(rowData.retailPriceSuggestion) +
+                ")"
+              : ""}
+          </label>
+        </div>
+      </>
+    );
+  };
 
   const pageCountBody = (rowData: BookWithDBTag) => {
     return (
@@ -274,7 +278,8 @@ export default function BookAdd() {
         </div>
         <div>
           <label style={{ fontSize: "0.7rem" }}>
-            {rowData.remoteBook?.width && rowData.remoteBook.width != rowData.width
+            {rowData.remoteBook?.width &&
+            rowData.remoteBook.width != rowData.width
               ? `(R: ${rowData.remoteBook.width})`
               : ""}
           </label>
@@ -317,7 +322,8 @@ export default function BookAdd() {
         </div>
         <div>
           <label style={{ fontSize: "0.7rem" }}>
-            {rowData.remoteBook?.height && rowData.remoteBook.height != rowData.height
+            {rowData.remoteBook?.height &&
+            rowData.remoteBook.height != rowData.height
               ? `(R: ${rowData.remoteBook.height})`
               : ""}
           </label>

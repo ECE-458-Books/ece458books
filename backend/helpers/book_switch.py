@@ -1,7 +1,7 @@
 class BookSwitch:
     def header(self, book: dict, header):
         self.book = book
-        default = header
+        default = self.book.get(header, None)
         return getattr(self, 'case_' + str(header), lambda: default)()
 
     def case_title(self):

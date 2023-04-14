@@ -1,5 +1,6 @@
 import re, datetime
 import threading
+from collections import OrderedDict
 
 from django.db.models import OuterRef, Subquery, F, Case, When, Value, Func, ExpressionWrapper, FloatField, Count
 from django.db.models.functions import Coalesce, Cast, Round
@@ -8,7 +9,7 @@ from rest_framework import status, filters
 from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView, CreateAPIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAdminUser, AllowAny
+from rest_framework.permissions import IsAdminUser, AllowAny, IsAuthenticated
 
 from genres.models import Genre
 from purchase_orders.models import Purchase
@@ -160,13 +161,13 @@ class ListCreateBookAPIView(ListCreateAPIView, BookImageCreator):
         if page is not None:
             # make a request for the page
             serializer = self.get_serializer(page, many=True)
-            data = self.add_remote_book_data(page, serializer.data)
-            return self.get_paginated_response(data)
+            # data = self.add_remote_book_data(page, serializer.data)
+            return self.get_paginated_response(serializer.data)
 
         # make a request for all books in queryset
         serializer = self.get_serializer(queryset, many=True)
-        data = self.add_remote_book_data(queryset, serializer.data)
-        return Response(data)
+        # data = self.add_remote_book_data(queryset, serializer.data)
+        return Response(serializer.data)
     
     def queryset_to_isbns(self, queryset):
         return [book.isbn_13 for book in queryset]
@@ -589,4 +590,49 @@ class RemoteBookSearchView(APIView):
             book[new_key] = book.pop(old_key)
         
         return book
+        
+class SubsidiaryRemoteBookSearchView(APIView):
+    permission_classes = [IsAuthenticated]
+    remote_api_caller = RemoteSubsidiaryTools()
+    isbn_toolbox = ISBNTools()
+
+    def post(self, request):
+        serializer = RemoteBookBodySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        raw_isbn_list = serializer.data['isbns']
+
+        # Delete all empty strings
+        raw_isbn_list = [raw_isbn for raw_isbn in raw_isbn_list if raw_isbn != '']
+
+        # Convert all ISBN to ISBN-13
+        parsed_isbn_list = self.isbn_toolbox.parse_raw_isbn_list(raw_isbn_list)
+
+        response = self.get_remote_books(parsed_isbn_list)
+
+        ret = []
+        for isbn in parsed_isbn_list:
+            if response[isbn]:
+                parsed_data = self.parse_response_data(response[isbn])
+                ret.append(parsed_data)
+        
+        return Response(ret)
+
+    def get_remote_books(self, isbns):
+        remote_api_caller = RemoteSubsidiaryTools()
+        response = remote_api_caller.get_remote_book_data(isbns)
+        return response
+    
+    def parse_response_data(self, data):
+        """
+        If dimensions (height, width, thickness) is 0 or None, we omit the field
+        """
+        checked_fields = ['height', 'width', 'thickness']
+        for field in checked_fields:
+            if data.get(field, None) == 0:
+                data.pop(field)
+
+        return OrderedDict([(key, data[key]) for key in data if data[key] is not None])
+
+
         

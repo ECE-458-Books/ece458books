@@ -112,6 +112,7 @@ export interface AddBookInitialLookupReq {
 
 export interface APIBookWithDBTag extends APIBook {
   fromDB: boolean;
+  retail_price_suggestion?: number;
 }
 
 export interface AddBooksInitialLookupResp {

@@ -43,9 +43,11 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import ImportFieldButton from "../../components/buttons/ImportFieldButton";
 import { Tooltip } from "primereact/tooltip";
+import PriceTemplate from "../../components/templates/PriceTemplate";
 
 export interface BookWithDBTag extends Book {
   fromDB: boolean;
+  retailPriceSuggestion?: number;
 }
 
 export default function BookAdd() {
@@ -177,17 +179,31 @@ export default function BookAdd() {
       field: "retailPrice",
       header: "Retail Price (Required)",
       style: { width: "2%", fontSize: "small" },
-      customBody: (rowData: BookWithDBTag) =>
-        PriceEditor(
-          rowData.retailPrice,
-          (newValue) => {
-            setBooks((draft) => {
-              const book = findById(draft, rowData.id)!;
-              book.retailPrice = newValue;
-            });
-          },
-          "retailNumberBookAdd"
-        ),
+      customBody: (rowData: BookWithDBTag) => (
+        <>
+          <div>
+            {PriceEditor(
+              rowData.retailPrice,
+              (newValue) => {
+                setBooks((draft) => {
+                  const book = findById(draft, rowData.id)!;
+                  book.retailPrice = newValue;
+                });
+              },
+              "retailNumberBookAdd"
+            )}
+          </div>
+          <div>
+            <label style={{ fontSize: "0.7rem" }}>
+              {rowData.retailPriceSuggestion
+                ? `(Suggestion: ` +
+                  PriceTemplate(rowData.retailPriceSuggestion) +
+                  ")"
+                : ""}
+            </label>
+          </div>
+        </>
+      ),
     },
     {
       field: "numRelatedBooks",

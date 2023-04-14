@@ -78,7 +78,7 @@ class ISBNSearchView(APIView):
 
     def isbn_search_task(self, isbn, shared_dict, query_set):
         isbn_query_set = [book.isbn_13 for book in query_set]
-        remote_book_data = self.get_remote_book(isbn)
+        # remote_book_data = self.get_remote_book(isbn)
         book_data = {}
 
         if isbn in isbn_query_set:
@@ -86,10 +86,10 @@ class ISBNSearchView(APIView):
         else:
             book_data = self.populate_shared_dict_with_isbn_data(isbn, shared_dict)
         
-        if remote_book_data:
-            book_data['remote_book'] = remote_book_data
-        
-        shared_dict['books'].append(book_data)
+        # if remote_book_data:
+        #     book_data['remote_book'] = remote_book_data
+        if book_data:
+            shared_dict['books'].append(book_data)
 
     def populate_shared_dict_with_isbn_data(self, isbn, shared_dict):
         external_data = self.isbn_toolbox.fetch_isbn_data(isbn)

@@ -120,6 +120,11 @@ export interface AddBooksInitialLookupResp {
   invalid_isbns: string[];
 }
 
+// remote
+export interface RemoteBooksReq {
+  isbns: string[];
+}
+
 // addBookFinal
 export interface AddBookFinalReq {
   book: APIBook;
@@ -189,6 +194,16 @@ export const BOOKS_API = {
     return await API.request({
       url: BOOKS_EXTENSION.concat("/".concat(req.id.toString())),
       method: METHOD_DELETE,
+    });
+  },
+
+  getRemoteBooks: async function (
+    req: RemoteBooksReq
+  ): Promise<APIRemoteBook[]> {
+    return await API.request({
+      url: BOOKS_EXTENSION.concat("/subsidiary/lookup"),
+      method: METHOD_POST,
+      data: req,
     });
   },
 

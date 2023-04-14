@@ -113,9 +113,6 @@ export function APIToInternalBookConversion(book: APIBook): Book {
     relatedBooks: book.related_books?.map((relatedBook) => {
       return APIToInternalRelatedBookConversion(relatedBook);
     }),
-    remoteBook: book.remote_book
-      ? APIToInternalRemoteBookConversion(book.remote_book)
-      : undefined,
   };
 }
 

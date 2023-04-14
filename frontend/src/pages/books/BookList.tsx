@@ -10,7 +10,10 @@ import { DataTableFilterMetaData } from "primereact/datatable";
 import { logger } from "../../util/Logger";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Toast } from "primereact/toast";
-import { APIBookSortFieldMap } from "../../apis/books/BooksConversions";
+import {
+  APIBookSortFieldMap,
+  APIToInternalRemoteBookConversion,
+} from "../../apis/books/BooksConversions";
 import { APIToInternalBookConversion } from "../../apis/books/BooksConversions";
 import { TableColumn } from "../../components/datatable/TableColumns";
 import PriceTemplate from "../../components/templates/PriceTemplate";
@@ -21,7 +24,7 @@ import GenreDropdown, {
 import AddPageButton from "../../components/buttons/AddPageButton";
 import { BookDetailLineItem } from "./BookDetailLineItems";
 import { Button } from "primereact/button";
-import { showFailure } from "../../components/Toast";
+import { showFailure, showWarning } from "../../components/Toast";
 import { saveAs } from "file-saver";
 import ListTemplate from "../../templates/list/ListTemplate";
 import SelectSizeDropdown, {
@@ -31,6 +34,8 @@ import ToggleColumnPopup from "../../components/popups/ToggleColumnPopup";
 import ToggleColumnButton from "../../components/buttons/ToggleColumnButton";
 import { CheckboxChangeEvent } from "primereact/checkbox";
 import { RelatedBook } from "./BookDetailRelatedBooks";
+import { useImmer } from "use-immer";
+import { current } from "immer";
 
 export interface NewImageUploadData {
   imageFile: File;
@@ -144,7 +149,7 @@ export default function BookList() {
   const location = useLocation(); // Utilized if coming from the genre list
   const [isLoading, setIsLoading] = useState<boolean>(false); // Whether we show that the table is loading or not
   const [numberOfBooks, setNumberOfBooks] = useState<number>(0); // The number of books that match the query
-  const [books, setBooks] = useState<Book[]>([]); // The book data itself (rows of the table)
+  const [books, setBooks] = useImmer<Book[]>([]); // The book data itself (rows of the table)
   const [selectedGenre, setSelectedGenre] = useState<string>(
     location.state?.genre ?? ""
   ); // Initialize genre to the genre passed, if coming from genre list
@@ -428,6 +433,29 @@ export default function BookList() {
     setBooks(response.results.map((book) => APIToInternalBookConversion(book)));
     setNumberOfBooks(response.count);
     setIsLoading(false);
+    callSubsidiaryAPI(response);
+  };
+
+  const callSubsidiaryAPI = (response: GetBooksResp) => {
+    const isbns: string[] = [];
+    response.results.forEach((book) => {
+      isbns.push(book.isbn_13);
+    });
+
+    BOOKS_API.getRemoteBooks({ isbns: isbns })
+      .then((response) => {
+        const map = new Map<string, RemoteBook>();
+        for (const book of response) {
+          const convertedBook = APIToInternalRemoteBookConversion(book);
+          map.set(convertedBook.isbn13, convertedBook);
+        }
+        setBooks((draft) => {
+          for (const book of draft) {
+            book.remoteBook = map.get(book.isbn13);
+          }
+        });
+      })
+      .catch(() => showWarning(toast, "Could not fetch remote book data"));
   };
 
   const callCSVExportAPI = () => {

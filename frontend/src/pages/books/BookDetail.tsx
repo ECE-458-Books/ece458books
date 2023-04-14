@@ -13,8 +13,11 @@ import { GenresDropdownData } from "../../components/dropdowns/GenreDropdown";
 import ImageUploader, {
   DEFAULT_BOOK_IMAGE,
 } from "../../components/uploaders/ImageFileUploader";
-import { showFailure, showSuccess } from "../../components/Toast";
-import { APIToInternalBookConversion } from "../../apis/books/BooksConversions";
+import { showFailure, showSuccess, showWarning } from "../../components/Toast";
+import {
+  APIToInternalBookConversion,
+  APIToInternalRemoteBookConversion,
+} from "../../apis/books/BooksConversions";
 import { Button } from "primereact/button";
 import GenreDropdown from "../../components/dropdowns/GenreDropdown";
 import BookDetailLineItems, { BookDetailLineItem } from "./BookDetailLineItems";
@@ -135,7 +138,13 @@ export default function BookDetail() {
         });
         setNumOfRelatedBooks(book.numRelatedBooks);
         setRelatedBooks(book.relatedBooks!);
-        setRemoteBook(book.remoteBook);
+        BOOKS_API.getRemoteBooks({ isbns: [book.isbn13] })
+          .then((response) => {
+            if (response.length > 0) {
+              setRemoteBook(APIToInternalRemoteBookConversion(response[0]));
+            }
+          })
+          .catch(() => showWarning(toast, "Could not fetch remote book data"));
       })
       .catch(() => showFailure(toast, "Could not fetch book data"));
     scrollToTop();

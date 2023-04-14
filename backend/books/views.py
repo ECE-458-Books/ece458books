@@ -612,7 +612,7 @@ class SubsidiaryRemoteBookSearchView(APIView):
 
         ret = []
         for isbn in parsed_isbn_list:
-            if response[isbn]:
+            if response.get(isbn, None):
                 parsed_data = self.parse_response_data(response[isbn])
                 ret.append(parsed_data)
         

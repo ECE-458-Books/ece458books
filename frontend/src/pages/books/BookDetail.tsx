@@ -100,6 +100,7 @@ export default function BookDetail() {
 
   // Load the book data on page load
   useEffect(() => {
+    scrollToTop();
     BOOKS_API.getBookDetail({ id: id! })
       .then((response) => {
         if (response.isGhost == true) {
@@ -147,7 +148,6 @@ export default function BookDetail() {
           .catch(() => showWarning(toast, "Could not fetch remote book data"));
       })
       .catch(() => showFailure(toast, "Could not fetch book data"));
-    scrollToTop();
   }, [stock, id]);
 
   const bookModifyAPIRequest = (book: APIBook) => {
@@ -649,9 +649,9 @@ export default function BookDetail() {
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex p-0">
               <TextLabel label="Title:" />
-              <p className="p-component p-text-secondary text-900 text-m text-center my-0">
+              <p className="p-component p-text-secondary text-900 text-2xl text-center my-0">
                 {title}
-                <label className="text-blue-800 pl-1">
+                <label className="text-blue-800 text-m pl-1">
                   {remoteBook && remoteBook.title != title
                     ? `(Remote: ${remoteBook.title})`
                     : ""}
@@ -662,9 +662,9 @@ export default function BookDetail() {
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex p-0">
               <TextLabel label="Author(s):" />
-              <p className="p-component p-text-secondary text-900 text-m text-center m-0">
+              <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
                 {authors}
-                <label className="text-blue-800 pl-1">
+                <label className="text-blue-800 text-m pl-1">
                   {remoteBook && remoteBook.authors != authors
                     ? `(Remote: ${remoteBook.authors})`
                     : ""}
@@ -675,9 +675,9 @@ export default function BookDetail() {
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex p-0 col-6">
               <TextLabel label="ISBN 13:" />
-              <p className="p-component p-text-secondary text-900 text-m text-center m-0">
+              <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
                 {isbn13}
-                <label className="text-blue-800 pl-1">
+                <label className="text-blue-800 text-m pl-1">
                   {remoteBook && remoteBook.isbn13 != isbn13
                     ? `(Remote: ${remoteBook.isbn13})`
                     : ""}
@@ -686,9 +686,9 @@ export default function BookDetail() {
             </div>
             <div className="flex p-0 col-6">
               <TextLabel label="ISBN 10:" />
-              <p className="p-component p-text-secondary text-900 text-m text-center m-0">
+              <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
                 {isbn10}
-                <label className="text-blue-800 pl-1">
+                <label className="text-blue-800 text-m pl-1">
                   {remoteBook && remoteBook.isbn10 != isbn10
                     ? `(Remote: ${remoteBook.isbn10})`
                     : ""}
@@ -699,9 +699,9 @@ export default function BookDetail() {
           <div className="flex col-12 justify-content-start p-1">
             <div className="flex p-0 col-6">
               <TextLabel label="Publisher:" />
-              <p className="p-component p-text-secondary text-900 text-m text-center m-0">
+              <p className="p-component p-text-secondary text-900 text-xl text-center m-0">
                 {publisher}
-                <label className="text-blue-800 pl-1">
+                <label className="text-blue-800 text-m pl-1">
                   {remoteBook && remoteBook.publisher != publisher
                     ? `(Remote: ${remoteBook.publisher})`
                     : ""}
@@ -710,9 +710,9 @@ export default function BookDetail() {
             </div>
             <div className="flex p-0 col-6">
               <TextLabel label="Publication Year:" />
-              <p className="p-component p-text-secondary text-900 text-m text-center m-0">
+              <p className="p-component p-text-secondary text-900 text-xl text-center mx-0 my-auto">
                 {pubYear}
-                <label className="text-blue-800 pl-1">
+                <label className="text-blue-800 text-m pl-1">
                   {remoteBook && remoteBook.publishedYear != pubYear
                     ? `(Remote: ${remoteBook.publishedYear})`
                     : ""}
@@ -845,9 +845,9 @@ export default function BookDetail() {
               </p>
             </div>
             <div className="flex col-6 p-0">
-              <TextLabel label="Remote Retail Price ($): " />
+              <TextLabel label="Remote Retail Price: " />
               <p className="p-component p-text-secondary text-900 text-xl text-center my-0">
-                {remoteBook?.retailPrice ?? "-"}
+                {PriceTemplate(remoteBook?.retailPrice) ?? "-"}
               </p>
             </div>
           </div>

@@ -169,9 +169,7 @@ export function APIToInternalBookConversionWithDB(
     relatedBooks: book.related_books?.map((relatedBook) => {
       return APIToInternalRelatedBookConversion(relatedBook);
     }),
-    remoteBook: book.remote_book
-      ? APIToInternalRemoteBookConversion(book.remote_book)
-      : undefined,
+    retailPriceSuggestion: book.retail_price_suggestion,
   };
 }
 

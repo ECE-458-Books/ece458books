@@ -7,7 +7,6 @@ import {
   TableColumn,
 } from "../../components/datatable/TableColumns";
 import BooksDropdown from "../../components/dropdowns/BookDropdown";
-import { NumberEditor } from "../../components/editors/NumberEditor";
 import { PriceEditor } from "../../components/editors/PriceEditor";
 import PriceTemplate from "../../components/templates/PriceTemplate";
 import { filterById, findById } from "../../util/IDOps";
@@ -16,6 +15,7 @@ import { errorCellBody } from "../errors/CSVImportErrors";
 import { v4 as uuid } from "uuid";
 import { NormalTextDisplay } from "../../components/text/NormalTextDisplay";
 import { isHighlightingText } from "../../util/ClickCheck";
+import { IntegerEditor } from "../../components/editors/IntegerEditor";
 
 export interface LineItem {
   isNewRow: boolean;
@@ -94,7 +94,7 @@ export default function LineItemTableTemplate(
       customBody: (rowData: LineItem) => {
         return !props.isModifiable
           ? NormalTextDisplay({ value: rowData.quantity })
-          : NumberEditor(
+          : IntegerEditor(
               rowData.quantity,
               (newValue) => {
                 props.setLineItems((draft) => {

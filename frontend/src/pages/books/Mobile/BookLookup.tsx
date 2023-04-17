@@ -68,6 +68,7 @@ export default function BookLookup() {
       <div className="flex justify-content-center col-12 py-5">
         <InputText
           value={textBox}
+          placeholder="ISBN 13"
           keyfilter="int"
           onChange={(e: FormEvent<HTMLInputElement>) =>
             setTextBox(e.currentTarget.value)

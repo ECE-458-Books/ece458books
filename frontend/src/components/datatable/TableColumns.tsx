@@ -23,6 +23,7 @@ export interface TableColumn<T> {
   customBody?: (
     rowData: T
   ) => string | number | JSX.Element | JSX.Element[] | undefined; // Custom body
+  bodyStyle?: CSSProperties; // Custom body style
 }
 
 export function createColumns<T>(columns: TableColumn<T>[]) {
@@ -52,6 +53,7 @@ export function createColumns<T>(columns: TableColumn<T>[]) {
         showFilterOperator={false}
         // Editing/Body customization
         body={col.customBody}
+        bodyStyle={col.bodyStyle}
       />
     );
   });

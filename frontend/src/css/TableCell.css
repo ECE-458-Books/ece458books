@@ -32,8 +32,12 @@
     width: 80px;
 }
 
-.addPageImportIcon .pi {
+.addPageImportImageIcon .pi {
     font-size: 0.8rem;
+}
+
+.addPageImportIcon .pi {
+    font-size: 0.6rem;
 }
 
 /* BB PO SR detail */

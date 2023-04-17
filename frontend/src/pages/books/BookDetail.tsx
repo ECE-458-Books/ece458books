@@ -747,7 +747,9 @@ export default function BookDetail() {
               <p className=" vertical-align-middle">{importPageCountButton}</p>
               <p className="flex p-component p-text-secondary text-900 text-m text-center mx-0 my-auto">
                 <label className="text-blue-800 pl-1">
-                  {remoteBook?.pageCount && remoteBook?.pageCount != pageCount
+                  {(remoteBook?.pageCount &&
+                    remoteBook?.pageCount != pageCount) ||
+                  (remoteBook?.pageCount && isModifiable)
                     ? `(Remote: ${remoteBook.pageCount})`
                     : ""}
                 </label>
@@ -868,7 +870,8 @@ export default function BookDetail() {
               />
               <p className=" vertical-align-middle">{importHeightButton}</p>
               <p className="flex p-component p-text-secondary text-900 text-m text-center mx-0 my-auto text-blue-800 pl-1">
-                {remoteBook?.height && remoteBook?.height != height
+                {(remoteBook?.height && remoteBook?.height != height) ||
+                (remoteBook?.height && isModifiable)
                   ? `(Remote: ${remoteBook.height})`
                   : ""}
               </p>
@@ -886,7 +889,8 @@ export default function BookDetail() {
               />
               <p className=" vertical-align-middle">{importWidthButton}</p>
               <p className="flex p-component p-text-secondary text-900 text-m text-center mx-0 my-auto text-blue-800 pl-1">
-                {remoteBook?.width && remoteBook?.width != width
+                {(remoteBook?.width && remoteBook?.width != width) ||
+                (remoteBook?.width && isModifiable)
                   ? `(Remote: ${remoteBook.width})`
                   : ""}
               </p>
@@ -906,7 +910,9 @@ export default function BookDetail() {
               />
               <p className=" vertical-align-middle">{importThicknessButton}</p>
               <p className="flex p-component p-text-secondary text-900 text-m text-center mx-0 my-auto text-blue-800 pl-1">
-                {remoteBook?.thickness && remoteBook?.thickness != thickness
+                {(remoteBook?.thickness &&
+                  remoteBook?.thickness != thickness) ||
+                (remoteBook?.thickness && isModifiable)
                   ? `(Remote: ${remoteBook.thickness})`
                   : ""}
               </p>

@@ -157,30 +157,35 @@ export default function BookAdd() {
       header: "Page Count",
       style: { width: "2%", fontSize: "small" },
       customBody: (rowData: BookWithDBTag) => pageCountBody(rowData),
+      bodyStyle: { verticalAlign: "top", paddingTop: "2.5rem" },
     },
     {
       field: "width",
       header: "Width",
       style: { width: "2%", fontSize: "small" },
       customBody: (rowData: BookWithDBTag) => widthBody(rowData),
+      bodyStyle: { verticalAlign: "top", paddingTop: "2.5rem" },
     },
     {
       field: "height",
       header: "Height",
       style: { width: "2%", fontSize: "small" },
       customBody: (rowData: BookWithDBTag) => heightBody(rowData),
+      bodyStyle: { verticalAlign: "top", paddingTop: "2.5rem" },
     },
     {
       field: "thickness",
       header: "Thickness",
       style: { width: "2%", fontSize: "small" },
       customBody: (rowData: BookWithDBTag) => thicknessBody(rowData),
+      bodyStyle: { verticalAlign: "top", paddingTop: "2.5rem" },
     },
     {
       field: "retailPrice",
       header: "Retail Price (Required)",
       style: { width: "2%", fontSize: "small" },
       customBody: (rowData: BookWithDBTag) => retailPriceBody(rowData),
+      bodyStyle: { verticalAlign: "top", paddingTop: "2.5rem" },
     },
     {
       field: "numRelatedBooks",
@@ -229,13 +234,12 @@ export default function BookAdd() {
                 book.pageCount = newValue;
               });
             },
-            "integerNumbeBookAdd"
+            "decimalNumberBookAdd"
           )}
         </div>
         <div>
-          <label style={{ fontSize: "0.7rem" }}>
-            {rowData.remoteBook?.pageCount &&
-            rowData.remoteBook.pageCount != rowData.pageCount
+          <label style={{ fontSize: "0.6rem" }}>
+            {rowData.remoteBook?.pageCount
               ? `(R: ${rowData.remoteBook.pageCount})`
               : ""}
           </label>
@@ -251,8 +255,8 @@ export default function BookAdd() {
               !rowData.remoteBook?.pageCount
             }
             isVisible={rowData.remoteBook?.pageCount != null}
-            className="mt-1 ml-1 addPageImportIcon"
-            style={{ height: 20, width: 20 }}
+            className="mt-1 addPageImportIcon"
+            style={{ height: 15, width: 15, padding: "0.3rem", marginLeft: 0 }}
           />
         </div>
       </>
@@ -277,9 +281,8 @@ export default function BookAdd() {
           )}
         </div>
         <div>
-          <label style={{ fontSize: "0.7rem" }}>
-            {rowData.remoteBook?.width &&
-            rowData.remoteBook.width != rowData.width
+          <label style={{ fontSize: "0.6rem" }}>
+            {rowData.remoteBook?.width
               ? `(R: ${rowData.remoteBook.width})`
               : ""}
           </label>
@@ -296,7 +299,7 @@ export default function BookAdd() {
             }
             isVisible={rowData.remoteBook?.width != null}
             className="mt-1 ml-1 addPageImportIcon"
-            style={{ height: 20, width: 20 }}
+            style={{ height: 15, width: 15, padding: "0.3rem", marginLeft: 0 }}
           />
         </div>
       </>
@@ -322,8 +325,7 @@ export default function BookAdd() {
         </div>
         <div>
           <label style={{ fontSize: "0.7rem" }}>
-            {rowData.remoteBook?.height &&
-            rowData.remoteBook.height != rowData.height
+            {rowData.remoteBook?.height
               ? `(R: ${rowData.remoteBook.height})`
               : ""}
           </label>
@@ -340,7 +342,7 @@ export default function BookAdd() {
             }
             isVisible={rowData.remoteBook?.height != null}
             className="mt-1 ml-1 addPageImportIcon"
-            style={{ height: 20, width: 20 }}
+            style={{ height: 15, width: 15, padding: "0.3rem", marginLeft: 0 }}
           />
         </div>
       </>
@@ -366,8 +368,7 @@ export default function BookAdd() {
         </div>
         <div>
           <label style={{ fontSize: "0.7rem" }}>
-            {rowData.remoteBook?.thickness &&
-            rowData.remoteBook.thickness != rowData.thickness
+            {rowData.remoteBook?.thickness
               ? `(R: ${rowData.remoteBook.thickness})`
               : ""}
           </label>
@@ -384,7 +385,7 @@ export default function BookAdd() {
             }
             isVisible={rowData.remoteBook?.thickness != null}
             className="mt-1 ml-1 addPageImportIcon"
-            style={{ height: 20, width: 20 }}
+            style={{ height: 15, width: 15, padding: "0.3rem", marginLeft: 0 }}
           />
         </div>
       </>
@@ -464,7 +465,7 @@ export default function BookAdd() {
             uploadHandler={(e: FileUploadHandlerEvent) =>
               onImageChange(e, rowData.id)
             }
-            className="addPageImportIcon"
+            className="addPageImportImageIcon"
             style={{ height: 20, width: 20, paddingLeft: 3, paddingRight: 3 }}
           />
         </div>
@@ -478,7 +479,7 @@ export default function BookAdd() {
         type="button"
         icon="pi pi-trash"
         onClick={() => onImageDelete(rowData.id)}
-        className="addPageImportIcon"
+        className="addPageImportImageIcon"
         style={{ height: 20, width: 20 }}
         tooltip="Delete Image"
         tooltipOptions={{ showDelay: 100 }}
@@ -495,7 +496,7 @@ export default function BookAdd() {
           !rowData.remoteBook?.thumbnailURL
         }
         isVisible={rowData.remoteBook?.thumbnailURL != null}
-        className="addPageImportIcon"
+        className="addPageImportImageIcon"
         style={{ height: 20, width: 20 }}
         tooltip="Import Remote Image"
         tooltipOptions={{ showDelay: 100 }}

@@ -53,7 +53,7 @@ export default function ImageTemplateWithButtons(
           }}
         />
       </div>
-      <div className="flex justify-content-between">
+      <div className="flex justify-content-center">
         {importButton}
         {uploadButton}
         {deleteButton}

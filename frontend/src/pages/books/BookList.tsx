@@ -346,7 +346,8 @@ export default function BookList() {
     {
       field: "remoteRetailPrice",
       header: "Remote Retail Price ($)",
-      customBody: (rowData: Book) => rowData.remoteBook?.retailPrice ?? "-",
+      customBody: (rowData: Book) =>
+        PriceTemplate(rowData.remoteBook?.retailPrice) ?? "-",
       style: { minWidth: "3rem" },
       hidden: !(
         visibleColumns.filter((item) => item.field == "remoteRetailPrice")

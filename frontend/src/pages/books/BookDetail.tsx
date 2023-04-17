@@ -37,7 +37,11 @@ import {
   InputNumberValueChangeEvent,
 } from "primereact/inputnumber";
 import "../../css/MiscellaneousCSS.css";
-import { calculateDaysOfSupply, updateShelfSpace } from "../../util/NumberOps";
+import {
+  calculateDaysOfSupply,
+  roundToTwoDecimalPlaces,
+  updateShelfSpace,
+} from "../../util/NumberOps";
 import { scrollToTop } from "../../util/WindowViewportOps";
 import ImportFieldButton from "../../components/buttons/ImportFieldButton";
 import axios from "axios";
@@ -872,7 +876,7 @@ export default function BookDetail() {
               <p className="flex p-component p-text-secondary text-900 text-m text-center mx-0 my-auto text-blue-800 pl-1">
                 {(remoteBook?.height && remoteBook?.height != height) ||
                 (remoteBook?.height && isModifiable)
-                  ? `(Remote: ${remoteBook.height})`
+                  ? `(Remote: ${roundToTwoDecimalPlaces(remoteBook.height)})`
                   : ""}
               </p>
             </div>
@@ -891,7 +895,7 @@ export default function BookDetail() {
               <p className="flex p-component p-text-secondary text-900 text-m text-center mx-0 my-auto text-blue-800 pl-1">
                 {(remoteBook?.width && remoteBook?.width != width) ||
                 (remoteBook?.width && isModifiable)
-                  ? `(Remote: ${remoteBook.width})`
+                  ? `(Remote: ${roundToTwoDecimalPlaces(remoteBook.width)})`
                   : ""}
               </p>
             </div>
@@ -913,7 +917,7 @@ export default function BookDetail() {
                 {(remoteBook?.thickness &&
                   remoteBook?.thickness != thickness) ||
                 (remoteBook?.thickness && isModifiable)
-                  ? `(Remote: ${remoteBook.thickness})`
+                  ? `(Remote: ${roundToTwoDecimalPlaces(remoteBook.thickness)})`
                   : ""}
               </p>
             </div>

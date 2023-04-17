@@ -238,9 +238,9 @@ export default function BookAdd() {
           )}
         </div>
         <div>
-          <label style={{ fontSize: "0.6rem" }}>
+          <label style={{ fontSize: "0.7rem" }}>
             {rowData.remoteBook?.pageCount
-              ? `(R: ${rowData.remoteBook.pageCount})`
+              ? `(Remote: ${rowData.remoteBook.pageCount})`
               : ""}
           </label>
           <ImportFieldButton
@@ -255,7 +255,7 @@ export default function BookAdd() {
               !rowData.remoteBook?.pageCount
             }
             isVisible={rowData.remoteBook?.pageCount != null}
-            className="mt-1 addPageImportIcon"
+            className="mt-1 ml-1 addPageImportIcon"
             style={{ height: 15, width: 15, padding: "0.3rem", marginLeft: 0 }}
           />
         </div>
@@ -281,9 +281,9 @@ export default function BookAdd() {
           )}
         </div>
         <div>
-          <label style={{ fontSize: "0.6rem" }}>
+          <label style={{ fontSize: "0.7rem" }}>
             {rowData.remoteBook?.width
-              ? `(R: ${rowData.remoteBook.width})`
+              ? `(Remote: ${rowData.remoteBook.width})`
               : ""}
           </label>
           <ImportFieldButton
@@ -326,7 +326,7 @@ export default function BookAdd() {
         <div>
           <label style={{ fontSize: "0.7rem" }}>
             {rowData.remoteBook?.height
-              ? `(R: ${rowData.remoteBook.height})`
+              ? `(Remote: ${rowData.remoteBook.height})`
               : ""}
           </label>
           <ImportFieldButton
@@ -369,7 +369,7 @@ export default function BookAdd() {
         <div>
           <label style={{ fontSize: "0.7rem" }}>
             {rowData.remoteBook?.thickness
-              ? `(R: ${rowData.remoteBook.thickness})`
+              ? `(Remote: ${rowData.remoteBook.thickness})`
               : ""}
           </label>
           <ImportFieldButton

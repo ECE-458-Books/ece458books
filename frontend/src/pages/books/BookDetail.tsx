@@ -37,11 +37,7 @@ import {
   InputNumberValueChangeEvent,
 } from "primereact/inputnumber";
 import "../../css/MiscellaneousCSS.css";
-import {
-  calculateDaysOfSupply,
-  roundToTwoDecimalPlaces,
-  updateShelfSpace,
-} from "../../util/NumberOps";
+import { calculateDaysOfSupply, updateShelfSpace } from "../../util/NumberOps";
 import { scrollToTop } from "../../util/WindowViewportOps";
 import ImportFieldButton from "../../components/buttons/ImportFieldButton";
 import axios from "axios";

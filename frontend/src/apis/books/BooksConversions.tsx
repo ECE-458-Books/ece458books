@@ -20,6 +20,7 @@ import {
 } from "../../pages/books/BookDetailLineItems";
 import { DEFAULT_BOOK_IMAGE } from "../../components/uploaders/ImageFileUploader";
 import { RelatedBook } from "../../pages/books/BookDetailRelatedBooks";
+import { roundToTwoDecimalPlaces } from "../../util/NumberOps";
 
 export const APIBookSortFieldMap = new Map<string, string>([
   ["isbn13", "isbn_13"],
@@ -184,9 +185,11 @@ export function APIToInternalRemoteBookConversion(
     publisher: book.publisher,
     publishedYear: book.publicationYear,
     pageCount: book.pageCount,
-    width: book.width,
-    height: book.height,
-    thickness: book.thickness,
+    width: book.width ? roundToTwoDecimalPlaces(book.width) : undefined,
+    height: book.height ? roundToTwoDecimalPlaces(book.height) : undefined,
+    thickness: book.thickness
+      ? roundToTwoDecimalPlaces(book.thickness)
+      : undefined,
     retailPrice: book.retailPrice,
     stock: book.inventoryCount,
     // Converts http: to https: if necessary
